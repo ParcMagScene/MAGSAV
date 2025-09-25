@@ -1,0 +1,6 @@
+PRODUIT,N° DE SERIE,PROPRIETAIRE,PANNE,STATUT,DETECTEUR,DATE ENTREE,DATE SORTIE
+iPhone 12,ABC123456789,Martin Dupont,Écran cassé,recu,Technicien 1,15/01/2024,
+Samsung Galaxy S21,XYZ987654321,Sophie Martin,Batterie défaillante,diagnostique,Technicien 2,16/01/2024,
+MacBook Pro,MBP2021001,Pierre Durand,Ne s'allume plus,attente_pieces,Technicien 1,17/01/2024,
+iPad Air,IPAD2023002,Marie Lefort,Problème Wi-Fi,repare,Technicien 3,18/01/2024,
+Dell Laptop,DELL2020003,Jean Moreau,Clavier défectueux,pret,Technicien 2,19/01/2024,22/01/2024

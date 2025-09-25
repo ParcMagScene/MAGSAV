@@ -1,0 +1,133 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.14'
+    id 'org.springframework.boot' version '3.1.5'
+    id 'io.spring.dependency-management' version '1.1.3'
+}
+
+group = 'com.magsav'
+version = '1.1.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    zxingVersion = '3.5.3'
+    sqliteVersion = '3.45.3.0'
+    hikariVersion = '5.1.0'
+    slf4jVersion = '2.0.13'
+    pdfboxVersion = '2.0.31'
+    opencsvVersion = '5.9'
+    picocliVersion = '4.7.6'
+}
+
+javafx {
+    version = '17.0.2'
+    modules = ['javafx.controls', 'javafx.fxml']
+}
+
+dependencies {
+    // Dépendances Spring Boot pour l'interface web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    
+    // Dépendances existantes du projet MAGSAV
+    implementation "com.google.zxing:core:${zxingVersion}"
+    implementation "com.google.zxing:javase:${zxingVersion}"
+    implementation "org.xerial:sqlite-jdbc:${sqliteVersion}"
+    implementation "com.zaxxer:HikariCP:${hikariVersion}"
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "org.apache.pdfbox:pdfbox:${pdfboxVersion}"
+    implementation "com.opencsv:opencsv:${opencsvVersion}"
+    implementation "info.picocli:picocli:${picocliVersion}"
+    annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
+    
+}
+
+application {
+    mainClass = 'com.magsav.gui.MAGSAVApp'
+    
+    // Options JVM par défaut pour l'application JavaFX
+    applicationDefaultJvmArgs = [
+        // Système de rendu alternatif pour éviter NSTrackingRectTag
+        '-Dprism.order=sw',
+        '-Dprism.verbose=false',
+        '-Dprism.forceGPU=false',
+        '-Djavafx.animation.fullspeed=true',
+        
+        // Désactiver les optimisations problématiques sur macOS
+        '-Dglass.accessible.force=false',
+        '-Dcom.apple.macos.useScreenMenuBar=false',
+        '-Djavafx.platform.macos.useInheritedChannels=false',
+        
+        // Configuration de mémoire
+        '-Xms512m',
+        '-Xmx1024m'
+    ]
+}
+
+// Configuration pour lancer l'interface ligne de commande
+task runCli(type: JavaExec) {
+    mainClass = 'com.magsav.cli.MAGSAVCli'
+    classpath = sourceSets.main.runtimeClasspath
+    group = 'application'
+    description = 'Lance l\'interface ligne de commande'
+}
+
+// Configuration pour lancer l'interface graphique JavaFX
+task runGui(type: JavaExec) {
+    mainClass = 'com.magsav.gui.MAGSAVApp'
+    classpath = sourceSets.main.runtimeClasspath
+    group = 'application'
+    description = 'Lance l\'interface graphique JavaFX'
+    
+    // Utiliser les mêmes options que l'application principale
+    jvmArgs = application.applicationDefaultJvmArgs
+}
+
+// Configuration pour lancer l'interface web Spring Boot
+task runWeb(type: JavaExec) {
+    mainClass = 'com.magsav.web.MAGSAVWebApp'
+    classpath = sourceSets.main.runtimeClasspath
+    group = 'application'
+    description = 'Lance l\'interface web Spring Boot'
+}
+
+// Définition explicite des sources (utile pour certains IDEs quand ils perdent la config)
+sourceSets {
+    main {
+        java {
+            setSrcDirs(['src/main/java'])
+        }
+        resources {
+            setSrcDirs(['src/main/resources'])
+        }
+    }
+    test {
+        java {
+            setSrcDirs(['src/test/java'])
+        }
+        resources {
+            setSrcDirs(['src/test/resources'])
+        }
+    }
+}
+
+// Forcer Gradle à écrire les classes où VS Code les attend
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test) {
+    useJUnitPlatform()
+}

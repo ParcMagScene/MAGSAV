@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import CSV - MAGSAV</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            background-color: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+            background-color: #e3f2fd;
+        }
+        .upload-area.dragover {
+            border-color: #007bff;
+            background-color: #e3f2fd;
+            transform: scale(1.02);
+        }
+        .sample-table {
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> MAGSAV
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">
+                            <i class="fas fa-file-csv"></i> 
+                            Import de données CSV
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Messages d'alerte -->
+                        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+                            <strong>Succès!</strong> <span th:text="${success}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+                            <strong>Erreur!</strong> <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- Formulaire d'upload -->
+                        <form th:action="@{/import}" method="post" enctype="multipart/form-data" id="uploadForm">
+                            <div class="mb-4">
+                                <label for="file" class="form-label">Sélectionner un fichier CSV</label>
+                                <div class="upload-area" id="uploadArea">
+                                    <input type="file" class="form-control d-none" id="file" name="file" 
+                                           accept=".csv,.txt" required>
+                                    <div id="uploadContent">
+                                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                        <p class="lead">Glissez-déposez votre fichier CSV ici</p>
+                                        <p class="text-muted">ou <button type="button" class="btn btn-link p-0" onclick="document.getElementById('file').click()">parcourez vos fichiers</button></p>
+                                    </div>
+                                    <div id="fileInfo" class="d-none">
+                                        <i class="fas fa-file-csv fa-2x text-primary mb-2"></i>
+                                        <p class="mb-1" id="fileName"></p>
+                                        <small class="text-muted" id="fileSize"></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="type" class="form-label">Type de données</label>
+                                <select class="form-select" id="type" name="type" required>
+                                    <option value="">Sélectionnez le type de données...</option>
+                                    <option value="clients">Clients</option>
+                                    <option value="fournisseurs">Fournisseurs</option>
+                                    <option value="dossiers_sav">Dossiers SAV</option>
+                                    <option value="produits">Produits (alias dossiers SAV)</option>
+                                </select>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                    <i class="fas fa-upload"></i> Importer les données
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Documentation sur le format des fichiers -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle"></i> 
+                            Format des fichiers CSV
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="formatAccordion">
+                            <!-- Clients -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#clientsFormat">
+                                        Format pour les Clients
+                                    </button>
+                                </h2>
+                                <div id="clientsFormat" class="accordion-collapse collapse" 
+                                     data-bs-parent="#formatAccordion">
+                                    <div class="accordion-body">
+                                        <p>Le fichier CSV doit contenir les colonnes suivantes :</p>
+                                        <table class="table table-sm sample-table">
+                                            <thead>
+                                                <tr class="table-light">
+                                                    <th>nom</th>
+                                                    <th>prenom</th>
+                                                    <th>telephone</th>
+                                                    <th>email</th>
+                                                    <th>adresse</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Dupont</td>
+                                                    <td>Jean</td>
+                                                    <td>0123456789</td>
+                                                    <td>jean.dupont@email.com</td>
+                                                    <td>123 rue de la Paix, Paris</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fournisseurs -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#fournisseursFormat">
+                                        Format pour les Fournisseurs
+                                    </button>
+                                </h2>
+                                <div id="fournisseursFormat" class="accordion-collapse collapse" 
+                                     data-bs-parent="#formatAccordion">
+                                    <div class="accordion-body">
+                                        <p>Le fichier CSV doit contenir les colonnes suivantes :</p>
+                                        <table class="table table-sm sample-table">
+                                            <thead>
+                                                <tr class="table-light">
+                                                    <th>nom</th>
+                                                    <th>contact</th>
+                                                    <th>telephone</th>
+                                                    <th>email</th>
+                                                    <th>adresse</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>TechRepair SARL</td>
+                                                    <td>Marie Martin</td>
+                                                    <td>0987654321</td>
+                                                    <td>contact@techrepair.fr</td>
+                                                    <td>456 avenue des Sciences, Lyon</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dossiers SAV -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#dossiersFormat">
+                                        Format pour les Dossiers SAV
+                                    </button>
+                                </h2>
+                                <div id="dossiersFormat" class="accordion-collapse collapse" 
+                                     data-bs-parent="#formatAccordion">
+                                    <div class="accordion-body">
+                                        <p>Le fichier CSV doit contenir les colonnes suivantes :</p>
+                                        <table class="table table-sm sample-table">
+                                            <thead>
+                                                <tr class="table-light">
+                                                    <th>proprietaire</th>
+                                                    <th>produit</th>
+                                                    <th>numero_serie</th>
+                                                    <th>panne</th>
+                                                    <th>detecteur</th>
+                                                    <th>date_entree</th>
+                                                    <th>statut</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Jean Dupont</td>
+                                                    <td>iPhone 14</td>
+                                                    <td>ABC123456</td>
+                                                    <td>Écran cassé</td>
+                                                    <td>Technicien A</td>
+                                                    <td>2023-01-01</td>
+                                                    <td>recu</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="alert alert-info mt-2">
+                                            <small>
+                                                <strong>Notes :</strong>
+                                                <ul class="mb-0">
+                                                    <li>Format de date : YYYY-MM-DD</li>
+                                                    <li>Statuts valides : recu, en_cours, termine</li>
+                                                </ul>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Produits (alias dossiers) -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#produitsFormat">
+                                        Format pour les Produits
+                                    </button>
+                                </h2>
+                                <div id="produitsFormat" class="accordion-collapse collapse" 
+                                     data-bs-parent="#formatAccordion">
+                                    <div class="accordion-body">
+                                        <p>Même structure que Dossiers SAV (produit = appareil). Colonnes :</p>
+                                        <table class="table table-sm sample-table">
+                                            <thead>
+                                                <tr class="table-light">
+                                                    <th>produit</th>
+                                                    <th>numero_serie</th>
+                                                    <th>proprietaire</th>
+                                                    <th>panne</th>
+                                                    <th>statut</th>
+                                                    <th>detecteur</th>
+                                                    <th>date_entree</th>
+                                                    <th>date_sortie</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Ordinateur HP 840 G9</td>
+                                                    <td>SN123456789</td>
+                                                    <td>Alice Martin</td>
+                                                    <td>Ne démarre plus</td>
+                                                    <td>recu</td>
+                                                    <td>Technicien B</td>
+                                                    <td>2025-09-01</td>
+                                                    <td></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="alert alert-secondary mt-2">
+                                            <small>
+                                                Produit = champ 'produit' de DossierSAV (aucune table produit séparée).
+                                                Utilisez ce format si vous avez un export "produits" standard.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Gestion du drag & drop et de la sélection de fichier
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('file');
+        const uploadContent = document.getElementById('uploadContent');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const submitBtn = document.getElementById('submitBtn');
+        const typeSelect = document.getElementById('type');
+
+        // Événements de drag & drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        // Clic sur la zone d'upload
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target === uploadArea || e.target.closest('#uploadContent')) {
+                fileInput.click();
+            }
+        });
+
+        // Sélection de fichier
+        fileInput.addEventListener('change', handleFileSelect);
+        typeSelect.addEventListener('change', checkFormValid);
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                uploadContent.classList.add('d-none');
+                fileInfo.classList.remove('d-none');
+                checkFormValid();
+            }
+        }
+
+        function checkFormValid() {
+            const hasFile = fileInput.files.length > 0;
+            const hasType = typeSelect.value !== '';
+            submitBtn.disabled = !(hasFile && hasType);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Exemple de configuration externe pour MAGSAV
+app:
+  database:
+    url: jdbc:sqlite:magsav.db
+  output:
+    directory: ./output
+  import:
+    dateFormats:
+      - dd/MM/yyyy
+      - yyyy-MM-dd
+      - dd-MM-yyyy
+  etiquette:
+    pdf:
+      pageWidth: 210  # mm
+      pageHeight: 297 # mm
+      qrSize: 180
+      fontSize: 11

@@ -80,10 +80,10 @@ dependencies {
     annotationProcessor "info.picocli:picocli-codegen:${picocliVersion}"
     spotbugs "org.apache.commons:commons-lang3:3.17.0"
 
-    // OpenRewrite (versions alignées et figées)
+    // OpenRewrite (versions alignées)
     rewrite platform("org.openrewrite:rewrite-bom:8.28.0")
-    // Remplacez 2.x.y par la dernière version 2.x de Maven Central
-    rewrite platform("org.openrewrite.recipe:rewrite-recipe-bom:2.x.y")
+    // Utiliser temporairement 2.+ puis figer à la version résolue
+    rewrite platform("org.openrewrite.recipe:rewrite-recipe-bom:2.+")
     rewrite "org.openrewrite:rewrite-java"
     rewrite "org.openrewrite.recipe:rewrite-static-analysis"
 }
@@ -432,8 +432,11 @@ try {
     LOGGER.debug("Ignoré", e);
 }
 
-// Exécuter rewriteRun seulement si -Prewrite est présent
+// Exécuter OpenRewrite seulement à la demande (-Prewrite)
 tasks.named('rewriteRun').configure {
+    onlyIf { project.hasProperty('rewrite') }
+}
+tasks.named('rewriteDryRun').configure {
     onlyIf { project.hasProperty('rewrite') }
 }
 

@@ -106,7 +106,7 @@ public class ValidationUtils {
     }
 
     // Vérifier la taille
-    return !(size > MAX_FILE_SIZE);
+    return size <= MAX_FILE_SIZE;
   }
 
   /** Nettoie une chaîne pour éviter les injections XSS basiques */

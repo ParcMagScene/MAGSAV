@@ -1,0 +1,41 @@
+name: Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Grant execute permissions
+        run: chmod +x scripts/smoke-test.sh
+
+      - name: Build (skip tests)
+        run: ./gradlew clean build -x test --no-daemon
+
+      - name: Run smoke test
+        env:
+          PORT: 8080
+          TIMEOUT: 45
+          PNG_STRICT: 1
+        run: ./gradlew smokeTestWeb --no-daemon
+
+      - name: Run JavaFX smoke test (headless)
+        env:
+          # Certaines distributions headless nécessitent ce flag pour JavaFX
+          MAG_SILENT_FX: 1
+        run: ./gradlew smokeTestGui --no-daemon --console=plain

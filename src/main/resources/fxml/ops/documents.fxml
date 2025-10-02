@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" spacing="8.0" fx:controller="com.magsav.gui.ops.DocumentsController">
+  <children>
+    <HBox spacing="8.0">
+      <Label text="Documents" style="-fx-font-size:16px;-fx-font-weight:bold;" />
+      <Region HBox.hgrow="ALWAYS" />
+      <Button fx:id="btnImport" text="Importer…" />
+    </HBox>
+    <HBox spacing="6.0">
+      <ComboBox fx:id="cbType" promptText="Type (TOUS/DEV/FACT/RMA/BL/BC)" />
+      <TextField fx:id="tfCode" promptText="Code produit" />
+      <TextField fx:id="tfSN" promptText="N° série" />
+      <Button fx:id="btnSearch" text="Filtrer" />
+      <Button fx:id="btnClear" text="Réinitialiser" />
+    </HBox>
+    <TableView fx:id="table">
+      <columns>
+        <TableColumn fx:id="colType" text="Type" prefWidth="80" />
+        <TableColumn fx:id="colNorm" text="Nom normalisé" prefWidth="260" />
+        <TableColumn fx:id="colOrig" text="Nom original" prefWidth="260" />
+        <TableColumn fx:id="colPath" text="Chemin" prefWidth="300" />
+        <TableColumn fx:id="colLinked" text="Lien" prefWidth="220" />
+        <TableColumn fx:id="colCreated" text="Importé le" prefWidth="140" />
+      </columns>
+    </TableView>
+  </children>
+</VBox>

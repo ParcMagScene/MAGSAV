@@ -1,0 +1,96 @@
+[
+  {
+    "name" : "com.magsav.cli.MAGSAVCli",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "configFile" },
+      { "name" : "dbPath" },
+      { "name" : "outputDir" }
+    ],
+    "methods" : [
+      { "name" : "nouveauDossier", "parameterTypes" : ["java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String"] }
+    ]
+  },
+  {
+    "name" : "com.magsav.cli.MAGSAVCli$EtiquetteCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "dossierId" },
+      { "name" : "parent" }
+    ]
+  },
+  {
+    "name" : "com.magsav.cli.MAGSAVCli$ImportCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "clientsFile" },
+      { "name" : "dossiersSavFile" },
+      { "name" : "fournisseursFile" },
+      { "name" : "parent" }
+    ]
+  },
+  {
+    "name" : "com.magsav.cli.MAGSAVCli$ListerCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "parent" },
+      { "name" : "produit" },
+      { "name" : "proprietaire" },
+      { "name" : "statut" }
+    ]
+  },
+  {
+    "name" : "com.magsav.cli.MAGSAVCli$RechercheCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "parent" },
+      { "name" : "proprietaire" },
+      { "name" : "serie" }
+    ]
+  },
+  {
+    "name" : "com.magsav.cli.MAGSAVCli$StatutCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "dossierId" },
+      { "name" : "nouveauStatut" },
+      { "name" : "parent" }
+    ]
+  },
+  {
+    "name" : "java.lang.Long",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "picocli.CommandLine$HelpCommand",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "commands" },
+      { "name" : "helpRequested" }
+    ]
+  }
+]

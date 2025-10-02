@@ -1,0 +1,11 @@
+client_nom,appareil_marque,appareil_modele,symptome,statut
+Dupont,Samsung,Galaxy S21,Écran fissuré,recu
+Martin,Apple,iPhone 13,Batterie défaillante,diagnostic
+Durand,Xiaomi,Mi 11,Problème de charge,en_cours
+Moreau,Huawei,P40,Appareil photo défaillant,reparation
+Leroy,OnePlus,9 Pro,Son défaillant,teste
+Bernard,Google,Pixel 6,Écran noir,pret
+Petit,Sony,Xperia 5,Bouton power cassé,termine
+Robert,Nokia,G50,Problème réseau,recu
+Garcia,Oppo,Find X3,Surchauffe,diagnostic
+Thomas,Realme,GT Master,Problème tactile,en_cours

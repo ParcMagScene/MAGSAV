@@ -1,0 +1,26 @@
+/* Styles extraits de index.html et classes utilitaires */
+.status-badge { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+.status-recu { background-color: #17a2b8; }
+.status-en_cours { background-color: #ffc107; }
+.status-termine { background-color: #28a745; }
+
+.stats-card { border-left: 4px solid; }
+.stats-recu { border-left-color: #17a2b8; }
+.stats-en_cours { border-left-color: #ffc107; }
+.stats-termine { border-left-color: #28a745; }
+
+/* Avatar de marque (remplace l’image externe) */
+.brand-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: #fff;
+  color: #0d6efd;
+}
+
+/* Utilitaires largeur et vignettes */
+.w-72px { width: 72px; }
+.thumb-64-cover { width: 64px; height: 64px; object-fit: cover; }

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil utilisateur - MAGSAV</title>
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/profile.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="container profile-container">
+        <div class="header">
+            <h1>Profil utilisateur</h1>
+        </div>
+        
+        <div class="user-info">
+            <div class="info-card">
+                <h3>Informations générales</h3>
+                <p><strong>Nom d'utilisateur :</strong> <span th:text="${username}">username</span></p>
+                <p><strong>Statut :</strong> Connecté</p>
+            </div>
+            
+            <div class="info-card">
+                <h3>Rôles et autorisations</h3>
+                <div class="roles">
+                    <span th:each="authority : ${authorities}" 
+                          th:class="${authority.authority == 'ROLE_ADMIN'} ? 'role-badge admin' : 'role-badge'"
+                          th:text="${authority.authority}">ROLE_USER</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="permissions">
+            <h3>Autorisations actuelles</h3>
+            <div th:if="${#lists.contains(authorities, T(org.springframework.security.core.authority.SimpleGrantedAuthority).new('ROLE_ADMIN'))}">
+                <ul>
+                    <li>✅ Lecture de tous les dossiers SAV</li>
+                    <li>✅ Création et modification des dossiers</li>
+                    <li>✅ Suppression des dossiers</li>
+                    <li>✅ Import/Export de données</li>
+                    <li>✅ Accès aux outils de diagnostic</li>
+                    <li>✅ Gestion des clients et fournisseurs</li>
+                </ul>
+            </div>
+            <div th:unless="${#lists.contains(authorities, T(org.springframework.security.core.authority.SimpleGrantedAuthority).new('ROLE_ADMIN'))}">
+                <ul>
+                    <li>✅ Lecture des dossiers SAV</li>
+                    <li>✅ Consultation des détails</li>
+                    <li>❌ Modification des données</li>
+                    <li>❌ Suppression des dossiers</li>
+                    <li>❌ Import/Export de données</li>
+                    <li>❌ Outils de diagnostic</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a href="/" class="btn btn-primary">Retour à l'accueil</a>
+            <form th:action="@{/logout}" method="post" class="d-inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit" class="btn btn-secondary">Se déconnecter</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

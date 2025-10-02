@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" spacing="10.0" fx:controller="com.magsav.gui.ops.PrintController">
+  <children>
+    <HBox spacing="8.0">
+      <Label text="Impressions / Étiquettes" style="-fx-font-size:16px;-fx-font-weight:bold;" />
+      <Region HBox.hgrow="ALWAYS" />
+      <Button fx:id="btnGenerate" text="Générer PDF" />
+    </HBox>
+    <GridPane hgap="8.0" vgap="8.0">
+      <columnConstraints>
+        <ColumnConstraints percentWidth="30" />
+        <ColumnConstraints percentWidth="70" />
+      </columnConstraints>
+      <children>
+        <Label text="Type d'étiquette" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+        <ComboBox fx:id="cbKind" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+        <Label text="Contenu principal" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+        <TextArea fx:id="taText" prefRowCount="3" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+        <Label text="Données QR (option)" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+        <TextField fx:id="tfQr" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+        <CheckBox fx:id="cbUseLogo" text="Inclure logo entreprise (si présent)" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+      </children>
+    </GridPane>
+    <Label text="Le PDF généré sera enregistré dans le dossier output/." style="-fx-font-size: 11px; -fx-text-fill: -fx-text-inner-color;" />
+  </children>
+</VBox>

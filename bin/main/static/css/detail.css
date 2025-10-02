@@ -1,0 +1,52 @@
+/* Styles spécifiques à la page detail.html */
+.status-badge {
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Statuts avec couleurs et icônes */
+.status-recu { background-color: #17a2b8; }
+.status-recu::before { content: '📥'; }
+
+.status-diagnostic { background-color: #6f42c1; }
+.status-diagnostic::before { content: '🔍'; }
+
+.status-en_cours { background-color: #fd7e14; }
+.status-en_cours::before { content: '⚙️'; }
+
+.status-attente_pieces { background-color: #e83e8c; }
+.status-attente_pieces::before { content: '⏳'; }
+
+.status-reparation { background-color: #20c997; }
+.status-reparation::before { content: '🔧'; }
+
+.status-teste { background-color: #0dcaf0; }
+.status-teste::before { content: '🧪'; }
+
+.status-pret { background-color: #198754; }
+.status-pret::before { content: '✅'; }
+
+.status-termine { background-color: #28a745; }
+.status-termine::before { content: '🎉'; }
+
+.status-annule { background-color: #6c757d; }
+.status-annule::before { content: '❌'; }
+
+.detail-card { border-top: 4px solid #007bff; }
+
+.workflow-info {
+  background: #f8f9fa;
+  border-left: 4px solid #007bff;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 5px;
+}
+
+/* Remplace l'ancien style inline max-width:180px sur les aperçus QR */
+.qr-preview {
+  max-width: 180px;
+}

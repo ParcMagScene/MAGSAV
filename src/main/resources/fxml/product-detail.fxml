@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import java.net.URL?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.ProductDetailController">
+    <stylesheets>
+        <URL value="@../style/app.css" />
+    </stylesheets>
+    <center>
+        <VBox spacing="10.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
+            </padding>
+            <children>
+                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                    <children>
+                        <Label text="Fiche Produit" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button fx:id="btnEdit" text="Modifier" onAction="#handleEnterEditMode" styleClass="action-btn" />
+                    </children>
+                </HBox>
+                <GridPane hgap="10.0" vgap="6.0">
+                    <columnConstraints>
+                        <ColumnConstraints halignment="RIGHT" minWidth="80.0" prefWidth="120.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                    </columnConstraints>
+                    <children>
+                        <Label text="Nom:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                        <Label fx:id="lblName" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+                        <Label text="Code:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                        <Label fx:id="lblCode" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+                        <Label text="N° de série:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                        <Label fx:id="lblSn" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+                        <Label text="Dernière entrée:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                        <Label fx:id="lblLastIn" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+
+                        <Label text="Dernière sortie:" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+                        <Label fx:id="lblLastOut" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+
+                        <Label text="Nb interventions:" GridPane.rowIndex="5" GridPane.columnIndex="0" />
+                        <Label fx:id="lblCount" GridPane.rowIndex="5" GridPane.columnIndex="1" />
+
+                        <Label text="Fabricant:" GridPane.rowIndex="6" GridPane.columnIndex="0" />
+                        <HBox spacing="8.0" GridPane.rowIndex="6" GridPane.columnIndex="1" alignment="CENTER_LEFT">
+                            <children>
+                                <StackPane style="-fx-background-color: rgba(0,0,0,0.04); -fx-background-radius: 6; -fx-padding: 2; -fx-border-color: rgba(0,0,0,0.15); -fx-border-radius: 6;">
+                                    <children>
+                                        <ImageView fx:id="imgManufacturerLogo" fitHeight="24.0" fitWidth="80.0" preserveRatio="true" pickOnBounds="true" />
+                                    </children>
+                                </StackPane>
+                                <Label fx:id="lblManufacturer" />
+                                <ComboBox fx:id="cbManufacturer" visible="false" managed="false" prefWidth="260.0" />
+                                <Button fx:id="btnAddManufacturer" text="+" onAction="#handleCreateManufacturer" visible="false" managed="false" />
+                            </children>
+                        </HBox>
+
+                        <Label text="Catégorie:" GridPane.rowIndex="7" GridPane.columnIndex="0" />
+                        <HBox spacing="8.0" GridPane.rowIndex="7" GridPane.columnIndex="1">
+                            <children>
+                                <Label fx:id="lblCategory" />
+                                <ComboBox fx:id="cbCategory" visible="false" managed="false" prefWidth="200.0" />
+                                <Button fx:id="btnAddCategory" text="+" onAction="#handleCreateCategory" visible="false" managed="false" />
+                            </children>
+                        </HBox>
+
+                        <Label text="Sous-catégorie:" GridPane.rowIndex="8" GridPane.columnIndex="0" />
+                        <HBox spacing="8.0" GridPane.rowIndex="8" GridPane.columnIndex="1">
+                            <children>
+                                <Label fx:id="lblSubcategory" />
+                                <ComboBox fx:id="cbSubcategory" visible="false" managed="false" prefWidth="200.0" />
+                                <Button fx:id="btnAddSubcategory" text="+" onAction="#handleCreateSubcategory" visible="false" managed="false" />
+                            </children>
+                        </HBox>
+                    </children>
+                </GridPane>
+
+                <Separator />
+                <HBox spacing="12.0">
+                    <children>
+                        <ImageView fx:id="imgPhoto" onMouseClicked="#handlePhotoClicked" fitWidth="260.0" fitHeight="260.0" preserveRatio="true" pickOnBounds="true" />
+                        <ImageView fx:id="imgQr" fitWidth="200.0" fitHeight="200.0" preserveRatio="true" pickOnBounds="true" />
+                    </children>
+                </HBox>
+
+                <Separator />
+                <Label text="Historique" style="-fx-font-size: 14px; -fx-font-weight: bold;" />
+                <fx:include source="/fxml/product-history-tab.fxml" fx:id="history" />
+            </children>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox spacing="10.0" alignment="CENTER_RIGHT" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
+            </padding>
+            <children>
+                <Button fx:id="btnChangePhoto" text="Changer photo" onAction="#handleChangePhotoEdit" visible="false" managed="false" />
+                <Button fx:id="btnValidate" text="Valider les changements" onAction="#handleValidateChanges" visible="false" managed="false" styleClass="action-btn" />
+                <Button fx:id="btnCancelEdit" text="Annuler modifications" onAction="#handleCancelEdit" visible="false" managed="false" />
+                <Button fx:id="btnDownloadLabel" text="Télécharger étiquette" onAction="#handleDownloadLabel" styleClass="action-btn" />
+                <Button fx:id="btnClose" text="Fermer" onAction="#handleClose" />
+            </children>
+        </HBox>
+    </bottom>
+</BorderPane>

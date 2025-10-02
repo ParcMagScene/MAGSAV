@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détail Dossier SAV #<span th:text="${dossier.dossier.id}"></span> - MAGSAV</title>
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/detail-workflow.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">🔧 MAGSAV 1.1</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Accueil</a>
+                <a class="nav-link" href="/clients">Clients</a>
+                <a class="nav-link" href="/fournisseurs">Fournisseurs</a>
+                <a class="nav-link" href="/import">Import</a>
+                <form class="d-inline" th:action="@{/logout}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-outline-light btn-sm">Déconnexion</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- En-tête du dossier -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>📋 Dossier SAV #<span th:text="${dossier.dossier.id}"></span></h1>
+            <div>
+                <a th:href="@{/dossier/{id}/qr(id=${dossier.dossier.id})}" class="btn btn-outline-secondary btn-sm me-2">
+                    📱 QR Code
+                </a>
+                <a th:href="@{/dossier/{id}/etiquette(id=${dossier.dossier.id})}" class="btn btn-outline-primary btn-sm">
+                    🏷️ Étiquette
+                </a>
+            </div>
+        </div>
+
+        <!-- Messages flash -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>❌ Erreur :</strong> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>✅ Succès :</strong> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Statut principal -->
+        <div class="text-center mb-4">
+            <span th:switch="${dossier.dossier.statut}" 
+                  class="status-badge"
+                  th:classappend="${dossier.dossier.statut == 'recu'} ? 'badge bg-primary' :
+                                 ${dossier.dossier.statut == 'diagnostic'} ? 'badge bg-info' :
+                                 ${dossier.dossier.statut == 'en_cours'} ? 'badge bg-warning text-dark' :
+                                 ${dossier.dossier.statut == 'attente_pieces'} ? 'badge bg-secondary' :
+                                 ${dossier.dossier.statut == 'reparation'} ? 'badge bg-warning text-dark' :
+                                 ${dossier.dossier.statut == 'teste'} ? 'badge bg-info' :
+                                 ${dossier.dossier.statut == 'pret'} ? 'badge bg-success' :
+                                 ${dossier.dossier.statut == 'termine'} ? 'badge bg-dark' :
+                                 ${dossier.dossier.statut == 'annule'} ? 'badge bg-danger' :
+                                 'badge bg-secondary'">
+                <span th:case="recu">📥 Reçu</span>
+                <span th:case="diagnostic">🔍 Diagnostic</span>
+                <span th:case="en_cours">⚠️ En cours</span>
+                <span th:case="attente_pieces">⏱️ Attente pièces</span>
+                <span th:case="reparation">🔧 Réparation</span>
+                <span th:case="teste">✅ Testé</span>
+                <span th:case="pret">📦 Prêt</span>
+                <span th:case="termine">✨ Terminé</span>
+                <span th:case="annule">❌ Annulé</span>
+                <span th:case="*">❓ Statut inconnu</span>
+            </span>
+        </div>
+
+        <!-- Workflow visuel -->
+        <div class="workflow-info">
+            <h4 class="text-center mb-3">🔄 Workflow du dossier</h4>
+            <div class="workflow-diagram">
+                <!-- Reçu -->
+                <div class="workflow-step" 
+                     th:classappend="${dossier.dossier.statut == 'recu'} ? 'active' : 
+                                     ${dossier.dossier.statut == 'annule'} ? 'completed' : 'completed'">
+                    <div>📥</div>
+                    <small>Reçu</small>
+                </div>
+                <div class="workflow-arrow">→</div>
+                
+                <!-- Diagnostic -->
+                <div class="workflow-step"
+                     th:classappend="${dossier.dossier.statut == 'diagnostic'} ? 'active' :
+                                     ${'diagnostic,en_cours,attente_pieces,reparation,teste,pret,termine'.contains(dossier.dossier.statut)} ? 'completed' : 'pending'">
+                    <div>🔍</div>
+                    <small>Diagnostic</small>
+                </div>
+                <div class="workflow-arrow">→</div>
+                
+                <!-- En cours -->
+                <div class="workflow-step"
+                     th:classappend="${dossier.dossier.statut == 'en_cours'} ? 'active' :
+                                     ${'en_cours,attente_pieces,reparation,teste,pret,termine'.contains(dossier.dossier.statut)} ? 'completed' : 'pending'">
+                    <div>⚠️</div>
+                    <small>En cours</small>
+                </div>
+                <div class="workflow-arrow">→</div>
+                
+                <!-- Réparation -->
+                <div class="workflow-step"
+                     th:classappend="${dossier.dossier.statut == 'reparation'} ? 'active' :
+                                     ${'reparation,teste,pret,termine'.contains(dossier.dossier.statut)} ? 'completed' : 'pending'">
+                    <div>🔧</div>
+                    <small>Réparation</small>
+                </div>
+                <div class="workflow-arrow">→</div>
+                
+                <!-- Testé -->
+                <div class="workflow-step"
+                     th:classappend="${dossier.dossier.statut == 'teste'} ? 'active' :
+                                     ${'teste,pret,termine'.contains(dossier.dossier.statut)} ? 'completed' : 'pending'">
+                    <div>✅</div>
+                    <small>Testé</small>
+                </div>
+                <div class="workflow-arrow">→</div>
+                
+                <!-- Prêt -->
+                <div class="workflow-step"
+                     th:classappend="${dossier.dossier.statut == 'pret'} ? 'active' :
+                                     ${'pret,termine'.contains(dossier.dossier.statut)} ? 'completed' : 'pending'">
+                    <div>📦</div>
+                    <small>Prêt</small>
+                </div>
+                <div class="workflow-arrow">→</div>
+                
+                <!-- Terminé -->
+                <div class="workflow-step"
+                     th:classappend="${dossier.dossier.statut == 'termine'} ? 'active' : 'pending'">
+                    <div>✨</div>
+                    <small>Terminé</small>
+                </div>
+            </div>
+            
+            <!-- Statut spéciaux -->
+            <div class="text-center mt-3" th:if="${dossier.dossier.statut == 'attente_pieces'}">
+                <div class="badge bg-secondary">⏱️ En attente de pièces</div>
+            </div>
+            <div class="text-center mt-3" th:if="${dossier.dossier.statut == 'annule'}">
+                <div class="badge bg-danger">❌ Dossier annulé</div>
+            </div>
+        </div>
+
+        <!-- Gestion des transitions de statuts -->
+        <div class="transition-form" sec:authorize="hasAnyRole('ADMIN','USER')">
+            <h4>🔄 Changer le statut</h4>
+            <p class="text-muted">Sélectionnez le nouveau statut selon votre autorisation :</p>
+            
+            <form th:action="@{/dossier/{id}/statut(id=${dossier.dossier.id})}" method="post" class="d-inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <!-- Actions principales -->
+                <div class="mb-3">
+                    <button type="submit" name="nouveauStatut" value="diagnostic" 
+                            class="btn btn-info transition-button"
+                            th:disabled="${dossier.dossier.statut != 'recu'}">
+                        🔍 Passer en diagnostic
+                    </button>
+                    
+                    <button type="submit" name="nouveauStatut" value="en_cours" 
+                            class="btn btn-warning transition-button"
+                            th:disabled="${dossier.dossier.statut != 'diagnostic'}">
+                        ⚠️ Passer en cours
+                    </button>
+                    
+                    <button type="submit" name="nouveauStatut" value="attente_pieces" 
+                            class="btn btn-secondary transition-button"
+                            th:disabled="${!'en_cours,reparation'.contains(dossier.dossier.statut)}">
+                        ⏱️ Attente pièces
+                    </button>
+                </div>
+                
+                <div class="mb-3">
+                    <button type="submit" name="nouveauStatut" value="reparation" 
+                            class="btn btn-warning transition-button"
+                            th:disabled="${!'en_cours,attente_pieces'.contains(dossier.dossier.statut)}">
+                        🔧 Passer en réparation
+                    </button>
+                    
+                    <button type="submit" name="nouveauStatut" value="teste" 
+                            class="btn btn-info transition-button"
+                            th:disabled="${dossier.dossier.statut != 'reparation'}">
+                        ✅ Marquer testé
+                    </button>
+                    
+                    <button type="submit" name="nouveauStatut" value="pret" 
+                            class="btn btn-success transition-button"
+                            th:disabled="${dossier.dossier.statut != 'teste'}">
+                        📦 Marquer prêt
+                    </button>
+                </div>
+                
+                <div class="mb-3">
+                    <button type="submit" name="nouveauStatut" value="termine" 
+                            class="btn btn-dark transition-button"
+                            th:disabled="${dossier.dossier.statut != 'pret'}">
+                        ✨ Terminer le dossier
+                    </button>
+                    
+                    <!-- Seuls les admins peuvent annuler -->
+                    <button type="submit" name="nouveauStatut" value="annule" 
+                            class="btn btn-danger transition-button"
+                            sec:authorize="hasRole('ADMIN')"
+                            th:disabled="${'termine,annule'.contains(dossier.dossier.statut)}">
+                        ❌ Annuler le dossier
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Informations client/appareil/dossier -->
+        <div class="row">
+            <!-- Informations client -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>👤 Informations Client</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Nom :</strong> <span th:text="${dossier.client.nom}"></span></p>
+                        <p><strong>Prénom :</strong> <span th:text="${dossier.client.prenom}"></span></p>
+                        <p><strong>Email :</strong> 
+                            <a th:href="@{'mailto:' + ${dossier.client.email}}" th:text="${dossier.client.email}"></a>
+                        </p>
+                        <p><strong>Téléphone :</strong> 
+                            <a th:href="@{'tel:' + ${dossier.client.telephone}}" th:text="${dossier.client.telephone}"></a>
+                        </p>
+                        <p><strong>Adresse :</strong> <span th:text="${dossier.client.adresse}"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informations appareil -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>📱 Informations Appareil</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Marque :</strong> <span th:text="${dossier.appareil.marque}"></span></p>
+                        <p><strong>Modèle :</strong> <span th:text="${dossier.appareil.modele}"></span></p>
+                        <p><strong>Numéro de série :</strong> <span th:text="${dossier.appareil.numeroSerie}"></span></p>
+                        <p><strong>Accessoires :</strong> <span th:text="${dossier.appareil.accessoires ?: 'Aucun'}"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Détails du dossier -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>📋 Détails du Dossier</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Symptôme :</strong> <span th:text="${dossier.dossier.symptome}"></span></p>
+                        <p><strong>Date d'entrée :</strong> 
+                            <span th:text="${#temporals.format(dossier.dossier.dateEntree, 'dd/MM/yyyy')}"></span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Date de sortie :</strong> 
+                            <span th:text="${dossier.dossier.dateSortie != null ? #temporals.format(dossier.dossier.dateSortie, 'dd/MM/yyyy') : 'Non définie'}"></span>
+                        </p>
+                        <p><strong>Créé le :</strong> 
+                            <span th:text="${#temporals.format(dossier.dossier.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <p><strong>Commentaire :</strong></p>
+                    <p class="border p-2 bg-light" th:text="${dossier.dossier.commentaire ?: 'Aucun commentaire'}"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="text-center mb-4">
+            <a href="/" class="btn btn-secondary">← Retour à l'accueil</a>
+            <a th:href="@{/dossier/liste}" class="btn btn-primary">📋 Liste des dossiers</a>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

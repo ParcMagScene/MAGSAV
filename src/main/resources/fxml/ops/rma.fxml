@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" spacing="8.0" fx:controller="com.magsav.gui.ops.RmaController">
+  <children>
+    <HBox spacing="8.0">
+      <Label text="Demandes RMA" style="-fx-font-size:16px;-fx-font-weight:bold;" />
+      <Region HBox.hgrow="ALWAYS" />
+      <Button fx:id="btnAssign" text="Attribuer numéro" />
+      <Button fx:id="btnNew" text="Nouvelle demande RMA" />
+    </HBox>
+    <HBox spacing="6.0">
+      <TextField fx:id="searchField" promptText="Rechercher produit / SN / code / RMA" />
+      <Button fx:id="btnSearch" text="Filtrer" />
+      <Button fx:id="btnClear" text="Réinitialiser" />
+    </HBox>
+    <TableView fx:id="table">
+      <columns>
+        <TableColumn fx:id="colId" text="ID" prefWidth="60" />
+        <TableColumn fx:id="colService" text="Service SAV" prefWidth="180" />
+        <TableColumn fx:id="colProduit" text="Produit" prefWidth="180" />
+        <TableColumn fx:id="colSN" text="N° Série" prefWidth="160" />
+        <TableColumn fx:id="colCode" text="Code produit" prefWidth="120" />
+        <TableColumn fx:id="colReason" text="Motif" prefWidth="220" />
+        <TableColumn fx:id="colStatus" text="Statut" prefWidth="100" />
+        <TableColumn fx:id="colRma" text="RMA#" prefWidth="120" />
+        <TableColumn fx:id="colCreated" text="Créé le" prefWidth="140" />
+      </columns>
+    </TableView>
+  </children>
+</VBox>

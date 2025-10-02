@@ -1,0 +1,21 @@
+/* Styles extraits de import.html */
+.upload-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+}
+.upload-area:hover {
+  border-color: #007bff;
+  background-color: #e3f2fd;
+}
+.upload-area.dragover {
+  border-color: #007bff;
+  background-color: #e3f2fd;
+  transform: scale(1.02);
+}
+.sample-table {
+  font-size: 0.875rem;
+}

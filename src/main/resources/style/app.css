@@ -1,0 +1,68 @@
+/* Styles généraux pour petits boutons icône */
+.button.clear-btn {
+  background-color: transparent; /* compat */
+  -fx-background-color: transparent;
+  -fx-text-fill: #808080; /* gris moyen */
+  font-size: 12px; /* compat */
+  -fx-font-size: 12px;
+  padding: 2 6 2 6; /* compat */
+  -fx-padding: 2 6 2 6;
+  -fx-background-radius: 6;
+  -fx-background-insets: 0;
+  cursor: hand; /* compat */
+  -fx-cursor: hand;
+}
+.button.clear-btn:hover {
+  background-color: rgba(0,0,0,0.06); /* compat */
+  -fx-background-color: rgba(0,0,0,0.06);
+  -fx-text-fill: #555555;
+}
+.button.clear-btn:pressed {
+  background-color: rgba(0,0,0,0.12); /* compat */
+  -fx-background-color: rgba(0,0,0,0.12);
+}
+.button.clear-btn:focused {
+  -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 4, 0, 0, 1);
+}
+
+/* Champ de recherche arrondi */
+.text-field.search-field {
+  -fx-background-radius: 14;
+  -fx-background-insets: 0;
+  padding: 6 10 6 10; /* compat */
+  -fx-padding: 6 10 6 10;
+  border-color: #D0D5DD; /* compat */
+  -fx-border-color: #D0D5DD;
+  border-radius: 14; /* compat */
+  -fx-border-radius: 14;
+  -fx-border-insets: 0;
+}
+.text-field.search-field:focused {
+  border-color: #93C5FD; /* compat */
+  -fx-border-color: #93C5FD; /* bleu clair */
+  -fx-effect: dropshadow(three-pass-box, rgba(59,130,246,0.25), 6, 0, 0, 1);
+}
+
+/* Boutons d’action discrets */
+.button.action-btn { 
+  background-color: #F3F4F6; /* compat */
+  -fx-background-color: #F3F4F6; /* gris clair */
+  -fx-text-fill: #111827; 
+  -fx-background-radius: 8; 
+  padding: 6 10 6 10; /* compat */
+  -fx-padding: 6 10 6 10;
+}
+.button.action-btn:hover { background-color: #E5E7EB; -fx-background-color: #E5E7EB; }
+.button.action-btn:pressed { background-color: #D1D5DB; -fx-background-color: #D1D5DB; }
+
+/* Variante pour MenuButton */
+.menu-button.action-btn { 
+  background-color: #F3F4F6; /* compat */
+  -fx-background-color: #F3F4F6; 
+  -fx-text-fill: #111827; 
+  -fx-background-radius: 8; 
+  padding: 4 10 4 10; /* compat */
+  -fx-padding: 4 10 4 10;
+}
+.menu-button.action-btn:hover { background-color: #E5E7EB; -fx-background-color: #E5E7EB; }
+.menu-button.action-btn:pressed { background-color: #D1D5DB; -fx-background-color: #D1D5DB; }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.CategoryDialogController">
+    <content>
+        <VBox spacing="10.0">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
+            </padding>
+            <Label text="Gestion des catégories" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+
+            <TitledPane text="Créer une catégorie racine" expanded="true">
+                <content>
+                    <HBox spacing="6.0">
+                        <TextField fx:id="rootNameField" promptText="Nom de la catégorie" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="addRootButton" text="Ajouter" />
+                    </HBox>
+                </content>
+            </TitledPane>
+
+            <TitledPane text="Créer une sous-catégorie" expanded="true">
+                <content>
+                    <HBox spacing="6.0">
+                        <ComboBox fx:id="parentCombo" promptText="Catégorie parent" prefWidth="220" />
+                        <TextField fx:id="childNameField" promptText="Nom de la sous-catégorie" HBox.hgrow="ALWAYS" />
+                        <Button fx:id="addChildButton" text="Ajouter" />
+                    </HBox>
+                </content>
+            </TitledPane>
+
+            <TitledPane text="Liste des catégories" expanded="true">
+                <content>
+                    <VBox spacing="6.0">
+                        <TableView fx:id="table">
+                            <columns>
+                                <TableColumn fx:id="colId" text="ID" prefWidth="60" />
+                                <TableColumn fx:id="colName" text="Nom" prefWidth="220" />
+                                <TableColumn fx:id="colParent" text="Parent" prefWidth="180" />
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                        </TableView>
+                        <HBox spacing="6.0" alignment="CENTER_RIGHT">
+                            <Button fx:id="deleteButton" text="Supprimer" />
+                        </HBox>
+                    </VBox>
+                </content>
+            </TitledPane>
+        </VBox>
+    </content>
+    <buttonTypes>
+        <ButtonType text="Fermer" buttonData="CANCEL_CLOSE" />
+    </buttonTypes>
+</DialogPane>

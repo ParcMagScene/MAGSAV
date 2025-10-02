@@ -1,0 +1,12 @@
+/* Styles pour dossier-liste */
+.status-badge { font-size: .8rem; padding: .4rem .8rem; }
+.status-recu { background-color: #17a2b8; color: #fff; }
+.status-en_cours { background-color: #ffc107; color: #000; }
+.status-termine { background-color: #28a745; color: #fff; }
+
+.pagination-info { color: #6c757d; font-size: .9rem; }
+
+.sort-header { cursor: pointer; user-select: none; }
+.sort-header:hover { background-color: #f8f9fa; }
+.sort-icon { opacity: .5; }
+.sort-active .sort-icon { opacity: 1; }

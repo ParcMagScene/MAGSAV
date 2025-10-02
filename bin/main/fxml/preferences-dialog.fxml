@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+
+<DialogPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.PreferencesController" fx:id="dialogPane">
+    <headerText>Préférences</headerText>
+    <content>
+        <VBox spacing="8.0">
+            <children>
+                <TitledPane text="Interface">
+                    <content>
+                        <VBox spacing="6.0">
+                            <fx:define>
+                                <ToggleGroup fx:id="themeGroup" />
+                            </fx:define>
+                            <children>
+                                <CheckBox fx:id="chkOpenInterventionOnDoubleClick" text="Ouvrir la fiche intervention au double-clic" />
+                                <Label text="Double‑clic produits: Toujours actif" style="-fx-font-style: italic; -fx-text-fill: -fx-text-inner-color;" />
+                                <Separator />
+                                <Label text="Thème" />
+                                <HBox spacing="10.0">
+                                    <children>
+                                        <RadioButton fx:id="rbThemeLight" text="Clair" toggleGroup="$themeGroup" />
+                                        <RadioButton fx:id="rbThemeDark" text="Sombre" toggleGroup="$themeGroup" />
+                                        <RadioButton fx:id="rbThemeOs" text="Thème de l’OS" toggleGroup="$themeGroup" />
+                                    </children>
+                                </HBox>
+                                <Separator />
+                                <Button text="Réinitialiser la disposition des fenêtres" onAction="#handleResetLayout" />
+                            </children>
+                        </VBox>
+                    </content>
+                </TitledPane>
+                <TitledPane text="Identité de l’entreprise">
+                    <content>
+                        <VBox spacing="8.0">
+                            <children>
+                                <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                    <children>
+                                        <ImageView fx:id="imgCompanyLogo" fitWidth="160.0" fitHeight="80.0" preserveRatio="true" pickOnBounds="true" />
+                                        <VBox spacing="6.0">
+                                            <children>
+                                                <Button text="Choisir un logo…" onAction="#handleChooseCompanyLogo" />
+                                                <Button text="Supprimer le logo" onAction="#handleRemoveCompanyLogo" />
+                                                <Label fx:id="lblCompanyLogoPath" style="-fx-font-size: 10px; -fx-text-fill: -fx-text-inner-color;" />
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </HBox>
+                                <Label text="Conseil: utilisez une image PNG avec fond transparent pour un meilleur rendu." style="-fx-font-style: italic; -fx-text-fill: -fx-text-inner-color;" />
+                            </children>
+                        </VBox>
+                    </content>
+                </TitledPane>
+            </children>
+        </VBox>
+    </content>
+    <buttonTypes>
+        <ButtonType fx:constant="OK" />
+        <ButtonType fx:constant="CANCEL" />
+    </buttonTypes>
+</DialogPane>

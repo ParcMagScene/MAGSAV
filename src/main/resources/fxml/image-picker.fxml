@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<BorderPane xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.widgets.ImagePickerController">
+  <top>
+    <HBox spacing="8.0" alignment="CENTER_LEFT">
+      <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+      <children>
+        <Label text="Bibliothèque d'images" style="-fx-font-size:16px;-fx-font-weight:bold;" />
+        <Region HBox.hgrow="ALWAYS" />
+        <TextField fx:id="searchField" promptText="Rechercher..." />
+        <Button text="Importer…" onAction="#handleImport" />
+      </children>
+    </HBox>
+  </top>
+  <center>
+    <ScrollPane fitToWidth="true">
+      <content>
+        <FlowPane fx:id="tiles" hgap="10" vgap="10" padding="10" />
+      </content>
+    </ScrollPane>
+  </center>
+  <bottom>
+    <HBox spacing="8.0" alignment="CENTER_RIGHT">
+      <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+      <children>
+        <Button fx:id="btnSelect" text="Sélectionner" onAction="#handleSelect" />
+        <Button text="Annuler" onAction="#handleCancel" />
+      </children>
+    </HBox>
+  </bottom>
+</BorderPane>

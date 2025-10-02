@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" spacing="10.0" prefWidth="520.0" fx:controller="com.magsav.gui.ops.PurchaseNewController">
+  <children>
+    <Label text="Nouvelle demande de devis" style="-fx-font-size:16px;-fx-font-weight:bold;" />
+    <GridPane hgap="8.0" vgap="8.0">
+      <columnConstraints>
+        <ColumnConstraints percentWidth="30" />
+        <ColumnConstraints percentWidth="70" />
+      </columnConstraints>
+      <children>
+        <Label text="Service fournisseur" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+        <ComboBox fx:id="cbService" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+
+        <Label text="Produit" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+        <TextField fx:id="tfProduit" promptText="Nom produit" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+
+        <Label text="Part Number" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+        <TextField fx:id="tfPN" promptText="Référence constructeur" GridPane.rowIndex="2" GridPane.columnIndex="1" />
+
+        <Label text="Quantité" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+        <TextField fx:id="tfQty" promptText="1" GridPane.rowIndex="3" GridPane.columnIndex="1" />
+
+        <Label text="Notes" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+        <TextArea fx:id="taNotes" prefRowCount="3" GridPane.rowIndex="4" GridPane.columnIndex="1" />
+      </children>
+    </GridPane>
+    <HBox spacing="8.0" alignment="CENTER_RIGHT">
+      <Region HBox.hgrow="ALWAYS" />
+      <Button fx:id="btnCancel" text="Annuler" />
+      <Button fx:id="btnSave" text="Créer" style="-fx-background-color:#2e7d32; -fx-text-fill:white;" />
+    </HBox>
+  </children>
+</VBox>

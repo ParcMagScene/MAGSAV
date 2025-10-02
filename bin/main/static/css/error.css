@@ -1,0 +1,4 @@
+/* Styles page d'erreur */
+.error-container { max-width: 600px; margin: 100px auto; text-align: center; }
+.error-icon { font-size: 4rem; color: #dc3545; margin-bottom: 1rem; }
+.error-message { font-size: 1.2rem; margin-bottom: 2rem; }

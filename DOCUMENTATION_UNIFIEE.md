@@ -5,6 +5,7 @@ Ce document consolide l’ensemble des documents Markdown du projet (hors `READM
 Table des matières
 - [Synthèse de session](#synthèse-de-session)
 - [Audit complet](#audit-complet)
+- [Média, QR et impression](#média-qr-et-impression)
 - [Étape 2 – Workflow complet](#étape-2--workflow-complet)
 - [Étape 3 – Import CSV avancé](#étape-3--import-csv-avancé)
 - [Étape 4 – Recherche avancée](#étape-4--recherche-avancée)
@@ -118,6 +119,38 @@ Prochaines étapes
 - Long terme: Microservices, Event Sourcing, CQRS, Cloud
 
 Conclusion: Fondations solides, architecture prête pour évoluer.
+
+
+## Média, QR et impression
+
+Cette section synthétise la centralisation des médias (photos/ logos), la génération de QR et l’impression d’étiquettes.
+
+Répertoires et configuration
+- Base des médias: `photos/` (par défaut à la racine du projet)
+- Surcharges:
+	- Propriété JVM: `-Dmagsav.photos.dir=/chemin/vers/photos`
+	- Variable d’environnement: `MAGSAV_PHOTOS_DIR=/chemin/vers/photos`
+- Dossiers structurés:
+	- Photos produits: `photos/products`
+	- Logos fabricants: `photos/logos/manufacturers`
+	- Logos sociétés: `photos/logos/companies`
+	- Sorties QR/PDF: `output/`
+
+Services clés
+- ImageLibraryService: base/dirs, normalisation d’extensions, utilitaires de copie
+- AvatarService: initiales + rendu PNG fallback (badge)
+- ManufacturerLogoService: résolution de logo ou fallback PNG
+- ProductQrService: génération du contenu QR canonique et PNG
+- ProductPhotoService: import + affectation DB de la photo produit
+- PrintService: orchestration QR + PDF, utilisé par l’écran d’impression et la fiche produit
+
+Intégration UI (JavaFX)
+- ProductDetailController délègue aux services: QR (ProductQrService), logo (ManufacturerLogoService), photo (ProductPhotoService), étiquette (PrintService)
+- Setters d’injection disponibles pour tests (mocks) et getters d’accès aux nœuds utile pour assertions FX
+
+Tests
+- Unitaires: AvatarServiceTest, ManufacturerLogoServiceTest, ProductQrServiceTest, ProductPhotoServiceTest
+- JavaFX headless: ProductDetailControllerFxTest (initialisation via Platform.startup, FXML chargé, vérifications de QR/logo)
 
 
 ## Audit complet

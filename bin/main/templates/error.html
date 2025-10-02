@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Erreur - MAGSAV</title>
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link th:href="@{/css/error.css}" rel="stylesheet"/>
+</head>
+<body>
+    <div class="container">
+        <div class="error-container">
+            <div class="error-icon">
+                ⚠️
+            </div>
+            <h1 class="text-danger">Une erreur est survenue</h1>
+            
+            <!-- Message d'erreur spécifique -->
+            <div th:if="${error}" class="alert alert-danger error-message" th:text="${error}"></div>
+            
+            <!-- Message d'erreur par défaut -->
+            <div th:unless="${error}" class="error-message">
+                <p>Nous sommes désolés, une erreur inattendue s'est produite.</p>
+                <p>Veuillez réessayer ou contacter le support technique si le problème persiste.</p>
+            </div>
+            
+            <div class="mt-4">
+                <a href="/" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Retour à l'accueil
+                </a>
+                
+                <button class="btn btn-secondary ms-2 js-back">
+                    <i class="fas fa-arrow-left"></i> Page précédente
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/app-error.js}"></script>
+</body>
+</html>

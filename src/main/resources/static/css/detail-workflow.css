@@ -1,0 +1,11 @@
+/* Styles pour le workflow de dossier */
+.workflow-diagram { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; margin: 20px 0; gap: 10px; }
+.workflow-step { display: flex; flex-direction: column; align-items: center; min-width: 100px; padding: 10px; border-radius: 8px; text-align: center; font-size: .85em; }
+.workflow-step.active { background-color: #d4edda; border: 2px solid #28a745; font-weight: bold; }
+.workflow-step.completed { background-color: #f8f9fa; border: 1px solid #6c757d; opacity: .7; }
+.workflow-step.pending { background-color: #e9ecef; border: 1px dashed #6c757d; opacity: .5; }
+.workflow-arrow { color: #6c757d; font-size: 1.2em; margin: 0 5px; }
+.status-badge { font-size: 1.1em; padding: 8px 16px; border-radius: 20px; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; }
+.workflow-info { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 20px 0; }
+.transition-form { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 20px 0; }
+.transition-button { margin: 5px; min-width: 120px; }

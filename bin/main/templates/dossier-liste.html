@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des dossiers SAV - MAGSAV</title>
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/webjars/fortawesome__fontawesome-free/css/all.min.css}" rel="stylesheet">
+    <link th:href="@{/css/dossier-liste.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-tools"></i> MAGSAV
+            </a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/import">
+                    <i class="fas fa-upload"></i> Import CSV
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="fas fa-list"></i> Dossiers SAV</h1>
+                    <a href="/" class="btn btn-outline-primary">
+                        <i class="fas fa-home"></i> Accueil
+                    </a>
+                </div>
+                
+                <!-- Statistiques rapides -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-info">Reçus</h5>
+                                <h3 th:text="${statsRecus}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-warning">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-warning">En cours</h5>
+                                <h3 th:text="${statsEnCours}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <h5 class="card-title text-success">Terminés</h5>
+                                <h3 th:text="${statsTermines}">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filtres et recherche -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form method="get" action="/dossier/liste">
+                            <input type="hidden" name="page" value="0" />
+                            <input type="hidden" name="size" th:value="${pageResult?.size ?: 20}" />
+                            <input type="hidden" name="sortBy" th:value="${sortBy ?: 'id'}" />
+                            <input type="hidden" name="sortDir" th:value="${sortDir ?: 'desc'}" />
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="search" class="form-label">Recherche</label>
+                                    <input type="text" class="form-control" id="search" name="search" 
+                                           th:value="${search}" placeholder="Numéro série, nom client...">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="statut" class="form-label">Statut</label>
+                                    <select class="form-select" id="statut" name="statut">
+                                        <option value="">Tous les statuts</option>
+                                        <option value="recu" th:selected="${statut == 'recu'}">Reçu</option>
+                                        <option value="en_cours" th:selected="${statut == 'en_cours'}">En cours</option>
+                                        <option value="termine" th:selected="${statut == 'termine'}">Terminé</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-search"></i> Filtrer
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Informations de pagination -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="pagination-info">
+                        <span th:if="${pageResult != null}">
+                            Affichage de <strong th:text="${pageResult.page * pageResult.size + 1}">1</strong> à 
+                            <strong th:text="${pageResult.page * pageResult.size + pageResult.numberOfElements}">20</strong> sur 
+                            <strong th:text="${pageResult.totalElements}">100</strong> dossiers
+                        </span>
+                        <span th:if="${pageResult == null}">Aucun dossier trouvé</span>
+                    </div>
+                    <div>
+                        <select class="form-select form-select-sm js-page-size w-auto">
+                            <option th:selected="${pageResult?.size == 10}" value="10">10 par page</option>
+                            <option th:selected="${pageResult?.size == 20}" value="20">20 par page</option>
+                            <option th:selected="${pageResult?.size == 50}" value="50">50 par page</option>
+                            <option th:selected="${pageResult?.size == 100}" value="100">100 par page</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Tableau des dossiers -->
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="sort-header js-sort" data-col="id" th:class="${sortBy == 'id'} ? 'sort-header sort-active' : 'sort-header'">
+                                            #ID
+                                            <i class="fas fa-sort sort-icon" th:class="${sortBy == 'id' and sortDir == 'asc'} ? 'fas fa-sort-up sort-icon' : (${sortBy == 'id' and sortDir == 'desc'} ? 'fas fa-sort-down sort-icon' : 'fas fa-sort sort-icon')"></i>
+                                        </th>
+                                        <th>Client</th>
+                                        <th>Appareil</th>
+                                        <th class="sort-header js-sort" data-col="statut" th:class="${sortBy == 'statut'} ? 'sort-header sort-active' : 'sort-header'">
+                                            Statut
+                                            <i class="fas fa-sort sort-icon" th:class="${sortBy == 'statut' and sortDir == 'asc'} ? 'fas fa-sort-up sort-icon' : (${sortBy == 'statut' and sortDir == 'desc'} ? 'fas fa-sort-down sort-icon' : 'fas fa-sort sort-icon')"></i>
+                                        </th>
+                                        <th class="sort-header js-sort" data-col="dateEntree" th:class="${sortBy == 'dateEntree'} ? 'sort-header sort-active' : 'sort-header'">
+                                            Date entrée
+                                            <i class="fas fa-sort sort-icon" th:class="${sortBy == 'dateEntree' and sortDir == 'asc'} ? 'fas fa-sort-up sort-icon' : (${sortBy == 'dateEntree' and sortDir == 'desc'} ? 'fas fa-sort-down sort-icon' : 'fas fa-sort sort-icon')"></i>
+                                        </th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${dossiers?.empty}">
+                                        <td colspan="6" class="text-center py-4 text-muted">
+                                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                            Aucun dossier trouvé
+                                        </td>
+                                    </tr>
+                                    <tr th:each="dossier : ${dossiers}" th:unless="${dossiers?.empty}">
+                                        <td>
+                                            <strong th:text="${dossier.id}">#123</strong>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong th:text="${dossier.nomClient + ' ' + dossier.prenomClient}">Client</strong><br>
+                                                <small class="text-muted" th:text="${dossier.emailClient}">email@exemple.com</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong th:text="${dossier.marqueAppareil + ' ' + dossier.modeleAppareil}">Marque Modèle</strong><br>
+                                                <small class="text-muted">SN: <span th:text="${dossier.numeroSerie}">123456</span></small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge status-badge" 
+                                                  th:class="'badge status-badge status-' + ${dossier.statut}"
+                                                  th:text="${dossier.statut == 'recu' ? 'Reçu' : (dossier.statut == 'en_cours' ? 'En cours' : 'Terminé')}">
+                                                Statut
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${#temporals.format(dossier.dateEntree, 'dd/MM/yyyy')}">01/01/2024</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a th:href="@{/dossier/{id}(id=${dossier.id})}" class="btn btn-outline-primary" title="Voir détails">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{/dossier/{id}/qr(id=${dossier.id})}" class="btn btn-outline-info" title="QR Code" target="_blank">
+                                                    <i class="fas fa-qrcode"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Navigation des pages" class="mt-4" th:if="${pageResult != null and pageResult.totalPages > 1}">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:class="${pageResult.first} ? 'page-item disabled' : 'page-item'">
+                            <a class="page-link" th:href="@{/dossier/liste(page=0, size=${pageResult.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search}, statut=${statut})}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item" th:class="${pageResult.hasPrevious} ? 'page-item' : 'page-item disabled'">
+                            <a class="page-link" th:href="@{/dossier/liste(page=${pageResult.previousPage}, size=${pageResult.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search}, statut=${statut})}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                        
+                        <!-- Pages numérotées -->
+                        <li class="page-item" th:each="pageNum : ${#numbers.sequence(T(java.lang.Math).max(0, pageResult.page - 2), T(java.lang.Math).min(pageResult.totalPages - 1, pageResult.page + 2))}"
+                            th:class="${pageNum == pageResult.page} ? 'page-item active' : 'page-item'">
+                            <a class="page-link" th:href="@{/dossier/liste(page=${pageNum}, size=${pageResult.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search}, statut=${statut})}" 
+                               th:text="${pageNum + 1}">1</a>
+                        </li>
+                        
+                        <li class="page-item" th:class="${pageResult.hasNext} ? 'page-item' : 'page-item disabled'">
+                            <a class="page-link" th:href="@{/dossier/liste(page=${pageResult.nextPage}, size=${pageResult.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search}, statut=${statut})}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item" th:class="${pageResult.last} ? 'page-item disabled' : 'page-item'">
+                            <a class="page-link" th:href="@{/dossier/liste(page=${pageResult.totalPages - 1}, size=${pageResult.size}, sortBy=${sortBy}, sortDir=${sortDir}, search=${search}, statut=${statut})}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            Page <span th:text="${pageResult.page + 1}">1</span> sur <span th:text="${pageResult.totalPages}">10</span>
+                        </small>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/app-dossier-liste.js}"></script>
+</body>
+</html>

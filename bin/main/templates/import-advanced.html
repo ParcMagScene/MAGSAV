@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📂 Import CSV Avancé - MAGSAV</title>
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/import-advanced.css}" rel="stylesheet">
+    
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">🔧 MAGSAV 1.1</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Accueil</a>
+                <a class="nav-link" href="/dossier/liste">Dossiers</a>
+                <a class="nav-link" href="/clients">Clients</a>
+                <a class="nav-link" href="/fournisseurs">Fournisseurs</a>
+                <form class="d-inline" th:action="@{/logout}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-outline-light btn-sm">Déconnexion</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">📂 Import CSV Avancé</h1>
+                
+                <!-- Messages flash -->
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>❌ Erreur :</strong> <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>✅ Succès :</strong> <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Sélection du type de données -->
+                <div class="file-type-selector">
+                    <h4 class="mb-3">📋 Type de données à importer</h4>
+                    <div class="row g-3" id="typeSelector">
+                        <div class="col-md-3">
+                            <div class="type-option" data-type="clients">
+                                <div class="type-icon">👤</div>
+                                <strong>Clients</strong>
+                                <small class="d-block text-muted">Base client</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="type-option" data-type="fournisseurs">
+                                <div class="type-icon">🏢</div>
+                                <strong>Fournisseurs</strong>
+                                <small class="d-block text-muted">Partenaires</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="type-option" data-type="dossiers_sav">
+                                <div class="type-icon">📋</div>
+                                <strong>Dossiers SAV</strong>
+                                <small class="d-block text-muted">Interventions</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="type-option" data-type="produits">
+                                <div class="type-icon">📦</div>
+                                <strong>Produits</strong>
+                                <small class="d-block text-muted">Catalogue</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Zone de drag & drop -->
+                <div class="drop-zone" id="dropZone">
+                    <div class="upload-icon">📁</div>
+                    <h4>Glissez-déposez votre fichier CSV ici</h4>
+                    <p class="text-muted mb-3">ou cliquez pour sélectionner un fichier</p>
+                    <button type="button" class="btn btn-primary js-browse">
+                        🔍 Parcourir les fichiers
+                    </button>
+                </div>
+
+                <!-- Input file caché -->
+                <input type="file" id="fileInput" accept=".csv,.txt" class="d-none">
+
+                <!-- Informations du fichier -->
+                <div class="file-info" id="fileInfo">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">📄 <span id="fileName"></span></h5>
+                            <small class="text-muted">
+                                <span id="fileSize"></span> • 
+                                <span id="fileRows"></span> lignes détectées
+                            </small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger js-clear-file">
+                            ❌ Supprimer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Prévisualisation -->
+                <div class="preview-container" id="previewContainer">
+                    <div class="preview-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">👀 Prévisualisation des données</h5>
+                        <small class="text-muted">Aperçu des 10 premières lignes</small>
+                    </div>
+                    <div class="preview-table">
+                        <table class="table table-striped table-hover mb-0" id="previewTable">
+                            <!-- Contenu généré dynamiquement -->
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Barre de progression -->
+                <div class="import-progress" id="importProgress">
+                    <h5>⏳ Import en cours...</h5>
+                    <div class="progress mb-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                        role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    <p class="text-center text-muted">Traitement des données, veuillez patienter...</p>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="action-buttons text-center">
+                    <form th:action="@{/import}" method="post" enctype="multipart/form-data" id="importForm" class="d-none">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <input type="hidden" name="type" id="selectedType">
+                        <input type="file" name="file" id="hiddenFileInput" class="d-none">
+                    </form>
+                    
+                    <button type="button" class="btn btn-success btn-lg me-3" id="importBtn" disabled>
+                        ⬆️ Lancer l'import
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-lg" id="resetBtn">
+                        🔄 Réinitialiser
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panneau latéral avec statistiques et aide -->
+            <div class="col-lg-4">
+                <!-- Statistiques -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">📊 Statistiques du fichier</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3" id="statsContainer">
+                            <div class="col-6">
+                                <div class="stats-card">
+                                    <div class="stats-value" id="totalRows">0</div>
+                                    <small>Lignes totales</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stats-card bg-success">
+                                    <div class="stats-value" id="totalColumns">0</div>
+                                    <small>Colonnes</small>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="alert alert-info" id="validationResult">
+                                    <small>⏳ Sélectionnez un fichier pour voir les statistiques</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Format attendu -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">📖 Format attendu</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="formatInfo">
+                            <p class="text-muted">Sélectionnez un type de données pour voir le format attendu.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates pour les formats -->
+    <template id="clientsFormatTemplate">
+        <h6>👤 Format Clients</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr class="table-light">
+                        <th>nom</th>
+                        <th>prenom</th>
+                        <th>telephone</th>
+                        <th>email</th>
+                        <th>adresse</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Dupont</td>
+                        <td>Jean</td>
+                        <td>0123456789</td>
+                        <td>jean.dupont@email.com</td>
+                        <td>123 rue de la Paix</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <template id="fournisseursFormatTemplate">
+        <h6>🏢 Format Fournisseurs</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr class="table-light">
+                        <th>nom</th>
+                        <th>contact</th>
+                        <th>telephone</th>
+                        <th>email</th>
+                        <th>adresse</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>TechCorp</td>
+                        <td>Marie Martin</td>
+                        <td>0987654321</td>
+                        <td>contact@techcorp.fr</td>
+                        <td>456 avenue de la Tech</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <template id="dossiersFormatTemplate">
+        <h6>📋 Format Dossiers SAV</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr class="table-light">
+                        <th>client_nom</th>
+                        <th>appareil_marque</th>
+                        <th>appareil_modele</th>
+                        <th>symptome</th>
+                        <th>statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Dupont</td>
+                        <td>Samsung</td>
+                        <td>Galaxy S21</td>
+                        <td>Écran fissuré</td>
+                        <td>recu</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <template id="produitsFormatTemplate">
+        <h6>📦 Format Produits</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr class="table-light">
+                        <th>nom</th>
+                        <th>marque</th>
+                        <th>modele</th>
+                        <th>prix</th>
+                        <th>stock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Smartphone</td>
+                        <td>Apple</td>
+                        <td>iPhone 13</td>
+                        <td>699.99</td>
+                        <td>50</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/app-import-advanced.js}"></script>
+</body>
+</html>

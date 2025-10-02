@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.ProductHistoryController" spacing="6.0">
+    <padding><Insets top="6" right="6" bottom="6" left="6"/></padding>
+    <children>
+        <HBox spacing="8.0" alignment="CENTER_LEFT">
+            <children>
+                <Label text="Historique des interventions" style="-fx-font-weight: bold;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <TextField fx:id="searchField" promptText="Filtrer (code, propriétaire, statut)" />
+                <Button text="Filtrer" onAction="#handleFilter" />
+            </children>
+        </HBox>
+        <TableView fx:id="table">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="70" />
+                <TableColumn fx:id="colCode" text="Code" prefWidth="90" />
+                <TableColumn fx:id="colOwner" text="Propriétaire" prefWidth="160" />
+                <TableColumn fx:id="colStatus" text="Statut" prefWidth="120" />
+                <TableColumn fx:id="colEntree" text="Entrée" prefWidth="120" />
+                <TableColumn fx:id="colSortie" text="Sortie" prefWidth="120" />
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+        </TableView>
+        <HBox fx:id="emptyBox" spacing="8.0" alignment="CENTER_LEFT" visible="false" managed="false">
+            <children>
+                <Label text="Aucune intervention liée" style="-fx-background-color: #eee; -fx-padding: 3 8; -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: #ccc;" />
+                <Button fx:id="btnCreateIntervention" text="Créer une intervention" onAction="#handleCreateIntervention" />
+            </children>
+        </HBox>
+        <HBox spacing="8.0" alignment="CENTER_RIGHT">
+            <children>
+                <Button fx:id="openButton" text="📄 Ouvrir fiche intervention" onAction="#handleOpen" />
+            </children>
+        </HBox>
+    </children>
+</VBox>

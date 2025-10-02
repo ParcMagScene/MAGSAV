@@ -1,0 +1,42 @@
+/* Styles spécifiques à la page nouveau-dossier.html */
+
+.card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.form-section {
+  border-left: 4px solid #667eea;
+  background: #f8f9fa;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 5px;
+}
+
+.form-section h4 {
+  color: #667eea;
+  margin-bottom: 15px;
+}
+
+.required { color: #dc3545; }
+
+.btn-create {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 12px 30px;
+  font-size: 16px;
+  border-radius: 5px;
+  transition: all 0.3s;
+}
+
+.btn-create:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  color: white;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" spacing="8.0" fx:controller="com.magsav.gui.ops.PurchasesController">
+  <children>
+    <HBox spacing="8.0">
+      <Label text="Demandes de devis (Achats)" style="-fx-font-size:16px;-fx-font-weight:bold;" />
+      <Region HBox.hgrow="ALWAYS" />
+      <Button fx:id="btnRespond" text="Réponse reçue" />
+      <Button fx:id="btnNew" text="Nouvelle demande" />
+    </HBox>
+    <HBox spacing="6.0">
+      <TextField fx:id="searchField" promptText="Rechercher produit / PN / fournisseur" />
+      <Button fx:id="btnSearch" text="Filtrer" />
+      <Button fx:id="btnClear" text="Réinitialiser" />
+    </HBox>
+    <TableView fx:id="table">
+      <columns>
+        <TableColumn fx:id="colId" text="ID" prefWidth="60" />
+        <TableColumn fx:id="colService" text="Service" prefWidth="160" />
+        <TableColumn fx:id="colProduit" text="Produit" prefWidth="200" />
+        <TableColumn fx:id="colPN" text="Part Number" prefWidth="160" />
+        <TableColumn fx:id="colQty" text="Qté" prefWidth="60" />
+        <TableColumn fx:id="colStatus" text="Statut" prefWidth="100" />
+        <TableColumn fx:id="colRequested" text="Demandé le" prefWidth="120" />
+        <TableColumn fx:id="colResponded" text="Réponse le" prefWidth="120" />
+        <TableColumn fx:id="colPrice" text="Prix" prefWidth="100" />
+      </columns>
+    </TableView>
+  </children>
+</VBox>

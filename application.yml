@@ -1,0 +1,20 @@
+ui:
+  window.main.h: 832.0
+  window.productDetail.maximized: false
+  window.interventionDetail.maximized: false
+  window.productDetail.h: 1141.0
+  window.interventionDetail.x: 643.0
+  window.interventionDetail.y: 243.0
+  window.interventionDetail.w: 747.0
+  window.main.maximized: false
+  openInterventionOnDoubleClick: true
+  window.main.w: 1200.0
+  window.main.x: 546.0
+  theme: light
+  window.main.y: 231.0
+  window.productDetail.w: 714.0
+  window.productDetail.x: 1023.0
+  window.interventionDetail.h: 577.0
+  window.productDetail.y: 148.0
+company:
+  logo.path: /Users/reunion/MAGSAV-1.1/photos/company-logo.svg

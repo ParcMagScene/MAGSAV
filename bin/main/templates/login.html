@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - MAGSAV</title>
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/login.css}" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>MAGSAV</h1>
+            <p>Connexion requise</p>
+        </div>
+        
+        <div th:if="${errorMessage}" class="error-message" th:text="${errorMessage}"></div>
+        
+        <form th:action="@{/login}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <div class="form-group">
+                <label for="username">Nom d'utilisateur</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-login">Se connecter</button>
+        </form>
+        
+        <div class="help-text">
+            <h4>Comptes de démonstration :</h4>
+            <ul>
+                <li><strong>admin/admin</strong> - Accès complet</li>
+                <li><strong>user/password</strong> - Utilisateur standard</li>
+                <li><strong>viewer/viewer</strong> - Lecture seule</li>
+            </ul>
+        </div>
+        
+        <div class="back-link text-center mt-3">
+            <a th:href="@{/}" class="link-primary text-decoration-none">← Retour à l'accueil</a>
+        </div>
+    </div>
+</body>
+</html>

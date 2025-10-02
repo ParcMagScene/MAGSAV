@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Recherche Avancée - MAGSAV</title>
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/search-advanced.css}" rel="stylesheet">
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">🔧 MAGSAV 1.1</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/dossier/nouveau" sec:authorize="hasRole('ADMIN')">Nouveau</a>
+                <div class="nav-item dropdown" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        Import CSV
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/import/advanced">Interface avancée</a></li>
+                        <li><a class="dropdown-item" href="/import">Interface classique</a></li>
+                    </ul>
+                </div>
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown">
+                        Recherche
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item active" href="/search/advanced">Recherche avancée</a></li>
+                        <li><a class="dropdown-item" href="/dossier/liste">Liste simple</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="navbar-nav ms-auto">
+                <form class="d-inline" th:action="@{/logout}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-outline-light btn-sm">Déconnexion</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Panel de recherche -->
+                <div class="search-panel">
+                    <div class="search-header">
+                        <div>
+                            <h2 class="mb-1">🔍 Recherche Avancée</h2>
+                            <p class="text-muted mb-0">Trouvez rapidement vos dossiers SAV</p>
+                        </div>
+                        <div class="search-mode-toggle">
+                            <button class="search-mode-btn active" id="simpleMode">Simple</button>
+                            <button class="search-mode-btn" id="advancedMode">Avancé</button>
+                        </div>
+                    </div>
+
+                    <!-- Filtres rapides -->
+                    <div class="quick-filters" id="quickFilters">
+                        <div class="filter-chip active" data-filter="all">
+                            <span>📋 Tous</span>
+                            <span class="count" id="countAll">0</span>
+                        </div>
+                        <div class="filter-chip" data-filter="recu">
+                            <span>📥 Reçus</span>
+                            <span class="count" id="countRecu">0</span>
+                        </div>
+                        <div class="filter-chip" data-filter="en_cours">
+                            <span>⚠️ En cours</span>
+                            <span class="count" id="countEnCours">0</span>
+                        </div>
+                        <div class="filter-chip" data-filter="reparation">
+                            <span>🔧 Réparation</span>
+                            <span class="count" id="countReparation">0</span>
+                        </div>
+                        <div class="filter-chip" data-filter="termine">
+                            <span>✨ Terminés</span>
+                            <span class="count" id="countTermine">0</span>
+                        </div>
+                        <div class="filter-chip" data-filter="urgent">
+                            <span>🚨 Urgents</span>
+                            <span class="count" id="countUrgent">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Barre de recherche principale -->
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchInput" 
+                               placeholder="Rechercher par client, numéro de série, marque, modèle...">
+                        <button class="search-btn" id="searchBtn">
+                            🔍
+                        </button>
+                    </div>
+
+                    <!-- Filtres avancés -->
+                    <div class="advanced-filters" id="advancedFilters">
+                        <form id="advancedSearchForm">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="filter-section">
+                                        <h5 class="filter-title">
+                                            👤 Informations Client
+                                        </h5>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Nom client</label>
+                                                <input type="text" class="form-control" name="clientNom" 
+                                                       placeholder="Nom du client">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" class="form-control" name="clientEmail" 
+                                                       placeholder="Email du client">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Téléphone</label>
+                                                <input type="tel" class="form-control" name="clientTelephone" 
+                                                       placeholder="Téléphone">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Ville</label>
+                                                <input type="text" class="form-control" name="clientVille" 
+                                                       placeholder="Ville du client">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="filter-section">
+                                        <h5 class="filter-title">
+                                            📱 Informations Appareil
+                                        </h5>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Marque</label>
+                                                <select class="form-select" name="appareilMarque">
+                                                    <option value="">Toutes les marques</option>
+                                                    <option value="Apple">Apple</option>
+                                                    <option value="Samsung">Samsung</option>
+                                                    <option value="Huawei">Huawei</option>
+                                                    <option value="Xiaomi">Xiaomi</option>
+                                                    <option value="OnePlus">OnePlus</option>
+                                                    <option value="Google">Google</option>
+                                                    <option value="Sony">Sony</option>
+                                                    <option value="Other">Autre</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Modèle</label>
+                                                <input type="text" class="form-control" name="appareilModele" 
+                                                       placeholder="Modèle de l'appareil">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label">Numéro de série</label>
+                                                <input type="text" class="form-control" name="numeroSerie" 
+                                                       placeholder="Numéro de série">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="filter-section">
+                                        <h5 class="filter-title">
+                                            📅 Dates
+                                        </h5>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Date entrée (de)</label>
+                                                <input type="date" class="form-control" name="dateEntreeDebut">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Date entrée (à)</label>
+                                                <input type="date" class="form-control" name="dateEntreeFin">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Date sortie (de)</label>
+                                                <input type="date" class="form-control" name="dateSortieDebut">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Date sortie (à)</label>
+                                                <input type="date" class="form-control" name="dateSortieFin">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="filter-section">
+                                        <h5 class="filter-title">
+                                            🔧 Détails SAV
+                                        </h5>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Statut</label>
+                                                <select class="form-select" name="statut" multiple>
+                                                    <option value="recu">📥 Reçu</option>
+                                                    <option value="diagnostic">🔍 Diagnostic</option>
+                                                    <option value="en_cours">⚠️ En cours</option>
+                                                    <option value="attente_pieces">⏱️ Attente pièces</option>
+                                                    <option value="reparation">🔧 Réparation</option>
+                                                    <option value="teste">✅ Testé</option>
+                                                    <option value="pret">📦 Prêt</option>
+                                                    <option value="termine">✨ Terminé</option>
+                                                    <option value="annule">❌ Annulé</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Symptôme</label>
+                                                <input type="text" class="form-control" name="symptome" 
+                                                       placeholder="Symptôme ou problème">
+                                            </div>
+                                            <div class="col-md-12">
+                                                <label class="form-label">Commentaire</label>
+                                                <input type="text" class="form-control" name="commentaire" 
+                                                       placeholder="Commentaire du dossier">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <button type="button" class="btn btn-outline-secondary me-2" id="clearFilters">
+                                    🗑️ Effacer les filtres
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    🔍 Rechercher
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Résultats -->
+                <div class="results-header d-none" id="resultsHeader">
+                    <div class="results-count">
+                        <strong id="resultsCount">0</strong> dossier(s) trouvé(s)
+                    </div>
+                    <div class="results-actions">
+                        <select class="form-select sort-dropdown" id="sortSelect">
+                            <option value="id_desc">Plus récents d'abord</option>
+                            <option value="id_asc">Plus anciens d'abord</option>
+                            <option value="client_asc">Client A-Z</option>
+                            <option value="client_desc">Client Z-A</option>
+                            <option value="statut_asc">Statut A-Z</option>
+                            <option value="date_entree_desc">Entrée récente</option>
+                        </select>
+                        <div class="view-toggle">
+                            <button class="view-btn active" id="cardView">📋</button>
+                            <button class="view-btn" id="tableView">📊</button>
+                        </div>
+                        <button class="btn btn-outline-primary" id="exportBtn">
+                            📤 Exporter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Spinner de chargement -->
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner"></div>
+                    <p>Recherche en cours...</p>
+                </div>
+
+                <!-- Résultats en cartes -->
+                <div id="cardResults" class="card-results">
+                    <!-- Résultats générés dynamiquement -->
+                </div>
+
+                <!-- Résultats en tableau -->
+                <div id="tableResults" class="table-view d-none">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Client</th>
+                                <th>Appareil</th>
+                                <th>Problème</th>
+                                <th>Statut</th>
+                                <th>Date entrée</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Résultats générés dynamiquement -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- État vide -->
+                <div class="empty-state d-none" id="emptyState">
+                    <div class="icon">🔍</div>
+                    <h4>Aucun résultat trouvé</h4>
+                    <p>Essayez de modifier vos critères de recherche</p>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-advanced d-none" id="pagination">
+                    <div class="pagination-info" id="paginationInfo"></div>
+                    <nav>
+                        <ul class="pagination" id="paginationNav">
+                            <!-- Pagination générée dynamiquement -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/app-search-advanced.js}"></script>
+</body>
+</html>

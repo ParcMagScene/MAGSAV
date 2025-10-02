@@ -9,9 +9,8 @@ public record Appareil(
     String modele,
     String sn,
     String accessoires,
-    LocalDateTime createdAt
-) {
-    public Appareil withId(Long id) {
-        return new Appareil(id, clientId, marque, modele, sn, accessoires, createdAt);
-    }
+    LocalDateTime createdAt) {
+  public Appareil withId(Long id) {
+    return new Appareil(id, clientId, marque, modele, sn, accessoires, createdAt);
+  }
 }

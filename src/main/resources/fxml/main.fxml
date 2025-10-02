@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.MainController">
+  <top>
+    <ToolBar>
+      <Label text="MAGSAV 1.2"/>
+      <Pane HBox.hgrow="ALWAYS"/>
+      <Button text="Actualiser"/>
+    </ToolBar>
+  </top>
+  <center>
+    <TableView fx:id="table">
+      <columns>
+        <TableColumn fx:id="colId" text="ID" prefWidth="60.0"/>
+        <TableColumn fx:id="colProduit" text="Produit" prefWidth="200.0"/>
+        <TableColumn fx:id="colStatut" text="Statut" prefWidth="120.0"/>
+        <TableColumn fx:id="colPanne" text="Panne" prefWidth="200.0"/>
+        <TableColumn fx:id="colEntree" text="Entrée" prefWidth="120.0"/>
+        <TableColumn fx:id="colSortie" text="Sortie" prefWidth="120.0"/>
+      </columns>
+      <columnResizePolicy>
+        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+      </columnResizePolicy>
+      <placeholder><Label text="Aucun contenu"/></placeholder>
+    </TableView>
+  </center>
+  <bottom>
+    <HBox spacing="8" style="-fx-padding: 8;">
+      <Label text="Prêt"/>
+    </HBox>
+  </bottom>
+</BorderPane>

@@ -1,0 +1,11 @@
+<ToolBar>
+  <!-- ...existing buttons... -->
+</ToolBar>
+<TableView fx:id="table" /* ... */>
+  <contextMenu>
+    <ContextMenu>
+      <MenuItem text="Ajouter une sous-catégorie…" onAction="#onAddSubcategoryForSelected"/>
+    </ContextMenu>
+  </contextMenu>
+  <!-- ...existing columns... -->
+</TableView>

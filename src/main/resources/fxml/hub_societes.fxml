@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.hub.SocietesHubController" prefWidth="520" prefHeight="300">
+  <top><Label text="Gestion des sociétés" style="-fx-padding: 8; -fx-font-size: 16; -fx-font-weight: bold;"/></top>
+  <center>
+    <VBox spacing="8" style="-fx-padding: 12;">
+      <Button text="Fabricants" onAction="#onManufacturers"/>
+      <Button text="Fournisseurs" onAction="#onSuppliers"/>
+      <Button text="SAV/RMA externes" onAction="#onExternalSav"/>
+    </VBox>
+  </center>
+</BorderPane>

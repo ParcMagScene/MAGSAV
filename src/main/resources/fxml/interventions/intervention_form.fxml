@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.magsav.gui.interventions.InterventionFormController"
+      spacing="10" style="-fx-padding: 12;">
+  <children>
+    <GridPane hgap="8" vgap="8">
+      <columnConstraints>
+        <ColumnConstraints minWidth="140"/>
+        <ColumnConstraints hgrow="ALWAYS" minWidth="260"/>
+      </columnConstraints>
+      <children>
+        <Label text="Catégorie:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="cbCategory" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Sous-catégorie:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="cbSubcategory" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Produit:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="cbProduct" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="N° série / UID:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="cbSerial" GridPane.rowIndex="3" GridPane.columnIndex="1" editable="false"/>
+
+        <Label text="Détecteur:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="cbDetector" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <Label text="Description panne:" GridPane.rowIndex="5" GridPane.columnIndex="0" />
+        <TextArea fx:id="taDesc" GridPane.rowIndex="5" GridPane.columnIndex="1" prefRowCount="3"/>
+      </children>
+    </GridPane>
+  </children>
+</VBox>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.hub.DemandesHubController" prefWidth="520" prefHeight="260">
+  <top><Label text="Demandes" style="-fx-padding: 8; -fx-font-size: 16; -fx-font-weight: bold;"/></top>
+  <center>
+    <VBox spacing="8" style="-fx-padding: 12;">
+      <Button text="Demandes de pièces" onAction="#onPartRequests"/>
+      <Button text="Demandes de matériel" onAction="#onEquipmentRequests"/>
+    </VBox>
+  </center>
+</BorderPane>

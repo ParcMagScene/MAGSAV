@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<DialogPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.NewInterventionController"
+            headerText="Nouvelle intervention">
+  <content>
+    <GridPane hgap="8" vgap="8" prefWidth="520">
+      <columnConstraints>
+        <ColumnConstraints minWidth="120.0"/>
+        <ColumnConstraints hgrow="ALWAYS" minWidth="300.0"/>
+      </columnConstraints>
+      <children>
+        <Label text="Produit"/><TextField fx:id="tfProduit" promptText="Nom produit"/>
+        <Label text="SN"/><TextField fx:id="tfSN" promptText="Numéro de série (optionnel)"/>
+        <Label text="Code"/><TextField fx:id="tfCode" promptText="Code (optionnel)"/>
+        <Label text="Fabricant"/><TextField fx:id="tfFabricant" promptText="Fabricant (optionnel)"/>
+        <Label text="Statut"/><TextField fx:id="tfStatut" promptText="Nouveau"/>
+        <Label text="Panne"/><TextArea fx:id="taPanne" prefRowCount="3" promptText="Description panne"/>
+      </children>
+    </GridPane>
+  </content>
+  <buttonTypes>
+    <ButtonType text="Valider" buttonData="OK_DONE"/>
+    <ButtonType text="Annuler" buttonData="CANCEL_CLOSE"/>
+  </buttonTypes>
+</DialogPane>

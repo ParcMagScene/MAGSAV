@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<DialogPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.products.CategoryFormController" headerText="Catégorie">
+  <content>
+    <GridPane hgap="8" vgap="8" prefWidth="420">
+      <columnConstraints>
+        <ColumnConstraints minWidth="120"/>
+        <ColumnConstraints hgrow="ALWAYS" minWidth="260"/>
+      </columnConstraints>
+      <children>
+        <Label text="Nom"/><TextField fx:id="tfNom" promptText="Nom de la catégorie"/>
+        <Label text="Parent"/><ComboBox fx:id="cbParent" promptText="(aucun)"/>
+      </children>
+    </GridPane>
+  </content>
+  <buttonTypes>
+    <ButtonType text="Enregistrer" buttonData="OK_DONE"/>
+    <ButtonType text="Annuler" buttonData="CANCEL_CLOSE"/>
+  </buttonTypes>
+</DialogPane>

@@ -1,31 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.magsav.gui.MainController">
   <top>
     <ToolBar>
+      <MenuButton text="☰ Menus">
+        <items>
+          <MenuItem text="Catégories" onAction="#onOpenCategories"/>
+          <MenuItem text="Fabricants" onAction="#onOpenManufacturers"/>
+          <MenuItem text="Fournisseurs" onAction="#onOpenSuppliers"/>
+          <MenuItem text="SAV externes" onAction="#onOpenExternalSav"/>
+          <MenuItem text="Clients" onAction="#onOpenClients"/>
+          <SeparatorMenuItem/>
+          <MenuItem text="Demandes de pièces" onAction="#onOpenPartRequests"/>
+          <MenuItem text="Demandes de matériel" onAction="#onOpenEquipmentRequests"/>
+          <SeparatorMenuItem/>
+          <MenuItem text="Importer CSV…" onAction="#onImportCsv"/>
+          <MenuItem text="Importer médias…" onAction="#onImportMedia"/>
+        </items>
+      </MenuButton>
+      <Separator/>
       <Label text="MAGSAV 1.2"/>
       <Pane HBox.hgrow="ALWAYS"/>
-      <Button text="Actualiser"/>
+      <Button text="+ Intervention" onAction="#onNewIntervention"/>
+      <Button text="Actualiser" onAction="#onRefresh"/>
     </ToolBar>
   </top>
+
   <center>
-    <TableView fx:id="table">
-      <columns>
-        <TableColumn fx:id="colId" text="ID" prefWidth="60.0"/>
-        <TableColumn fx:id="colProduit" text="Produit" prefWidth="200.0"/>
-        <TableColumn fx:id="colStatut" text="Statut" prefWidth="120.0"/>
-        <TableColumn fx:id="colPanne" text="Panne" prefWidth="200.0"/>
-        <TableColumn fx:id="colEntree" text="Entrée" prefWidth="120.0"/>
-        <TableColumn fx:id="colSortie" text="Sortie" prefWidth="120.0"/>
-      </columns>
-      <columnResizePolicy>
-        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-      </columnResizePolicy>
-      <placeholder><Label text="Aucun contenu"/></placeholder>
-    </TableView>
+    <VBox spacing="4" style="-fx-padding: 8;">
+      <Label text="Liste des produits" style="-fx-font-weight: bold; -fx-font-size: 13;"/>
+      <HBox spacing="8">
+        <TextField fx:id="productSearchField" promptText="Rechercher un produit..." HBox.hgrow="ALWAYS"/>
+        <Button text="×" onAction="#onClearProductSearch">
+          <tooltip><Tooltip text="Effacer la recherche"/></tooltip>
+        </Button>
+      </HBox>
+      <TableView fx:id="productTable" VBox.vgrow="ALWAYS">
+        <columns>
+          <TableColumn fx:id="colProdNom" text="Produit" prefWidth="200.0"/>
+          <TableColumn fx:id="colProdSN" text="N° de série" prefWidth="120.0"/>
+          <TableColumn fx:id="colProdUID" text="UID" prefWidth="80.0"/>
+          <TableColumn fx:id="colProdFabricant" text="Fabricant" prefWidth="150.0"/>
+          <TableColumn fx:id="colProdSituation" text="Situation" prefWidth="120.0"/>
+        </columns>
+        <columnResizePolicy>
+          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+        <placeholder><Label text="Aucun produit"/></placeholder>
+      </TableView>
+    </VBox>
   </center>
+
+  <right>
+    <VBox spacing="8" style="-fx-padding: 8; -fx-background-color: -fx-base;" prefWidth="360">
+      <Label text="Détails du produit" style="-fx-font-weight: bold; -fx-font-size: 13;"/>
+      <GridPane hgap="8" vgap="6">
+        <columnConstraints>
+          <ColumnConstraints minWidth="100"/>
+          <ColumnConstraints hgrow="ALWAYS" minWidth="220"/>
+        </columnConstraints>
+        <children>
+          <Label text="Nom:"         GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+          <Label fx:id="lblProdName" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+          <Label text="Code:"        GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+          <Label fx:id="lblProdCode" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+          <Label text="SN:"          GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+          <Label fx:id="lblProdSN"   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+          <Label text="UID:"         GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+          <Label fx:id="lblProdUID"  GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+          <Label text="Fabricant:"              GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+          <Label fx:id="lblProdManufacturer"    GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+          <Label text="Situation:"              GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+          <Label fx:id="lblProdSituation"       GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+        </children>
+      </GridPane>
+
+      <Button fx:id="btnEditProduct" text="Éditer ce produit" onAction="#onEditProduct" 
+              style="-fx-background-color: #4CAF50; -fx-text-fill: white;" disable="true"/>
+
+      <HBox spacing="8">
+        <VBox spacing="4">
+          <Label text="Photo produit"/>
+          <ImageView fx:id="imgProductPhoto" fitWidth="160" fitHeight="120" preserveRatio="true" smooth="true"/>
+        </VBox>
+        <VBox spacing="4">
+          <Label text="Logo fabricant"/>
+          <ImageView fx:id="imgManufacturerLogo" fitWidth="120" fitHeight="80" preserveRatio="true" smooth="true"/>
+        </VBox>
+      </HBox>
+
+      <VBox spacing="4">
+        <Label text="QRCode produit"/>
+        <ImageView fx:id="imgQr" fitWidth="180" fitHeight="180" preserveRatio="true" smooth="true"/>
+      </VBox>
+
+      <Label text="Historique" style="-fx-font-weight: bold;"/>
+      <TableView fx:id="historyTable" prefHeight="220">
+        <columns>
+          <TableColumn fx:id="hColId" text="#" prefWidth="60"/>
+          <TableColumn fx:id="hColStatut" text="Statut" prefWidth="110"/>
+          <TableColumn fx:id="hColPanne" text="Panne" prefWidth="180"/>
+          <TableColumn fx:id="hColEntree" text="Entrée" prefWidth="100"/>
+          <TableColumn fx:id="hColSortie" text="Sortie" prefWidth="100"/>
+        </columns>
+        <columnResizePolicy>
+          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+      </TableView>
+    </VBox>
+  </right>
+
   <bottom>
     <HBox spacing="8" style="-fx-padding: 8;">
       <Label text="Prêt"/>

@@ -1,66 +1,70 @@
 package com.magsav.db;
 
+import java.io.IOException;
 import java.nio.file.*;
 import java.sql.*;
 
 public final class DB {
-  private static Path dbPath() {
-    return Paths.get(System.getProperty("user.home"), "MAGSAV", "MAGSAV.db");
-  }
+  private static String URL;
 
-  private static String dbUrl() {
-    String override = System.getProperty("magsav.db.url");
-    if (override != null && !override.isBlank()) return override;
-    return "jdbc:sqlite:" + dbPath();
-  }
+  static { try { Class.forName("org.sqlite.JDBC"); } catch (Throwable ignore) {} }
 
-  public static void init() {
-    try {
-      Path dir = dbPath().getParent();
-      if (dir != null) Files.createDirectories(dir);
-      try (Connection c = getConnection(); Statement st = c.createStatement()) {
-        st.execute("PRAGMA foreign_keys = ON");
-        st.execute("""
-          CREATE TABLE IF NOT EXISTS categories(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nom TEXT NOT NULL,
-            parent_id INTEGER REFERENCES categories(id) ON DELETE SET NULL
-          );
-        """);
-        st.execute("""
-          CREATE TABLE IF NOT EXISTS produits(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            code TEXT,
-            nom TEXT NOT NULL,
-            sn TEXT,
-            fabricant TEXT,
-            categorie_id INTEGER REFERENCES categories(id),
-            sous_categorie_id INTEGER REFERENCES categories(id),
-            created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%S','now'))
-          );
-        """);
-        st.execute("""
-          CREATE TABLE IF NOT EXISTS interventions(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            produit_id INTEGER NOT NULL REFERENCES produits(id) ON DELETE CASCADE,
-            statut TEXT,
-            panne TEXT,
-            date_entree TEXT,
-            date_sortie TEXT
-          );
-        """);
-        // Index
-        st.execute("CREATE INDEX IF NOT EXISTS idx_produits_nom ON produits(nom)");
-        st.execute("CREATE INDEX IF NOT EXISTS idx_produits_sn ON produits(sn)");
-        st.execute("CREATE INDEX IF NOT EXISTS idx_interventions_produit_id ON interventions(produit_id)");
-      }
-    } catch (Exception e) {
-      throw new RuntimeException("Init DB failed", e);
-    }
+  public static synchronized void init() {
+    if (URL != null) return;
+    Path db = Paths.get(System.getProperty("user.home"), "MAGSAV", "MAGSAV.db");
+    try { Files.createDirectories(db.getParent()); } catch (Exception ignore) {}
+    URL = "jdbc:sqlite:" + db.toAbsolutePath();
+    ensureSchema();
   }
 
   public static Connection getConnection() throws SQLException {
-    return DriverManager.getConnection(dbUrl());
+    if (URL == null) init();
+    return DriverManager.getConnection(URL);
+  }
+
+  public static Path dataDir() {
+    Path p = Paths.get(System.getProperty("user.home"), "MAGSAV", "medias");
+    try {
+      Files.createDirectories(p);
+    } catch (IOException e) {
+      throw new RuntimeException("Impossible de créer le dossier de données", e);
+    }
+    return p;
+  }
+
+  private static void ensureSchema() {
+    try (Connection c = getConnection(); Statement st = c.createStatement()) {
+      st.execute("""
+        CREATE TABLE IF NOT EXISTS produits(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          code TEXT, nom TEXT, sn TEXT,
+          fabricant TEXT, fabricant_id INTEGER,
+          uid TEXT, situation TEXT,
+          photo TEXT, category TEXT, subcategory TEXT
+        )
+      """);
+      st.execute("""
+        CREATE TABLE IF NOT EXISTS societes(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          type TEXT, nom TEXT,
+          email TEXT, phone TEXT,
+          adresse TEXT, notes TEXT,
+          created_at TEXT DEFAULT (datetime('now'))
+        )
+      """);
+      st.execute("""
+        CREATE TABLE IF NOT EXISTS interventions(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          product_id INTEGER,
+          statut TEXT, panne TEXT,
+          serial TEXT,
+          detector_societe_id INTEGER,
+          date_entree TEXT, date_sortie TEXT,
+          owner_type TEXT, owner_societe_id INTEGER
+        )
+      """);
+      st.execute("CREATE INDEX IF NOT EXISTS idx_prod_nom ON produits(UPPER(nom))");
+    } catch (SQLException e) { throw new RuntimeException("DB ensureSchema failed", e); }
   }
 
   private DB() {}

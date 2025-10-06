@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.magsav.gui.products.CategoryFormController"
+      spacing="10" style="-fx-padding: 12;">
+  <children>
+    <HBox spacing="8">
+      <Label text="Type:"/>
+      <RadioButton fx:id="rbCategory" text="Catégorie" selected="true"/>
+      <RadioButton fx:id="rbSubcategory" text="Sous-catégorie"/>
+    </HBox>
+    <GridPane hgap="8" vgap="8">
+      <columnConstraints>
+        <ColumnConstraints minWidth="120"/>
+        <ColumnConstraints hgrow="ALWAYS" minWidth="260"/>
+      </columnConstraints>
+      <children>
+        <Label text="Nom:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="tfName" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label fx:id="lbParent" text="Catégorie parente:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="cbParent" GridPane.rowIndex="1" GridPane.columnIndex="1" promptText="Choisir une catégorie"/>
+      </children>
+    </GridPane>
+  </children>
+</VBox>

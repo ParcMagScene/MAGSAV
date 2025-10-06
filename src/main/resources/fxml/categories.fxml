@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.categories.CategoriesController" prefWidth="720" prefHeight="420">
+  <top>
+    <ToolBar>
+      <Label text="Catégories" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+      <Pane HBox.hgrow="ALWAYS"/>
+      <TextField fx:id="tfSearch" promptText="Rechercher..." prefWidth="240"/>
+      <Button text="Actualiser" onAction="#onRefresh"/>
+      <Button text="+ Ajouter" onAction="#onAdd"/>
+      <Button text="Modifier" onAction="#onEdit"/>
+      <Button text="Supprimer" onAction="#onDelete"/>
+    </ToolBar>
+  </top>
+  <center>
+    <TableView fx:id="table">
+      <columns>
+        <TableColumn fx:id="colId" text="ID" prefWidth="80"/>
+        <TableColumn fx:id="colNom" text="Nom" prefWidth="280"/>
+        <TableColumn fx:id="colParent" text="Parent" prefWidth="280"/>
+      </columns>
+      <columnResizePolicy>
+        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+      </columnResizePolicy>
+      <placeholder><Label text="Aucune catégorie"/></placeholder>
+    </TableView>
+  </center>
+</BorderPane>

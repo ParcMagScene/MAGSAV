@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.hub.ConfigHubController" prefWidth="560" prefHeight="300">
+  <top><Label text="Configuration et Préférences" style="-fx-padding: 8; -fx-font-size: 16; -fx-font-weight: bold;"/></top>
+  <center>
+    <VBox spacing="8" style="-fx-padding: 12;">
+      <Button text="Préférences…" onAction="#onPreferences"/>
+      <Button text="Configuration avancée…" onAction="#onAdvancedConfig"/>
+      <Button text="Paramètres base de données…" onAction="#onDbSettings"/>
+    </VBox>
+  </center>
+</BorderPane>

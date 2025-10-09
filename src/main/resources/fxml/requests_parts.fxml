@@ -8,7 +8,7 @@
       <Label text="Demandes de pièces" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
       <Pane HBox.hgrow="ALWAYS"/>
       <TextField fx:id="tfSearch" promptText="Rechercher (statut, fournisseur, commentaire, dates)" prefWidth="320"/>
-      <Button text="Actualiser" onAction="#onRefresh"/>
+
       <Button text="+ Nouvelle" onAction="#onNew"/>
       <Button text="Modifier" onAction="#onEdit"/>
       <Button text="Supprimer" onAction="#onDelete"/>

@@ -4,3 +4,7 @@
 *.iml
 *.log
 .DS_Store
+
+# Base de données locale et données
+/data/
+/medias/

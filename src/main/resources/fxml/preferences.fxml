@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.PreferencesController">
+  <top>
+    <Label text="Préférences de l'Application" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-padding: 15;"/>
+  </top>
+  
+  <center>
+    <TabPane fx:id="preferencesTabPane" tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 10;">
+      
+      <!-- Onglet Configuration Email -->
+      <Tab text="📧 Configuration Email" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="20" style="-fx-padding: 20;">
+            
+            <VBox spacing="10">
+              <Label text="Configuration SMTP" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <Label text="Paramètres pour l'envoi automatique d'emails depuis l'application." 
+                     style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
+              
+              <GridPane hgap="15" vgap="10">
+                <columnConstraints>
+                  <ColumnConstraints minWidth="120"/>
+                  <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                
+                <Label text="Serveur SMTP:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtSmtpServer" promptText="smtp.gmail.com" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                
+                <Label text="Port:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtSmtpPort" promptText="587" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                
+                <Label text="Utilisateur:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtEmailUser" promptText="votre.email@domaine.com" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                
+                <Label text="Mot de passe:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <PasswordField fx:id="txtEmailPassword" promptText="Mot de passe ou token d'application" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                
+                <Label text="Expéditeur:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtSenderName" promptText="MAGSAV - Gestion SAV" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+              </GridPane>
+              
+              <HBox spacing="10">
+                <CheckBox fx:id="chkUseTLS" text="Utiliser TLS/SSL" selected="true"/>
+                <Button fx:id="btnTestEmail" text="🧪 Tester la Configuration" onAction="#onTestEmailConfig"/>
+              </HBox>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+      <!-- Onglet Maintenance Médias -->
+      <Tab text="🧹 Maintenance Médias" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="20" style="-fx-padding: 20;">
+            
+            <VBox spacing="10">
+              <Label text="Gestion des Fichiers Médias" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <Label text="Maintenance et optimisation des fichiers images, photos et documents." 
+                     style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
+              
+              <GridPane hgap="15" vgap="10">
+                <columnConstraints>
+                  <ColumnConstraints minWidth="150"/>
+                  <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                
+                <Label text="Dossier photos:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <HBox spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                  <TextField fx:id="txtPhotosPath" text="photos/" prefWidth="300"/>
+                  <Button fx:id="btnBrowsePhotos" text="📁" onAction="#onBrowsePhotosPath"/>
+                </HBox>
+                
+                <Label text="Dossier médias:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <HBox spacing="5" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                  <TextField fx:id="txtMediasPath" text="medias/" prefWidth="300"/>
+                  <Button fx:id="btnBrowseMedias" text="📁" onAction="#onBrowseMediasPath"/>
+                </HBox>
+                
+                <Label text="Qualité images:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <HBox spacing="5" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                  <Slider fx:id="sliderImageQuality" min="0.1" max="1.0" value="0.8" showTickLabels="true" showTickMarks="true" prefWidth="200"/>
+                  <Label fx:id="lblQualityValue" text="80%"/>
+                </HBox>
+              </GridPane>
+              
+              <VBox spacing="10">
+                <Label text="Actions de Maintenance" style="-fx-font-size: 12; -fx-font-weight: bold;"/>
+                <HBox spacing="10">
+                  <Button fx:id="btnCleanDuplicates" text="🗑️ Supprimer Doublons" onAction="#onCleanDuplicates"/>
+                  <Button fx:id="btnOptimizeImages" text="⚡ Optimiser Images" onAction="#onOptimizeImages"/>
+                  <Button fx:id="btnGenerateThumbnails" text="🖼️ Générer Miniatures" onAction="#onGenerateThumbnails"/>
+                </HBox>
+                
+                <Label fx:id="lblMediaStats" text="" style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
+              </VBox>
+            </VBox>
+            
+            <Separator/>
+            
+            <!-- Section Nettoyage Automatique -->
+            <VBox spacing="10">
+              <Label text="Nettoyage Automatique" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <Label text="Configuration avancée pour l'optimisation et le nettoyage automatique." 
+                     style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
+              
+              <GridPane hgap="15" vgap="10">
+                <columnConstraints>
+                  <ColumnConstraints minWidth="180"/>
+                  <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                
+                <Label text="Seuil qualité minimale:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <HBox spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                  <Slider fx:id="sliderMinQuality" min="0.3" max="1.0" value="0.6" showTickLabels="true" showTickMarks="true" prefWidth="150"/>
+                  <Label fx:id="lblMinQualityValue" text="60%"/>
+                </HBox>
+                
+                <Label text="Taille minimale autorisée:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <HBox spacing="5" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                  <Spinner fx:id="spinnerMinSize" min="100" max="1000" initialValue="300" prefWidth="80"/>
+                  <Label text="pixels"/>
+                </HBox>
+                
+                <Label text="Formats autorisés:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <VBox spacing="5" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                  <CheckBox fx:id="chkFormatJPG" text="JPG/JPEG" selected="true"/>
+                  <CheckBox fx:id="chkFormatPNG" text="PNG" selected="true"/>
+                  <CheckBox fx:id="chkFormatWEBP" text="WEBP" selected="false"/>
+                </VBox>
+              </GridPane>
+              
+              <!-- Actions avancées -->
+              <HBox spacing="10">
+                <Button fx:id="btnScanMedia" text="🔍 Scanner Médias" onAction="#onScanMedia"/>
+                <Button fx:id="btnCleanupDuplicates" text="🗑️ Supprimer Doublons" onAction="#onCleanupDuplicates"/>
+              </HBox>
+              
+              <HBox spacing="10">
+                <Button fx:id="btnRepairLinks" text="🔧 Réparer Liens" onAction="#onRepairLinks" 
+                        style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
+                <Button fx:id="btnFullMaintenance" text="🔄 Maintenance Complète" onAction="#onFullMaintenance"
+                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+              </HBox>
+              
+              <Label fx:id="lblMaintenanceStats" text="" style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
+              
+              <ProgressBar fx:id="progressMaintenance" visible="false" prefWidth="400"/>
+              <Label fx:id="lblMaintenanceProgress" text="" visible="false" style="-fx-font-size: 12;"/>
+            </VBox>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+      <!-- Onglet Scraping Images -->
+      <Tab text="🖼️ Scraping Images" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="20" style="-fx-padding: 20;">
+            
+            <!-- Section Sources de Scraping -->
+            <VBox spacing="10">
+              <Label text="Sources de Scraping" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <Label text="Configuration des fabricants et revendeurs pour le scraping automatique d'images." 
+                     style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
+              
+              <TableView fx:id="sourcesTable" prefHeight="200">
+                <columns>
+                  <TableColumn fx:id="colSourceType" text="Type" prefWidth="80"/>
+                  <TableColumn fx:id="colSourceName" text="Nom" prefWidth="150"/>  
+                  <TableColumn fx:id="colSourceUrl" text="URL de Base" prefWidth="200"/>
+                  <TableColumn fx:id="colSourcePattern" text="Motif de Recherche" prefWidth="200"/>
+                  <TableColumn fx:id="colSourceEnabled" text="Activé" prefWidth="60"/>
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+              </TableView>
+              
+              <HBox spacing="10">
+                <Button fx:id="btnAddSource" text="➕ Ajouter Source" onAction="#onAddSource"/>
+                <Button fx:id="btnEditSource" text="✏️ Modifier" onAction="#onEditSource" disable="true"/>
+                <Button fx:id="btnDeleteSource" text="❌ Supprimer" onAction="#onDeleteSource" disable="true"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnTestSource" text="🧪 Tester" onAction="#onTestSource" disable="true"/>
+              </HBox>
+            </VBox>
+            
+            <Separator/>
+            
+            <!-- Section Paramètres de Scraping -->
+            <VBox spacing="10">
+              <Label text="Paramètres de Scraping" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              
+              <GridPane hgap="15" vgap="10">
+                <columnConstraints>
+                  <ColumnConstraints minWidth="150"/>
+                  <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+                
+                <Label text="Délai entre requêtes:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <HBox spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                  <Spinner fx:id="spinnerDelay" min="1" max="30" initialValue="3" prefWidth="80"/>
+                  <Label text="secondes"/>
+                </HBox>
+                
+                <Label text="Timeout des requêtes:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <HBox spacing="5" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                  <Spinner fx:id="spinnerTimeout" min="5" max="60" initialValue="15" prefWidth="80"/>
+                  <Label text="secondes"/>
+                </HBox>
+                
+                <Label text="Format de sortie:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <HBox spacing="5" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                  <ComboBox fx:id="cbOutputFormat" prefWidth="100" value="JPG"/>
+                  <Label text="(recommandé: JPG pour une qualité optimale)"/>
+                </HBox>
+                
+                <Label text="Qualité images:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <HBox spacing="5" GridPane.rowIndex="3" GridPane.columnIndex="1">
+                  <Slider fx:id="sliderScrapingQuality" min="0.5" max="1.0" value="0.85" showTickLabels="true" showTickMarks="true" prefWidth="150"/>
+                  <Label fx:id="lblScrapingQualityValue" text="85%"/>
+                </HBox>
+                
+                <Label text="Taille maximale:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <HBox spacing="5" GridPane.rowIndex="4" GridPane.columnIndex="1">
+                  <Spinner fx:id="spinnerMaxWidth" min="400" max="2000" initialValue="800" prefWidth="80"/>
+                  <Label text="× "/>
+                  <Spinner fx:id="spinnerMaxHeight" min="400" max="2000" initialValue="800" prefWidth="80"/>
+                  <Label text="pixels"/>
+                </HBox>
+              </GridPane>
+            </VBox>
+            
+            <Separator/>
+            
+            <!-- Section Actions et Validation -->
+            <VBox spacing="10">
+              <Label text="Actions et Validation" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              
+              <HBox spacing="10">
+                <Button fx:id="btnScrapeMissing" text="🖼️ Scraper Produits sans Images" 
+                        onAction="#onScrapeMissingImages" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+                <Button fx:id="btnValidateImages" text="✅ Valider Correspondances" 
+                        onAction="#onValidateImageCorrespondences" style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
+                <Button fx:id="btnViewStats" text="📊 Statistiques" onAction="#onViewStats"/>
+              </HBox>
+              
+              <Label fx:id="lblScrapingStats" text="" style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
+              
+              <ProgressBar fx:id="progressScraping" visible="false" prefWidth="400"/>
+              <Label fx:id="lblScrapingProgress" text="" visible="false" style="-fx-font-size: 12;"/>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+      <!-- Onglet Catégories -->
+      <Tab text="📁 Catégories" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="20" style="-fx-padding: 20;">
+            
+            <!-- Section Recherche -->
+            <VBox spacing="10">
+              <Label text="Recherche et Navigation" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <HBox spacing="10">
+                <TextField fx:id="txtCategorySearch" promptText="Rechercher une catégorie..." prefWidth="300"/>
+                <Button fx:id="btnRefreshCategories" text="🔄 Actualiser" onAction="#onRefreshCategories"/>
+              </HBox>
+            </VBox>
+            
+            <!-- Section Table des Catégories -->
+            <VBox spacing="10" VBox.vgrow="ALWAYS">
+              <Label text="Liste des Catégories" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              
+              <TableView fx:id="tableCategoriesInTab" prefHeight="300" VBox.vgrow="ALWAYS">
+                <columns>
+                  <TableColumn fx:id="colCatId" text="ID" prefWidth="60"/>
+                  <TableColumn fx:id="colCatHierarchy" text="Hiérarchie" prefWidth="300"/>
+                  <TableColumn fx:id="colCatName" text="Nom" prefWidth="200"/>
+                  <TableColumn fx:id="colCatType" text="Type" prefWidth="120"/>
+                  <TableColumn fx:id="colCatParent" text="Parent" prefWidth="180"/>
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+              </TableView>
+              
+              <!-- Actions Catégories -->
+              <HBox spacing="10">
+                <Button fx:id="btnAddCategoryInTab" text="➕ Ajouter Catégorie" onAction="#onAddCategoryInTab"/>
+                <Button fx:id="btnAddSubcategoryInTab" text="➕ Sous-catégorie" onAction="#onAddSubcategoryInTab"/>
+                <Button fx:id="btnEditCategoryInTab" text="✏️ Modifier" onAction="#onEditCategoryInTab" disable="true"/>
+                <Button fx:id="btnDeleteCategoryInTab" text="❌ Supprimer" onAction="#onDeleteCategoryInTab" disable="true"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnRefreshCategoriesData" text="� Actualiser Données" onAction="#onRefreshCategoriesData" style="-fx-background-color: #16a085; -fx-text-fill: white;"/>
+              </HBox>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+      <!-- Onglet Médias -->
+      <Tab text="🖼️ Médias" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="20" style="-fx-padding: 20;">
+            
+            <!-- Section Statistiques Médias -->
+            <HBox spacing="30" alignment="CENTER_LEFT">
+              <VBox alignment="CENTER" spacing="4" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);">
+                <Label text="Images Totales" style="-fx-font-size: 12; -fx-text-fill: #7f8c8d;"/>
+                <Label fx:id="lblTotalImages" text="0" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
+              </VBox>
+              <VBox alignment="CENTER" spacing="4" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);">
+                <Label text="Logos" style="-fx-font-size: 12; -fx-text-fill: #7f8c8d;"/>
+                <Label fx:id="lblTotalLogos" text="0" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+              </VBox>
+              <VBox alignment="CENTER" spacing="4" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);">
+                <Label text="Espace Utilisé" style="-fx-font-size: 12; -fx-text-fill: #7f8c8d;"/>
+                <Label fx:id="lblUsedSpace" text="0 MB" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+              </VBox>
+              <VBox alignment="CENTER" spacing="4" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);">
+                <Label text="Images Orphelines" style="-fx-font-size: 12; -fx-text-fill: #7f8c8d;"/>
+                <Label fx:id="lblOrphanImages" text="0" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #f39c12;"/>
+              </VBox>
+            </HBox>
+            
+            <!-- Section Import et Actions Rapides -->
+            <VBox spacing="10">
+              <Label text="Actions Rapides" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <HBox spacing="10">
+                <Button fx:id="btnImportFromFolder" text="📁 Importer Dossier" onAction="#onImportFromFolder" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+                <Button fx:id="btnImportFromClipboard" text="📋 Coller Image" onAction="#onImportFromClipboard" style="-fx-background-color: #16a085; -fx-text-fill: white;"/>
+                <Button fx:id="btnImportLogo" text="🏢 Importer Logo" onAction="#onImportLogo" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnRefreshMediaData" text="🔄 Actualiser" onAction="#onRefreshMediaData" style="-fx-background-color: #95a5a6; -fx-text-fill: white;"/>
+              </HBox>
+            </VBox>
+            
+            <!-- Section Recherche et Filtres -->
+            <VBox spacing="10">
+              <Label text="Recherche et Filtres" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <HBox spacing="10">
+                <TextField fx:id="txtMediaSearch" promptText="Rechercher un fichier média..." prefWidth="300"/>
+                <ComboBox fx:id="cbMediaType" promptText="Type de média" prefWidth="150"/>
+                <ComboBox fx:id="cbMediaSize" promptText="Taille" prefWidth="120"/>
+                <Button fx:id="btnSearchMedia" text="🔍" onAction="#onSearchMedia" style="-fx-background-color: #8e44ad; -fx-text-fill: white;"/>
+                <Button fx:id="btnClearMediaSearch" text="❌" onAction="#onClearMediaSearch" style="-fx-background-color: #bdc3c7; -fx-text-fill: white;"/>
+              </HBox>
+            </VBox>
+            
+            <!-- Section Table des Médias -->
+            <VBox spacing="10" VBox.vgrow="ALWAYS">
+              <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Liste des Fichiers Médias" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblMediaCount" text="0 fichiers" style="-fx-text-fill: #666;"/>
+              </HBox>
+              
+              <TableView fx:id="tableMediaFiles" prefHeight="350" VBox.vgrow="ALWAYS">
+                <placeholder><Label text="Aucun fichier média trouvé. Utilisez les boutons d'import pour ajouter des images." style="-fx-text-fill: #7f8c8d; -fx-font-style: italic;"/></placeholder>
+                <columns>
+                  <TableColumn fx:id="colMediaId" text="ID" prefWidth="50" resizable="false"/>
+                  <TableColumn fx:id="colMediaName" text="Nom du Fichier" prefWidth="200"/>
+                  <TableColumn fx:id="colMediaType" text="Type" prefWidth="80"/>
+                  <TableColumn fx:id="colMediaSize" text="Taille" prefWidth="80"/>
+                  <TableColumn fx:id="colMediaDimensions" text="Dimensions" prefWidth="100"/>
+                  <TableColumn fx:id="colMediaPath" text="Chemin" prefWidth="250"/>
+                  <TableColumn fx:id="colMediaUsage" text="Utilisation" prefWidth="120"/>
+                  <TableColumn fx:id="colMediaDate" text="Date Ajout" prefWidth="120"/>
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+              </TableView>
+              
+              <!-- Actions sur les médias -->
+              <HBox spacing="10">
+                <Button fx:id="btnAddMedia" text="➕ Ajouter Média" onAction="#onAddMedia" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+                <Button fx:id="btnEditMedia" text="✏️ Modifier" onAction="#onEditMedia" disable="true" style="-fx-background-color: #f39c12; -fx-text-fill: white;"/>
+                <Button fx:id="btnDeleteMedia" text="🗑️ Supprimer" onAction="#onDeleteMedia" disable="true" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnPreviewMedia" text="�️ Aperçu" onAction="#onPreviewMedia" disable="true" style="-fx-background-color: #9b59b6; -fx-text-fill: white;"/>
+                <Button fx:id="btnOpenMediaFolder" text="� Ouvrir Dossier" onAction="#onOpenMediaFolder" disable="true" style="-fx-background-color: #34495e; -fx-text-fill: white;"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnCleanOrphanMedia" text="🧹 Nettoyer Orphelins" onAction="#onCleanOrphanMedia" style="-fx-background-color: #f39c12; -fx-text-fill: white;"/>
+              </HBox>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+      <!-- Onglet Gestion Société -->
+      <Tab text="🏢 Société" closable="false">
+        <ScrollPane fitToWidth="true" fitToHeight="true">
+          <VBox spacing="20" style="-fx-padding: 20;">
+            
+            <!-- Section Informations Générales -->
+            <VBox spacing="15">
+              <Label text="Informations Générales" style="-fx-font-weight: bold; -fx-font-size: 16;"/>
+              
+              <GridPane hgap="15" vgap="10">
+                <columnConstraints>
+                  <ColumnConstraints minWidth="120" prefWidth="150"/>
+                  <ColumnConstraints hgrow="ALWAYS" minWidth="250"/>
+                </columnConstraints>
+                
+                <Label text="Nom de la société:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanyName" promptText="Mag Scène" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                
+                <Label text="Raison sociale:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanyLegalName" promptText="Mag Scène SARL" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                
+                <Label text="SIRET:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanySiret" promptText="12345678901234" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                
+                <Label text="Secteur d'activité:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanySector" promptText="Audiovisuel et technique" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                
+                <Label text="Adresse:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanyAddress" promptText="123 Rue de la Technique" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                
+                <Label text="Code postal:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanyPostalCode" promptText="75001" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                
+                <Label text="Ville:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanyCity" promptText="Paris" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                
+                <Label text="Pays:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanyCountry" promptText="France" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                
+                <Label text="Téléphone:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanyPhone" promptText="01 23 45 67 89" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                
+                <Label text="Email:" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanyEmail" promptText="contact@magscene.fr" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+                
+                <Label text="Site web:" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
+                <TextField fx:id="txtCompanyWebsite" promptText="https://www.magscene.fr" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
+              </GridPane>
+              
+              <VBox spacing="10">
+                <Label text="Description:" style="-fx-font-weight: bold;"/>
+                <TextArea fx:id="txtCompanyDescription" promptText="Description de votre société..." 
+                         prefRowCount="3" wrapText="true"/>
+              </VBox>
+            </VBox>
+            
+            <Separator/>
+            
+            <!-- Section Logo -->
+            <VBox spacing="15">
+              <Label text="Logo de la Société" style="-fx-font-weight: bold; -fx-font-size: 16;"/>
+              
+              <HBox spacing="15" alignment="CENTER_LEFT">
+                <VBox spacing="10" alignment="TOP_CENTER">
+                  <ImageView fx:id="imgCompanyLogo" fitWidth="120" fitHeight="120" 
+                           preserveRatio="true" style="-fx-border-color: #ccc; -fx-border-width: 1; -fx-background-color: #f9f9f9;"/>
+                  <Label text="Logo actuel" style="-fx-font-size: 12; -fx-text-fill: #666;"/>
+                </VBox>
+                
+                <VBox spacing="10">
+                  <Button fx:id="btnSelectLogo" text="📁 Sélectionner Logo" onAction="#onSelectCompanyLogo" 
+                          style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+                  <Button fx:id="btnRemoveLogo" text="🗑️ Supprimer Logo" onAction="#onRemoveCompanyLogo"/>
+                  <Label text="Formats acceptés: PNG, JPG, GIF" style="-fx-font-size: 10; -fx-text-fill: #666;"/>
+                  <Label text="Taille recommandée: 200x200 px" style="-fx-font-size: 10; -fx-text-fill: #666;"/>
+                </VBox>
+              </HBox>
+            </VBox>
+            
+            <Separator/>
+            
+            <!-- Section Personnel -->
+            <VBox spacing="15">
+              <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Personnel de la Société" style="-fx-font-weight: bold; -fx-font-size: 16;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnAddUser" text="➕ Ajouter Utilisateur" onAction="#onAddUser" 
+                        style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+              </HBox>
+              
+              <!-- Tableau des utilisateurs -->
+              <TableView fx:id="companyUsersTable" prefHeight="200">
+                <columns>
+                  <TableColumn fx:id="colUserName" text="Nom Complet" prefWidth="150"/>
+                  <TableColumn fx:id="colUserUsername" text="Nom d'utilisateur" prefWidth="120"/>
+                  <TableColumn fx:id="colUserPosition" text="Poste" prefWidth="130"/>
+                  <TableColumn fx:id="colUserRole" text="Rôle" prefWidth="120"/>
+                  <TableColumn fx:id="colUserEmail" text="Email" prefWidth="180"/>
+                  <TableColumn fx:id="colUserPhone" text="Téléphone" prefWidth="120"/>
+                  <TableColumn fx:id="colUserActive" text="Actif" prefWidth="60"/>
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+                <placeholder>
+                  <Label text="Aucun utilisateur dans cette société"/>
+                </placeholder>
+              </TableView>
+              
+              <!-- Actions utilisateurs -->
+              <HBox spacing="10">
+                <Button fx:id="btnEditUser" text="✏️ Modifier" onAction="#onEditUser" disable="true"/>
+                <Button fx:id="btnDeleteUser" text="🗑️ Supprimer" onAction="#onDeleteUser" disable="true"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnResetPassword" text="🔑 Réinitialiser Mot de Passe" onAction="#onResetUserPassword" disable="true"/>
+                <Button fx:id="btnToggleActive" text="⏯️ Activer/Désactiver" onAction="#onToggleUserActive" disable="true"/>
+              </HBox>
+              
+              <!-- Statistiques -->
+              <HBox spacing="20" style="-fx-padding: 10; -fx-background-color: #f5f5f5; -fx-background-radius: 5;">
+                <Label fx:id="lblTotalUsers" text="Total: 0" style="-fx-font-weight: bold;"/>
+                <Label fx:id="lblActiveUsers" text="Actifs: 0" style="-fx-text-fill: #4CAF50;"/>
+                <Label fx:id="lblInactiveUsers" text="Inactifs: 0" style="-fx-text-fill: #f44336;"/>
+                <Label fx:id="lblAdminUsers" text="Admins: 0" style="-fx-text-fill: #2196F3;"/>
+              </HBox>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+    </TabPane>
+  </center>
+  
+  <bottom>
+    <HBox spacing="15" style="-fx-padding: 15; -fx-alignment: center-right;">
+      <Button fx:id="btnSaveAll" text="💾 Tout Sauvegarder" onAction="#onSaveAll" 
+              style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;"/>
+      <Button fx:id="btnCancel" text="❌ Annuler" onAction="#onCancel"/>
+    </HBox>
+  </bottom>
+</BorderPane>

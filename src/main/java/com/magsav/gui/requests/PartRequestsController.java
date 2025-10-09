@@ -68,9 +68,16 @@ public class PartRequestsController {
   }
 
   @FXML private void onRefresh() {
-    master.setAll(repo.list(TYPE));
-    applyFilter(tfSearch == null ? "" : tfSearch.getText());
-    loadItems();
+    try {
+      master.setAll(repo.list(TYPE));
+      applyFilter(tfSearch == null ? "" : tfSearch.getText());
+      loadItems();
+    } catch (Exception e) {
+      // Gestion gracieuse des erreurs - afficher message a l'utilisateur
+      System.err.println("Erreur lors du rafraichissement des demandes de pieces: " + e.getMessage());
+      master.clear(); // Vider la liste en cas d'erreur
+      items.clear();
+    }
   }
 
   private void loadItems() {

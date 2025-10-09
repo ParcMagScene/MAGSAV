@@ -1,165 +1,162 @@
 package com.magsav.gui.societes;
 
-import com.magsav.util.Views;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Alert;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.input.MouseButton;
-// Ajoutez l'import de votre modèle Societe
 import com.magsav.model.Societe;
 import com.magsav.repo.SocieteRepository;
-import com.magsav.util.Views;
-import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogPane;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.input.MouseButton;
-
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.*;
 
-import java.util.Optional;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-public class ManufacturersController {
-  private static final String TYPE = "FABRICANT";
+public class ManufacturersController implements Initializable {
 
+  @FXML private TextField tfSearch;
   @FXML private TableView<Societe> table;
-  @FXML private TableColumn<Societe, String> colId;
+  @FXML private TableColumn<Societe, Long> colId;
   @FXML private TableColumn<Societe, String> colNom;
   @FXML private TableColumn<Societe, String> colEmail;
   @FXML private TableColumn<Societe, String> colPhone;
   @FXML private TableColumn<Societe, String> colNotes;
-  @FXML private TextField tfSearch;
 
-  private final SocieteRepository repo = new SocieteRepository();
-  private final ObservableList<Societe> master = FXCollections.observableArrayList();
-  private FilteredList<Societe> filtered;
+  private final SocieteRepository societeRepo = new SocieteRepository();
+  private final ObservableList<Societe> data = FXCollections.observableArrayList();
+
+  @Override
+  public void initialize(URL location, ResourceBundle resources) {
+    // Configuration des colonnes avec des cell value factories compatibles avec les records
+    colId.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().id()));
+    colNom.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().nom()));
+    colEmail.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().email()));
+    colPhone.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().phone()));
+    colNotes.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().notes()));
+
+    // Liaison des données
+    table.setItems(data);
+
+    // Configuration de la recherche
+    tfSearch.textProperty().addListener((obs, oldVal, newVal) -> filterData(newVal));
+
+    // Chargement initial
+    loadData();
+  }
+
+  private void loadData() {
+    try {
+      data.clear();
+      data.addAll(societeRepo.findByType("FABRICANT"));
+    } catch (Exception e) {
+      showError("Erreur lors du chargement des fabricants", e.getMessage());
+    }
+  }
+
+  private void filterData(String searchText) {
+    if (searchText == null || searchText.trim().isEmpty()) {
+      loadData();
+      return;
+    }
+
+    try {
+      data.clear();
+      String search = searchText.toLowerCase().trim();
+      data.addAll(societeRepo.findByType("FABRICANT").stream()
+          .filter(s -> 
+              (s.nom() != null && s.nom().toLowerCase().contains(search)) ||
+              (s.email() != null && s.email().toLowerCase().contains(search)) ||
+              (s.phone() != null && s.phone().toLowerCase().contains(search)) ||
+              (s.notes() != null && s.notes().toLowerCase().contains(search))
+          ).toList());
+    } catch (Exception e) {
+      showError("Erreur lors de la recherche", e.getMessage());
+    }
+  }
 
   @FXML
-  private void initialize() {
-    colId.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().id())));
-    colNom.setCellValueFactory(c -> new SimpleStringProperty(orEmpty(c.getValue().nom())));
-    colEmail.setCellValueFactory(c -> new SimpleStringProperty(orEmpty(c.getValue().email())));
-    colPhone.setCellValueFactory(c -> new SimpleStringProperty(orEmpty(c.getValue().phone())));
-    colNotes.setCellValueFactory(c -> new SimpleStringProperty(orEmpty(c.getValue().notes())));
-
-    filtered = new FilteredList<>(master, it -> true);
-    SortedList<Societe> sorted = new SortedList<>(filtered);
-    sorted.comparatorProperty().bind(table.comparatorProperty());
-    table.setItems(sorted);
-
-    if (tfSearch != null) tfSearch.textProperty().addListener((o, a, b) -> applyFilter(b));
-    onRefresh();
-
-    // Double‑clic: ouvre la fiche fabricant
-    if (table != null) {
-      table.setRowFactory(tv -> {
-        TableRow<Societe> r = new TableRow<>();
-        r.setOnMouseClicked(e -> {
-          if (!r.isEmpty() && e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
-            Societe s = r.getItem();
-            String fabricant = s == null ? null : nomSociete(s);
-            if (fabricant != null && !fabricant.isBlank()) {
-              Views.openManufacturer(fabricant);
-            }
-          }
-        });
-        return r;
-      });
-    }
+  private void onRefresh() {
+    loadData();
   }
 
-  // Utilitaire: récupère le nom d’un Societe (compatibilité getters/records)
-  private String nomSociete(Societe s) {
-    try { return (String) s.getClass().getMethod("nom").invoke(s); } catch (Exception ignored) {}
-    try { return (String) s.getClass().getMethod("getNom").invoke(s); } catch (Exception ignored) {}
-    return null;
-  }
-
-  @FXML private void onRefresh() {
-    master.setAll(repo.findByType(TYPE));
-    applyFilter(tfSearch == null ? "" : tfSearch.getText());
-  }
-
-  @FXML private void onAdd() { openForm(null); }
-
-  @FXML private void onEdit() {
-    var sel = table.getSelectionModel().getSelectedItem();
-    if (sel != null) openForm(sel);
-  }
-
-  @FXML private void onDelete() {
-    var sel = table.getSelectionModel().getSelectedItem();
-    if (sel == null) return;
-    var confirm = new Alert(Alert.AlertType.CONFIRMATION,
-        "Supprimer le fabricant \"" + sel.nom() + "\" ?").showAndWait();
-    if (confirm.isPresent() && confirm.get().getButtonData().isDefaultButton()) {
-      if (!repo.delete(sel.id())) new Alert(Alert.AlertType.WARNING, "Rien n’a été supprimé.").showAndWait();
-      onRefresh();
-    }
-  }
-
-  private void openForm(Societe current) {
+  @FXML
+  private void onAdd() {
     try {
-      FXMLLoader l = new FXMLLoader(getClass().getResource("/fxml/societes/manufacturer_form.fxml"));
-      javafx.scene.Parent root = l.load();                 // <-- Parent au lieu de DialogPane
-      ManufacturerFormController ctl = l.getController();
-      ctl.init(current);
-
-      Dialog<ButtonType> d = new Dialog<>();
-      d.setTitle(current == null ? "Ajouter un fabricant" : "Modifier le fabricant");
-      d.getDialogPane().setContent(root);                  // <-- on place le contenu
-      d.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL); // <-- boutons
-
-      Optional<ButtonType> res = d.showAndWait();
-      if (res.isPresent() && res.get() == ButtonType.OK) { // <-- on teste OK explicite
-        String nom = ctl.nom() == null ? "" : ctl.nom().trim();
-        if (nom.length() < 2) {
-          new Alert(Alert.AlertType.WARNING, "Nom requis (au moins 2 caractères).").showAndWait();
-          return;
-        }
-        nom = nom.replaceAll("\\s+", " ");
-
-        var exists = repo.findByNameAndTypeIgnoreCase(nom, "FABRICANT");
-        if (exists.isPresent() && (current == null || exists.get().id() != current.id())) {
-          new Alert(Alert.AlertType.INFORMATION, "Fabricant déjà existant: " + exists.get().nom()).showAndWait();
-          return;
-        }
-
-        if (current == null) {
-          repo.insert("FABRICANT", nom, ctl.email(), ctl.phone(), ctl.adresse(), ctl.notes());
-        } else {
-          // Mise à jour directe sans created_at
-          repo.update(current.id(), "FABRICANT", nom, ctl.email(), ctl.phone(), ctl.adresse(), ctl.notes());
-        }
-        onRefresh();
+      // Ouvrir le formulaire d'ajout avec null (nouveau fabricant)
+      var result = com.magsav.ui.components.FormDialogManager.MAGSAV.showManufacturerDialog(null, table.getScene().getWindow());
+      if (result.isSaved()) {
+        loadData();
       }
     } catch (Exception e) {
-      new Alert(Alert.AlertType.ERROR, "Erreur formulaire: " + e.getClass().getSimpleName() + ": " + e.getMessage()).showAndWait();
+      showError("Erreur lors de l'ouverture du formulaire", e.getMessage());
     }
   }
 
-  private void applyFilter(String q) {
-    String s = q == null ? "" : q.trim().toLowerCase();
-    filtered.setPredicate(v -> {
-      if (s.isEmpty()) return true;
-      return String.valueOf(v.id()).contains(s)
-          || orEmpty(v.nom()).toLowerCase().contains(s)
-          || orEmpty(v.email()).toLowerCase().contains(s)
-          || orEmpty(v.phone()).toLowerCase().contains(s)
-          || orEmpty(v.notes()).toLowerCase().contains(s);
-    });
+  @FXML
+  private void onEdit() {
+    Societe selected = table.getSelectionModel().getSelectedItem();
+    if (selected == null) {
+      showWarning("Aucune sélection", "Veuillez sélectionner un fabricant à modifier.");
+      return;
+    }
+
+    try {
+      // Ouvrir le formulaire de modification avec la société sélectionnée
+      var result = com.magsav.ui.components.FormDialogManager.MAGSAV.showManufacturerDialog(selected, table.getScene().getWindow());
+      if (result.isSaved()) {
+        loadData();
+      }
+    } catch (Exception e) {
+      showError("Erreur lors de l'ouverture du formulaire", e.getMessage());
+    }
   }
 
-  private static String orEmpty(String x) { return x == null ? "" : x; }
+  @FXML
+  private void onDelete() {
+    Societe selected = table.getSelectionModel().getSelectedItem();
+    if (selected == null) {
+      showWarning("Aucune sélection", "Veuillez sélectionner un fabricant à supprimer.");
+      return;
+    }
+
+    Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+    confirmation.setTitle("Confirmation");
+    confirmation.setHeaderText("Supprimer le fabricant");
+    confirmation.setContentText("Êtes-vous sûr de vouloir supprimer \"" + selected.nom() + "\" ?\nCette action est irréversible.");
+
+    if (confirmation.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+      try {
+        societeRepo.delete(selected.id());
+        loadData();
+        showInfo("Suppression réussie", "Le fabricant a été supprimé avec succès.");
+      } catch (Exception e) {
+        showError("Erreur lors de la suppression", e.getMessage());
+      }
+    }
+  }
+
+  private void showError(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.ERROR);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
+  }
+
+  private void showWarning(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.WARNING);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
+  }
+
+  private void showInfo(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
+  }
 }

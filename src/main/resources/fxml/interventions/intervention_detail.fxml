@@ -21,7 +21,7 @@
         <Label text="Détecteur:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
         <Label fx:id="lbDetector" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-        <Label text="Description:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+  <Label text="Panne:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
         <TextArea fx:id="taDesc" GridPane.rowIndex="3" GridPane.columnIndex="1" editable="false" prefRowCount="3"/>
 
         <Label text="Pré-diagnostic:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>

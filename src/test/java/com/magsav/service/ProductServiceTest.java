@@ -1,5 +1,6 @@
 package com.magsav.service;
 
+import com.magsav.exception.InvalidUidException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,7 +56,7 @@ class ProductServiceTest {
 
         // When & Then
         for (String invalidUid : invalidUids) {
-            assertThrows(IllegalArgumentException.class, () -> {
+            assertThrows(InvalidUidException.class, () -> {
                 productService.validateUidOrThrow(invalidUid);
             }, "Devrait lever une exception pour l'UID invalide: " + invalidUid);
         }

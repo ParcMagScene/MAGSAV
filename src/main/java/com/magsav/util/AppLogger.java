@@ -75,12 +75,17 @@ public final class AppLogger {
      */
     public static void logDbError(String operation, String table, Throwable error) {
         REPO_LOGGER.error("Erreur SQL lors de {} sur table '{}': {}", operation, table, error.getMessage(), error);
+        // Enregistrer l'erreur dans les métriques
+        com.magsav.service.DatabaseMetricsService.recordQuery(operation, -1, false);
     }
     
     /**
      * Log de performance DB
      */
     public static void logDbPerformance(String operation, long durationMs) {
+        // Enregistrer dans les métriques
+        com.magsav.service.DatabaseMetricsService.recordQuery(operation, durationMs, true);
+        
         if (durationMs > 1000) { // Log si > 1 seconde
             REPO_LOGGER.warn("Opération DB lente: {} ({}ms)", operation, durationMs);
         } else {

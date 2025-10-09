@@ -2,7 +2,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.magsav.gui.products.CategoryFormController"
+      fx:controller="com.magsav.gui.categories.CategoryFormController"
       spacing="10" style="-fx-padding: 12;">
   <children>
     <HBox spacing="8">

@@ -2,31 +2,55 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.magsav.gui.societes.ExternalSavController" prefWidth="800" prefHeight="460">
+            fx:controller="com.magsav.gui.societes.ExternalSavController" prefWidth="1000" prefHeight="600">
   <top>
     <ToolBar>
       <Label text="SAV / RMA externes" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
       <Pane HBox.hgrow="ALWAYS"/>
       <TextField fx:id="tfSearch" promptText="Rechercher (nom, email, téléphone, notes)" prefWidth="280"/>
-      <Button text="Actualiser" onAction="#onRefresh"/>
+
       <Button text="+ Ajouter" onAction="#onAdd"/>
       <Button text="Modifier" onAction="#onEdit"/>
       <Button text="Supprimer" onAction="#onDelete"/>
     </ToolBar>
   </top>
   <center>
-    <TableView fx:id="table">
-      <columns>
-        <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
-        <TableColumn fx:id="colNom" text="Nom" prefWidth="220"/>
-        <TableColumn fx:id="colEmail" text="Email" prefWidth="180"/>
-        <TableColumn fx:id="colPhone" text="Téléphone" prefWidth="120"/>
-        <TableColumn fx:id="colNotes" text="Notes" prefWidth="220"/>
-      </columns>
-      <columnResizePolicy>
-        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-      </columnResizePolicy>
-      <placeholder><Label text="Aucun SAV externe"/></placeholder>
-    </TableView>
+    <SplitPane dividerPositions="0.5">
+      <!-- Section SAV Externes -->
+      <VBox>
+        <Label text="SAV Externes" style="-fx-font-weight: bold; -fx-padding: 5;"/>
+        <TableView fx:id="table">
+          <columns>
+            <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+            <TableColumn fx:id="colNom" text="Nom" prefWidth="180"/>
+            <TableColumn fx:id="colEmail" text="Email" prefWidth="150"/>
+            <TableColumn fx:id="colPhone" text="Téléphone" prefWidth="100"/>
+            <TableColumn fx:id="colNotes" text="Notes" prefWidth="150"/>
+          </columns>
+          <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+          </columnResizePolicy>
+          <placeholder><Label text="Aucun SAV externe"/></placeholder>
+        </TableView>
+      </VBox>
+      
+      <!-- Section Produits en SAV Externe -->
+      <VBox>
+        <Label text="Produits en SAV Externe" style="-fx-font-weight: bold; -fx-padding: 5;"/>
+        <TableView fx:id="productsTable">
+          <columns>
+            <TableColumn fx:id="colProdNom" text="Nom" prefWidth="150"/>
+            <TableColumn fx:id="colProdSN" text="N° Série" prefWidth="100"/>
+            <TableColumn fx:id="colProdUID" text="UID" prefWidth="80"/>
+            <TableColumn fx:id="colProdFabricant" text="Fabricant" prefWidth="120"/>
+            <TableColumn fx:id="colProdSituation" text="Situation" prefWidth="100"/>
+          </columns>
+          <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+          </columnResizePolicy>
+          <placeholder><Label text="Aucun produit en SAV externe"/></placeholder>
+        </TableView>
+      </VBox>
+    </SplitPane>
   </center>
 </BorderPane>

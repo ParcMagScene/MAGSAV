@@ -6,6 +6,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import com.magsav.model.InterventionRow;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -34,16 +35,20 @@ public class InterventionDetailController implements Initializable {
   }
 
   public void load(long id) { 
-    this.interventionId = id; 
-    // TODO: Charger les données de l'intervention depuis la base de données
-    // et préremplir cbNext avec la valeur sauvegardée
+    this.interventionId = id;
+    InterventionRow intervention = new com.magsav.repo.InterventionRepository().findById(id);
+    if (intervention != null) {
+      if (taDesc != null) taDesc.setText(intervention.panne());
+      if (lbHeader != null) lbHeader.setText("Intervention #" + intervention.id());
+      // Préremplir le statut, dates, etc. si besoin
+    }
   }
   
   public void loadProductInfo(com.magsav.repo.ProductRepository.ProductRow product) {
     if (product != null) {
       // Préremplir les champs avec les informations du produit
       if (lbProduct != null) {
-        lbProduct.setText(product.nom() + " (" + product.code() + ")");
+        lbProduct.setText(product.nom());
       }
       if (lbSerial != null) {
         lbSerial.setText(product.sn() != null ? product.sn() : "");

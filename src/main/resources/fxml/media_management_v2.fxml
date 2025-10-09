@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+            fx:controller="com.magsav.gui.management.MediaManagementController" 
+            prefWidth="800" prefHeight="600">
+   
+   <top>
+      <VBox spacing="10.0">
+         <children>
+            <Label text="Gestion des Médias">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Label>
+            <Separator />
+            <Label text="Importez, organisez et maintenez votre bibliothèque d'images et de logos." 
+                   style="-fx-text-fill: #666666;" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </VBox>
+   </top>
+   
+   <center>
+      <ScrollPane fitToWidth="true">
+         <content>
+            <VBox fx:id="mainContainer" spacing="15.0">
+               <children>
+               
+                  <!-- Section Import -->
+                  <VBox spacing="10.0" style="-fx-background-color: #f9f9f9; -fx-border-color: #ddd; -fx-border-radius: 5;">
+                     <children>
+                        <Label text="Import de Médias">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <Label text="Sélectionnez et importez de nouveaux fichiers média dans votre bibliothèque." 
+                               style="-fx-text-fill: #888;" />
+                        <HBox spacing="10.0">
+                           <children>
+                              <Button fx:id="btnImportPhotos" text="Importer Photos" onAction="#importPhotos" 
+                                      prefWidth="150" />
+                              <Button fx:id="btnImportLogos" text="Importer Logos" onAction="#importLogos" 
+                                      prefWidth="150" />
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </VBox>
+                  
+                  <!-- Section Maintenance -->
+                  <VBox spacing="10.0" style="-fx-background-color: #fff3cd; -fx-border-color: #ffc107; -fx-border-radius: 5;">
+                     <children>
+                        <Label text="Maintenance et Nettoyage">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <Label text="Supprimez les doublons et effectuez la maintenance de votre bibliothèque." 
+                               style="-fx-text-fill: #888;" />
+                        <HBox spacing="10.0">
+                           <children>
+                              <Button fx:id="btnRemoveDuplicates" text="Supprimer Doublons" onAction="#removeDuplicates" 
+                                      prefWidth="150" />
+                              <Button fx:id="btnFullMaintenance" text="Maintenance Complète" onAction="#performFullMaintenance" 
+                                      prefWidth="150" style="-fx-background-color: #28a745; -fx-text-fill: white;" />
+                           </children>
+                        </HBox>
+                        <Label text="ATTENTION: La suppression des doublons est irréversible." 
+                               style="-fx-text-fill: #dc3545; -fx-font-style: italic;" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </VBox>
+                  
+                  <!-- Section Gestion des Fichiers -->
+                  <VBox spacing="10.0" style="-fx-background-color: #f9f9f9; -fx-border-color: #ddd; -fx-border-radius: 5;">
+                     <children>
+                        <Label text="Gestion des Fichiers">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        
+                        <!-- Photos -->
+                        <Label text="Photos:" style="-fx-font-weight: bold;" />
+                        <HBox spacing="10.0">
+                           <children>
+                              <Button fx:id="btnLoadPhotos" text="Charger la liste" onAction="#loadPhotosList" />
+                              <Button fx:id="btnSelectAllPhotos" text="Tout sélectionner" onAction="#selectAllPhotos" />
+                              <Button fx:id="btnSelectNonePhotos" text="Tout désélectionner" onAction="#selectNonePhotos" />
+                              <Button fx:id="btnDeletePhotos" text="Supprimer sélection" onAction="#deleteSelectedPhotos" 
+                                      style="-fx-background-color: #dc3545; -fx-text-fill: white;" />
+                           </children>
+                        </HBox>
+                        <ListView fx:id="listViewPhotos" prefHeight="100.0" />
+                        
+                        <!-- Logos -->
+                        <Label text="Logos:" style="-fx-font-weight: bold;" />
+                        <HBox spacing="10.0">
+                           <children>
+                              <Button fx:id="btnLoadLogos" text="Charger la liste" onAction="#loadLogosList" />
+                              <Button fx:id="btnSelectAllLogos" text="Tout sélectionner" onAction="#selectAllLogos" />
+                              <Button fx:id="btnSelectNoneLogos" text="Tout désélectionner" onAction="#selectNoneLogos" />
+                              <Button fx:id="btnDeleteLogos" text="Supprimer sélection" onAction="#deleteSelectedLogos" 
+                                      style="-fx-background-color: #dc3545; -fx-text-fill: white;" />
+                           </children>
+                        </HBox>
+                        <ListView fx:id="listViewLogos" prefHeight="100.0" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </VBox>
+                  
+                  <!-- Section Log -->
+                  <VBox spacing="10.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 5;">
+                     <children>
+                        <Label text="Journal des Opérations">
+                           <font>
+                              <Font name="System Bold" size="12.0" />
+                           </font>
+                        </Label>
+                        <TextArea fx:id="textAreaLog" prefHeight="200.0" 
+                                  promptText="Les détails des opérations s'afficheront ici..." 
+                                  style="-fx-font-family: monospace; -fx-font-size: 11;" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </VBox>
+                  
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </center>
+   
+</BorderPane>

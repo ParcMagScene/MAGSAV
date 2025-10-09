@@ -1,17 +1,34 @@
 package com.magsav.integration;
 
+import com.magsav.db.DB;
 import com.magsav.model.InterventionRow;
 import com.magsav.repo.InterventionRepository;
 import org.junit.jupiter.api.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.List;
 
 /**
  * Tests d'intégration pour les interventions
- * Utilise la base de données réelle du projet
+ * Utilise une base de données de test en mémoire
  */
 class InterventionIntegrationTest {
 
+    static Connection keeper;
     private InterventionRepository interventionRepository;
+
+    @BeforeAll
+    static void setUpClass() throws Exception {
+        System.setProperty("magsav.db.url", "jdbc:sqlite:file:intervention_integration_test?mode=memory&cache=shared");
+        keeper = DriverManager.getConnection(System.getProperty("magsav.db.url"));
+        DB.resetForTesting();
+        DB.init();
+    }
+    
+    @AfterAll
+    static void tearDownClass() throws Exception {
+        if (keeper != null) keeper.close();
+    }
 
     @BeforeEach
     void setUp() {

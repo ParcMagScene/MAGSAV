@@ -1,15 +1,193 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.magsav.gui.hub.ProductsHubController" prefWidth="520" prefHeight="320">
-  <top><Label text="Gestion des produits" style="-fx-padding: 8; -fx-font-size: 16; -fx-font-weight: bold;"/></top>
-  <center>
-    <VBox spacing="8" style="-fx-padding: 12;">
-      <Button text="Catégories" onAction="#onCategories"/>
-      <Button text="Sous-catégories" onAction="#onSubcategories"/>
-      <Button text="Assignation des fabricants" onAction="#onAssignManufacturers"/>
-      <Button text="Produits" onAction="#onProducts"/>
+            fx:controller="com.magsav.gui.hub.ProductsHubController" prefWidth="1200" prefHeight="800">
+  
+  <top>
+    <VBox style="-fx-background-color: linear-gradient(to bottom, #f8f9fa, #e9ecef); -fx-padding: 15;">
+      <Label text="🏭 Gestion des Produits MAGSAV" style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+      <Label text="Gérez vos catégories, produits et associations fabricants" style="-fx-font-size: 14; -fx-text-fill: #6c757d;"/>
     </VBox>
+  </top>
+  
+  <center>
+    <TabPane fx:id="productsTabPane" tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 10;">
+      
+      <!-- Onglet Vue d'ensemble -->
+      <Tab text="📊 Vue d'ensemble" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="20" style="-fx-padding: 20;">
+            
+            <!-- Statistiques générales -->
+            <VBox spacing="15">
+              <Label text="📈 Statistiques Générales" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+              
+              <GridPane hgap="20" vgap="15">
+                <columnConstraints>
+                  <ColumnConstraints percentWidth="25"/>
+                  <ColumnConstraints percentWidth="25"/>
+                  <ColumnConstraints percentWidth="25"/>
+                  <ColumnConstraints percentWidth="25"/>
+                </columnConstraints>
+                
+                <!-- Carte Produits -->
+                <VBox GridPane.columnIndex="0" spacing="10" style="-fx-background-color: #fff; -fx-padding: 20; -fx-border-color: #dee2e6; -fx-border-radius: 8; -fx-background-radius: 8;">
+                  <Label text="📦" style="-fx-font-size: 32; -fx-text-fill: #007bff;"/>
+                  <Label fx:id="lblTotalProducts" text="0" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                  <Label text="Produits Total" style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                </VBox>
+                
+                <!-- Carte Catégories -->
+                <VBox GridPane.columnIndex="1" spacing="10" style="-fx-background-color: #fff; -fx-padding: 20; -fx-border-color: #dee2e6; -fx-border-radius: 8; -fx-background-radius: 8;">
+                  <Label text="📁" style="-fx-font-size: 32; -fx-text-fill: #28a745;"/>
+                  <Label fx:id="lblTotalCategories" text="0" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                  <Label text="Catégories" style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                </VBox>
+                
+                <!-- Carte Fabricants -->
+                <VBox GridPane.columnIndex="2" spacing="10" style="-fx-background-color: #fff; -fx-padding: 20; -fx-border-color: #dee2e6; -fx-border-radius: 8; -fx-background-radius: 8;">
+                  <Label text="🏢" style="-fx-font-size: 32; -fx-text-fill: #ffc107;"/>
+                  <Label fx:id="lblTotalManufacturers" text="0" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                  <Label text="Fabricants" style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                </VBox>
+                
+                <!-- Carte Interventions -->
+                <VBox GridPane.columnIndex="3" spacing="10" style="-fx-background-color: #fff; -fx-padding: 20; -fx-border-color: #dee2e6; -fx-border-radius: 8; -fx-background-radius: 8;">
+                  <Label text="🔧" style="-fx-font-size: 32; -fx-text-fill: #dc3545;"/>
+                  <Label fx:id="lblTotalInterventions" text="0" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                  <Label text="Interventions" style="-fx-font-size: 12; -fx-text-fill: #6c757d;"/>
+                </VBox>
+              </GridPane>
+            </VBox>
+            
+            <Separator/>
+            
+            <!-- Actions rapides -->
+            <VBox spacing="15">
+              <Label text="⚡ Actions Rapides" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+              
+              <GridPane hgap="15" vgap="15">
+                <columnConstraints>
+                  <ColumnConstraints percentWidth="33"/>
+                  <ColumnConstraints percentWidth="33"/>
+                  <ColumnConstraints percentWidth="33"/>
+                </columnConstraints>
+                
+                <Button GridPane.columnIndex="0" text="➕ Nouveau Produit" onAction="#onNewProduct" 
+                        prefWidth="300" prefHeight="50" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;"/>
+                <Button GridPane.columnIndex="1" text="🏷️ Nouvelle Catégorie" onAction="#onNewCategory" 
+                        prefWidth="300" prefHeight="50" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;"/>
+                <Button GridPane.columnIndex="2" text="🏭 Nouveau Fabricant" onAction="#onNewManufacturer" 
+                        prefWidth="300" prefHeight="50" style="-fx-background-color: #ffc107; -fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;"/>
+              </GridPane>
+            </VBox>
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+      <!-- Onglet Produits -->
+      <Tab text="📦 Produits" closable="false">
+        <VBox spacing="10" style="-fx-padding: 15;">
+          
+          <!-- Barre d'outils produits -->
+          <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 5; -fx-background-radius: 5;">
+            <Label text="🔍" style="-fx-font-size: 16;"/>
+            <TextField fx:id="productSearchField" promptText="Rechercher un produit..." prefWidth="300"/>
+            <Button text="❌" onAction="#onClearProductSearch" style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+            <Separator orientation="VERTICAL"/>
+            <Button text="➕ Nouveau" onAction="#onNewProduct" style="-fx-background-color: #28a745; -fx-text-fill: white;"/>
+            <Button fx:id="btnEditProduct" text="✏️ Modifier" onAction="#onEditProduct" disable="true" style="-fx-background-color: #007bff; -fx-text-fill: white;"/>
+            <Button fx:id="btnDeleteProduct" text="🗑️ Supprimer" onAction="#onDeleteProduct" disable="true" style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+            <Separator orientation="VERTICAL"/>
+            <Button text="📊 Export" onAction="#onExportProducts" style="-fx-background-color: #6c757d; -fx-text-fill: white;"/>
+          </HBox>
+          
+          <!-- Table des produits -->
+          <TableView fx:id="productsTable" VBox.vgrow="ALWAYS">
+            <columns>
+              <TableColumn fx:id="colProductId" text="ID" prefWidth="60"/>
+              <TableColumn fx:id="colProductName" text="Nom du Produit" prefWidth="200"/>
+              <TableColumn fx:id="colProductSN" text="N° de Série" prefWidth="120"/>
+              <TableColumn fx:id="colProductUID" text="UID" prefWidth="100"/>
+              <TableColumn fx:id="colProductManufacturer" text="Fabricant" prefWidth="150"/>
+              <TableColumn fx:id="colProductCategory" text="Catégorie" prefWidth="150"/>
+              <TableColumn fx:id="colProductSituation" text="Situation" prefWidth="120"/>
+              <TableColumn fx:id="colProductStatus" text="Statut" prefWidth="100"/>
+            </columns>
+          </TableView>
+        </VBox>
+      </Tab>
+      
+      <!-- Onglet Catégories -->
+      <Tab text="🏷️ Catégories" closable="false">
+        <VBox spacing="10" style="-fx-padding: 15;">
+          
+          <!-- Barre d'outils catégories -->
+          <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 5; -fx-background-radius: 5;">
+            <Label text="🏷️" style="-fx-font-size: 16;"/>
+            <TextField fx:id="categorySearchField" promptText="Rechercher une catégorie..." prefWidth="300"/>
+            <Button text="❌" onAction="#onClearCategorySearch" style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+            <Separator orientation="VERTICAL"/>
+            <Button text="➕ Nouvelle Catégorie" onAction="#onNewCategory" style="-fx-background-color: #28a745; -fx-text-fill: white;"/>
+            <Button fx:id="btnEditCategory" text="✏️ Modifier" onAction="#onEditCategory" disable="true" style="-fx-background-color: #007bff; -fx-text-fill: white;"/>
+            <Button fx:id="btnDeleteCategory" text="🗑️ Supprimer" onAction="#onDeleteCategory" disable="true" style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+          </HBox>
+          
+          <!-- Table des catégories -->
+          <TableView fx:id="categoriesTable" VBox.vgrow="ALWAYS">
+            <columns>
+              <TableColumn fx:id="colCategoryId" text="ID" prefWidth="60"/>
+              <TableColumn fx:id="colCategoryName" text="Nom" prefWidth="200"/>
+              <TableColumn fx:id="colCategoryType" text="Type" prefWidth="120"/>
+              <TableColumn fx:id="colCategoryParent" text="Catégorie Parent" prefWidth="180"/>
+              <TableColumn fx:id="colCategoryHierarchy" text="Hiérarchie" prefWidth="250"/>
+              <TableColumn fx:id="colCategoryProductCount" text="Nb Produits" prefWidth="100"/>
+            </columns>
+          </TableView>
+        </VBox>
+      </Tab>
+      
+      <!-- Onglet Fabricants -->
+      <Tab text="🏭 Fabricants" closable="false">
+        <VBox spacing="10" style="-fx-padding: 15;">
+          
+          <!-- Barre d'outils fabricants -->
+          <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 5; -fx-background-radius: 5;">
+            <Label text="🏭" style="-fx-font-size: 16;"/>
+            <TextField fx:id="manufacturerSearchField" promptText="Rechercher un fabricant..." prefWidth="300"/>
+            <Button text="❌" onAction="#onClearManufacturerSearch" style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+            <Separator orientation="VERTICAL"/>
+            <Button text="➕ Nouveau Fabricant" onAction="#onNewManufacturer" style="-fx-background-color: #28a745; -fx-text-fill: white;"/>
+            <Button fx:id="btnEditManufacturer" text="✏️ Modifier" onAction="#onEditManufacturer" disable="true" style="-fx-background-color: #007bff; -fx-text-fill: white;"/>
+            <Button fx:id="btnDeleteManufacturer" text="🗑️ Supprimer" onAction="#onDeleteManufacturer" disable="true" style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+          </HBox>
+          
+          <!-- Table des fabricants -->
+          <TableView fx:id="manufacturersTable" VBox.vgrow="ALWAYS">
+            <columns>
+              <TableColumn fx:id="colManufacturerId" text="ID" prefWidth="60"/>
+              <TableColumn fx:id="colManufacturerName" text="Nom" prefWidth="200"/>
+              <TableColumn fx:id="colManufacturerWebsite" text="Site Web" prefWidth="180"/>
+              <TableColumn fx:id="colManufacturerCountry" text="Pays" prefWidth="120"/>
+              <TableColumn fx:id="colManufacturerProductCount" text="Nb Produits" prefWidth="100"/>
+              <TableColumn fx:id="colManufacturerLogo" text="Logo" prefWidth="80"/>
+            </columns>
+          </TableView>
+        </VBox>
+      </Tab>
+      
+    </TabPane>
   </center>
+  
+  <bottom>
+    <HBox spacing="10" alignment="CENTER_RIGHT" style="-fx-padding: 10; -fx-background-color: #f8f9fa; -fx-border-color: #dee2e6;">
+      <Label fx:id="lblStatus" text="Prêt" style="-fx-text-fill: #6c757d;"/>
+      <Separator orientation="VERTICAL"/>
+      <Button text="🔄 Actualiser" onAction="#onRefresh" style="-fx-background-color: #17a2b8; -fx-text-fill: white;"/>
+      <Button text="❌ Fermer" onAction="#onClose"/>
+    </HBox>
+  </bottom>
+  
 </BorderPane>

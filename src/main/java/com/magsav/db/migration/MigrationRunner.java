@@ -108,6 +108,42 @@ public class MigrationRunner {
             """);
           }
         }
+      },
+      new Migration() {
+        public int version() { return 4; }
+        public String description() { return "Suppression champ code inutile"; }
+        public void up(Connection c) throws SQLException {
+          try (Statement st = c.createStatement()) {
+            // Créer une nouvelle table sans le champ code
+            st.execute("""
+              CREATE TABLE produits_new(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nom TEXT, sn TEXT, fabricant TEXT, fabricant_id INTEGER,
+                uid TEXT, situation TEXT, photo TEXT,
+                category TEXT, subcategory TEXT, description TEXT,
+                date_achat TEXT, client TEXT, prix TEXT, garantie TEXT,
+                sav_externe_id INTEGER, categorieId INTEGER, sousCategorieId INTEGER
+              )
+            """);
+            
+            // Copier les données (sans le champ code)
+            st.execute("""
+              INSERT INTO produits_new 
+              SELECT id, nom, sn, fabricant, fabricant_id, uid, situation, photo,
+                     category, subcategory, description, date_achat, client, prix, garantie,
+                     sav_externe_id, categorieId, sousCategorieId
+              FROM produits
+            """);
+            
+            // Supprimer l'ancienne table et renommer
+            st.execute("DROP TABLE produits");
+            st.execute("ALTER TABLE produits_new RENAME TO produits");
+            
+            // Recréer les index
+            st.execute("CREATE INDEX IF NOT EXISTS ix_prod_sn ON produits(sn)");
+            st.execute("CREATE UNIQUE INDEX IF NOT EXISTS ix_prod_uid ON produits(uid)");
+          }
+        }
       }
     );
   }

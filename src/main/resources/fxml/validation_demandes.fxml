@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.magsav.gui.ValidationDemandesController"
+      spacing="12" style="-fx-padding: 12;">
+
+  <!-- Titre et statistiques -->
+  <HBox alignment="CENTER_LEFT" spacing="12">
+    <Label text="📋 Validation des demandes d'intervention" style="-fx-font-weight: bold; -fx-font-size: 16;"/>
+    <Region HBox.hgrow="ALWAYS"/>
+    <Label fx:id="lblStats" text="0 demande(s) en attente" style="-fx-font-size: 12; -fx-text-fill: #666;"/>
+    <Button fx:id="btnActualiser" text="🔄 Actualiser" onAction="#onActualiser"/>
+  </HBox>
+
+  <!-- Tableau des demandes en attente -->
+  <TableView fx:id="tableDemandesEnAttente" VBox.vgrow="ALWAYS" minHeight="200">
+    <columns>
+      <TableColumn fx:id="colDate" text="Date" prefWidth="120"/>
+      <TableColumn fx:id="colDemandeur" text="Demandeur" prefWidth="120"/>
+      <TableColumn fx:id="colType" text="Type" prefWidth="150"/>
+      <TableColumn fx:id="colProduit" text="Produit" prefWidth="150"/>
+      <TableColumn fx:id="colUID" text="UID" prefWidth="80"/>
+      <TableColumn fx:id="colSN" text="N° Série" prefWidth="100"/>
+      <TableColumn fx:id="colPanne" text="Panne" prefWidth="200"/>
+    </columns>
+  </TableView>
+
+  <!-- Détails de la demande sélectionnée -->
+  <VBox fx:id="vboxDetails" spacing="8" style="-fx-background-color: #f8f9fa; -fx-padding: 12; -fx-border-color: #dee2e6; -fx-border-radius: 4;">
+    <Label text="Détails de la demande sélectionnée" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+    
+    <GridPane hgap="8" vgap="6">
+      <columnConstraints>
+        <ColumnConstraints minWidth="100.0"/>
+        <ColumnConstraints hgrow="ALWAYS"/>
+        <ColumnConstraints minWidth="100.0"/>
+        <ColumnConstraints hgrow="ALWAYS"/>
+      </columnConstraints>
+      
+      <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+      <Label fx:id="lblDetailId" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+      
+      <Label text="Type:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+      <Label fx:id="lblDetailType" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+      
+      <Label text="Demandeur:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+      <Label fx:id="lblDetailDemandeur" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+      
+      <Label text="Date:" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+      <Label fx:id="lblDetailDate" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+      
+      <Label text="Produit:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+      <Label fx:id="lblDetailProduit" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+      
+      <Label text="UID:" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+      <Label fx:id="lblDetailUID" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+      
+      <Label text="N° Série:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+      <Label fx:id="lblDetailSN" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+      
+      <Label text="Détecteur:" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+      <Label fx:id="lblDetailDetecteur" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+    </GridPane>
+    
+    <VBox spacing="4">
+      <Label text="Description de la panne:" style="-fx-font-weight: bold;"/>
+      <TextArea fx:id="taDetailPanne" editable="false" prefRowCount="2" style="-fx-background-color: white;"/>
+    </VBox>
+    
+    <VBox spacing="4">
+      <Label text="Notes client:" style="-fx-font-weight: bold;"/>
+      <TextArea fx:id="taDetailNotes" editable="false" prefRowCount="2" style="-fx-background-color: white;"/>
+    </VBox>
+    
+    <!-- Section spécifique aux nouveaux produits -->
+    <VBox fx:id="vboxNouveauProduit" spacing="8" visible="false" managed="false"
+          style="-fx-background-color: #fff3cd; -fx-padding: 8; -fx-border-color: #ffeaa7; -fx-border-radius: 4;">
+      <Label text="⚠️ Nouveau produit à créer" style="-fx-font-weight: bold; -fx-text-fill: #856404;"/>
+      
+      <GridPane hgap="8" vgap="6">
+        <columnConstraints>
+          <ColumnConstraints minWidth="100.0"/>
+          <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+        
+        <Label text="Fabricant:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="tfNouveauFabricant" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        
+        <Label text="Catégorie:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="tfNouvelleCategorie" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        
+        <Label text="Description:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextArea fx:id="taNouvelleDescription" prefRowCount="2" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+      </GridPane>
+      
+      <CheckBox fx:id="cbCreerProduit" text="Créer ce produit dans la base de données" selected="true"/>
+    </VBox>
+    
+    <!-- Actions de validation -->
+    <HBox spacing="8" alignment="CENTER_LEFT">
+      <TextField fx:id="tfNotesValidation" promptText="Notes de validation (optionnel)" HBox.hgrow="ALWAYS"/>
+      
+      <Button fx:id="btnValider" text="✅ Valider la demande" onAction="#onValiderDemande"
+              style="-fx-background-color: #28a745; -fx-text-fill: white;" disable="true"/>
+      
+      <Button fx:id="btnRejeter" text="❌ Rejeter la demande" onAction="#onRejeterDemande"
+              style="-fx-background-color: #dc3545; -fx-text-fill: white;" disable="true"/>
+    </HBox>
+    
+  </VBox>
+
+</VBox>

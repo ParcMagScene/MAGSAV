@@ -2,7 +2,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <DialogPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.magsav.gui.products.CategoryFormController" headerText="Catégorie">
+            fx:controller="com.magsav.gui.categories.CategoryFormController" headerText="Catégorie">
   <content>
     <GridPane hgap="8" vgap="8" prefWidth="420">
       <columnConstraints>

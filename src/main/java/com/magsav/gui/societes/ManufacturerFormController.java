@@ -1,6 +1,9 @@
 package com.magsav.gui.societes;
 
 import com.magsav.model.Societe;
+import com.magsav.repo.SocieteRepository;
+import com.magsav.service.AddressService;
+import com.magsav.ui.components.FormDialogManager;
 import com.magsav.util.MediaPaths;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -11,7 +14,7 @@ import javafx.stage.FileChooser;
 import java.nio.file.*;
 import java.util.regex.Pattern;
 
-public class ManufacturerFormController {
+public class ManufacturerFormController implements FormDialogManager.FormController {
   @FXML private ImageView imgLogo;
   @FXML private TextField tfNom;
   @FXML private TextField tfEmail;
@@ -20,17 +23,65 @@ public class ManufacturerFormController {
   @FXML private TextArea taNotes;
 
   private String selectedLogo;
+  private final SocieteRepository repo = new SocieteRepository();
+  private final AddressService addressService = new AddressService();
+  private Societe currentSociete;
+  private boolean isEditMode = false;
+  private String societeType = "FABRICANT"; // Par défaut
 
   @FXML
   private void initialize() {
-    // Autoriser lettres, chiffres, espace, ., -, _, ', &, ()
     Pattern allowed = Pattern.compile("[\\p{L}\\p{N} .\\-_'&()]*");
     tfNom.setTextFormatter(new TextFormatter<>(change ->
         allowed.matcher(change.getControlNewText()).matches() && change.getControlNewText().length() <= 100
             ? change : null));
+    
+    // Ajouter l'autocomplétion d'adresse au TextArea
+    if (taAdresse != null) {
+      addressService.setupAddressAutocompleteForTextArea(taAdresse);
+    }
+  }
+
+  @Override
+  public void initForm() {
+    // Called by FormDialogManager
+  }
+
+  /**
+   * Définit le type de société (FABRICANT, FOURNISSEUR, CLIENT)
+   */
+  public void setSocieteType(String type) {
+    this.societeType = type != null ? type : "FABRICANT";
+  }
+
+  @Override
+  public boolean validateForm() {
+    return isValid();
+  }
+
+  @Override
+  public void saveFormData() {
+    try {
+      String nom = nom().trim();
+      String email = email();
+      String phone = phone();
+      String adresse = adresse();
+      String notes = notes();
+      
+      if (currentSociete != null) {
+        repo.update(currentSociete.id(), societeType, nom, email, phone, adresse, notes);
+      } else {
+        repo.insert(societeType, nom, email, phone, adresse, notes);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException("Erreur sauvegarde: " + e.getMessage(), e);
+    }
   }
 
   public void init(Societe current) {
+    this.currentSociete = current;
+    this.isEditMode = (current != null);
+    
     if (current != null) {
       tfNom.setText(current.nom());
       tfEmail.setText(current.email());
@@ -58,7 +109,7 @@ public class ManufacturerFormController {
       imgLogo.setImage(null);
       selectedLogo = null;
     } catch (Exception ex) {
-      // Ignore errors for logo loading
+      // Ignore logo loading errors
     }
   }
 
@@ -69,39 +120,40 @@ public class ManufacturerFormController {
       return;
     }
     
-    ButtonType choisir = new ButtonType("Depuis dossier logos", ButtonBar.ButtonData.LEFT);
-    ButtonType importer = new ButtonType("Importer…", ButtonBar.ButtonData.RIGHT);
-    ButtonType annuler = ButtonType.CANCEL;
-    Alert a = new Alert(Alert.AlertType.NONE, "", choisir, importer, annuler);
-    a.setTitle("Logo du fabricant");
-    a.setHeaderText("Choisir la source du logo");
-    var result = a.showAndWait().orElse(annuler);
-    if (result == choisir) chooseFromLibrary();
-    else if (result == importer) importLogo();
+    // Ouvrir directement la mosaïque des logos
+    chooseFromLibrary();
   }
 
   private void chooseFromLibrary() {
     try {
-      Path dir = MediaPaths.logosDir();
-      FileChooser fc = new FileChooser();
-      fc.setTitle("Choisir dans le dossier logos");
-      fc.setInitialDirectory(dir.toFile());
-      fc.getExtensionFilters().setAll(
-          new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.svg", "*.gif"),
-          new FileChooser.ExtensionFilter("Tous les fichiers", "*.*")
-      );
-      var file = fc.showOpenDialog(tfNom.getScene().getWindow());
-      if (file == null) return;
-      Path p = file.toPath().toAbsolutePath().normalize();
-      if (!p.startsWith(dir.toAbsolutePath().normalize())) {
-        new Alert(Alert.AlertType.WARNING, "Le fichier n'est pas dans le dossier logos. Utilisez 'Importer…'").showAndWait();
-        return;
+      // Utiliser la vue mosaïque pour la sélection de logos
+      javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/dialogs/logo_mosaic.fxml"));
+      javafx.scene.Parent root = loader.load();
+      
+      com.magsav.gui.dialogs.LogoMosaicController mosaicController = loader.getController();
+      
+      javafx.stage.Stage stage = new javafx.stage.Stage();
+      stage.setTitle("Choisir un logo - Vue mosaïque");
+      stage.setScene(new javafx.scene.Scene(root, 800, 600));
+      stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+      stage.initOwner(tfNom.getScene().getWindow());
+      
+      mosaicController.setStage(stage);
+      
+      stage.showAndWait();
+      
+      String selectedLogoPath = mosaicController.getSelectedLogoPath();
+      if (selectedLogoPath != null && !selectedLogoPath.trim().isEmpty()) {
+        // Le chemin retourné est relatif au dossier logos
+        selectedLogo = selectedLogoPath;
+        
+        // Charger l'image pour l'affichage
+        Path fullPath = MediaPaths.logosDir().resolve(selectedLogo);
+        imgLogo.setImage(new Image(fullPath.toUri().toString(), true));
       }
-      String filename = dir.relativize(p).toString();
-      selectedLogo = filename;
-      imgLogo.setImage(new Image(p.toUri().toString(), true));
+      
     } catch (Exception ex) {
-      new Alert(Alert.AlertType.ERROR, "Erreur sélection: " + ex.getMessage()).showAndWait();
+      new Alert(Alert.AlertType.ERROR, "Erreur sélection logo: " + ex.getMessage()).showAndWait();
     }
   }
 
@@ -137,15 +189,31 @@ public class ManufacturerFormController {
     return out.replaceAll("^_+|_+$", "");
   }
 
-  public boolean isValid() { return nom().trim().length() >= 2; }
+  public boolean isValid() { 
+    return nom().trim().length() >= 2; 
+  }
 
   public String nom() {
     return tfNom == null ? "" : tfNom.getText();
   }
-  public String email()   { return v(tfEmail.getText()); }
-  public String phone()   { return v(tfPhone.getText()); }
-  public String adresse() { return v(taAdresse.getText()); }
-  public String notes()   { return v(taNotes.getText()); }
+  
+  public String email() { 
+    return v(tfEmail.getText()); 
+  }
+  
+  public String phone() { 
+    return v(tfPhone.getText()); 
+  }
+  
+  public String adresse() { 
+    return v(taAdresse.getText()); 
+  }
+  
+  public String notes() { 
+    return v(taNotes.getText()); 
+  }
 
-  private static String v(String s) { return s == null ? "" : s.trim(); }
+  private static String v(String s) { 
+    return s == null ? "" : s.trim(); 
+  }
 }

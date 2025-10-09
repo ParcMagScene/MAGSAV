@@ -2,111 +2,161 @@ package com.magsav.gui.societes;
 
 import com.magsav.model.Societe;
 import com.magsav.repo.SocieteRepository;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
-import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.util.Optional;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-public class ClientsController {
-  private static final String TYPE = "CLIENT";
+public class ClientsController implements Initializable {
 
+  @FXML private TextField tfSearch;
   @FXML private TableView<Societe> table;
-  @FXML private TableColumn<Societe, String> colId;
+  @FXML private TableColumn<Societe, Long> colId;
   @FXML private TableColumn<Societe, String> colNom;
   @FXML private TableColumn<Societe, String> colEmail;
   @FXML private TableColumn<Societe, String> colPhone;
   @FXML private TableColumn<Societe, String> colNotes;
-  @FXML private TextField tfSearch;
 
-  private final SocieteRepository repo = new SocieteRepository();
-  private final ObservableList<Societe> master = FXCollections.observableArrayList();
-  private FilteredList<Societe> filtered;
+  private final SocieteRepository societeRepo = new SocieteRepository();
+  private final ObservableList<Societe> data = FXCollections.observableArrayList();
+
+  @Override
+  public void initialize(URL location, ResourceBundle resources) {
+    // Configuration des colonnes
+    colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+    colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
+    colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+    colPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
+    colNotes.setCellValueFactory(new PropertyValueFactory<>("notes"));
+
+    // Liaison des données
+    table.setItems(data);
+
+    // Configuration de la recherche
+    tfSearch.textProperty().addListener((obs, oldVal, newVal) -> filterData(newVal));
+
+    // Chargement initial
+    loadData();
+  }
+
+  private void loadData() {
+    try {
+      data.clear();
+      data.addAll(societeRepo.findByType("CLIENT"));
+    } catch (Exception e) {
+      showError("Erreur lors du chargement des clients", e.getMessage());
+    }
+  }
+
+  private void filterData(String searchText) {
+    if (searchText == null || searchText.trim().isEmpty()) {
+      loadData();
+      return;
+    }
+
+    try {
+      data.clear();
+      String search = searchText.toLowerCase().trim();
+      data.addAll(societeRepo.findByType("CLIENT").stream()
+          .filter(s -> 
+              (s.nom() != null && s.nom().toLowerCase().contains(search)) ||
+              (s.email() != null && s.email().toLowerCase().contains(search)) ||
+              (s.phone() != null && s.phone().toLowerCase().contains(search)) ||
+              (s.notes() != null && s.notes().toLowerCase().contains(search))
+          ).toList());
+    } catch (Exception e) {
+      showError("Erreur lors de la recherche", e.getMessage());
+    }
+  }
 
   @FXML
-  private void initialize() {
-    colId.setCellValueFactory(c -> new SimpleStringProperty(String.valueOf(c.getValue().id())));
-    colNom.setCellValueFactory(c -> new SimpleStringProperty(orEmpty(c.getValue().nom())));
-    colEmail.setCellValueFactory(c -> new SimpleStringProperty(orEmpty(c.getValue().email())));
-    colPhone.setCellValueFactory(c -> new SimpleStringProperty(orEmpty(c.getValue().phone())));
-    colNotes.setCellValueFactory(c -> new SimpleStringProperty(orEmpty(c.getValue().notes())));
-
-    filtered = new FilteredList<>(master, it -> true);
-    SortedList<Societe> sorted = new SortedList<>(filtered);
-    sorted.comparatorProperty().bind(table.comparatorProperty());
-    table.setItems(sorted);
-
-    if (tfSearch != null) tfSearch.textProperty().addListener((o, a, b) -> applyFilter(b));
-    onRefresh();
+  private void onRefresh() {
+    loadData();
   }
 
-  @FXML private void onRefresh() {
-    master.setAll(repo.findByType(TYPE));
-    applyFilter(tfSearch == null ? "" : tfSearch.getText());
-  }
-
-  @FXML private void onAdd() { openForm(null); }
-
-  @FXML private void onEdit() {
-    var sel = table.getSelectionModel().getSelectedItem();
-    if (sel != null) openForm(sel);
-  }
-
-  @FXML private void onDelete() {
-    var sel = table.getSelectionModel().getSelectedItem();
-    if (sel == null) return;
-    var confirm = new Alert(Alert.AlertType.CONFIRMATION,
-        "Supprimer le client \"" + sel.nom() + "\" ?").showAndWait();
-    if (confirm.isPresent() && confirm.get().getButtonData().isDefaultButton()) {
-      if (!repo.delete(sel.id())) new Alert(Alert.AlertType.WARNING, "Rien n’a été supprimé.").showAndWait();
-      onRefresh();
-    }
-  }
-
-  private void openForm(Societe current) {
+  @FXML
+  private void onAdd() {
     try {
-      FXMLLoader l = new FXMLLoader(getClass().getResource("/fxml/societes/manufacturer_form.fxml"));
-      DialogPane pane = l.load();
-      ManufacturerFormController ctl = l.getController();
-      ctl.init(current);
-
-      Dialog<ButtonType> d = new Dialog<>();
-      d.setTitle(current == null ? "Ajouter un client" : "Modifier le client");
-      d.setDialogPane(pane);
-      Optional<ButtonType> res = d.showAndWait();
-      if (res.isPresent() && res.get().getButtonData().isDefaultButton()) {
-        if (!ctl.isValid()) {
-          new Alert(Alert.AlertType.WARNING, "Le nom est requis (≥ 2 caractères).").showAndWait();
-          return;
-        }
-        if (current == null) {
-          repo.insert(TYPE, ctl.nom(), ctl.email(), ctl.phone(), ctl.adresse(), ctl.notes());
-        } else {
-          repo.update(new Societe(current.id(), TYPE, ctl.nom(), ctl.email(), ctl.phone(), ctl.adresse(), ctl.notes(), current.createdAt()));
-        }
-        onRefresh();
+      // Pour les clients, nous utilisons le même formulaire que les fabricants
+      // mais avec un type différent
+      var result = com.magsav.ui.components.FormDialogManager.MAGSAV.showManufacturerDialog(false, table.getScene().getWindow());
+      if (result.isSaved()) {
+        loadData();
       }
     } catch (Exception e) {
-      new Alert(Alert.AlertType.ERROR, "Erreur formulaire: " + e.getMessage()).showAndWait();
+      showError("Erreur lors de l'ouverture du formulaire", e.getMessage());
     }
   }
 
-  private void applyFilter(String q) {
-    String s = q == null ? "" : q.trim().toLowerCase();
-    filtered.setPredicate(v -> {
-      if (s.isEmpty()) return true;
-      return String.valueOf(v.id()).contains(s)
-          || orEmpty(v.nom()).toLowerCase().contains(s)
-          || orEmpty(v.email()).toLowerCase().contains(s)
-          || orEmpty(v.phone()).toLowerCase().contains(s)
-          || orEmpty(v.notes()).toLowerCase().contains(s);
-    });
+  @FXML
+  private void onEdit() {
+    Societe selected = table.getSelectionModel().getSelectedItem();
+    if (selected == null) {
+      showWarning("Aucune sélection", "Veuillez sélectionner un client à modifier.");
+      return;
+    }
+
+    try {
+      // Ouvrir le formulaire de modification
+      var result = com.magsav.ui.components.FormDialogManager.MAGSAV.showManufacturerDialog(true, table.getScene().getWindow());
+      if (result.isSaved()) {
+        loadData();
+      }
+    } catch (Exception e) {
+      showError("Erreur lors de l'ouverture du formulaire", e.getMessage());
+    }
   }
 
-  private static String orEmpty(String x) { return x == null ? "" : x; }
+  @FXML
+  private void onDelete() {
+    Societe selected = table.getSelectionModel().getSelectedItem();
+    if (selected == null) {
+      showWarning("Aucune sélection", "Veuillez sélectionner un client à supprimer.");
+      return;
+    }
+
+    Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+    confirmation.setTitle("Confirmation");
+    confirmation.setHeaderText("Supprimer le client");
+    confirmation.setContentText("Êtes-vous sûr de vouloir supprimer \"" + selected.nom() + "\" ?\nCette action est irréversible.");
+
+    if (confirmation.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+      try {
+        societeRepo.delete(selected.id());
+        loadData();
+        showInfo("Suppression réussie", "Le client a été supprimé avec succès.");
+      } catch (Exception e) {
+        showError("Erreur lors de la suppression", e.getMessage());
+      }
+    }
+  }
+
+  private void showError(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.ERROR);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
+  }
+
+  private void showWarning(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.WARNING);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
+  }
+
+  private void showInfo(String title, String message) {
+    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    alert.setTitle(title);
+    alert.setHeaderText(null);
+    alert.setContentText(message);
+    alert.showAndWait();
+  }
 }

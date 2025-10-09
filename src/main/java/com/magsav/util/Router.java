@@ -4,6 +4,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import java.util.prefs.Preferences;
 
 public final class Router {
   public enum Route {
@@ -28,7 +29,16 @@ public final class Router {
     Parent root = loader.load();
     Stage stage = new Stage();
     stage.setTitle(route.title);
-    stage.setScene(new Scene(root));
+    // Utilise le nom de la route comme clé
+    Preferences prefs = Preferences.userNodeForPackage(Router.class);
+    String key = route.name().toLowerCase();
+    double width = prefs.getDouble(key + ".width", 900);
+    double height = prefs.getDouble(key + ".height", 650);
+    stage.setScene(new Scene(root, width, height));
+    stage.setOnCloseRequest(e -> {
+      prefs.putDouble(key + ".width", stage.getWidth());
+      prefs.putDouble(key + ".height", stage.getHeight());
+    });
     stage.show();
   }
 

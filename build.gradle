@@ -6,6 +6,13 @@ plugins {
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 application { mainClass = "com.magsav.App" }
+
+// Tâche pour lancer l'API
+task runApi(type: JavaExec) {
+    mainClass = 'com.magsav.api.ApiServer'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 repositories { mavenCentral() }
 
 dependencies {
@@ -17,6 +24,16 @@ dependencies {
   implementation "com.opencsv:opencsv:5.9"
   implementation 'com.google.zxing:core:3.5.3'
   implementation 'com.google.zxing:javase:3.5.3'
+  implementation "com.sun.mail:jakarta.mail:2.0.1"
+  implementation "com.google.code.gson:gson:2.10.1"
+  
+  // API REST simple avec Jetty
+  implementation "org.eclipse.jetty:jetty-server:11.0.18"
+  implementation "org.eclipse.jetty:jetty-servlet:11.0.18"
+  implementation "jakarta.servlet:jakarta.servlet-api:5.0.0"
+  implementation "com.fasterxml.jackson.core:jackson-databind:2.16.0"
+  implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.0"
+  
   testImplementation platform("org.junit:junit-bom:5.11.0")
   testImplementation "org.junit.jupiter:junit-jupiter"
   testImplementation "org.mockito:mockito-core:5.8.0"
@@ -35,4 +52,17 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
   useJUnitPlatform()
+  testLogging {
+    events "passed", "skipped", "failed"
+    exceptionFormat "full"
+  }
+  timeout = Duration.ofMinutes(10)
+}
+
+task qualityCheck(dependsOn: ['compileJava', 'compileTestJava', 'test']) {
+  doLast {
+    println "Verifications de qualite terminees"
+    println "- Compilation: SUCCESS"
+    println "- Tests: EXECUTED"
+  }
 }

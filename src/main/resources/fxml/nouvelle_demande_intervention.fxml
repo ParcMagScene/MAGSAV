@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.NouvelleDemandeInterventionController"
+            headerText="Nouvelle demande d'intervention">
+  <content>
+    <VBox spacing="12" prefWidth="600">
+      
+      <!-- 1. Méthode d'identification du produit -->
+      <VBox spacing="8">
+        <Label text="1. Identification du produit" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+        
+        <HBox spacing="12" alignment="CENTER_LEFT">
+          <Button fx:id="btnScanQr" text="📷 Scanner QR Code" onAction="#onScanQrCode" 
+                  style="-fx-background-color: #4CAF50; -fx-text-fill: white;" prefWidth="150"/>
+          
+          <Label text="ou"/>
+          
+          <Button fx:id="btnSaisieManuelle" text="✏️ Saisie manuelle" onAction="#onSaisieManuelle"
+                  style="-fx-background-color: #2196F3; -fx-text-fill: white;" prefWidth="150"/>
+        </HBox>
+        
+        <!-- Résultat de l'identification -->
+        <VBox fx:id="vboxResultatIdentification" spacing="4" style="-fx-background-color: #f0f0f0; -fx-padding: 8;">
+          <Label fx:id="lblStatutProduit" text="Aucun produit identifié" style="-fx-font-weight: bold;"/>
+          <Label fx:id="lblDetailsProduit" text="" style="-fx-font-size: 11; -fx-text-fill: #666;"/>
+        </VBox>
+      </VBox>
+      
+      <!-- 2. Informations produit (seulement si nouveau produit) -->
+      <VBox fx:id="vboxNouveauProduit" spacing="8" visible="false" managed="false">
+        <Label text="2. Informations du nouveau produit" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+        
+        <GridPane hgap="8" vgap="8">
+          <columnConstraints>
+            <ColumnConstraints minWidth="120.0"/>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="300.0"/>
+          </columnConstraints>
+          
+          <Label text="Nom du produit:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+          <HBox spacing="8" GridPane.rowIndex="0" GridPane.columnIndex="1">
+            <TextField fx:id="tfProduitNom" promptText="Nom du produit" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnChoisirProduit" text="🔍 Choisir" onAction="#onChoisirProduit" prefWidth="80"/>
+          </HBox>
+          
+          <Label text="Numéro de série:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+          <HBox spacing="8" GridPane.rowIndex="1" GridPane.columnIndex="1">
+            <TextField fx:id="tfSerialNumber" promptText="Numéro de série" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnChoisirSN" text="🔍 Choisir" onAction="#onChoisirSerialNumber" prefWidth="80"/>
+          </HBox>
+          
+          <Label text="Fabricant:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+          <TextField fx:id="tfFabricant" promptText="Fabricant (automatique)" disable="true" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+          
+          <Label text="Catégorie:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+          <TextField fx:id="tfCategorie" promptText="Catégorie (automatique)" disable="true" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        </GridPane>
+      </VBox>
+      
+      <!-- 3. Détails de la demande d'intervention -->
+      <VBox spacing="8">
+        <Label text="3. Détails de l'intervention" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+        
+        <GridPane hgap="8" vgap="8">
+          <columnConstraints>
+            <ColumnConstraints minWidth="120.0"/>
+            <ColumnConstraints hgrow="ALWAYS" minWidth="300.0"/>
+          </columnConstraints>
+          
+          <Label text="Description panne:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+          <TextArea fx:id="taPanneDescription" promptText="Décrivez le problème rencontré..." 
+                    prefRowCount="3" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+          
+          <Label text="Notes client:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+          <TextArea fx:id="taClientNote" promptText="Notes ou commentaires additionnels..." 
+                    prefRowCount="2" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+          
+          <Label text="Détecteur:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+          <TextField fx:id="tfDetecteur" promptText="Nom de la personne qui a détecté le problème" 
+                     GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        </GridPane>
+      </VBox>
+      
+      <!-- 4. Informations demandeur -->
+      <VBox spacing="8">
+        <Label text="4. Demandeur" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+        
+        <TextField fx:id="tfDemandeurNom" promptText="Nom du demandeur (vous)" />
+      </VBox>
+      
+    </VBox>
+  </content>
+  
+  <buttonTypes>
+    <ButtonType text="Soumettre la demande" buttonData="OK_DONE"/>
+    <ButtonType text="Annuler" buttonData="CANCEL_CLOSE"/>
+  </buttonTypes>
+</DialogPane>

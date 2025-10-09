@@ -16,6 +16,7 @@ public class ProductRepositoryTest {
   static void keepMemoryDb() throws Exception {
     System.setProperty("magsav.db.url", "jdbc:sqlite:file:prod_repo_test?mode=memory&cache=shared");
     keeper = DriverManager.getConnection(System.getProperty("magsav.db.url"));
+    DB.resetForTesting();
     DB.init();
   }
 
@@ -31,7 +32,7 @@ public class ProductRepositoryTest {
 
   @Test
   void insert_find_update_existsUid() {
-    long id = repo.insert("C1", "P1", "SN1", "FAB", null, "En stock");
+    long id = repo.insert("P1", "SN1", "FAB", null, "En stock");
     assertTrue(id > 0);
 
     var p = repo.findById(id).orElseThrow();

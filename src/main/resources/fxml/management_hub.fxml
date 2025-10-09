@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.ManagementHubController">
+  <top>
+    <Label text="Interface de Gestion Centralisée" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-padding: 15;"/>
+  </top>
+  
+  <center>
+    <TabPane fx:id="managementTabPane" tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 10;">
+      
+      <!-- Onglet Produits -->
+      <Tab text="📦 Produits" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="15" style="-fx-padding: 15;">
+            
+            <!-- Section Recherche Produits -->
+            <VBox spacing="10">
+              <Label text="Recherche et Filtrage" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <HBox spacing="10">
+                <TextField fx:id="txtProductSearch" promptText="Rechercher un produit..." prefWidth="300"/>
+                <ComboBox fx:id="cbProductCategory" promptText="Catégorie" prefWidth="150"/>
+                <ComboBox fx:id="cbProductManufacturer" promptText="Fabricant" prefWidth="150"/>
+                <Button fx:id="btnRefreshProducts" text="🔄 Actualiser" onAction="#onRefreshProducts"/>
+              </HBox>
+            </VBox>
+            
+            <!-- Section Table Produits -->
+            <VBox spacing="10" VBox.vgrow="ALWAYS">
+              <HBox spacing="10">
+                <Label text="Liste des Produits" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblProductCount" text="0 produits" style="-fx-text-fill: #666;"/>
+              </HBox>
+              
+              <TableView fx:id="tableProducts" prefHeight="350" VBox.vgrow="ALWAYS">
+                <columns>
+                  <TableColumn fx:id="colProductId" text="ID" prefWidth="60"/>
+                  <TableColumn fx:id="colProductName" text="Nom" prefWidth="200"/>
+                  <TableColumn fx:id="colProductCategory" text="Catégorie" prefWidth="150"/>
+                  <TableColumn fx:id="colProductManufacturer" text="Fabricant" prefWidth="120"/>
+                  <TableColumn fx:id="colProductStock" text="Stock" prefWidth="80"/>
+                  <TableColumn fx:id="colProductPrice" text="Prix" prefWidth="100"/>
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+              </TableView>
+              
+              <!-- Actions Produits -->
+              <HBox spacing="10">
+                <Button fx:id="btnAddProduct" text="➕ Ajouter Produit" onAction="#onAddProduct"/>
+                <Button fx:id="btnEditProduct" text="✏️ Modifier" onAction="#onEditProduct" disable="true"/>
+                <Button fx:id="btnDeleteProduct" text="❌ Supprimer" onAction="#onDeleteProduct" disable="true"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnImportProducts" text="📥 Importer" onAction="#onImportProducts"/>
+                <Button fx:id="btnExportProducts" text="📤 Exporter" onAction="#onExportProducts"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnOpenProductsHub" text="� Ouvrir Hub Produits" onAction="#onOpenProductsHub" style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+              </HBox>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+      <!-- Onglet Fabricants -->
+      <Tab text="🏭 Fabricants" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="15" style="-fx-padding: 15;">
+            
+            <!-- Section Recherche Fabricants -->
+            <VBox spacing="10">
+              <Label text="Gestion des Fabricants" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <HBox spacing="10">
+                <TextField fx:id="txtManufacturerSearch" promptText="Rechercher un fabricant..." prefWidth="300"/>
+                <Button fx:id="btnRefreshManufacturers" text="🔄 Actualiser" onAction="#onRefreshManufacturers"/>
+              </HBox>
+            </VBox>
+            
+            <!-- Section Table Fabricants -->
+            <VBox spacing="10" VBox.vgrow="ALWAYS">
+              <TableView fx:id="tableManufacturers" prefHeight="350" VBox.vgrow="ALWAYS">
+                <columns>
+                  <TableColumn fx:id="colManufacturerId" text="ID" prefWidth="60"/>
+                  <TableColumn fx:id="colManufacturerName" text="Nom" prefWidth="200"/>
+                  <TableColumn fx:id="colManufacturerContact" text="Contact" prefWidth="180"/>
+                  <TableColumn fx:id="colManufacturerEmail" text="Email" prefWidth="200"/>
+                  <TableColumn fx:id="colManufacturerProducts" text="Produits" prefWidth="80"/>
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+              </TableView>
+              
+              <!-- Actions Fabricants -->
+              <HBox spacing="10">
+                <Button fx:id="btnAddManufacturer" text="➕ Ajouter Fabricant" onAction="#onAddManufacturer"/>
+                <Button fx:id="btnEditManufacturer" text="✏️ Modifier" onAction="#onEditManufacturer" disable="true"/>
+                <Button fx:id="btnDeleteManufacturer" text="❌ Supprimer" onAction="#onDeleteManufacturer" disable="true"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnOpenSocietesHub" text="� Ouvrir Hub Sociétés" onAction="#onOpenSocietesHub" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+              </HBox>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+      <!-- Onglet Fournisseurs -->
+      <Tab text="🚚 Fournisseurs" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="15" style="-fx-padding: 15;">
+            
+            <!-- Section Recherche Fournisseurs -->
+            <VBox spacing="10">
+              <Label text="Gestion des Fournisseurs" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <HBox spacing="10">
+                <TextField fx:id="txtSupplierSearch" promptText="Rechercher un fournisseur..." prefWidth="300"/>
+                <Button fx:id="btnRefreshSuppliers" text="🔄 Actualiser" onAction="#onRefreshSuppliers"/>
+              </HBox>
+            </VBox>
+            
+            <!-- Section Table Fournisseurs -->
+            <VBox spacing="10" VBox.vgrow="ALWAYS">
+              <TableView fx:id="tableSuppliers" prefHeight="350" VBox.vgrow="ALWAYS">
+                <columns>
+                  <TableColumn fx:id="colSupplierId" text="ID" prefWidth="60"/>
+                  <TableColumn fx:id="colSupplierName" text="Nom" prefWidth="200"/>
+                  <TableColumn fx:id="colSupplierContact" text="Contact" prefWidth="180"/>
+                  <TableColumn fx:id="colSupplierEmail" text="Email" prefWidth="200"/>
+                  <TableColumn fx:id="colSupplierProducts" text="Produits" prefWidth="80"/>
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+              </TableView>
+              
+              <!-- Actions Fournisseurs -->
+              <HBox spacing="10">
+                <Button fx:id="btnAddSupplier" text="➕ Ajouter Fournisseur" onAction="#onAddSupplier"/>
+                <Button fx:id="btnEditSupplier" text="✏️ Modifier" onAction="#onEditSupplier" disable="true"/>
+                <Button fx:id="btnDeleteSupplier" text="❌ Supprimer" onAction="#onDeleteSupplier" disable="true"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnOpenSocietesHubFournisseurs" text="� Hub Sociétés (Fournisseurs)" onAction="#onOpenSocietesHubFournisseurs" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+              </HBox>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+      <!-- Onglet SAV Externes -->
+      <Tab text="🔧 SAV Externes" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="15" style="-fx-padding: 15;">
+            
+            <!-- Section Recherche SAV -->
+            <VBox spacing="10">
+              <Label text="Gestion des SAV Externes" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <HBox spacing="10">
+                <TextField fx:id="txtSavSearch" promptText="Rechercher un SAV externe..." prefWidth="300"/>
+                <Button fx:id="btnRefreshSav" text="🔄 Actualiser" onAction="#onRefreshSav"/>
+              </HBox>
+            </VBox>
+            
+            <!-- Section Table SAV -->
+            <VBox spacing="10" VBox.vgrow="ALWAYS">
+              <TableView fx:id="tableSav" prefHeight="350" VBox.vgrow="ALWAYS">
+                <columns>
+                  <TableColumn fx:id="colSavId" text="ID" prefWidth="60"/>
+                  <TableColumn fx:id="colSavName" text="Nom" prefWidth="200"/>
+                  <TableColumn fx:id="colSavSpeciality" text="Spécialité" prefWidth="150"/>
+                  <TableColumn fx:id="colSavContact" text="Contact" prefWidth="180"/>
+                  <TableColumn fx:id="colSavEmail" text="Email" prefWidth="200"/>
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+              </TableView>
+              
+              <!-- Actions SAV -->
+              <HBox spacing="10">
+                <Button fx:id="btnAddSav" text="➕ Ajouter SAV" onAction="#onAddSav"/>
+                <Button fx:id="btnEditSav" text="✏️ Modifier" onAction="#onEditSav" disable="true"/>
+                <Button fx:id="btnDeleteSav" text="❌ Supprimer" onAction="#onDeleteSav" disable="true"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnOpenSocietesHubSav" text="� Hub Sociétés (SAV)" onAction="#onOpenSocietesHubSav" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+              </HBox>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+      <!-- Onglet Clients -->
+      <Tab text="👥 Clients" closable="false">
+        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+          <VBox spacing="15" style="-fx-padding: 15;">
+            
+            <!-- Section Recherche Clients -->
+            <VBox spacing="10">
+              <Label text="Gestion des Clients" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+              <HBox spacing="10">
+                <TextField fx:id="txtClientSearch" promptText="Rechercher un client..." prefWidth="300"/>
+                <ComboBox fx:id="cbClientType" promptText="Type de client" prefWidth="150"/>
+                <Button fx:id="btnRefreshClients" text="🔄 Actualiser" onAction="#onRefreshClients"/>
+              </HBox>
+            </VBox>
+            
+            <!-- Section Table Clients -->
+            <VBox spacing="10" VBox.vgrow="ALWAYS">
+              <TableView fx:id="tableClients" prefHeight="350" VBox.vgrow="ALWAYS">
+                <columns>
+                  <TableColumn fx:id="colClientId" text="ID" prefWidth="60"/>
+                  <TableColumn fx:id="colClientName" text="Nom" prefWidth="180"/>
+                  <TableColumn fx:id="colClientCompany" text="Société" prefWidth="150"/>
+                  <TableColumn fx:id="colClientContact" text="Contact" prefWidth="150"/>
+                  <TableColumn fx:id="colClientEmail" text="Email" prefWidth="180"/>
+                  <TableColumn fx:id="colClientInterventions" text="Interventions" prefWidth="100"/>
+                </columns>
+                <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+              </TableView>
+              
+              <!-- Actions Clients -->
+              <HBox spacing="10">
+                <Button fx:id="btnAddClient" text="➕ Ajouter Client" onAction="#onAddClient"/>
+                <Button fx:id="btnEditClient" text="✏️ Modifier" onAction="#onEditClient" disable="true"/>
+                <Button fx:id="btnDeleteClient" text="❌ Supprimer" onAction="#onDeleteClient" disable="true"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="btnClientHistory" text="📋 Historique" onAction="#onClientHistory" disable="true"/>
+                <Button fx:id="btnOpenClientsHub" text="� Ouvrir Hub Clients" onAction="#onOpenClientsHub" style="-fx-background-color: #16a085; -fx-text-fill: white;"/>
+              </HBox>
+            </VBox>
+            
+          </VBox>
+        </ScrollPane>
+      </Tab>
+      
+    </TabPane>
+  </center>
+  
+  <bottom>
+    <HBox spacing="15" style="-fx-padding: 15; -fx-alignment: center-right;">
+      <Label fx:id="lblDataStats" text="" style="-fx-text-fill: #666; -fx-font-size: 12;"/>
+      <Pane HBox.hgrow="ALWAYS"/>
+      <Button fx:id="btnRefreshAllData" text="🔄 Actualiser Tout" onAction="#onRefreshAllData"/>
+      <Button fx:id="btnCloseManagement" text="❌ Fermer" onAction="#onClose"/>
+    </HBox>
+  </bottom>
+</BorderPane>

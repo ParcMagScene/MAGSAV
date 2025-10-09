@@ -1,6 +1,8 @@
 package com.magsav;
 
 import com.magsav.db.DB;
+import com.magsav.service.DataCacheService;
+import com.magsav.util.DatabaseInitializer;
 import com.magsav.util.FxmlValidator;
 import com.magsav.util.MediaValidator;
 import com.magsav.util.MediaAudit;
@@ -9,15 +11,39 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import java.util.prefs.Preferences;
 
 public class App extends Application {
   @Override
   public void start(Stage stage) throws Exception {
-    DB.init();
+    // S'assurer d'utiliser la base de données de production et non celle des tests
+    DB.initForProduction();
+    DB.diagnose(); // Diagnostic de la connexion
+
+    // Initialiser les utilisateurs par défaut
+    DatabaseInitializer.initialize();
+
+    // Vider le cache pour forcer le rechargement depuis la base de données
+    DataCacheService.invalidateAllCache();
+    System.out.println("Cache invalidé - rechargement depuis la base de données");
+
     MediaValidator.ensureDirs();
     Parent root = FXMLLoader.load(getClass().getResource("/fxml/main.fxml"));
     stage.setTitle("MAGSAV 1.2");
-    stage.setScene(new Scene(root, 1000, 700));
+
+    // Préférences pour mémoriser/restaurer la taille de la fenêtre principale
+    Preferences prefs = Preferences.userNodeForPackage(App.class);
+    double width = prefs.getDouble("mainWindow.width", 1000);
+    double height = prefs.getDouble("mainWindow.height", 700);
+    Scene scene = new Scene(root, width, height);
+    stage.setScene(scene);
+
+    // À la fermeture, sauvegarder la taille
+    stage.setOnCloseRequest(e -> {
+      prefs.putDouble("mainWindow.width", stage.getWidth());
+      prefs.putDouble("mainWindow.height", stage.getHeight());
+    });
+
     stage.show();
     FxmlValidator.validateAll();
     MediaAudit.report();

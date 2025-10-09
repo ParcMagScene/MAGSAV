@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.maintenance.ImageMaintenanceController">
+   <top>
+      <VBox spacing="10.0">
+         <children>
+            <Label text="Maintenance des Images">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Label>
+            <Separator />
+            <Label text="Utilisez ces outils pour optimiser et nettoyer votre bibliothèque d'images." textFill="#666666" />
+         </children>
+         <BorderPane.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </BorderPane.margin>
+      </VBox>
+   </top>
+   <center>
+      <VBox fx:id="mainContainer" spacing="15.0">
+         <children>
+            <!-- Section Normalisation -->
+            <VBox spacing="10.0" styleClass="card">
+               <children>
+                  <Label text="Normalisation des Images">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Redimensionne toutes les images en 3 tailles standards (miniature 150px, moyenne 400px, grande 800px) pour optimiser l'affichage." textFill="#666666" wrapText="true" />
+                  <Button fx:id="btnNormalizeImages" mnemonicParsing="false" text="Normaliser les Images">
+                     <tooltip>
+                        <Tooltip text="Crée des versions optimisées de toutes les images" />
+                     </tooltip>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            
+            <!-- Section Normalisation Logos -->
+            <VBox spacing="10.0" styleClass="card">
+               <children>
+                  <Label text="Normalisation des Logos">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Redimensionne tous les logos en 3 tailles standards optimisées pour l'affichage dans l'interface." textFill="#666666" wrapText="true" />
+                  <Button fx:id="btnNormalizeLogos" mnemonicParsing="false" text="Normaliser les Logos">
+                     <tooltip>
+                        <Tooltip text="Crée des versions optimisées de tous les logos" />
+                     </tooltip>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            
+            <!-- Section Normalisation Complète -->
+            <VBox spacing="10.0" styleClass="card">
+               <children>
+                  <Label text="Normalisation Complète">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Normalise toutes les images ET tous les logos en une seule opération." textFill="#666666" wrapText="true" />
+                  <Button fx:id="btnNormalizeAll" mnemonicParsing="false" text="Normaliser Tout">
+                     <tooltip>
+                        <Tooltip text="Normalise images et logos simultanément" />
+                     </tooltip>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            
+            <!-- Section Doublons -->
+            <VBox spacing="10.0" styleClass="card">
+               <children>
+                  <Label text="Suppression des Doublons">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Détecte et supprime automatiquement les images identiques pour libérer de l'espace disque." textFill="#666666" wrapText="true" />
+                  <Label text="⚠️ Attention: Cette opération supprime définitivement les fichiers dupliqués." textFill="#ff6b35" wrapText="true">
+                     <font>
+                        <Font name="System Italic" size="12.0" />
+                     </font>
+                  </Label>
+                  <Button fx:id="btnRemoveDuplicates" mnemonicParsing="false" text="Supprimer les Doublons">
+                     <tooltip>
+                        <Tooltip text="Recherche et supprime les images identiques" />
+                     </tooltip>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            
+            <!-- Section Maintenance Complète -->
+            <VBox spacing="10.0" styleClass="card">
+               <children>
+                  <Label text="Maintenance Complète">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Effectue la normalisation ET la suppression des doublons en une seule opération." textFill="#666666" wrapText="true" />
+                  <Button fx:id="btnFullMaintenance" mnemonicParsing="false" text="Maintenance Complète" style="-fx-background-color: #4CAF50; -fx-text-fill: white;">
+                     <tooltip>
+                        <Tooltip text="Normalise les images puis supprime les doublons" />
+                     </tooltip>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            
+            <!-- Section Suppression Photos -->
+            <VBox spacing="10.0" styleClass="card">
+               <children>
+                  <Label text="Suppression de Photos">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Sélectionnez les photos à supprimer. Attention : cette action est irréversible !" textFill="#666666" wrapText="true" />
+                  <Label text="⚠️ Les versions normalisées (vignettes, etc.) seront également supprimées." textFill="#ff6b35" wrapText="true">
+                     <font>
+                        <Font name="System Italic" size="12.0" />
+                     </font>
+                  </Label>
+                  <HBox spacing="10.0">
+                     <children>
+                        <Button fx:id="btnLoadPhotos" text="Charger la liste" />
+                        <Button fx:id="btnSelectAllPhotos" text="Tout sélectionner" />
+                        <Button fx:id="btnSelectNonePhotos" text="Tout désélectionner" />
+                        <Button fx:id="btnDeletePhotos" text="Supprimer sélection" style="-fx-background-color: #f44336; -fx-text-fill: white;" />
+                     </children>
+                  </HBox>
+                  <ListView fx:id="listViewPhotos" prefHeight="150.0" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            
+            <!-- Section Suppression Logos -->
+            <VBox spacing="10.0" styleClass="card">
+               <children>
+                  <Label text="Suppression de Logos">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Sélectionnez les logos à supprimer. Attention : cette action est irréversible !" textFill="#666666" wrapText="true" />
+                  <Label text="⚠️ Les versions normalisées (vignettes, etc.) seront également supprimées." textFill="#ff6b35" wrapText="true">
+                     <font>
+                        <Font name="System Italic" size="12.0" />
+                     </font>
+                  </Label>
+                  <HBox spacing="10.0">
+                     <children>
+                        <Button fx:id="btnLoadLogos" text="Charger la liste" />
+                        <Button fx:id="btnSelectAllLogos" text="Tout sélectionner" />
+                        <Button fx:id="btnSelectNoneLogos" text="Tout désélectionner" />
+                        <Button fx:id="btnDeleteLogos" text="Supprimer sélection" style="-fx-background-color: #f44336; -fx-text-fill: white;" />
+                     </children>
+                  </HBox>
+                  <ListView fx:id="listViewLogos" prefHeight="150.0" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+            
+            <!-- Section État et Progression -->
+            <VBox spacing="10.0" styleClass="card">
+               <children>
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                     <children>
+                        <Label text="État:">
+                           <font>
+                              <Font name="System Bold" size="12.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="labelStatus" text="Prêt" />
+                        <ProgressBar fx:id="progressBar" prefWidth="200.0" visible="false" />
+                     </children>
+                  </HBox>
+                  <Label text="Journal des Opérations:">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Label>
+                  <TextArea fx:id="textAreaLog" prefHeight="300.0" promptText="Les détails des opérations s'afficheront ici..." style="-fx-font-family: monospace; -fx-font-size: 11px;" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </VBox>
+         </children>
+         <BorderPane.margin>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </BorderPane.margin>
+      </VBox>
+   </center>
+</BorderPane>

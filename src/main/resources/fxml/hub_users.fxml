@@ -1,13 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.magsav.gui.hub.UsersHubController" prefWidth="480" prefHeight="260">
-  <top><Label text="Utilisateurs" style="-fx-padding: 8; -fx-font-size: 16; -fx-font-weight: bold;"/></top>
-  <center>
-    <VBox spacing="8" style="-fx-padding: 12;">
-      <Button text="Gestion des utilisateurs" onAction="#onUsers"/>
-      <Button text="Gestion des administrateurs" onAction="#onAdmins"/>
+            fx:controller="com.magsav.gui.hub.UsersHubController" prefWidth="1200" prefHeight="800">
+  
+  <!-- En-tête avec titre et statistiques -->
+  <top>
+    <VBox spacing="10" style="-fx-padding: 12; -fx-background-color: #f8f9fa;">
+      <HBox alignment="CENTER_LEFT" spacing="20">
+        <Label text="Hub Utilisateurs" style="-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="lblStatus" text="Prêt" style="-fx-font-size: 12; -fx-text-fill: #7f8c8d;"/>
+      </HBox>
+      
+      <!-- Statistiques globales -->
+      <HBox spacing="30" alignment="CENTER_LEFT">
+        <VBox alignment="CENTER" spacing="4" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);">
+          <Label text="Total Utilisateurs" style="-fx-font-size: 12; -fx-text-fill: #7f8c8d;"/>
+          <Label fx:id="lblTotalUsers" text="0" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #3498db;"/>
+        </VBox>
+        <VBox alignment="CENTER" spacing="4" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);">
+          <Label text="Utilisateurs Actifs" style="-fx-font-size: 12; -fx-text-fill: #7f8c8d;"/>
+          <Label fx:id="lblActiveUsers" text="0" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #27ae60;"/>
+        </VBox>
+        <VBox alignment="CENTER" spacing="4" style="-fx-background-color: white; -fx-padding: 12; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);">
+          <Label text="Administrateurs" style="-fx-font-size: 12; -fx-text-fill: #7f8c8d;"/>
+          <Label fx:id="lblTotalAdmins" text="0" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+        </VBox>
+      </HBox>
     </VBox>
+  </top>
+  
+  <!-- Contenu principal avec onglets -->
+  <center>
+    <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 8;">
+      
+      <!-- Onglet Utilisateurs -->
+      <Tab text="Utilisateurs Standard">
+        <VBox spacing="8" style="-fx-padding: 12;">
+          
+          <!-- Barre d'outils utilisateurs -->
+          <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 8; -fx-background-color: #ecf0f1; -fx-background-radius: 6;">
+            <Button text="➕ Nouvel Utilisateur" onAction="#onNewUser" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;"/>
+            <Button fx:id="btnEditUser" text="✏️ Modifier" onAction="#onEditUser" disable="true" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;"/>
+            <Button fx:id="btnDeleteUser" text="🗑️ Supprimer" onAction="#onDeleteUser" disable="true" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;"/>
+            <Separator orientation="VERTICAL"/>
+            <TextField fx:id="userSearchField" promptText="Rechercher un utilisateur..." prefWidth="200" style="-fx-background-radius: 15;"/>
+            <Button text="🔍" onAction="#onSearchUsers" style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 4;"/>
+            <Button text="❌" onAction="#onClearUserSearch" style="-fx-background-color: #bdc3c7; -fx-text-fill: white; -fx-background-radius: 4;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="🔄 Actualiser" onAction="#onRefresh" style="-fx-background-color: #16a085; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;"/>
+          </HBox>
+          
+          <!-- Table des utilisateurs -->
+          <TableView fx:id="usersTable" VBox.vgrow="ALWAYS" style="-fx-background-color: white;">
+            <placeholder><Label text="Aucun utilisateur trouvé. Cliquez sur 'Nouvel Utilisateur' pour commencer." style="-fx-text-fill: #7f8c8d; -fx-font-style: italic;"/></placeholder>
+            <columns>
+              <TableColumn fx:id="colUserId" text="ID" prefWidth="60" resizable="false"/>
+              <TableColumn fx:id="colUserLogin" text="Nom d'utilisateur" prefWidth="150"/>
+              <TableColumn fx:id="colUserFirstName" text="Prénom" prefWidth="120"/>
+              <TableColumn fx:id="colUserLastName" text="Nom" prefWidth="120"/>
+              <TableColumn fx:id="colUserEmail" text="Email" prefWidth="200"/>
+              <TableColumn fx:id="colUserRole" text="Rôle" prefWidth="100"/>
+              <TableColumn fx:id="colUserStatus" text="Statut" prefWidth="80"/>
+              <TableColumn fx:id="colUserLastLogin" text="Dernière Connexion" prefWidth="150"/>
+              <TableColumn fx:id="colUserCreatedDate" text="Date Création" prefWidth="120"/>
+            </columns>
+          </TableView>
+          
+        </VBox>
+      </Tab>
+      
+      <!-- Onglet Administrateurs -->
+      <Tab text="Administrateurs">
+        <VBox spacing="8" style="-fx-padding: 12;">
+          
+          <!-- Barre d'outils administrateurs -->
+          <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 8; -fx-background-color: #fdf2e9; -fx-background-radius: 6;">
+            <Button text="➕ Nouvel Admin" onAction="#onNewAdmin" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;"/>
+            <Button fx:id="btnEditAdmin" text="✏️ Modifier" onAction="#onEditAdmin" disable="true" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;"/>
+            <Button fx:id="btnDeleteAdmin" text="🔒 Désactiver" onAction="#onDeleteAdmin" disable="true" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;"/>
+            <Separator orientation="VERTICAL"/>
+            <TextField fx:id="adminSearchField" promptText="Rechercher un administrateur..." prefWidth="200" style="-fx-background-radius: 15;"/>
+            <Button text="🔍" onAction="#onSearchAdmins" style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 4;"/>
+            <Button text="❌" onAction="#onClearAdminSearch" style="-fx-background-color: #bdc3c7; -fx-text-fill: white; -fx-background-radius: 4;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="🔐 Permissions" onAction="#onManagePermissions" style="-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;"/>
+          </HBox>
+          
+          <!-- Table des administrateurs -->
+          <TableView fx:id="adminsTable" VBox.vgrow="ALWAYS" style="-fx-background-color: white;">
+            <placeholder><Label text="Aucun administrateur trouvé. Cliquez sur 'Nouvel Admin' pour commencer." style="-fx-text-fill: #7f8c8d; -fx-font-style: italic;"/></placeholder>
+            <columns>
+              <TableColumn fx:id="colAdminId" text="ID" prefWidth="60" resizable="false"/>
+              <TableColumn fx:id="colAdminLogin" text="Nom d'utilisateur" prefWidth="150"/>
+              <TableColumn fx:id="colAdminFirstName" text="Prénom" prefWidth="120"/>
+              <TableColumn fx:id="colAdminLastName" text="Nom" prefWidth="120"/>
+              <TableColumn fx:id="colAdminEmail" text="Email" prefWidth="200"/>
+              <TableColumn fx:id="colAdminLevel" text="Niveau Admin" prefWidth="120"/>
+              <TableColumn fx:id="colAdminPermissions" text="Permissions" prefWidth="150"/>
+              <TableColumn fx:id="colAdminStatus" text="Statut" prefWidth="80"/>
+              <TableColumn fx:id="colAdminLastLogin" text="Dernière Connexion" prefWidth="150"/>
+            </columns>
+          </TableView>
+          
+        </VBox>
+      </Tab>
+      
+    </TabPane>
   </center>
+  
+  <!-- Barre de statut en bas -->
+  <bottom>
+    <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-padding: 8; -fx-background-color: #34495e;">
+      <Label text="Hub Utilisateurs - Mag Scène" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+      <Region HBox.hgrow="ALWAYS"/>
+      <Button text="Fermer" onAction="#onClose" style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 4;"/>
+    </HBox>
+  </bottom>
+  
 </BorderPane>

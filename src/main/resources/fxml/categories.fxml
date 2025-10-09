@@ -8,8 +8,10 @@
       <Label text="Catégories" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
       <Pane HBox.hgrow="ALWAYS"/>
       <TextField fx:id="tfSearch" promptText="Rechercher..." prefWidth="240"/>
-      <Button text="Actualiser" onAction="#onRefresh"/>
-      <Button text="+ Ajouter" onAction="#onAdd"/>
+
+      <Separator orientation="VERTICAL"/>
+      <Button text="➕ Ajouter" onAction="#onAddCategory"/>
+      <Button text="➕ Sous-catégorie" onAction="#onAddSubcategory"/>
       <Button text="Modifier" onAction="#onEdit"/>
       <Button text="Supprimer" onAction="#onDelete"/>
     </ToolBar>
@@ -17,9 +19,11 @@
   <center>
     <TableView fx:id="table">
       <columns>
-        <TableColumn fx:id="colId" text="ID" prefWidth="80"/>
-        <TableColumn fx:id="colNom" text="Nom" prefWidth="280"/>
-        <TableColumn fx:id="colParent" text="Parent" prefWidth="280"/>
+        <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+        <TableColumn fx:id="colHierarchie" text="Hiérarchie" prefWidth="300"/>
+        <TableColumn fx:id="colNom" text="Nom" prefWidth="200"/>
+        <TableColumn fx:id="colType" text="Type" prefWidth="120"/>
+        <TableColumn fx:id="colParent" text="Catégorie parent" prefWidth="180"/>
       </columns>
       <columnResizePolicy>
         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

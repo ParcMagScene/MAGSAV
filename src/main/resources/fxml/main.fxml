@@ -6,26 +6,39 @@
             fx:controller="com.magsav.gui.MainController">
   <top>
     <ToolBar>
-      <MenuButton text="☰ Menus">
+      <MenuButton fx:id="companyMenuButton">
+        <graphic>
+          <HBox spacing="8" alignment="CENTER_LEFT">
+            <ImageView fx:id="companyLogoImage" fitWidth="24" fitHeight="24" preserveRatio="true"
+                       style="-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 2, 0.5, 1, 1);"/>
+            <Label fx:id="companyNameLabel" text="Mag Scène" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+          </HBox>
+        </graphic>
         <items>
-          <MenuItem text="Catégories" onAction="#onOpenCategories"/>
-          <MenuItem text="Fabricants" onAction="#onOpenManufacturers"/>
-          <MenuItem text="Fournisseurs" onAction="#onOpenSuppliers"/>
-          <MenuItem text="SAV externes" onAction="#onOpenExternalSav"/>
-          <MenuItem text="Clients" onAction="#onOpenClients"/>
+          <MenuItem text="⚙️ Préférences" onAction="#onOpenPreferences" style="-fx-font-weight: bold;"/>
+          <MenuItem text="📁 Gestion" onAction="#onOpenManagementHub" style="-fx-font-weight: bold;"/>
+          <MenuItem text="📋 Demandes" onAction="#onOpenRequestsHub" style="-fx-font-weight: bold;"/>
+          <MenuItem text="🧪 Test Glisser-Déposer" onAction="#onTestDropZones" style="-fx-font-style: italic;"/>
           <SeparatorMenuItem/>
-          <MenuItem text="Demandes de pièces" onAction="#onOpenPartRequests"/>
-          <MenuItem text="Demandes de matériel" onAction="#onOpenEquipmentRequests"/>
-          <SeparatorMenuItem/>
-          <MenuItem text="Importer CSV…" onAction="#onImportCsv"/>
-          <MenuItem text="Importer médias…" onAction="#onImportMedia"/>
+          <Menu text="📊 Rapports &amp; Export">
+            <items>
+              <MenuItem text="📄 Export Stock HTML" onAction="#onExportStockReport"/>
+              <MenuItem text="📦 Export Base Complète" onAction="#onExportCompleteDatabase"/>
+              <SeparatorMenuItem/>
+              <MenuItem text="🖨️ Imprimer Stock" onAction="#onPrintStockReport"/>
+              <MenuItem text="🖨️ Imprimer Base Complète" onAction="#onPrintCompleteDatabase"/>
+              <SeparatorMenuItem/>
+              <MenuItem text="📧 Envoyer Stock par Email" onAction="#onEmailStockReport"/>
+              <MenuItem text="📧 Envoyer Base par Email" onAction="#onEmailCompleteDatabase"/>
+            </items>
+          </Menu>
         </items>
       </MenuButton>
       <Separator/>
       <Label text="MAGSAV 1.2"/>
       <Pane HBox.hgrow="ALWAYS"/>
       <Button text="+ Intervention" onAction="#onNewIntervention"/>
-      <Button text="Actualiser" onAction="#onRefresh"/>
+
     </ToolBar>
   </top>
 
@@ -56,6 +69,33 @@
 
   <right>
     <VBox spacing="8" style="-fx-padding: 8; -fx-background-color: -fx-base;" prefWidth="360">
+
+
+      <!-- Images optimisées (1/3 max du volet) -->
+      <HBox spacing="8" alignment="TOP_CENTER" style="-fx-padding: 4; -fx-border-color: #e0e0e0; -fx-border-radius: 4;" maxHeight="120">
+        <!-- Logo fabricant -->
+        <VBox spacing="2" alignment="TOP_CENTER" prefWidth="110">
+          <ImageView fx:id="imgManufacturerLogo" fitWidth="80" fitHeight="80" preserveRatio="true" smooth="true" style="-fx-background-color: #fafafa; -fx-border-color: #e0e0e0; -fx-border-radius: 4;"/>
+          <Label fx:id="lblProdManufacturer" style="-fx-font-weight: bold; -fx-font-size: 10; -fx-text-alignment: center; -fx-alignment: center;" wrapText="true" maxWidth="110" prefWidth="110"/>
+        </VBox>
+        
+        <!-- Photo produit -->
+        <VBox spacing="2" alignment="TOP_CENTER" prefWidth="110">
+          <ImageView fx:id="imgProductPhoto" fitWidth="80" fitHeight="80" preserveRatio="true" smooth="true" style="-fx-background-color: #fafafa; -fx-border-color: #e0e0e0; -fx-border-radius: 4;"/>
+          <Label fx:id="lblProdName" style="-fx-font-weight: bold; -fx-font-size: 10; -fx-text-alignment: center; -fx-alignment: center;" wrapText="true" maxWidth="110" prefWidth="110"/>
+        </VBox>
+        
+        <!-- QR Code -->
+        <VBox spacing="2" alignment="TOP_CENTER" prefWidth="110">
+          <ImageView fx:id="imgQr" fitWidth="80" fitHeight="80" preserveRatio="true" smooth="true" style="-fx-background-color: #fafafa; -fx-border-color: #e0e0e0; -fx-border-radius: 4;"/>
+          <VBox spacing="1" alignment="TOP_CENTER" prefWidth="110">
+            <Label fx:id="lblQrUID" style="-fx-font-weight: bold; -fx-font-size: 10; -fx-text-alignment: center; -fx-alignment: center;" wrapText="true" maxWidth="110" prefWidth="110"/>
+            <Label fx:id="lblQrSN" style="-fx-font-weight: bold; -fx-font-size: 10; -fx-text-alignment: center; -fx-alignment: center;" wrapText="true" maxWidth="110" prefWidth="110"/>
+          </VBox>
+        </VBox>
+      </HBox>
+
+      <!-- 4. Détails produit (catégories, situation, etc.) -->
       <Label text="Détails du produit" style="-fx-font-weight: bold; -fx-font-size: 13;"/>
       <GridPane hgap="8" vgap="6">
         <columnConstraints>
@@ -63,43 +103,37 @@
           <ColumnConstraints hgrow="ALWAYS" minWidth="220"/>
         </columnConstraints>
         <children>
-          <Label text="Nom:"         GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-          <Label fx:id="lblProdName" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+          <Label fx:id="lblCategoryTitle" text="Catégorie:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+          <Label fx:id="lblProdCategory" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-          <Label text="Code:"        GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-          <Label fx:id="lblProdCode" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+          <Label fx:id="lblSubcategoryTitle" text="Sous-catégorie:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+          <Label fx:id="lblProdSubcategory" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-          <Label text="SN:"          GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-          <Label fx:id="lblProdSN"   GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+          <Label fx:id="lblSubSubcategoryTitle" text="Sous-sous-catégorie:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+          <Label fx:id="lblProdSubSubcategory" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-          <Label text="UID:"         GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-          <Label fx:id="lblProdUID"  GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-
-          <Label text="Fabricant:"              GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-          <Label fx:id="lblProdManufacturer"    GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-
-          <Label text="Situation:"              GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-          <Label fx:id="lblProdSituation"       GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+          <Label text="Situation:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+          <Label fx:id="lblProdSituation" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
         </children>
       </GridPane>
 
+      <!-- 5. Boutons d'action -->
       <Button fx:id="btnEditProduct" text="Éditer ce produit" onAction="#onEditProduct" 
               style="-fx-background-color: #4CAF50; -fx-text-fill: white;" disable="true"/>
 
-      <HBox spacing="8">
-        <VBox spacing="4">
-          <Label text="Photo produit"/>
-          <ImageView fx:id="imgProductPhoto" fitWidth="160" fitHeight="120" preserveRatio="true" smooth="true"/>
-        </VBox>
-        <VBox spacing="4">
-          <Label text="Logo fabricant"/>
-          <ImageView fx:id="imgManufacturerLogo" fitWidth="120" fitHeight="80" preserveRatio="true" smooth="true"/>
-        </VBox>
-      </HBox>
-
-      <VBox spacing="4">
-        <Label text="QRCode produit"/>
-        <ImageView fx:id="imgQr" fitWidth="180" fitHeight="180" preserveRatio="true" smooth="true"/>
+      <VBox spacing="6">
+        <Label text="Actions de partage" style="-fx-font-weight: bold; -fx-font-size: 12;"/>
+        <HBox spacing="4">
+          <Button fx:id="btnExportProduct" text="📄 Export" onAction="#onExportProduct" 
+                  style="-fx-font-size: 10;" disable="true" prefWidth="70"/>
+          <Button fx:id="btnPrintProduct" text="🖨️ Print" onAction="#onPrintProduct" 
+                  style="-fx-font-size: 10;" disable="true" prefWidth="70"/>
+          <Button fx:id="btnEmailProduct" text="📧 Email" onAction="#onEmailProduct" 
+                  style="-fx-font-size: 10;" disable="true" prefWidth="70"/>
+        </HBox>
+        <Button fx:id="btnShareProduct" text="🚀 Partage complet" onAction="#onShareProduct" 
+                style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 11;" 
+                disable="true" prefWidth="220"/>
       </VBox>
 
       <Label text="Historique" style="-fx-font-weight: bold;"/>

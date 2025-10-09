@@ -1,0 +1,192 @@
+# Configuration des sources de scraping pour MAGSAV
+# Ce fichier définit les patterns et URLs pour le scraping automatique d'images
+
+# Sites de fabricants audio/vidéo/éclairage professionnel
+manufacturers:
+  yamaha:
+    base_url: "https://www.yamaha.com"
+    search_url: "https://www.yamaha.com/search?q={query}"
+    search_patterns:
+      - "https://www.google.com/search?q=site:yamaha.com+{query}"
+      - "https://www.yamaha.com/products/search?keyword={query}"
+    image_selectors:
+      - "img.product-image"
+      - ".product-photo img"
+      - ".gallery img"
+      - ".hero-image img"
+    quality_filters:
+      - min_width: 400
+      - min_height: 300
+      - formats: ["jpg", "jpeg", "png", "webp"]
+    
+  sony:
+    base_url: "https://www.sony.com"
+    search_url: "https://www.sony.com/search?q={query}"
+    search_patterns:
+      - "https://www.google.com/search?q=site:sony.com+{query}"
+      - "https://www.sony.com/electronics/search?q={query}"
+    image_selectors:
+      - "img.product-hero-image"
+      - ".product-image img"
+      - ".gallery-image"
+      - ".pdp-product-image img"
+    
+  panasonic:
+    base_url: "https://www.panasonic.com"
+    search_url: "https://www.panasonic.com/search?q={query}"
+    search_patterns:
+      - "https://www.google.com/search?q=site:panasonic.com+{query}"
+    image_selectors:
+      - "img.product-image"
+      - ".hero-image img"
+      - ".product-gallery img"
+    
+  bose:
+    base_url: "https://www.bose.com"
+    search_url: "https://www.bose.com/search?q={query}"
+    image_selectors:
+      - "img.product-image"
+      - ".hero-image"
+      - ".product-hero img"
+    
+  # Fabricants éclairage
+  martin:
+    base_url: "https://www.martin.com"
+    search_patterns:
+      - "https://www.google.com/search?q=site:martin.com+{query}"
+    image_selectors:
+      - "img.product-image"
+      - ".product-gallery img"
+    
+  robe:
+    base_url: "https://www.robe.cz"
+    search_patterns:
+      - "https://www.google.com/search?q=site:robe.cz+{query}"
+    image_selectors:
+      - "img.product-photo"
+      - ".gallery-image"
+    
+  chauvet:
+    base_url: "https://www.chauvetprofessional.com"
+    search_patterns:
+      - "https://www.google.com/search?q=site:chauvetprofessional.com+{query}"
+    image_selectors:
+      - "img.product-image"
+      - ".product-photo img"
+
+# Sites de revendeurs spécialisés
+retailers:
+  woodbrass:
+    base_url: "https://www.woodbrass.com"
+    search_url: "https://www.woodbrass.com/recherche.php?mc={query}"
+    image_selectors:
+      - "img.product-image"
+      - ".product-photo img"
+    categories: ["audio", "eclairage", "sono"]
+    
+  thomann:
+    base_url: "https://www.thomann.de"
+    search_url: "https://www.thomann.de/fr/search.html?sw={query}"
+    image_selectors:
+      - "img.product-image"
+      - ".product-photo"
+      - ".gallery-image"
+    
+  sonovente:
+    base_url: "https://www.sonovente.com"
+    search_url: "https://www.sonovente.com/recherche?q={query}"
+    image_selectors:
+      - "img.product-image"
+      - ".product-gallery img"
+
+# Configuration générale du scraping
+scraping_config:
+  # Délais entre requêtes (respecter les serveurs)
+  delay_between_requests: 2
+  timeout: 30
+  max_retries: 3
+  
+  # Qualité des images
+  image_quality:
+    min_size_kb: 5  # Taille minimale en KB
+    max_size_mb: 10  # Taille maximale en MB
+    min_dimensions:
+      width: 200
+      height: 150
+    preferred_formats: ["jpg", "jpeg", "png", "webp"]
+    avoid_keywords: ["logo", "banner", "icon", "thumb", "small"]
+  
+  # Headers HTTP pour éviter la détection
+  http_headers:
+    User-Agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+    Accept-Language: "fr-FR,fr;q=0.9,en;q=0.8"
+    Accept-Encoding: "gzip, deflate, br"
+    Connection: "keep-alive"
+  
+  # Limites
+  max_images_per_product: 5
+  max_search_results: 10
+  concurrent_downloads: 3
+
+# Patterns de noms de fichiers pour organiser les images
+file_naming:
+  pattern: "{product_uid}_{source}_{index}.{ext}"
+  sources:
+    official: "official"  # Site officiel du fabricant
+    retailer: "retailer"  # Site de revendeur
+    google: "google"      # Google Images
+    manual: "manual"      # Ajout manuel
+  
+  directories:
+    scraped: "medias/scraped"
+    processed: "medias/processed"
+    rejected: "medias/rejected"
+
+# Mapping des fabricants vers leurs sites officiels
+manufacturer_mapping:
+  # Audio
+  "yamaha": "yamaha"
+  "sony": "sony"
+  "panasonic": "panasonic"
+  "bose": "bose"
+  "jbl": "harman"
+  "shure": "shure"
+  "sennheiser": "sennheiser"
+  
+  # Éclairage
+  "martin": "martin"
+  "robe": "robe"
+  "chauvet": "chauvet"
+  "adj": "adj"
+  "elation": "elation"
+  "cameo": "cameo"
+  
+  # Vidéo
+  "blackmagic": "blackmagicdesign"
+  "aja": "aja"
+  "atomos": "atomos"
+
+# Expressions régulières pour nettoyer les noms de produits
+product_name_cleanup:
+  remove_patterns:
+    - r'\b(ref|référence|model|modèle)\s*[:.]?\s*'  # Préfixes inutiles
+    - r'\b(neuf|occasion|used|new)\b'               # État
+    - r'\([^)]*€[^)]*\)'                           # Prix entre parenthèses
+    - r'\s{2,}'                                    # Espaces multiples
+  
+  normalize_patterns:
+    - from: 'é|è|ê|ë'
+      to: 'e'
+    - from: 'à|â|ä'
+      to: 'a'
+    - from: 'ù|û|ü'
+      to: 'u'
+
+# Configuration de logging spécifique au scraping
+logging:
+  level: "INFO"
+  file: "logs/image_scraping.log"
+  max_size_mb: 50
+  backup_count: 5
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

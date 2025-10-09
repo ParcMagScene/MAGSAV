@@ -19,6 +19,7 @@ public class InterventionRepositoryTest {
   static void keepMemoryDb() throws Exception {
     System.setProperty("magsav.db.url", "jdbc:sqlite:file:inter_repo_test?mode=memory&cache=shared");
     keeper = DriverManager.getConnection(System.getProperty("magsav.db.url"));
+    DB.resetForTesting();
     DB.init();
   }
 
@@ -35,7 +36,7 @@ public class InterventionRepositoryTest {
 
   @Test
   void insert_find_close() {
-    long pid = prodRepo.insert("C2", "PROD-X", "SNX", "FAB2", null, "En stock");
+    long pid = prodRepo.insert("PROD-X", "SNX", "FAB2", null, "En stock");
     assertTrue(pid > 0);
 
     long iid = interRepo.insert(pid, "SERIAL-1", null, "Panne X");

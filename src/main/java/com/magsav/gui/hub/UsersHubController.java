@@ -72,6 +72,18 @@ public class UsersHubController implements Initializable {
         if (btnEditUser != null) btnEditUser.setDisable(!hasSelection);
         if (btnDeleteUser != null) btnDeleteUser.setDisable(!hasSelection);
       });
+      
+      // Rendre les lignes cliquables pour ouvrir la fiche utilisateur
+      usersTable.setRowFactory(tv -> {
+        TableRow<UserData> row = new TableRow<>();
+        row.setOnMouseClicked(event -> {
+          if (event.getClickCount() == 2 && !row.isEmpty()) {
+            UserData selectedUser = row.getItem();
+            openUserDetail(selectedUser);
+          }
+        });
+        return row;
+      });
     }
   }
   
@@ -92,6 +104,18 @@ public class UsersHubController implements Initializable {
         boolean hasSelection = newSel != null;
         if (btnEditAdmin != null) btnEditAdmin.setDisable(!hasSelection);
         if (btnDeleteAdmin != null) btnDeleteAdmin.setDisable(!hasSelection);
+      });
+      
+      // Rendre les lignes cliquables pour ouvrir la fiche administrateur
+      adminsTable.setRowFactory(tv -> {
+        TableRow<AdminData> row = new TableRow<>();
+        row.setOnMouseClicked(event -> {
+          if (event.getClickCount() == 2 && !row.isEmpty()) {
+            AdminData selectedAdmin = row.getItem();
+            openAdminDetail(selectedAdmin);
+          }
+        });
+        return row;
       });
     }
   }
@@ -254,6 +278,35 @@ public class UsersHubController implements Initializable {
       this.permissions = permissions;
       this.status = status;
       this.lastLogin = lastLogin;
+    }
+  }
+  
+  // Méthodes pour ouvrir les fiches détaillées
+  private void openUserDetail(UserData user) {
+    try {
+      AppLogger.info("Ouverture de la fiche utilisateur: " + user.login + " (" + user.firstName + " " + user.lastName + ")");
+      
+      // Pour l'instant, on ne fait que logger. Dans une vraie implémentation,
+      // on ouvrirait une nouvelle fenêtre avec UserDetailController
+      updateStatus("Ouverture de la fiche utilisateur: " + user.firstName + " " + user.lastName);
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors de l'ouverture de la fiche utilisateur: " + e.getMessage(), e);
+      updateStatus("Erreur lors de l'ouverture de la fiche");
+    }
+  }
+  
+  private void openAdminDetail(AdminData admin) {
+    try {
+      AppLogger.info("Ouverture de la fiche administrateur: " + admin.login + " (" + admin.firstName + " " + admin.lastName + ")");
+      
+      // Pour l'instant, on ne fait que logger. Dans une vraie implémentation,
+      // on ouvrirait une nouvelle fenêtre avec AdminDetailController
+      updateStatus("Ouverture de la fiche administrateur: " + admin.firstName + " " + admin.lastName);
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors de l'ouverture de la fiche administrateur: " + e.getMessage(), e);
+      updateStatus("Erreur lors de l'ouverture de la fiche");
     }
   }
 }

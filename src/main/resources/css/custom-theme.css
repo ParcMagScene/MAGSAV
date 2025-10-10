@@ -1,0 +1,230 @@
+/* Thème personnalisé généré dynamiquement */
+
+.root {
+    -fx-base: #000000;
+    -fx-background: #000000;
+    -fx-control-inner-background: #1a1a1a;
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+    -fx-background-color: #1a0068;
+    -fx-border-color: derive(#1a0068, 20%);
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 0;
+}
+
+/* Navigation items */
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-padding: 12 20;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+    -fx-background-radius: 0;
+}
+
+.nav-item:hover {
+    -fx-background-color: derive(#1a0068, 15%);
+}
+
+.nav-item.active {
+    -fx-background-color: #4a90e2;
+    -fx-border-color: #4a90e2;
+    -fx-border-width: 0 0 0 3;
+}
+
+.nav-icon {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16px;
+    -fx-min-width: 20px;
+}
+
+.nav-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-font-weight: normal;
+}
+
+.nav-item.active .nav-icon,
+.nav-item.active .nav-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+
+/* TabPane central */
+.tab-pane {
+    -fx-background-color: #000000;
+    -fx-border-color: derive(#000000, 20%);
+}
+
+.tab-pane .tab-header-area {
+    -fx-background-color: #1a1a1a;
+    -fx-border-color: derive(#1a1a1a, 20%);
+    -fx-border-width: 0 0 1 0;
+}
+
+.tab-pane .tab {
+    -fx-background-color: derive(#1a1a1a, -10%);
+    -fx-text-fill: #ffffff;
+    -fx-border-color: derive(#1a1a1a, 20%);
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 8 16;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #ffffff;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: derive(#1a1a1a, 10%);
+}
+
+.tab-pane .tab-content-area {
+    -fx-background-color: #000000;
+    -fx-padding: 0;
+}
+
+/* Boutons et contrôles */
+.button {
+    -fx-background-color: #4a90e2;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: derive(#4a90e2, 20%);
+    -fx-border-width: 1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 8 16;
+}
+
+.button:hover {
+    -fx-background-color: derive(#4a90e2, 10%);
+}
+
+.button:pressed {
+    -fx-background-color: derive(#4a90e2, -10%);
+}
+
+/* Labels et texte */
+.label {
+    -fx-text-fill: #ffffff;
+}
+
+/* Configuration spécifique pour l'onglet Apparence */
+.config-content {
+    -fx-background-color: #000000;
+    -fx-padding: 20;
+}
+
+.config-section {
+    -fx-background-color: derive(#000000, 5%);
+    -fx-padding: 15;
+    -fx-background-radius: 8;
+    -fx-border-color: derive(#000000, 20%);
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+}
+
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.section-header {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #4a90e2;
+}
+
+.color-value {
+    -fx-font-family: "Consolas", "Monaco", monospace;
+    -fx-text-fill: #4a90e2;
+    -fx-font-size: 12px;
+}
+
+.theme-preview {
+    -fx-background-color: #000000;
+    -fx-border-color: derive(#000000, 20%);
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 15;
+}
+
+.preview-sidebar {
+    -fx-background-color: #1a0068;
+    -fx-padding: 10;
+    -fx-background-radius: 4;
+}
+
+.preview-content {
+    -fx-background-color: #1a1a1a;
+    -fx-padding: 10;
+    -fx-background-radius: 4;
+}
+
+.preview-icon {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+}
+
+.preview-text {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 12px;
+}
+
+.preview-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* Styles pour les boutons d'action */
+.primary-button {
+    -fx-background-color: #4a90e2;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.primary-button:hover {
+    -fx-background-color: derive(#4a90e2, 10%);
+}
+
+.secondary-button {
+    -fx-background-color: derive(#000000, 10%);
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #4a90e2;
+}
+
+.danger-button {
+    -fx-background-color: #d32f2f;
+    -fx-text-fill: white;
+}
+
+.danger-button:hover {
+    -fx-background-color: #b71c1c;
+}
+
+/* Liste des presets */
+.presets-list {
+    -fx-background-color: #000000;
+    -fx-border-color: derive(#000000, 20%);
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+}
+
+.presets-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 8;
+}
+
+.presets-list .list-cell:selected {
+    -fx-background-color: #4a90e2;
+    -fx-text-fill: white;
+}
+
+.presets-list .list-cell:hover {
+    -fx-background-color: derive(#000000, 10%);
+}

@@ -1,0 +1,60 @@
+/* MAGSAV - CSS de Base Moderne pour JavaFX */
+
+.root {
+    -fx-font-family: "System", "SF Pro Display", "Segoe UI", "Helvetica Neue", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-smoothing-type: lcd;
+}
+
+/* Typography */
+.text-xs { -fx-font-size: 11px; }
+.text-sm { -fx-font-size: 12px; }
+.text-md { -fx-font-size: 14px; }
+.text-lg { -fx-font-size: 16px; }
+.text-xl { -fx-font-size: 18px; }
+.text-title { -fx-font-size: 32px; -fx-font-weight: bold; }
+
+.font-light { -fx-font-weight: lighter; }
+.font-bold { -fx-font-weight: bold; }
+
+/* Espacements */
+.p-sm { -fx-padding: 8px; }
+.p-md { -fx-padding: 16px; }
+.p-lg { -fx-padding: 24px; }
+
+.m-sm { -fx-spacing: 8px; }
+.m-md { -fx-spacing: 16px; }
+.m-lg { -fx-spacing: 24px; }
+
+/* Ombres */
+.shadow-sm { -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0.5, 0, 1); }
+.shadow-md { -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0.5, 0, 2); }
+.shadow-lg { -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 16, 0.5, 0, 4); }
+
+/* Bordures */
+.rounded-sm { -fx-background-radius: 4px; -fx-border-radius: 4px; }
+.rounded-md { -fx-background-radius: 8px; -fx-border-radius: 8px; }
+.rounded-lg { -fx-background-radius: 12px; -fx-border-radius: 12px; }
+
+/* Interactions */
+.interactive { -fx-cursor: hand; }
+.interactive:hover { -fx-opacity: 0.8; }
+
+/* Focus moderne */
+.focus-ring:focused {
+    -fx-border-width: 2px;
+    -fx-border-color: #2196F3;
+    -fx-background-insets: -2;
+    -fx-border-insets: -2;
+}
+
+/* Couleurs de base */
+.bg-primary { -fx-background-color: #2196F3; }
+.bg-success { -fx-background-color: #4CAF50; }
+.bg-warning { -fx-background-color: #FF9800; }
+.bg-error { -fx-background-color: #F44336; }
+
+.text-primary { -fx-text-fill: #2196F3; }
+.text-success { -fx-text-fill: #4CAF50; }
+.text-warning { -fx-text-fill: #FF9800; }
+.text-error { -fx-text-fill: #F44336; }

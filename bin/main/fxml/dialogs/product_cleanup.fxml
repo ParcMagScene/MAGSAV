@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.dialogs.ProductCleanupDialog"
+            headerText="Utilitaire de Nettoyage des Produits"
+            prefWidth="800" prefHeight="600">
+  
+  <content>
+    <VBox spacing="15" style="-fx-padding: 20;">
+      
+      <!-- Options de nettoyage -->
+      <VBox spacing="10">
+        <Label text="Options de nettoyage:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+        
+        <CheckBox fx:id="cbDetectDuplicates" text="Détecter les doublons" selected="true"/>
+        <CheckBox fx:id="cbGenerateUids" text="Générer les UIDs manquants" selected="true"/>
+        <CheckBox fx:id="cbCleanFields" text="Nettoyer les champs vides" selected="true"/>
+        <CheckBox fx:id="cbNormalizeData" text="Normaliser les données" selected="true"/>
+        <CheckBox fx:id="cbDetectInconsistencies" text="Détecter les incohérences" selected="true"/>
+        
+        <Separator/>
+        
+        <!-- Options d'effacement -->
+        <Label text="⚠️ Options d'effacement (DANGER):" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #f44336;"/>
+        <VBox fx:id="vboxEraseOptions" spacing="5" style="-fx-padding: 0 0 0 20;">
+          <CheckBox fx:id="cbEraseInterventions" text="Effacer toutes les interventions"/>
+          <CheckBox fx:id="cbEraseProducts" text="Effacer tous les produits"/>
+          <CheckBox fx:id="cbEraseCategories" text="Effacer toutes les catégories"/>
+          <CheckBox fx:id="cbEraseSocietes" text="Effacer toutes les sociétés"/>
+          <Separator/>
+          <CheckBox fx:id="cbResetDatabase" text="🚨 EFFACEMENT COMPLET DE LA BASE" 
+                    style="-fx-text-fill: #f44336; -fx-font-weight: bold;"/>
+        </VBox>
+        
+        <Separator/>
+        
+        <HBox spacing="10" alignment="CENTER_LEFT">
+          <CheckBox fx:id="cbDryRun" text="Mode simulation (aucune modification)" selected="true"/>
+          <Label text="⚠️ Décochez pour appliquer les corrections" style="-fx-text-fill: #ff6600;"/>
+        </HBox>
+      </VBox>
+      
+      <Separator/>
+      
+      <!-- Boutons d'action -->
+      <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="btnAnalyze" text="📊 Analyser" onAction="#onAnalyze" prefWidth="120"
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+        <Button fx:id="btnCleanup" text="🧹 Nettoyer" onAction="#onCleanup" prefWidth="120"
+                style="-fx-background-color: #2196F3; -fx-text-fill: white;" disable="true"/>
+        <Button fx:id="btnErase" text="🗑️ Effacer" onAction="#onErase" prefWidth="120"
+                style="-fx-background-color: #f44336; -fx-text-fill: white;" disable="true"/>
+        <Button fx:id="btnExport" text="📄 Exporter" onAction="#onExportReport" prefWidth="120"
+                style="-fx-background-color: #FF9800; -fx-text-fill: white;" disable="true"/>
+      </HBox>
+      
+      <Separator/>
+      
+      <!-- Zone de résultats -->
+      <VBox spacing="10">
+        <Label text="Résultats:" style="-fx-font-weight: bold; -fx-font-size: 14px;"/>
+        
+        <!-- Résumé des statistiques -->
+        <GridPane fx:id="statsGrid" hgap="15" vgap="8" visible="false">
+          <columnConstraints>
+            <ColumnConstraints minWidth="150"/>
+            <ColumnConstraints minWidth="80"/>
+          </columnConstraints>
+          
+          <Label text="Doublons détectés:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+          <Label fx:id="lblDuplicates" text="0" GridPane.columnIndex="1" GridPane.rowIndex="0" 
+                 style="-fx-font-weight: bold; -fx-text-fill: #f44336;"/>
+          
+          <Label text="UIDs générés:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+          <Label fx:id="lblUids" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1" 
+                 style="-fx-font-weight: bold; -fx-text-fill: #2196F3;"/>
+          
+          <Label text="Champs nettoyés:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+          <Label fx:id="lblFields" text="0" GridPane.columnIndex="1" GridPane.rowIndex="2" 
+                 style="-fx-font-weight: bold; -fx-text-fill: #4CAF50;"/>
+          
+          <Label text="Incohérences:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+          <Label fx:id="lblInconsistencies" text="0" GridPane.columnIndex="1" GridPane.rowIndex="3" 
+                 style="-fx-font-weight: bold; -fx-text-fill: #FF9800;"/>
+        </GridPane>
+        
+        <!-- Indicateurs de progression -->
+        <ProgressBar fx:id="progressBar" visible="false" prefWidth="400" prefHeight="20" 
+                     style="-fx-accent: #4CAF50;"/>
+        <Label fx:id="txtProgress" visible="false" style="-fx-text-fill: #333; -fx-font-weight: bold;" 
+               text="Opération en cours..."/>
+        
+        <!-- Zone de détails -->
+        <TextArea fx:id="taResults" prefRowCount="15" editable="false" wrapText="true"
+                  style="-fx-font-family: 'Courier New', monospace; -fx-font-size: 11px;"
+                  promptText="Cliquez sur 'Analyser' pour démarrer l'analyse..."/>
+      </VBox>
+      
+    </VBox>
+  </content>
+  
+  <buttonTypes>
+    <ButtonType fx:constant="CLOSE"/>
+  </buttonTypes>
+  
+</DialogPane>

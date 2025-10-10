@@ -1,0 +1,199 @@
+/* MAGSAV - Thème Clair Moderne */
+
+.root {
+    /* Couleurs primaires */
+    -fx-base: #FFFFFF;
+    -fx-background: #F8F9FA;
+    -fx-control-inner-background: #FFFFFF;
+    
+    /* Textes */
+    -fx-text-base-color: #212529;
+    -fx-text-fill: #212529;
+    -fx-prompt-text-fill: #6C757D;
+    
+    /* Accents */
+    -fx-accent: #2196F3;
+    -fx-focus-color: #2196F3;
+    -fx-faint-focus-color: rgba(33, 150, 243, 0.1);
+    
+    /* Bordures */
+    -fx-border-color: #DEE2E6;
+    -fx-outer-border: #CED4DA;
+    -fx-inner-border: #E9ECEF;
+    
+    /* Ombres */
+    -fx-shadow-highlight-color: rgba(255, 255, 255, 0.07);
+    -fx-drop-shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Toolbar moderne */
+.tool-bar {
+    -fx-background-color: linear-gradient(to bottom, #FFFFFF, #F8F9FA);
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 8px;
+}
+
+/* Boutons modernes */
+.button {
+    -fx-background-color: linear-gradient(to bottom, #FFFFFF, #F8F9FA);
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 16px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #495057;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 2, 0, 0, 1);
+}
+
+.button:hover {
+    -fx-background-color: linear-gradient(to bottom, #F8F9FA, #E9ECEF);
+    -fx-border-color: #ADB5BD;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);
+}
+
+.button:pressed {
+    -fx-background-color: #E9ECEF;
+    -fx-border-color: #6C757D;
+    -fx-effect: inset dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);
+}
+
+/* Bouton primaire */
+.button.primary {
+    -fx-background-color: linear-gradient(to bottom, #2196F3, #1976D2);
+    -fx-border-color: #1976D2;
+    -fx-text-fill: white;
+}
+
+.button.primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #1976D2, #1565C0);
+    -fx-border-color: #1565C0;
+}
+
+/* TextFields modernes */
+.text-field {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 12px;
+    -fx-font-size: 14px;
+}
+
+.text-field:focused {
+    -fx-border-color: #2196F3;
+    -fx-border-width: 2px;
+    -fx-background-insets: -1;
+    -fx-border-insets: -1;
+    -fx-effect: dropshadow(gaussian, rgba(33, 150, 243, 0.25), 4, 0, 0, 0);
+}
+
+/* Labels modernes */
+.label {
+    -fx-text-fill: #495057;
+    -fx-font-size: 14px;
+}
+
+.label.title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212529;
+}
+
+.label.subtitle {
+    -fx-font-size: 18px;
+    -fx-font-weight: 500;
+    -fx-text-fill: #495057;
+}
+
+/* Tables modernes */
+.table-view {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.table-view .column-header {
+    -fx-background-color: linear-gradient(to bottom, #F8F9FA, #E9ECEF);
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 0 1px 1px 0;
+    -fx-font-weight: 600;
+    -fx-text-fill: #495057;
+    -fx-padding: 12px 8px;
+}
+
+.table-view .table-cell {
+    -fx-border-color: #F1F3F4;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 8px;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: rgba(33, 150, 243, 0.1);
+    -fx-text-fill: #1976D2;
+}
+
+/* MenuButton moderne */
+.menu-button {
+    -fx-background-color: linear-gradient(to bottom, #FFFFFF, #F8F9FA);
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 12px;
+}
+
+.menu-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #F8F9FA, #E9ECEF);
+    -fx-border-color: #ADB5BD;
+}
+
+/* ScrollPane moderne */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: #FFFFFF;
+}
+
+/* Cards modernes */
+.card {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);
+}
+
+.card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 12, 0, 0, 4);
+    -fx-translate-y: -2px;
+}
+
+/* Séparateurs */
+.separator {
+    -fx-background-color: #DEE2E6;
+}
+
+/* Progress indicators */
+.progress-bar {
+    -fx-accent: #2196F3;
+    -fx-background-color: #E9ECEF;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.progress-indicator {
+    -fx-accent: #2196F3;
+}

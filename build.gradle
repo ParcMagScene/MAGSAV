@@ -13,6 +13,18 @@ task runApi(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
+// Tâche pour générer les données de test complètes
+task generateTestData(type: JavaExec) {
+    mainClass = 'com.magsav.util.ComprehensiveTestDataGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+// Tâche pour vider et regénérer des données fraîches
+task generateFreshData(type: JavaExec) {
+    mainClass = 'com.magsav.util.FreshDataGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 repositories { mavenCentral() }
 
 dependencies {

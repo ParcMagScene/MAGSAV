@@ -84,4 +84,32 @@ public class DataChangeNotificationService {
             "Produit supprimé: " + productName
         ));
     }
+    
+    public void notifyCategoryCreated(String categoryName) {
+        notifyDataChanged(new DataChangeEvent(
+            DataChangeEvent.Type.CATEGORY_CREATED, 
+            "Catégorie créée: " + categoryName
+        ));
+    }
+    
+    public void notifyCategoryUpdated(String categoryName) {
+        notifyDataChanged(new DataChangeEvent(
+            DataChangeEvent.Type.CATEGORY_UPDATED, 
+            "Catégorie modifiée: " + categoryName
+        ));
+    }
+    
+    public void notifyCategoryDeleted(String categoryName) {
+        notifyDataChanged(new DataChangeEvent(
+            DataChangeEvent.Type.CATEGORY_DELETED, 
+            "Catégorie supprimée: " + categoryName
+        ));
+    }
+    
+    public void notifyDatabaseCleaned(int totalCleaned) {
+        notifyDataChanged(new DataChangeEvent(
+            DataChangeEvent.Type.DATABASE_CLEANED, 
+            totalCleaned + " doublons supprimés"
+        ));
+    }
 }

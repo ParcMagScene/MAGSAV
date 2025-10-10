@@ -8,6 +8,7 @@ import com.magsav.gui.dialogs.PhotoMosaicController;
 import com.magsav.service.ImageNormalizationService;
 import com.magsav.service.DataChangeNotificationService;
 import com.magsav.service.DataChangeEvent;
+import com.magsav.util.EditModeManager;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -36,6 +37,13 @@ public class ProductDetailController {
   @FXML private ComboBox<String> cbManufacturer;
   @FXML private ComboBox<String> cbCategory;
   @FXML private TextField tfNewCategoryOrSubcategory;
+  
+  // Boutons de contrôle d'édition
+  @FXML private Button btnEdit;
+  @FXML private Button btnSave;
+  @FXML private Button btnCancel;
+  @FXML private Button btnChoosePhoto;
+  @FXML private Button btnAddCategory;
 
   private final ProductRepository prodRepo = new ProductRepository();
   private final SocieteRepository societeRepo = new SocieteRepository();
@@ -44,6 +52,12 @@ public class ProductDetailController {
   private long productId;
   private String originalPhotoFilename; // Pour traquer les changements de photo
   private String currentPhotoFilename;  // Photo actuellement sélectionnée (peut différer de la BDD)
+  
+  // État d'édition (temporaire)
+  private boolean isEditMode = false;
+  
+  // Gestionnaire de mode d'édition
+  private EditModeManager editManager;
 
   @FXML
   private void initialize() {
@@ -80,6 +94,10 @@ public class ProductDetailController {
         return row;
       });
     }
+    
+    // Initialiser en mode lecture seule
+    isEditMode = false;
+    updateEditableControls();
   }
 
   public void setProductId(long id) { this.productId = id; load(); }
@@ -264,6 +282,7 @@ public class ProductDetailController {
 
   @FXML
   private void onChangeManufacturer() {
+    if (!isEditMode) return; // Ne pas permettre la modification si pas en mode édition
     if (productId <= 0 || cbManufacturer == null) return;
     String selected = cbManufacturer.getValue();
     String trimmed = selected == null ? null : selected.trim();
@@ -276,11 +295,13 @@ public class ProductDetailController {
 
   @FXML
   private void onChangeCategory() {
+    if (!isEditMode) return; // Ne pas permettre la modification si pas en mode édition
     // Note: La propagation des changements se fait maintenant uniquement lors de "Valider les changements"
   }
 
   @FXML
   private void onChoosePhoto() {
+    if (!isEditMode) return; // Ne pas permettre la modification si pas en mode édition
     if (productId <= 0 || lblName == null || lblName.getScene() == null) return;
     // Ouvrir directement la mosaïque des photos
     chooseFromLibrary();
@@ -296,7 +317,12 @@ public class ProductDetailController {
       
       Stage stage = new Stage();
       stage.setTitle("Choisir une photo - Vue mosaïque");
-      stage.setScene(new Scene(root, 800, 600));
+      
+      Scene scene = new Scene(root, 800, 600);
+      // Appliquer le thème dark
+      scene.getStylesheets().add(getClass().getResource("/css/simple-dark.css").toExternalForm());
+      stage.setScene(scene);
+      
       stage.initModality(Modality.APPLICATION_MODAL);
       stage.initOwner(lblName.getScene().getWindow());
       
@@ -351,6 +377,7 @@ public class ProductDetailController {
 
   @FXML
   private void onAddCategoryOrSubcategory() {
+    if (!isEditMode) return; // Ne pas permettre la modification si pas en mode édition
     String name = emptyToNull(tfNewCategoryOrSubcategory == null ? null : tfNewCategoryOrSubcategory.getText());
     
     if (name == null) { 
@@ -390,7 +417,7 @@ public class ProductDetailController {
 
   @FXML
   private void onCreateIntervention() {
-    openWindow("Nouvelle intervention", "/fxml/new_intervention.fxml");
+    openWindow("Nouvelle intervention", "/fxml/interventions/forms/new_intervention.fxml");
   }
 
   @FXML
@@ -537,6 +564,10 @@ public class ProductDetailController {
         success.setContentText("Les changements ont été appliqués à ce produit uniquement.");
         success.showAndWait();
         
+        // Revenir en mode lecture après sauvegarde
+        isEditMode = false;
+        updateEditableControls();
+        
       } else {
         // L'utilisateur a annulé, remettre les valeurs d'origine
         load();
@@ -545,6 +576,39 @@ public class ProductDetailController {
       // L'utilisateur a fermé la dialog, remettre les valeurs d'origine
       load();
     }
+  }
+
+  @FXML
+  private void onToggleEdit() {
+    isEditMode = !isEditMode;
+    updateEditableControls();
+  }
+  
+  @FXML
+  private void onCancelEdit() {
+    isEditMode = false;
+    updateEditableControls();
+    // Recharger les données originales
+    load();
+  }
+  
+  /**
+   * Met à jour l'état des contrôles selon le mode d'édition
+   */
+  private void updateEditableControls() {
+    // Activer/désactiver les champs modifiables
+    if (cbManufacturer != null) cbManufacturer.setDisable(!isEditMode);
+    if (cbCategory != null) cbCategory.setDisable(!isEditMode);
+    if (tfNewCategoryOrSubcategory != null) tfNewCategoryOrSubcategory.setDisable(!isEditMode);
+    
+    // Activer/désactiver les boutons d'action
+    if (btnChoosePhoto != null) btnChoosePhoto.setDisable(!isEditMode);
+    if (btnAddCategory != null) btnAddCategory.setDisable(!isEditMode);
+    
+    // Contrôler la visibilité des boutons de contrôle
+    if (btnEdit != null) btnEdit.setVisible(!isEditMode);
+    if (btnSave != null) btnSave.setVisible(isEditMode);
+    if (btnCancel != null) btnCancel.setVisible(isEditMode);
   }
 
   // Ouvre une fenêtre à partir d'un FXML
@@ -563,7 +627,12 @@ public class ProductDetailController {
       String key = title.replaceAll("[^a-zA-Z0-9]", "_");
       double width = prefs.getDouble(key + ".width", 800);
       double height = prefs.getDouble(key + ".height", 600);
-      stage.setScene(new Scene(root, width, height));
+      
+      Scene scene = new Scene(root, width, height);
+      // Appliquer le thème dark
+      scene.getStylesheets().add(getClass().getResource("/css/simple-dark.css").toExternalForm());
+      stage.setScene(scene);
+      
       stage.setOnCloseRequest(e -> {
         prefs.putDouble(key + ".width", stage.getWidth());
         prefs.putDouble(key + ".height", stage.getHeight());

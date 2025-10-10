@@ -115,6 +115,11 @@ public final class FormDialogManager {
             dialog.getDialogPane().setContent(root);
             dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
             
+            // Appliquer le thème dark
+            dialog.getDialogPane().getStylesheets().add(
+                FormDialogManager.class.getResource("/css/simple-dark.css").toExternalForm()
+            );
+            
             if (owner != null) {
                 dialog.initOwner(owner);
             }
@@ -186,7 +191,7 @@ public final class FormDialogManager {
             String title = isEdit ? "Modifier le fabricant" : "Ajouter un fabricant";
             return new Builder<>()
                 .title(title)
-                .fxml("/fxml/societes/manufacturer_form.fxml")
+                .fxml("/fxml/societes/forms/manufacturer_form.fxml")
                 .owner(owner)
                 .show();
         }
@@ -198,7 +203,7 @@ public final class FormDialogManager {
             String title = societe != null ? "Modifier le fabricant" : "Ajouter un fabricant";
             
             // Charger le FXML
-            FXMLLoader loader = new FXMLLoader(FormDialogManager.class.getResource("/fxml/societes/manufacturer_form.fxml"));
+            FXMLLoader loader = new FXMLLoader(FormDialogManager.class.getResource("/fxml/societes/forms/manufacturer_form.fxml"));
             Parent root = loader.load();
             com.magsav.gui.societes.ManufacturerFormController controller = loader.getController();
             
@@ -211,6 +216,11 @@ public final class FormDialogManager {
             dialog.setTitle(title);
             dialog.getDialogPane().setContent(root);
             dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+            
+            // Appliquer le thème dark
+            dialog.getDialogPane().getStylesheets().add(
+                FormDialogManager.class.getResource("/css/simple-dark.css").toExternalForm()
+            );
             
             if (owner != null) {
                 dialog.initOwner(owner);
@@ -249,7 +259,7 @@ public final class FormDialogManager {
             String title = isEdit ? "Modifier la catégorie" : "Ajouter une catégorie";
             return new Builder<>()
                 .title(title)
-                .fxml("/fxml/products/category_form.fxml")
+                .fxml("/fxml/categories/category_form.fxml")
                 .owner(owner)
                 .show();
         }
@@ -261,7 +271,7 @@ public final class FormDialogManager {
             String title = isEdit ? "Modifier le produit" : "Ajouter un produit";
             return new Builder<>()
                 .title(title)
-                .fxml("/fxml/product_form.fxml")
+                .fxml("/fxml/products/forms/product_form.fxml")
                 .owner(owner)
                 .show();
         }
@@ -293,6 +303,11 @@ public final class FormDialogManager {
             dialog.getDialogPane().setContent(content);
             dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
             
+            // Appliquer le thème dark
+            dialog.getDialogPane().getStylesheets().add(
+                FormDialogManager.class.getResource("/css/simple-dark.css").toExternalForm()
+            );
+            
             if (owner != null) {
                 dialog.initOwner(owner);
             }
@@ -313,6 +328,11 @@ public final class FormDialogManager {
             dialog.setTitle(title);
             dialog.setContentText(message);
             dialog.getDialogPane().getButtonTypes().addAll(confirmButton, cancelButton);
+            
+            // Appliquer le thème dark
+            dialog.getDialogPane().getStylesheets().add(
+                FormDialogManager.class.getResource("/css/simple-dark.css").toExternalForm()
+            );
             
             if (owner != null) {
                 dialog.initOwner(owner);

@@ -65,6 +65,18 @@ public class ClientsHubController implements Initializable {
         if (btnEditClient != null) btnEditClient.setDisable(!hasSelection);
         if (btnDeleteClient != null) btnDeleteClient.setDisable(!hasSelection);
       });
+      
+      // Rendre les lignes cliquables pour ouvrir la fiche client
+      clientsTable.setRowFactory(tv -> {
+        TableRow<Company> row = new TableRow<>();
+        row.setOnMouseClicked(event -> {
+          if (event.getClickCount() == 2 && !row.isEmpty()) {
+            Company selectedClient = row.getItem();
+            openClientDetail(selectedClient);
+          }
+        });
+        return row;
+      });
     }
   }
   
@@ -87,8 +99,16 @@ public class ClientsHubController implements Initializable {
   
   private void loadData() {
     try {
+      // Debug: Vérifier tous les types d'entreprises
+      List<Company> allCompanies = companyRepository.findAll();
+      AppLogger.info("DEBUG: Total des sociétés dans la base: " + allCompanies.size());
+      for (Company comp : allCompanies) {
+        AppLogger.info("DEBUG: " + comp.getName() + " - Type: " + comp.getType());
+      }
+      
       List<Company> clients = companyRepository.findByType(Company.CompanyType.CLIENT);
       clientsData.setAll(clients);
+      AppLogger.info("DEBUG: Clients trouvés: " + clients.size());
       updateStatus("Données chargées: " + clients.size() + " clients");
     } catch (Exception e) {
       AppLogger.error("Erreur lors du chargement des clients: " + e.getMessage(), e);
@@ -131,8 +151,27 @@ public class ClientsHubController implements Initializable {
     if (clientSearchField != null) clientSearchField.clear(); 
   }
   
-  @FXML private void onExportClients() { 
+    @FXML private void onExportClients() { 
     AppLogger.info("Export clients demandé"); 
+  }
+  
+  // Méthode pour ouvrir le détail d'un client
+  private void openClientDetail(Company client) {
+    try {
+      AppLogger.info("Ouverture de la fiche client: " + client.getName() + " (ID: " + client.getId() + ")");
+      
+      // Pour l'instant, on ne fait que logger. Dans une vraie implémentation,
+      // on ouvrirait une nouvelle fenêtre avec ClientDetailController
+      if (lblStatus != null) {
+        lblStatus.setText("Ouverture de la fiche client: " + client.getName());
+      }
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors de l'ouverture de la fiche client: " + e.getMessage(), e);
+      if (lblStatus != null) {
+        lblStatus.setText("Erreur lors de l'ouverture de la fiche");
+      }
+    }
   }
   
   @FXML private void onRefresh() {

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.ImageScrapingPreferencesController">
+  <top>
+    <Label text="Préférences de Scraping d'Images" style="-fx-font-size: 16; -fx-font-weight: bold; -fx-padding: 10;"/>
+  </top>
+  
+  <center>
+    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+      <VBox spacing="15" style="-fx-padding: 20;">
+        
+        <!-- Section Configuration Sources -->
+        <VBox spacing="10">
+          <Label text="Sources de Scraping" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+          <Label text="Configuration actuelle des fabricants et revendeurs pour le scraping automatique d'images." 
+                 style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
+          
+          <TableView fx:id="sourcesTable" prefHeight="200">
+            <columns>
+              <TableColumn fx:id="colSourceType" text="Type" prefWidth="80"/>
+              <TableColumn fx:id="colSourceName" text="Nom" prefWidth="150"/>  
+              <TableColumn fx:id="colSourceUrl" text="URL de Base" prefWidth="200"/>
+              <TableColumn fx:id="colSourcePattern" text="Motif de Recherche" prefWidth="200"/>
+              <TableColumn fx:id="colSourceEnabled" text="Activé" prefWidth="60"/>
+            </columns>
+            <columnResizePolicy>
+              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+          </TableView>
+          
+          <HBox spacing="10">
+            <Button fx:id="btnAddSource" text="➕ Ajouter Source" onAction="#onAddSource"/>
+            <Button fx:id="btnEditSource" text="✏️ Modifier" onAction="#onEditSource" disable="true"/>
+            <Button fx:id="btnDeleteSource" text="❌ Supprimer" onAction="#onDeleteSource" disable="true"/>
+            <Separator orientation="VERTICAL"/>
+            <Button fx:id="btnTestSource" text="🧪 Tester" onAction="#onTestSource" disable="true"/>
+          </HBox>
+        </VBox>
+        
+        <Separator/>
+        
+        <!-- Section Paramètres de Scraping -->
+        <VBox spacing="10">
+          <Label text="Paramètres de Scraping" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+          
+          <GridPane hgap="15" vgap="10">
+            <columnConstraints>
+              <ColumnConstraints minWidth="150"/>
+              <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+            
+            <Label text="Délai entre requêtes:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <HBox spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
+              <Spinner fx:id="spinnerDelay" min="1" max="30" initialValue="3" prefWidth="80"/>
+              <Label text="secondes"/>
+            </HBox>
+            
+            <Label text="Timeout des requêtes:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <HBox spacing="5" GridPane.rowIndex="1" GridPane.columnIndex="1">
+              <Spinner fx:id="spinnerTimeout" min="5" max="60" initialValue="15" prefWidth="80"/>
+              <Label text="secondes"/>
+            </HBox>
+            
+            <Label text="Qualité minimale:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <HBox spacing="5" GridPane.rowIndex="2" GridPane.columnIndex="1">
+              <Spinner fx:id="spinnerMinWidth" min="100" max="1000" initialValue="300" prefWidth="80"/>
+              <Label text="× "/>
+              <Spinner fx:id="spinnerMinHeight" min="100" max="1000" initialValue="300" prefWidth="80"/>
+              <Label text="pixels"/>
+            </HBox>
+            
+            <Label text="Dossier de téléchargement:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <HBox spacing="5" GridPane.rowIndex="3" GridPane.columnIndex="1">
+              <TextField fx:id="txtDownloadPath" prefWidth="300" text="images/scraped/"/>
+              <Button fx:id="btnBrowseDownloadPath" text="📁" onAction="#onBrowseDownloadPath"/>
+            </HBox>
+          </GridPane>
+        </VBox>
+        
+        <Separator/>
+        
+        <!-- Section Actions en lot -->
+        <VBox spacing="10">
+          <Label text="Actions en Lot" style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+          
+          <HBox spacing="10">
+            <Button fx:id="btnScrapeMissing" text="🖼️ Scraper Produits sans Images" 
+                    onAction="#onScrapeMissingImages" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+            <Button fx:id="btnScrapeAll" text="🔄 Mettre à Jour Toutes les Images" 
+                    onAction="#onScrapeAllImages"/>
+            <Button fx:id="btnViewStats" text="📊 Statistiques" onAction="#onViewStats"/>
+          </HBox>
+          
+          <Label fx:id="lblStats" text="" style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
+          
+          <ProgressBar fx:id="progressScraping" visible="false" prefWidth="400"/>
+          <Label fx:id="lblProgress" text="" visible="false" style="-fx-font-size: 12;"/>
+        </VBox>
+        
+      </VBox>
+    </ScrollPane>
+  </center>
+  
+  <bottom>
+    <HBox spacing="10" style="-fx-padding: 15; -fx-alignment: center-right;">
+      <Button fx:id="btnSave" text="💾 Sauvegarder" onAction="#onSave" 
+              style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+      <Button fx:id="btnCancel" text="❌ Annuler" onAction="#onCancel"/>
+    </HBox>
+  </bottom>
+</BorderPane>

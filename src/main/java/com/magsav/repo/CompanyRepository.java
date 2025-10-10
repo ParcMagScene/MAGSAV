@@ -2,6 +2,7 @@ package com.magsav.repo;
 
 import com.magsav.model.Company;
 import com.magsav.util.AppLogger;
+import com.magsav.util.CompanyProtectionManager;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -79,6 +80,16 @@ public class CompanyRepository {
      * Sauvegarde ou met à jour une société
      */
     public Company save(Company company) {
+        // Vérification de la protection pour les mises à jour uniquement
+        if (company.getId() != null) {
+            try {
+                CompanyProtectionManager.validateCompanyModification(company);
+            } catch (CompanyProtectionManager.CompanyProtectionException e) {
+                AppLogger.warn("Tentative de modification de société protégée: " + e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        
         if (company.getId() == null) {
             return insert(company);
         } else {
@@ -221,6 +232,17 @@ public class CompanyRepository {
      * Supprime une société
      */
     public boolean delete(Long id) {
+        // Vérification de la protection avant suppression
+        Optional<Company> company = findById(id);
+        if (company.isPresent()) {
+            try {
+                CompanyProtectionManager.validateCompanyDeletion(company.get());
+            } catch (CompanyProtectionManager.CompanyProtectionException e) {
+                AppLogger.warn("Tentative de suppression de société protégée: " + e.getMessage());
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        
         try (PreparedStatement stmt = connection.prepareStatement(DELETE_BY_ID)) {
             stmt.setLong(1, id);
             int affectedRows = stmt.executeUpdate();
@@ -305,12 +327,14 @@ public class CompanyRepository {
         
         String createdAtStr = rs.getString("created_at");
         if (createdAtStr != null) {
-            company.setCreatedAt(LocalDateTime.parse(createdAtStr));
+            // Parse SQLite datetime format (yyyy-MM-dd HH:mm:ss)
+            company.setCreatedAt(LocalDateTime.parse(createdAtStr.replace(" ", "T")));
         }
         
         String updatedAtStr = rs.getString("updated_at");
         if (updatedAtStr != null) {
-            company.setUpdatedAt(LocalDateTime.parse(updatedAtStr));
+            // Parse SQLite datetime format (yyyy-MM-dd HH:mm:ss)
+            company.setUpdatedAt(LocalDateTime.parse(updatedAtStr.replace(" ", "T")));
         }
         
         return company;

@@ -1,0 +1,67 @@
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;?import javafx.scene.control.*?&gt;
+&lt;?import javafx.scene.layout.*?&gt;
+&lt;?import com.magsav.gui.component.FileDropZone?&gt;
+
+&lt;BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.societes.EnhancedManufacturerFormController" prefWidth="400" prefHeight="300"&gt;
+  
+  &lt;top&gt;
+    &lt;Label text="Test des Zones de Glisser-Déposer" style="-fx-font-weight: bold; -fx-font-size: 16; -fx-padding: 10;"
+           fx:id="lblTitle"/&gt;
+  &lt;/top&gt;
+  
+  &lt;center&gt;
+    &lt;VBox spacing="20" style="-fx-padding: 20;"&gt;
+      
+      &lt;!-- Champ nom simple --&gt;
+      &lt;HBox spacing="10"&gt;
+        &lt;Label text="Nom :" minWidth="80"/&gt;
+        &lt;TextField fx:id="tfNom" HBox.hgrow="ALWAYS" promptText="Nom du fabricant"/&gt;
+      &lt;/HBox&gt;
+      
+      &lt;!-- Zone de logo --&gt;
+      &lt;VBox spacing="8"&gt;
+        &lt;Label text="Logo de la société" style="-fx-font-weight: bold;"/&gt;
+        
+        &lt;FileDropZone fx:id="logoDropZone" 
+                      promptText="Glissez ici le logo de la société"
+                      acceptedExtensions=".jpg, .jpeg, .png, .gif"/&gt;
+        
+        &lt;HBox spacing="10"&gt;
+          &lt;Button text="Parcourir..." onAction="#onBrowseLogo"/&gt;
+          &lt;Button text="Supprimer" onAction="#onRemoveLogo" fx:id="btnRemoveLogo"/&gt;
+          &lt;Pane HBox.hgrow="ALWAYS"/&gt;
+          &lt;Label fx:id="lblLogoStatus" text="" style="-fx-text-fill: #666;"/&gt;
+        &lt;/HBox&gt;
+      &lt;/VBox&gt;
+      
+      &lt;!-- Zone de documents --&gt;
+      &lt;VBox spacing="8"&gt;
+        &lt;Label text="Documents associés" style="-fx-font-weight: bold;"/&gt;
+        
+        &lt;FileDropZone fx:id="documentsDropZone" 
+                      promptText="Glissez ici les documents (PDF, DOC, etc.)"
+                      acceptedExtensions=".pdf, .doc, .docx"/&gt;
+        
+        &lt;HBox spacing="10"&gt;
+          &lt;Button text="Ajouter documents..." onAction="#onBrowseDocuments"/&gt;
+          &lt;Pane HBox.hgrow="ALWAYS"/&gt;
+          &lt;Label fx:id="lblDocumentsCount" text="0 document(s)" style="-fx-text-fill: #666;"/&gt;
+        &lt;/HBox&gt;
+      &lt;/VBox&gt;
+      
+    &lt;/VBox&gt;
+  &lt;/center&gt;
+  
+  &lt;bottom&gt;
+    &lt;ButtonBar style="-fx-padding: 10;"&gt;
+      &lt;buttons&gt;
+        &lt;Button text="Annuler" onAction="#onCancel" ButtonBar.buttonData="CANCEL_CLOSE"/&gt;
+        &lt;Button text="Enregistrer" onAction="#onSave" ButtonBar.buttonData="OK_DONE" 
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white;" fx:id="btnSave"/&gt;
+      &lt;/buttons&gt;
+    &lt;/ButtonBar&gt;
+  &lt;/bottom&gt;
+  
+&lt;/BorderPane&gt;

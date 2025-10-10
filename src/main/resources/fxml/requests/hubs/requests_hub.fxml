@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.magsav.gui.RequestsHubController" 
+      style="-fx-background-color: white;" spacing="10">
+    
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+    
+    <!-- En-tête -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="📋 Centre de Gestion des Demandes" 
+               style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="✖" onAction="#onClose" 
+                style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 3;"/>
+    </HBox>
+    
+    <Separator/>
+    
+    <!-- Conteneur principal avec onglets -->
+    <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        
+        <!-- Onglet 1: Demandes de Matériel -->
+        <Tab text="📦 Demandes de Matériel">
+            <VBox spacing="10" style="-fx-padding: 15;">
+                
+                <!-- Barre d'outils -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button text="➕ Nouvelle Demande" onAction="#onAddEquipmentRequest" 
+                            style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+                    <Button text="✏️ Modifier" onAction="#onEditEquipmentRequest" fx:id="btnEditEquipmentRequest" disable="true"/>
+                    <Button text="🗑️ Supprimer" onAction="#onDeleteEquipmentRequest" fx:id="btnDeleteEquipmentRequest" disable="true"/>
+                    <Separator orientation="VERTICAL"/>
+                    <TextField fx:id="equipmentSearchField" promptText="Rechercher une demande..." prefWidth="200"/>
+                    <Button text="🔍" onAction="#onSearchEquipment"/>
+                    <Button text="🔄" onAction="#onRefreshEquipmentRequests"/>
+                </HBox>
+                
+                <!-- Tableau des demandes de matériel -->
+                <TableView fx:id="equipmentRequestsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colEquipId" text="ID" prefWidth="60"/>
+                        <TableColumn fx:id="colEquipDate" text="Date" prefWidth="100"/>
+                        <TableColumn fx:id="colEquipDemandeur" text="Demandeur" prefWidth="150"/>
+                        <TableColumn fx:id="colEquipMatériel" text="Matériel" prefWidth="200"/>
+                        <TableColumn fx:id="colEquipQuantité" text="Quantité" prefWidth="80"/>
+                        <TableColumn fx:id="colEquipStatut" text="Statut" prefWidth="120"/>
+                        <TableColumn fx:id="colEquipPriorité" text="Priorité" prefWidth="80"/>
+                        <TableColumn fx:id="colEquipCommentaires" text="Commentaires" prefWidth="200"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                    <placeholder>
+                        <Label text="Aucune demande de matériel"/>
+                    </placeholder>
+                </TableView>
+                
+                <!-- Statistiques -->
+                <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #ecf0f1; -fx-background-radius: 5;">
+                    <Label fx:id="lblEquipTotal" text="Total: 0" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblEquipEnAttente" text="En attente: 0" style="-fx-text-fill: #f39c12;"/>
+                    <Label fx:id="lblEquipApprouvées" text="Approuvées: 0" style="-fx-text-fill: #27ae60;"/>
+                    <Label fx:id="lblEquipRefusées" text="Refusées: 0" style="-fx-text-fill: #e74c3c;"/>
+                </HBox>
+            </VBox>
+        </Tab>
+        
+        <!-- Onglet 2: Demandes de Pièces -->
+        <Tab text="🔧 Demandes de Pièces">
+            <VBox spacing="10" style="-fx-padding: 15;">
+                
+                <!-- Barre d'outils -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button text="➕ Nouvelle Demande" onAction="#onAddPartRequest" 
+                            style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+                    <Button text="✏️ Modifier" onAction="#onEditPartRequest" fx:id="btnEditPartRequest" disable="true"/>
+                    <Button text="🗑️ Supprimer" onAction="#onDeletePartRequest" fx:id="btnDeletePartRequest" disable="true"/>
+                    <Separator orientation="VERTICAL"/>
+                    <TextField fx:id="partSearchField" promptText="Rechercher une demande..." prefWidth="200"/>
+                    <Button text="🔍" onAction="#onSearchParts"/>
+                    <Button text="🔄" onAction="#onRefreshPartRequests"/>
+                </HBox>
+                
+                <!-- Tableau des demandes de pièces -->
+                <TableView fx:id="partRequestsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colPartId" text="ID" prefWidth="60"/>
+                        <TableColumn fx:id="colPartDate" text="Date" prefWidth="100"/>
+                        <TableColumn fx:id="colPartDemandeur" text="Demandeur" prefWidth="150"/>
+                        <TableColumn fx:id="colPartPièce" text="Pièce" prefWidth="200"/>
+                        <TableColumn fx:id="colPartRéférence" text="Référence" prefWidth="120"/>
+                        <TableColumn fx:id="colPartQuantité" text="Quantité" prefWidth="80"/>
+                        <TableColumn fx:id="colPartStatut" text="Statut" prefWidth="120"/>
+                        <TableColumn fx:id="colPartUrgence" text="Urgence" prefWidth="80"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                    <placeholder>
+                        <Label text="Aucune demande de pièce"/>
+                    </placeholder>
+                </TableView>
+                
+                <!-- Statistiques -->
+                <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #ecf0f1; -fx-background-radius: 5;">
+                    <Label fx:id="lblPartTotal" text="Total: 0" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblPartEnCours" text="En cours: 0" style="-fx-text-fill: #3498db;"/>
+                    <Label fx:id="lblPartLivrées" text="Livrées: 0" style="-fx-text-fill: #27ae60;"/>
+                    <Label fx:id="lblPartAnnulées" text="Annulées: 0" style="-fx-text-fill: #e74c3c;"/>
+                </HBox>
+            </VBox>
+        </Tab>
+        
+        <!-- Onglet 3: Interventions -->
+        <Tab text="🔨 Interventions">
+            <VBox spacing="10" style="-fx-padding: 15;">
+                
+                <!-- Barre d'outils -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button text="➕ Nouvelle Intervention" onAction="#onAddIntervention" 
+                            style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+                    <Button text="✏️ Modifier" onAction="#onEditIntervention" fx:id="btnEditIntervention" disable="true"/>
+                    <Button text="📋 Détails" onAction="#onViewInterventionDetails" fx:id="btnViewInterventionDetails" disable="true"/>
+                    <Button text="✅ Clôturer" onAction="#onCloseIntervention" fx:id="btnCloseIntervention" disable="true"/>
+                    <Separator orientation="VERTICAL"/>
+                    <TextField fx:id="interventionSearchField" promptText="Rechercher une intervention..." prefWidth="200"/>
+                    <Button text="🔍" onAction="#onSearchInterventions"/>
+                    <ComboBox fx:id="cmbInterventionFilter" promptText="Filtrer par statut" prefWidth="150"/>
+                </HBox>
+                
+                <!-- Tableau des interventions -->
+                <TableView fx:id="interventionsTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colInterId" text="ID" prefWidth="60"/>
+                        <TableColumn fx:id="colInterDate" text="Date" prefWidth="100"/>
+                        <TableColumn fx:id="colInterTechnicien" text="Technicien" prefWidth="150"/>
+                        <TableColumn fx:id="colInterClient" text="Client" prefWidth="150"/>
+                        <TableColumn fx:id="colInterProduit" text="Produit" prefWidth="180"/>
+                        <TableColumn fx:id="colInterType" text="Type" prefWidth="120"/>
+                        <TableColumn fx:id="colInterStatut" text="Statut" prefWidth="120"/>
+                        <TableColumn fx:id="colInterDurée" text="Durée" prefWidth="80"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                    <placeholder>
+                        <Label text="Aucune intervention"/>
+                    </placeholder>
+                </TableView>
+                
+                <!-- Statistiques -->
+                <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #ecf0f1; -fx-background-radius: 5;">
+                    <Label fx:id="lblInterTotal" text="Total: 0" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblInterPlanifiées" text="Planifiées: 0" style="-fx-text-fill: #f39c12;"/>
+                    <Label fx:id="lblInterEnCours" text="En cours: 0" style="-fx-text-fill: #3498db;"/>
+                    <Label fx:id="lblInterTerminées" text="Terminées: 0" style="-fx-text-fill: #27ae60;"/>
+                </HBox>
+            </VBox>
+        </Tab>
+        
+        <!-- Onglet 4: Héritage Droits Techniciens -->
+        <Tab text="👥 Droits Techniciens">
+            <VBox spacing="10" style="-fx-padding: 15;">
+                
+                <!-- Barre d'outils -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button text="➕ Nouveau Technicien" onAction="#onAddTechnician" 
+                            style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+                    <Button text="✏️ Modifier Droits" onAction="#onEditTechnicianRights" fx:id="btnEditTechnicianRights" disable="true"/>
+                    <Button text="🔄 Hériter Droits" onAction="#onInheritRights" fx:id="btnInheritRights" disable="true"/>
+                    <Button text="📊 Rapport Activité" onAction="#onTechnicianActivityReport" fx:id="btnTechnicianActivityReport" disable="true"/>
+                    <Separator orientation="VERTICAL"/>
+                    <TextField fx:id="technicianSearchField" promptText="Rechercher un technicien..." prefWidth="200"/>
+                    <Button text="🔍" onAction="#onSearchTechnicians"/>
+                </HBox>
+                
+                <!-- Tableau des techniciens -->
+                <TableView fx:id="techniciansTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colTechId" text="ID" prefWidth="60"/>
+                        <TableColumn fx:id="colTechNom" text="Nom" prefWidth="150"/>
+                        <TableColumn fx:id="colTechPrénom" text="Prénom" prefWidth="150"/>
+                        <TableColumn fx:id="colTechSpécialité" text="Spécialité" prefWidth="150"/>
+                        <TableColumn fx:id="colTechNiveau" text="Niveau" prefWidth="100"/>
+                        <TableColumn fx:id="colTechStatut" text="Statut" prefWidth="100"/>
+                        <TableColumn fx:id="colTechDernièreActivité" text="Dernière Activité" prefWidth="120"/>
+                        <TableColumn fx:id="colTechDroits" text="Droits" prefWidth="200"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                    <placeholder>
+                        <Label text="Aucun technicien"/>
+                    </placeholder>
+                </TableView>
+                
+                <!-- Gestion des droits -->
+                <VBox spacing="10" style="-fx-padding: 10; -fx-background-color: #f8f9fa; -fx-background-radius: 5;">
+                    <Label text="Gestion des Droits d'Accès" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                    <HBox spacing="15">
+                        <VBox spacing="5">
+                            <Label text="Droits de Base:" style="-fx-font-weight: bold;"/>
+                            <CheckBox fx:id="chkConsultation" text="Consultation produits"/>
+                            <CheckBox fx:id="chkCréationDemandes" text="Création demandes"/>
+                            <CheckBox fx:id="chkModificationProduits" text="Modification produits"/>
+                        </VBox>
+                        <VBox spacing="5">
+                            <Label text="Droits Avancés:" style="-fx-font-weight: bold;"/>
+                            <CheckBox fx:id="chkGestionStock" text="Gestion stock"/>
+                            <CheckBox fx:id="chkRapports" text="Génération rapports"/>
+                            <CheckBox fx:id="chkAdministration" text="Administration système"/>
+                        </VBox>
+                        <VBox spacing="5">
+                            <Label text="Actions:" style="-fx-font-weight: bold;"/>
+                            <Button text="💾 Sauvegarder Droits" onAction="#onSaveRights" 
+                                    style="-fx-background-color: #3498db; -fx-text-fill: white;"/>
+                            <Button text="🔄 Réinitialiser" onAction="#onResetRights"/>
+                            <Button text="📋 Copier vers..." onAction="#onCopyRights"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+                
+                <!-- Statistiques -->
+                <HBox spacing="20" alignment="CENTER_LEFT" style="-fx-padding: 10; -fx-background-color: #ecf0f1; -fx-background-radius: 5;">
+                    <Label fx:id="lblTechTotal" text="Total: 0" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="lblTechActifs" text="Actifs: 0" style="-fx-text-fill: #27ae60;"/>
+                    <Label fx:id="lblTechInactifs" text="Inactifs: 0" style="-fx-text-fill: #e74c3c;"/>
+                    <Label fx:id="lblTechEnFormation" text="En formation: 0" style="-fx-text-fill: #f39c12;"/>
+                </HBox>
+            </VBox>
+        </Tab>
+    </TabPane>
+</VBox>

@@ -12,7 +12,7 @@ public class SocieteRepository {
 
   public long insert(String type, String nom, String email, String phone, String adresse, String notes) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "INSERT INTO societes (type, nom, email, phone, adresse, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))";
+      String sql = "INSERT INTO societes (type_societe, nom_societe, email_societe, telephone_societe, adresse_societe, notes_societe) VALUES (?, ?, ?, ?, ?, ?)";
       PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       stmt.setString(1, type);
       stmt.setString(2, nom);
@@ -33,20 +33,20 @@ public class SocieteRepository {
 
   public Optional<Societe> findById(long id) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "SELECT id, type, nom, email, phone, adresse, notes, created_at FROM societes WHERE id = ?";
+      String sql = "SELECT id, type_societe, nom_societe, email_societe, telephone_societe, adresse_societe, notes_societe, date_creation FROM societes WHERE id = ?";
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setLong(1, id);
       ResultSet rs = stmt.executeQuery();
       if (rs.next()) {
         return Optional.of(new Societe(
             rs.getLong("id"),
-            rs.getString("type"),
-            rs.getString("nom"),
-            rs.getString("email"),
-            rs.getString("phone"),
-            rs.getString("adresse"),
-            rs.getString("notes"),
-            rs.getString("created_at")
+            rs.getString("type_societe"),
+            rs.getString("nom_societe"),
+            rs.getString("email_societe"),
+            rs.getString("telephone_societe"),
+            rs.getString("adresse_societe"),
+            rs.getString("notes_societe"),
+            rs.getString("date_creation")
         ));
       }
     } catch (SQLException e) {
@@ -58,20 +58,20 @@ public class SocieteRepository {
   public List<Societe> findByType(String type) {
     List<Societe> societes = new ArrayList<>();
     try (Connection conn = DB.getConnection()) {
-      String sql = "SELECT id, type, nom, email, phone, adresse, notes, created_at FROM societes WHERE type = ? ORDER BY nom";
+      String sql = "SELECT id, type_societe, nom_societe, email_societe, telephone_societe, adresse_societe, notes_societe, date_creation FROM societes WHERE type_societe = ? ORDER BY nom_societe";
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setString(1, type);
       ResultSet rs = stmt.executeQuery();
       while (rs.next()) {
         societes.add(new Societe(
             rs.getLong("id"),
-            rs.getString("type"),
-            rs.getString("nom"),
-            rs.getString("email"),
-            rs.getString("phone"),
-            rs.getString("adresse"),
-            rs.getString("notes"),
-            rs.getString("created_at")
+            rs.getString("type_societe"),
+            rs.getString("nom_societe"),
+            rs.getString("email_societe"),
+            rs.getString("telephone_societe"),
+            rs.getString("adresse_societe"),
+            rs.getString("notes_societe"),
+            rs.getString("date_creation")
         ));
       }
     } catch (SQLException e) {
@@ -83,19 +83,19 @@ public class SocieteRepository {
   public List<Societe> findAll() {
     List<Societe> societes = new ArrayList<>();
     try (Connection conn = DB.getConnection()) {
-      String sql = "SELECT id, type, nom, email, phone, adresse, notes, created_at FROM societes ORDER BY nom";
+      String sql = "SELECT id, type_societe, nom_societe, email_societe, telephone_societe, adresse_societe, notes_societe, date_creation FROM societes ORDER BY nom_societe";
       PreparedStatement stmt = conn.prepareStatement(sql);
       ResultSet rs = stmt.executeQuery();
       while (rs.next()) {
         societes.add(new Societe(
             rs.getLong("id"),
-            rs.getString("type"),
-            rs.getString("nom"),
-            rs.getString("email"),
-            rs.getString("phone"),
-            rs.getString("adresse"),
-            rs.getString("notes"),
-            rs.getString("created_at")
+            rs.getString("type_societe"),
+            rs.getString("nom_societe"),
+            rs.getString("email_societe"),
+            rs.getString("telephone_societe"),
+            rs.getString("adresse_societe"),
+            rs.getString("notes_societe"),
+            rs.getString("date_creation")
         ));
       }
     } catch (SQLException e) {
@@ -106,7 +106,7 @@ public class SocieteRepository {
 
   public void update(Societe societe) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "UPDATE societes SET type = ?, nom = ?, email = ?, phone = ?, adresse = ?, notes = ? WHERE id = ?";
+      String sql = "UPDATE societes SET type_societe = ?, nom_societe = ?, email_societe = ?, telephone_societe = ?, adresse_societe = ?, notes_societe = ? WHERE id = ?";
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setString(1, societe.type());
       stmt.setString(2, societe.nom());
@@ -123,7 +123,7 @@ public class SocieteRepository {
 
   public void update(long id, String type, String nom, String email, String phone, String adresse, String notes) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "UPDATE societes SET type = ?, nom = ?, email = ?, phone = ?, adresse = ?, notes = ? WHERE id = ?";
+      String sql = "UPDATE societes SET type_societe = ?, nom_societe = ?, email_societe = ?, telephone_societe = ?, adresse_societe = ?, notes_societe = ? WHERE id = ?";
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setString(1, type);
       stmt.setString(2, nom);
@@ -156,7 +156,7 @@ public class SocieteRepository {
 
   public Optional<Societe> findByNameAndType(String nom, String type) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "SELECT id, type, nom, email, phone, adresse, notes, created_at FROM societes WHERE nom = ? AND type = ?";
+      String sql = "SELECT id, type_societe, nom_societe, email_societe, telephone_societe, adresse_societe, notes_societe, date_creation FROM societes WHERE nom_societe = ? AND type_societe = ?";
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setString(1, nom);
       stmt.setString(2, type);
@@ -164,13 +164,13 @@ public class SocieteRepository {
       if (rs.next()) {
         return Optional.of(new Societe(
             rs.getLong("id"),
-            rs.getString("type"),
-            rs.getString("nom"),
-            rs.getString("email"),
-            rs.getString("phone"),
-            rs.getString("adresse"),
-            rs.getString("notes"),
-            rs.getString("created_at")
+            rs.getString("type_societe"),
+            rs.getString("nom_societe"),
+            rs.getString("email_societe"),
+            rs.getString("telephone_societe"),
+            rs.getString("adresse_societe"),
+            rs.getString("notes_societe"),
+            rs.getString("date_creation")
         ));
       }
     } catch (SQLException e) {

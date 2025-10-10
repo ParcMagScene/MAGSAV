@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.magsav.gui.societes.ManufacturerFormController" spacing="8" style="-fx-padding: 12;">
+  <children>
+    <GridPane hgap="8" vgap="8">
+      <columnConstraints>
+        <ColumnConstraints minWidth="110"/>
+        <ColumnConstraints hgrow="ALWAYS" minWidth="260"/>
+      </columnConstraints>
+      <children>
+        <Label text="Logo:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <HBox spacing="8" GridPane.rowIndex="0" GridPane.columnIndex="1">
+          <children>
+            <ImageView fx:id="imgLogo" fitWidth="80" fitHeight="40" preserveRatio="true"/>
+            <Button text="Choisir logo…" onAction="#onChooseLogo"/>
+          </children>
+        </HBox>
+
+        <Label text="Nom:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="tfNom" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Email:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="tfEmail" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="Téléphone:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="tfPhone" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="Adresse:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextArea fx:id="taAdresse" GridPane.rowIndex="4" GridPane.columnIndex="1" prefRowCount="2"/>
+
+        <Label text="Notes:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <TextArea fx:id="taNotes" GridPane.rowIndex="5" GridPane.columnIndex="1" prefRowCount="3"/>
+      </children>
+    </GridPane>
+  </children>
+</VBox>

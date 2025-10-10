@@ -9,11 +9,11 @@ import java.util.List;
 public class InterventionRepository {
   public InterventionRow findById(long id) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "SELECT i.id, p.nom as produit_nom, i.statut, " +
+      String sql = "SELECT i.id, p.nom_produit as produit_nom, i.statut_intervention, " +
                    "COALESCE(i.panne, i.defect_description, '') as panne, " +
                    "i.date_entree, i.date_sortie " +
                    "FROM interventions i " +
-                   "JOIN produits p ON i.product_id = p.id " +
+                   "JOIN produits p ON i.produit_id = p.id " +
                    "WHERE i.id = ?";
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setLong(1, id);
@@ -22,7 +22,7 @@ public class InterventionRepository {
         return new InterventionRow(
             rs.getLong("id"),
             rs.getString("produit_nom"),
-            rs.getString("statut"),
+            rs.getString("statut_intervention"),
             rs.getString("panne"),
             rs.getString("date_entree"),
             rs.getString("date_sortie")
@@ -36,7 +36,7 @@ public class InterventionRepository {
 
   public long insert(long productId, String serialNumber, String clientNote, String defectDescription) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "INSERT INTO interventions (product_id, serial_number, client_note, defect_description, date_entree) VALUES (?, ?, ?, ?, datetime('now'))";
+      String sql = "INSERT INTO interventions (produit_id, numero_serie, note_client, description_panne, date_entree) VALUES (?, ?, ?, ?, datetime('now'))";
       PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       stmt.setLong(1, productId);
       stmt.setString(2, serialNumber);
@@ -56,12 +56,12 @@ public class InterventionRepository {
   public List<InterventionRow> findByProductId(long productId) {
     List<InterventionRow> interventions = new ArrayList<>();
     try (Connection conn = DB.getConnection()) {
-      String sql = "SELECT i.id, p.nom as produit_nom, i.statut, " +
-                   "COALESCE(i.panne, i.defect_description, '') as panne, " +
+      String sql = "SELECT i.id, p.nom_produit as produit_nom, i.statut_intervention, " +
+                   "COALESCE(i.description_panne, '') as panne, " +
                    "i.date_entree, i.date_sortie " +
                    "FROM interventions i " +
-                   "JOIN produits p ON i.product_id = p.id " +
-                   "WHERE i.product_id = ? " +
+                   "JOIN produits p ON i.produit_id = p.id " +
+                   "WHERE i.produit_id = ? " +
                    "ORDER BY i.date_entree DESC";
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setLong(1, productId);
@@ -70,7 +70,7 @@ public class InterventionRepository {
         interventions.add(new InterventionRow(
             rs.getLong("id"),
             rs.getString("produit_nom"),
-            rs.getString("statut"),
+            rs.getString("statut_intervention"),
             rs.getString("panne"),
             rs.getString("date_entree"),
             rs.getString("date_sortie")
@@ -85,11 +85,11 @@ public class InterventionRepository {
   public List<InterventionRow> findAllWithProductName() {
     List<InterventionRow> interventions = new ArrayList<>();
     try (Connection conn = DB.getConnection()) {
-      String sql = "SELECT i.id, p.nom as produit_nom, i.statut, " +
-                   "COALESCE(i.panne, i.defect_description, '') as panne, " +
+      String sql = "SELECT i.id, p.nom_produit as produit_nom, i.statut_intervention, " +
+                   "COALESCE(i.description_panne, '') as panne, " +
                    "i.date_entree, i.date_sortie " +
                    "FROM interventions i " +
-                   "JOIN produits p ON i.product_id = p.id " +
+                   "JOIN produits p ON i.produit_id = p.id " +
                    "ORDER BY i.date_entree DESC";
       PreparedStatement stmt = conn.prepareStatement(sql);
       ResultSet rs = stmt.executeQuery();
@@ -97,7 +97,7 @@ public class InterventionRepository {
         interventions.add(new InterventionRow(
             rs.getLong("id"),
             rs.getString("produit_nom"),
-            rs.getString("statut"),
+            rs.getString("statut_intervention"),
             rs.getString("panne"),
             rs.getString("date_entree"),
             rs.getString("date_sortie")
@@ -111,7 +111,7 @@ public class InterventionRepository {
 
   public boolean close(long interventionId) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "UPDATE interventions SET statut = 'Terminée', date_sortie = datetime('now') WHERE id = ?";
+      String sql = "UPDATE interventions SET statut_intervention = 'Terminée', date_sortie = datetime('now') WHERE id = ?";
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setLong(1, interventionId);
       int rowsAffected = stmt.executeUpdate();
@@ -125,7 +125,7 @@ public class InterventionRepository {
                               String dateEntree, String dateSortie, String suiviNo, String ownerType, Long ownerSocieteId) {
     try (Connection conn = DB.getConnection()) {
       // Utiliser les colonnes qui existent réellement dans la table interventions
-      String sql = "INSERT INTO interventions (product_id, statut, panne, detecteur, " +
+      String sql = "INSERT INTO interventions (produit_id, statut_intervention, panne, detecteur, " +
                    "date_entree, date_sortie, owner_type, owner_societe_id) " +
                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
       PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -154,5 +154,61 @@ public class InterventionRepository {
       throw new DatabaseException("Erreur insertion intervention depuis import", e);
     }
     return -1;
+  }
+  
+  /**
+   * Trouve les interventions d'un client donné (par owner_societe_id)
+   */
+  public List<InterventionRow> findByClientId(long clientId) {
+    List<InterventionRow> interventions = new ArrayList<>();
+    try (Connection conn = DB.getConnection()) {
+      String sql = "SELECT i.id, p.nom_produit as produit_nom, i.statut_intervention, " +
+                   "COALESCE(i.panne, i.defect_description, '') as panne, " +
+                   "i.date_entree, i.date_sortie " +
+                   "FROM interventions i " +
+                   "LEFT JOIN produits p ON i.produit_id = p.id " +
+                   "WHERE i.owner_societe_id = ? " +
+                   "ORDER BY i.date_entree DESC";
+      
+      PreparedStatement stmt = conn.prepareStatement(sql);
+      stmt.setLong(1, clientId);
+      ResultSet rs = stmt.executeQuery();
+      
+      while (rs.next()) {
+        interventions.add(new InterventionRow(
+            rs.getLong("id"),
+            rs.getString("produit_nom"),
+            rs.getString("statut_intervention"),
+            rs.getString("panne"),
+            rs.getString("date_entree"),
+            rs.getString("date_sortie")
+        ));
+      }
+    } catch (SQLException e) {
+      throw new DatabaseException("Erreur récupération interventions par client ID", e);
+    }
+    return interventions;
+  }
+  
+  /**
+   * Compte le nombre total d'interventions
+   */
+  public int getTotalInterventionCount() {
+    String sql = "SELECT COUNT(*) FROM interventions";
+    
+    try (Connection conn = DB.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+      
+      try (ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) {
+          return rs.getInt(1);
+        }
+        return 0;
+      }
+      
+    } catch (SQLException e) {
+      System.err.println("Erreur lors du comptage total des interventions: " + e.getMessage());
+      return 0;
+    }
   }
 }

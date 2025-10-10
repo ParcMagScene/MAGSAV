@@ -30,6 +30,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -132,6 +133,66 @@ public class PreferencesController implements Initializable {
     @FXML private TabPane preferencesTabPane;
     @FXML private Button btnSaveAll;
     @FXML private Button btnCancel;
+    @FXML private Button btnBackToMain;
+    
+    // Section Apparence (maintenant dans Général)
+    @FXML private ComboBox<String> themeSelector;
+    @FXML private ColorPicker sidebarColorPicker;
+    @FXML private Label sidebarColorLabel;
+    @FXML private ColorPicker backgroundColorPicker;
+    @FXML private Label backgroundColorLabel;
+    @FXML private ColorPicker tabColorPicker;
+    @FXML private Label tabColorLabel;
+    @FXML private ColorPicker accentColorPicker;
+    @FXML private Label accentColorLabel;
+    @FXML private ColorPicker textColorPicker;
+    @FXML private Label textColorLabel;
+    @FXML private VBox previewPane;
+    @FXML private Button applyAppearanceButton;
+    @FXML private Button resetAppearanceButton;
+    
+    // Section Langue et Localisation
+    @FXML private ComboBox<String> cbLanguage;
+    @FXML private ComboBox<String> cbDateFormat;
+    @FXML private ComboBox<String> cbTimeFormat;
+    @FXML private ComboBox<String> cbCurrency;
+    
+    // Section Notifications
+    @FXML private CheckBox chkShowNotifications;
+    @FXML private CheckBox chkSoundNotifications;
+    @FXML private CheckBox chkEmailNotifications;
+    @FXML private CheckBox chkDesktopNotifications;
+    @FXML private Spinner<Integer> spinnerNotificationDuration;
+    
+    // Section Sécurité
+    @FXML private CheckBox chkRequirePassword;
+    @FXML private CheckBox chkAutoLock;
+    @FXML private CheckBox chkLogAccess;
+    @FXML private CheckBox chkEncryptData;
+    @FXML private Spinner<Integer> spinnerLockDelay;
+    @FXML private Button btnChangePassword;
+    @FXML private Button btnViewLogs;
+    
+    // Section Base de Données
+    @FXML private TextField txtDatabasePath;
+    @FXML private Button btnBrowseDatabase;
+    @FXML private CheckBox chkAutoBackup;
+    @FXML private Spinner<Integer> spinnerBackupInterval;
+    @FXML private Button btnBackupNow;
+    @FXML private Button btnRestoreBackup;
+    @FXML private Button btnOptimizeDB;
+    @FXML private Label lblDatabaseStats;
+    
+    // Section Import/Export
+    @FXML private Button btnImportProducts;
+    @FXML private Button btnImportClients;
+    @FXML private Button btnImportCompanies;
+    @FXML private Button btnExportProducts;
+    @FXML private Button btnExportClients;
+    @FXML private Button btnExportCompanies;
+    @FXML private Button btnExportAll;
+    @FXML private Button btnExportReport;
+    @FXML private ComboBox<String> cbExportFormat;
     
     // Onglet Société
     @FXML private TextField txtCompanyName;
@@ -181,6 +242,10 @@ public class PreferencesController implements Initializable {
         setupScrapingTab();
         setupAddressAutocomplete();
         initializeNewTabs();
+        setupGeneralSection();
+        setupSystemSection();
+        setupMaintenanceSection();
+        setupDataSection();
         loadAllSettings();
     }
     
@@ -375,14 +440,54 @@ public class PreferencesController implements Initializable {
     private void onCleanDuplicates() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Nettoyage des Doublons");
-        alert.setHeaderText("Supprimer les fichiers en doublon");
-        alert.setContentText("Cette opération va analyser et supprimer les images identiques. Continuer ?");
-        
-        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-            // TODO: Implémenter nettoyage des doublons
-            showAlert(Alert.AlertType.INFORMATION, "Nettoyage", "Nettoyage des doublons à implémenter.");
-            updateMediaStats();
-        }
+        alert.setHeaderText("Confirmer le nettoyage des doublons");
+        alert.setContentText("Cette action supprimera définitivement les doublons détectés dans :\n" +
+                            "• Produits (UIDs dupliqués)\n" +
+                            "• Sociétés (noms identiques)\n" +
+                            "• Catégories (noms et parents identiques)\n\n" +
+                            "Cette opération est irréversible. Continuer ?");
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                // Créer et lancer la tâche de nettoyage
+                com.magsav.util.DatabaseCleanupTask cleanupTask = new com.magsav.util.DatabaseCleanupTask(
+                    () -> {
+                        // Succès
+                        showAlert(Alert.AlertType.INFORMATION, "Nettoyage Terminé", 
+                                "Le nettoyage des doublons a été effectué avec succès.");
+                    },
+                    () -> {
+                        // Échec
+                        showAlert(Alert.AlertType.ERROR, "Erreur", 
+                                "Une erreur est survenue lors du nettoyage des doublons.");
+                    }
+                );
+                
+                // Afficher un dialogue de progression
+                javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar();
+                progressBar.progressProperty().bind(cleanupTask.progressProperty());
+                
+                javafx.scene.control.Label statusLabel = new javafx.scene.control.Label();
+                statusLabel.textProperty().bind(cleanupTask.messageProperty());
+                
+                javafx.scene.layout.VBox progressBox = new javafx.scene.layout.VBox(10);
+                progressBox.getChildren().addAll(statusLabel, progressBar);
+                
+                Alert progressAlert = new Alert(Alert.AlertType.INFORMATION);
+                progressAlert.setTitle("Nettoyage en cours");
+                progressAlert.setHeaderText("Suppression des doublons...");
+                progressAlert.getDialogPane().setContent(progressBox);
+                progressAlert.show();
+                
+                // Fermer le dialogue quand la tâche est terminée
+                cleanupTask.setOnSucceeded(e -> progressAlert.close());
+                cleanupTask.setOnFailed(e -> progressAlert.close());
+                
+                // Lancer la tâche en arrière-plan
+                Thread cleanupThread = new Thread(cleanupTask);
+                cleanupThread.setDaemon(true);
+                cleanupThread.start();
+            }
+        });
     }
     
     @FXML
@@ -637,6 +742,21 @@ public class PreferencesController implements Initializable {
         closeWindow();
     }
     
+    @FXML 
+    private void onBackToMainPreferences() {
+        AppLogger.info("Retour vers les préférences principales");
+        try {
+            // Fermer la fenêtre actuelle
+            closeWindow();
+            
+            // Rediriger vers la section préférences principale dans MainController
+            // Note: Cette navigation sera gérée automatiquement par le retour à la page principale
+            
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors du retour aux préférences principales", e);
+        }
+    }
+    
     private void closeWindow() {
         Stage stage = (Stage) btnCancel.getScene().getWindow();
         stage.close();
@@ -677,8 +797,8 @@ public class PreferencesController implements Initializable {
     
     @FXML
     private void onCleanupDuplicates() {
-        AppLogger.info("preferences", "Nettoyage des doublons");
-        showAlert(Alert.AlertType.INFORMATION, "Nettoyage", "Suppression des doublons terminée.");
+        // Rediriger vers la méthode principale
+        onCleanDuplicates();
     }
     
     @FXML
@@ -754,7 +874,7 @@ public class PreferencesController implements Initializable {
         AppLogger.info("preferences", "Ouverture de l'interface complète des catégories");
         try {
             Stage stage = new Stage();
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/categories.fxml"));
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/fxml/categories/categories.fxml"));
             javafx.scene.Scene scene = new javafx.scene.Scene(loader.load());
             stage.setTitle("Gestion des Catégories");
             stage.setScene(scene);
@@ -1147,6 +1267,258 @@ public class PreferencesController implements Initializable {
     private void onCleanOrphanMedia() {
         AppLogger.info("Nettoyage des médias orphelins");
         // TODO: Rechercher et supprimer les médias orphelins
+    }
+
+    /**
+     * Sélectionne un onglet spécifique dans les préférences
+     * @param tabName Le nom de l'onglet à sélectionner
+     */
+    public void selectTab(String tabName) {
+        if (preferencesTabPane != null && tabName != null) {
+            for (Tab tab : preferencesTabPane.getTabs()) {
+                if (tab.getText().contains(tabName)) {
+                    preferencesTabPane.getSelectionModel().select(tab);
+                    AppLogger.info("Onglet sélectionné: " + tab.getText());
+                    break;
+                }
+            }
+        }
+    }
+    
+    // ===== MÉTHODES D'INITIALISATION POUR LES NOUVELLES SECTIONS =====
+    
+    private void setupGeneralSection() {
+        AppLogger.info("Initialisation de la section Général...");
+        
+        try {
+            if (themeSelector != null) {
+                themeSelector.getItems().addAll("Clair", "Sombre", "Automatique", "Système");
+                themeSelector.setValue("Clair");
+                AppLogger.info("ThemeSelector initialisé");
+            } else {
+                AppLogger.warn("ThemeSelector est null - contrôle FXML manquant");
+            }
+            
+            if (cbLanguage != null) {
+                cbLanguage.getItems().addAll("Français", "English", "Español", "Deutsch");
+                cbLanguage.setValue("Français");
+                AppLogger.info("cbLanguage initialisé");
+            } else {
+                AppLogger.warn("cbLanguage est null - contrôle FXML manquant");
+            }
+            
+            if (cbDateFormat != null) {
+                cbDateFormat.getItems().addAll("DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD", "DD.MM.YYYY");
+                cbDateFormat.setValue("DD/MM/YYYY");
+                AppLogger.info("cbDateFormat initialisé");
+            } else {
+                AppLogger.warn("cbDateFormat est null - contrôle FXML manquant");
+            }
+            
+            if (cbTimeFormat != null) {
+                cbTimeFormat.getItems().addAll("24H", "12H AM/PM");
+                cbTimeFormat.setValue("24H");
+                AppLogger.info("cbTimeFormat initialisé");
+            } else {
+                AppLogger.warn("cbTimeFormat est null - contrôle FXML manquant");
+            }
+            
+            if (cbCurrency != null) {
+                cbCurrency.getItems().addAll("EUR (€)", "USD ($)", "GBP (£)", "CHF");
+                cbCurrency.setValue("EUR (€)");
+                AppLogger.info("cbCurrency initialisé");
+            } else {
+                AppLogger.warn("cbCurrency est null - contrôle FXML manquant");
+            }
+            
+            if (spinnerNotificationDuration != null) {
+                spinnerNotificationDuration.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30, 5));
+                AppLogger.info("spinnerNotificationDuration initialisé");
+            } else {
+                AppLogger.warn("spinnerNotificationDuration est null - contrôle FXML manquant");
+            }
+            
+            AppLogger.info("Section Général initialisée avec succès");
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors de l'initialisation de la section Général", e);
+        }
+    }
+    
+    private void setupSystemSection() {
+        AppLogger.info("Initialisation de la section Système...");
+        
+        try {
+            if (txtDatabasePath != null) {
+                txtDatabasePath.setText("data/MAGSAV.db");
+                AppLogger.info("txtDatabasePath initialisé");
+            } else {
+                AppLogger.warn("txtDatabasePath est null - contrôle FXML manquant");
+            }
+            
+            if (spinnerLockDelay != null) {
+                spinnerLockDelay.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 120, 15));
+                AppLogger.info("spinnerLockDelay initialisé");
+            } else {
+                AppLogger.warn("spinnerLockDelay est null - contrôle FXML manquant");
+            }
+            
+            if (spinnerBackupInterval != null) {
+                spinnerBackupInterval.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 24, 6));
+                AppLogger.info("spinnerBackupInterval initialisé");
+            } else {
+                AppLogger.warn("spinnerBackupInterval est null - contrôle FXML manquant");
+            }
+            
+            if (lblDatabaseStats != null) {
+                updateDatabaseStats();
+                AppLogger.info("lblDatabaseStats initialisé");
+            } else {
+                AppLogger.warn("lblDatabaseStats est null - contrôle FXML manquant");
+            }
+            
+            AppLogger.info("Section Système initialisée avec succès");
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors de l'initialisation de la section Système", e);
+        }
+    }
+    
+    private void setupMaintenanceSection() {
+        if (cbExportFormat != null) {
+            cbExportFormat.getItems().addAll("Excel (.xlsx)", "CSV", "JSON", "XML", "PDF");
+            cbExportFormat.setValue("Excel (.xlsx)");
+        }
+    }
+    
+    private void setupDataSection() {
+        // Configuration pour la section données (société)
+        // La plupart des éléments sont déjà configurés dans setupCompanyTab()
+    }
+    
+    // ===== HANDLERS POUR LES NOUVELLES SECTIONS =====
+    
+    @FXML
+    private void onChangePassword() {
+        AppLogger.info("Changement de mot de passe demandé");
+        // TODO: Implémenter le changement de mot de passe
+    }
+    
+    @FXML
+    private void onViewSecurityLogs() {
+        AppLogger.info("Visualisation des logs de sécurité");
+        // TODO: Ouvrir une fenêtre avec les logs de sécurité
+    }
+    
+    @FXML
+    private void onBrowseDatabasePath() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Sélectionner le fichier de base de données");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Fichiers SQLite", "*.db", "*.sqlite", "*.sqlite3")
+        );
+        
+        File selectedFile = fileChooser.showOpenDialog(txtDatabasePath.getScene().getWindow());
+        if (selectedFile != null) {
+            txtDatabasePath.setText(selectedFile.getAbsolutePath());
+        }
+    }
+    
+    @FXML
+    private void onBackupDatabase() {
+        AppLogger.info("Sauvegarde de la base de données");
+        // TODO: Implémenter la sauvegarde de la base de données
+    }
+    
+    @FXML
+    private void onRestoreDatabase() {
+        AppLogger.info("Restauration de la base de données");
+        // TODO: Implémenter la restauration de la base de données
+    }
+    
+    @FXML
+    private void onOptimizeDatabase() {
+        AppLogger.info("Optimisation de la base de données");
+        // TODO: Implémenter l'optimisation de la base de données
+    }
+    
+    @FXML
+    private void onImportProducts() {
+        AppLogger.info("Import de produits");
+        // TODO: Implémenter l'import de produits
+    }
+    
+    @FXML
+    private void onImportClients() {
+        AppLogger.info("Import de clients");
+        // TODO: Implémenter l'import de clients
+    }
+    
+    @FXML
+    private void onImportCompanies() {
+        AppLogger.info("Import d'entreprises");
+        // TODO: Implémenter l'import d'entreprises
+    }
+    
+    @FXML
+    private void onExportProducts() {
+        AppLogger.info("Export de produits");
+        // TODO: Implémenter l'export de produits
+    }
+    
+    @FXML
+    private void onExportClients() {
+        AppLogger.info("Export de clients");
+        // TODO: Implémenter l'export de clients
+    }
+    
+    @FXML
+    private void onExportCompanies() {
+        AppLogger.info("Export d'entreprises");
+        // TODO: Implémenter l'export d'entreprises
+    }
+    
+    @FXML
+    private void onExportAll() {
+        AppLogger.info("Export complet");
+        // TODO: Implémenter l'export complet
+    }
+    
+    @FXML
+    private void onExportReport() {
+        AppLogger.info("Export de rapport");
+        // TODO: Implémenter l'export de rapport
+    }
+    
+    private void updateDatabaseStats() {
+        try {
+            if (lblDatabaseStats != null) {
+                // Obtenir des statistiques de la base de données
+                String stats = String.format("Taille: %.2f MB | Tables: %d | Dernière optimisation: %s", 
+                    getDatabaseSize(), 
+                    getTableCount(),
+                    getLastOptimizationDate());
+                lblDatabaseStats.setText(stats);
+            }
+        } catch (Exception e) {
+            if (lblDatabaseStats != null) {
+                lblDatabaseStats.setText("Erreur lors du chargement des statistiques");
+            }
+            AppLogger.error("Erreur lors de la mise à jour des statistiques DB", e);
+        }
+    }
+    
+    private double getDatabaseSize() {
+        // TODO: Implémenter le calcul de la taille de la base
+        return 2.5; // Valeur exemple
+    }
+    
+    private int getTableCount() {
+        // TODO: Implémenter le comptage des tables
+        return 8; // Valeur exemple
+    }
+    
+    private String getLastOptimizationDate() {
+        // TODO: Implémenter la récupération de la dernière optimisation
+        return "Jamais";
     }
 
     // Records pour les données des nouveaux onglets

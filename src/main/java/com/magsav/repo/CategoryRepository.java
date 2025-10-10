@@ -12,14 +12,14 @@ public class CategoryRepository {
 
   private static Category map(ResultSet rs) throws SQLException {
     long id = rs.getLong("id");
-    String nom = rs.getString("nom");
+    String nom = rs.getString("nom_categorie");
     Object pid = rs.getObject("parent_id");
     Long parentId = (pid == null) ? null : rs.getLong("parent_id");
     return new Category(id, nom, parentId);
   }
 
   public List<Category> findAll() {
-    String sql = "SELECT id, nom, parent_id FROM categories ORDER BY nom";
+    String sql = "SELECT id, nom_categorie, parent_id FROM categories ORDER BY nom_categorie";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
       List<Category> out = new ArrayList<>();
       while (rs.next()) out.add(map(rs));
@@ -29,7 +29,7 @@ public class CategoryRepository {
 
   public Optional<Category> findById(Long id) {
     if (id == null) return Optional.empty();
-    String sql = "SELECT id, nom, parent_id FROM categories WHERE id=?";
+    String sql = "SELECT id, nom_categorie, parent_id FROM categories WHERE id=?";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setLong(1, id);
       try (ResultSet rs = ps.executeQuery()) { return rs.next() ? Optional.of(map(rs)) : Optional.empty(); }
@@ -37,7 +37,7 @@ public class CategoryRepository {
   }
 
   public long insert(String nom, Long parentId) {
-    String sql = "INSERT INTO categories(nom, parent_id) VALUES(?, ?)";
+    String sql = "INSERT INTO categories(nom_categorie, parent_id) VALUES(?, ?)";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       ps.setString(1, nom);
       if (parentId == null) ps.setNull(2, Types.INTEGER); else ps.setLong(2, parentId);
@@ -47,7 +47,7 @@ public class CategoryRepository {
   }
 
   public boolean update(Category c) {
-    String sql = "UPDATE categories SET nom=?, parent_id=? WHERE id=?";
+    String sql = "UPDATE categories SET nom_categorie=?, parent_id=? WHERE id=?";
     try (Connection cx = DB.getConnection(); PreparedStatement ps = cx.prepareStatement(sql)) {
       ps.setString(1, c.nom());
       if (c.parentId() == null) ps.setNull(2, Types.INTEGER); else ps.setLong(2, c.parentId());
@@ -65,7 +65,7 @@ public class CategoryRepository {
   }
 
   public List<Category> findSubcategories(long parentId) {
-    String sql = "SELECT id, nom, parent_id FROM categories WHERE parent_id=? ORDER BY nom";
+    String sql = "SELECT id, nom_categorie, parent_id FROM categories WHERE parent_id=? ORDER BY nom_categorie";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setLong(1, parentId);
       try (ResultSet rs = ps.executeQuery()) {
@@ -94,13 +94,13 @@ public class CategoryRepository {
     
     try (Connection conn = DB.getConnection()) {
       while (currentId != null) {
-        String sql = "SELECT nom, parent_id FROM categories WHERE id = ?";
+        String sql = "SELECT nom_categorie, parent_id FROM categories WHERE id = ?";
         PreparedStatement stmt = conn.prepareStatement(sql);
         stmt.setLong(1, currentId);
         ResultSet rs = stmt.executeQuery();
         
         if (rs.next()) {
-          hierarchy.add(0, rs.getString("nom")); // Ajouter au début
+          hierarchy.add(0, rs.getString("nom_categorie")); // Ajouter au début
           long parentIdValue = rs.getLong("parent_id");
           currentId = rs.wasNull() ? null : parentIdValue;
         } else {
@@ -122,11 +122,11 @@ public class CategoryRepository {
     try (Connection conn = DB.getConnection()) {
       // Requête pour récupérer les catégories de niveau 3 (parent du parent = parentId)
       String sql = """
-        SELECT c3.id, c3.nom, c3.parent_id 
+        SELECT c3.id, c3.nom_categorie, c3.parent_id 
         FROM categories c3
         JOIN categories c2 ON c3.parent_id = c2.id
         WHERE c2.parent_id = ?
-        ORDER BY c3.nom
+        ORDER BY c3.nom_categorie
       """;
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setLong(1, parentId);
@@ -135,7 +135,7 @@ public class CategoryRepository {
       while (rs.next()) {
         subSubcategories.add(new Category(
             rs.getLong("id"),
-            rs.getString("nom"),
+            rs.getString("nom_categorie"),
             rs.getLong("parent_id")
         ));
       }

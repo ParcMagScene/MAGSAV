@@ -1,0 +1,323 @@
+/* Styles pour les templates modernes MAGSAV */
+
+/* ========================
+   LAYOUT PRINCIPAL
+   ======================== */
+
+.main-layout {
+    -fx-background-color: var(--background-color);
+}
+
+.modern-header {
+    -fx-background-color: var(--surface-color);
+    -fx-border-color: var(--border-color);
+    -fx-border-width: 0 0 1 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 2, 0, 0, 1);
+}
+
+.app-title {
+    -fx-text-fill: var(--primary-color);
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.modern-sidebar {
+    -fx-background-color: var(--surface-color);
+    -fx-border-color: var(--border-color);
+    -fx-border-width: 0 1 0 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 2, 0);
+}
+
+.menu-item {
+    -fx-alignment: center-left;
+    -fx-text-alignment: left;
+    -fx-content-display: left;
+    -fx-graphic-text-gap: 12;
+}
+
+.content-area {
+    -fx-background-color: var(--background-color);
+}
+
+.modern-status-bar {
+    -fx-background-color: var(--secondary-color);
+    -fx-border-color: var(--border-color);
+    -fx-border-width: 1 0 0 0;
+}
+
+/* ========================
+   FORMULAIRES MODERNES
+   ======================== */
+
+.form-container {
+    -fx-alignment: top-center;
+    -fx-max-width: 600;
+}
+
+.form-container .modern-title {
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
+
+/* ========================
+   DIALOGUES MODERNES
+   ======================== */
+
+.modern-dialog {
+    -fx-background-color: var(--surface-color);
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0, 0, 10);
+    -fx-border-color: var(--border-color);
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+}
+
+/* ========================
+   CARTES DASHBOARD
+   ======================== */
+
+.dashboard-card {
+    -fx-alignment: top-left;
+    -fx-spacing: 16;
+}
+
+.dashboard-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 16, 0, 0, 6);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.dashboard-icon {
+    -fx-fill: var(--primary-color);
+}
+
+.dashboard-title {
+    -fx-text-fill: var(--text-secondary);
+    -fx-font-weight: 500;
+    -fx-font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dashboard-value {
+    -fx-text-fill: var(--text-color);
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+}
+
+.dashboard-subtitle {
+    -fx-text-fill: var(--text-secondary);
+    -fx-font-size: 14px;
+}
+
+/* ========================
+   LISTES AVEC RECHERCHE
+   ======================== */
+
+.list-header {
+    -fx-alignment: center-left;
+    -fx-spacing: 16;
+}
+
+.search-container {
+    -fx-background-color: var(--surface-color);
+    -fx-border-color: var(--border-color);
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-padding: 8 12;
+    -fx-alignment: center-left;
+    -fx-spacing: 8;
+}
+
+.search-container:focused-within {
+    -fx-border-color: var(--primary-color);
+    -fx-border-width: 2;
+}
+
+/* ========================
+   ANIMATIONS D'ENTRÉE
+   ======================== */
+
+.fade-in-up {
+    -fx-opacity: 0;
+    -fx-translate-y: 20;
+}
+
+.slide-in-left {
+    -fx-opacity: 0;
+    -fx-translate-x: -30;
+}
+
+.slide-in-right {
+    -fx-opacity: 0;
+    -fx-translate-x: 30;
+}
+
+.scale-in {
+    -fx-opacity: 0;
+    -fx-scale-x: 0.9;
+    -fx-scale-y: 0.9;
+}
+
+/* ========================
+   ÉTATS INTERACTIFS
+   ======================== */
+
+.clickable {
+    -fx-cursor: hand;
+}
+
+.clickable:hover {
+    -fx-opacity: 0.8;
+}
+
+.selectable:selected {
+    -fx-background-color: var(--primary-light);
+    -fx-text-fill: var(--primary-color);
+}
+
+/* ========================
+   RESPONSIVE BREAKPOINTS
+   ======================== */
+
+/* Mobile (< 600px) */
+@media screen and (max-width: 599px) {
+    .main-layout .modern-sidebar {
+        -fx-pref-width: 0;
+        -fx-min-width: 0;
+        -fx-max-width: 0;
+    }
+    
+    .content-area {
+        -fx-padding: 16;
+    }
+    
+    .form-container {
+        -fx-max-width: none;
+        -fx-padding: 16;
+    }
+    
+    .dashboard-card {
+        -fx-pref-width: none;
+        -fx-max-width: none;
+    }
+}
+
+/* Tablette (600px - 899px) */
+@media screen and (min-width: 600px) and (max-width: 899px) {
+    .modern-sidebar {
+        -fx-pref-width: 200;
+    }
+    
+    .content-area {
+        -fx-padding: 20;
+    }
+    
+    .dashboard-card {
+        -fx-pref-width: 250;
+    }
+}
+
+/* Desktop (900px+) */
+@media screen and (min-width: 900px) {
+    .modern-sidebar {
+        -fx-pref-width: 250;
+    }
+    
+    .content-area {
+        -fx-padding: 24;
+    }
+    
+    .dashboard-card {
+        -fx-pref-width: 280;
+    }
+}
+
+/* ========================
+   THÈMES SPÉCIALISÉS
+   ======================== */
+
+/* Mode sombre - améliorations */
+.root.dark-theme .modern-header {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2);
+}
+
+.root.dark-theme .modern-sidebar {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 4, 0);
+}
+
+.root.dark-theme .dashboard-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 20, 0, 0, 8);
+}
+
+/* Mode contraste élevé */
+.root.high-contrast .modern-button {
+    -fx-border-width: 2;
+    -fx-border-color: var(--text-color);
+}
+
+.root.high-contrast .modern-card {
+    -fx-border-width: 2;
+}
+
+/* ========================
+   CONTENEURS D'IMAGES
+   ======================== */
+
+.image-container {
+    -fx-background-color: var(--secondary-color);
+    -fx-background-radius: 8;
+    -fx-border-color: var(--border-light);
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-alignment: center;
+}
+
+.image-container:hover {
+    -fx-border-color: var(--primary-color);
+    -fx-effect: dropshadow(gaussian, var(--primary-color), 4, 0, 0, 0);
+}
+
+/* ========================
+   UTILITAIRES
+   ======================== */
+
+.text-center {
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
+
+.text-left {
+    -fx-text-alignment: left;
+    -fx-alignment: center-left;
+}
+
+.text-right {
+    -fx-text-alignment: right;
+    -fx-alignment: center-right;
+}
+
+.full-width {
+    -fx-max-width: none;
+    -fx-pref-width: none;
+}
+
+.auto-width {
+    -fx-pref-width: -1;
+}
+
+.no-padding {
+    -fx-padding: 0;
+}
+
+.small-padding {
+    -fx-padding: 8;
+}
+
+.medium-padding {
+    -fx-padding: 16;
+}
+
+.large-padding {
+    -fx-padding: 24;
+}

@@ -8,14 +8,14 @@ import java.util.prefs.Preferences;
 
 public final class Router {
   public enum Route {
-    CATEGORIES("Catégories", "/fxml/categories.fxml"),
-    MANUFACTURERS("Fabricants", "/fxml/manufacturers.fxml"),
-    SUPPLIERS("Fournisseurs", "/fxml/suppliers.fxml"),
-    EXTERNAL_SAV("SAV externes", "/fxml/external_sav.fxml"),
+    CATEGORIES("Catégories", "/fxml/categories/categories.fxml"),
+    MANUFACTURERS("Fabricants", "/fxml/societes/lists/manufacturers.fxml"),
+    SUPPLIERS("Fournisseurs", "/fxml/societes/lists/suppliers.fxml"),
+    EXTERNAL_SAV("SAV externes", "/fxml/societes/lists/external_sav.fxml"),
     CLIENTS("Clients", "/fxml/clients.fxml"),
-    REQ_PARTS("Demandes de pièces", "/fxml/requests_parts.fxml"),
-    REQ_EQUIP("Demandes de matériel", "/fxml/requests_equipment.fxml"),
-    PRODUCT_DETAIL("Fiche produit", "/fxml/product_detail.fxml");
+    REQ_PARTS("Demandes de pièces", "/fxml/requests/lists/requests_parts.fxml"),
+    REQ_EQUIP("Demandes de matériel", "/fxml/requests/lists/requests_equipment.fxml"),
+    PRODUCT_DETAIL("Fiche produit", "/fxml/products/details/product_detail.fxml");
 
     public final String title;
     public final String fxml;
@@ -34,7 +34,11 @@ public final class Router {
     String key = route.name().toLowerCase();
     double width = prefs.getDouble(key + ".width", 900);
     double height = prefs.getDouble(key + ".height", 650);
-    stage.setScene(new Scene(root, width, height));
+    
+    Scene scene = new Scene(root, width, height);
+    // Appliquer le thème dark
+    scene.getStylesheets().add(Router.class.getResource("/css/simple-dark.css").toExternalForm());
+    stage.setScene(scene);
     stage.setOnCloseRequest(e -> {
       prefs.putDouble(key + ".width", stage.getWidth());
       prefs.putDouble(key + ".height", stage.getHeight());

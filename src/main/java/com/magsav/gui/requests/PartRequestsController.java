@@ -115,7 +115,7 @@ public class PartRequestsController {
 
   private void openForm(RequestRow current) {
     try {
-      FXMLLoader l = new FXMLLoader(getClass().getResource("/fxml/request_form.fxml"));
+      FXMLLoader l = new FXMLLoader(getClass().getResource("/fxml/requests/forms/request_form.fxml"));
       DialogPane pane = l.load();
       RequestFormController ctl = l.getController();
 
@@ -166,7 +166,7 @@ public class PartRequestsController {
       var sel = table.getSelectionModel().getSelectedItem();
       if (sel == null) return;
 
-      FXMLLoader l = new FXMLLoader(getClass().getResource("/fxml/request_item_form.fxml"));
+      FXMLLoader l = new FXMLLoader(getClass().getResource("/fxml/requests/forms/request_item_form.fxml"));
       DialogPane pane = l.load();
       RequestItemFormController ctl = l.getController();
       ctl.init(current);

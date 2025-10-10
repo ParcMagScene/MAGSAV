@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.requests.PartRequestsController" prefWidth="1000" prefHeight="560">
+  <top>
+    <ToolBar>
+      <Label text="Demandes de pièces" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+      <Pane HBox.hgrow="ALWAYS"/>
+      <TextField fx:id="tfSearch" promptText="Rechercher (statut, fournisseur, commentaire, dates)" prefWidth="320"/>
+
+      <Button text="+ Nouvelle" onAction="#onNew"/>
+      <Button text="Modifier" onAction="#onEdit"/>
+      <Button text="Supprimer" onAction="#onDelete"/>
+      <Separator/>
+      <Button text="Valider" onAction="#onValidate"/>
+      <Button text="Demander devis/prix" onAction="#onAskQuote"/>
+      <Button text="Commander" onAction="#onOrder"/>
+    </ToolBar>
+  </top>
+  <center>
+    <SplitPane dividerPositions="0.56">
+      <TableView fx:id="table">
+        <columns>
+          <TableColumn fx:id="colId" text="ID" prefWidth="80"/>
+          <TableColumn fx:id="colStatus" text="Statut" prefWidth="150"/>
+          <TableColumn fx:id="colFournisseur" text="Fournisseur" prefWidth="220"/>
+          <TableColumn fx:id="colComment" text="Commentaire" prefWidth="300"/>
+          <TableColumn fx:id="colCreated" text="Créée" prefWidth="140"/>
+          <TableColumn fx:id="colValidated" text="Validée" prefWidth="140"/>
+        </columns>
+        <columnResizePolicy>
+          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+        <placeholder><Label text="Aucune demande"/></placeholder>
+      </TableView>
+
+      <BorderPane>
+        <top>
+          <ToolBar>
+            <Label text="Articles de la demande"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button text="+ Ajouter" onAction="#onAddItem"/>
+            <Button text="Modifier" onAction="#onEditItem"/>
+            <Button text="Supprimer" onAction="#onDeleteItem"/>
+          </ToolBar>
+        </top>
+        <center>
+          <TableView fx:id="itemsTable">
+            <columns>
+              <TableColumn fx:id="colRef" text="Référence" prefWidth="220"/>
+              <TableColumn fx:id="colQty" text="Qté" prefWidth="80"/>
+              <TableColumn fx:id="colDesc" text="Description" prefWidth="320"/>
+            </columns>
+            <columnResizePolicy>
+              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+            <placeholder><Label text="Aucun article"/></placeholder>
+          </TableView>
+        </center>
+      </BorderPane>
+    </SplitPane>
+  </center>
+</BorderPane>

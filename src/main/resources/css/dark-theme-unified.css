@@ -1,0 +1,467 @@
+/* ===== THÈME DARK UNIFIÉ MAGSAV ===== */
+
+/* === THÈME DARK UNIFIÉ MAGSAV === */
+
+/* === CONTENEURS PRINCIPAUX === */
+.root {
+    -fx-base: #2d2d30;
+    -fx-background: #2d2d30;
+    -fx-control-inner-background: #3c3c3c;
+    -fx-control-inner-background-alt: #3e3e42;
+    -fx-text-fill: #ffffff;
+}
+
+/* Conteneurs généraux */
+.container, .form-container, .detail-container {
+    -fx-background-color: #2d2d30;
+    -fx-text-fill: #ffffff;
+}
+
+/* === PANNEAUX ET SECTIONS === */
+.panel, .section {
+    -fx-background-color: #3e3e42;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px;
+}
+
+/* Tabs et onglets */
+.tab-pane {
+    -fx-tab-min-width: 80px;
+    -fx-tab-max-width: 200px;
+}
+
+.tab-pane .tab-header-area {
+    -fx-background-color: #3e3e42;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #3e3e42;
+    -fx-text-fill: #cccccc;
+    #555555: #555555;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #007acc;
+    -fx-text-fill: #ffffff;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: #1e80c7;
+    -fx-text-fill: #ffffff;
+}
+
+.tab-pane .tab-content-area {
+    -fx-background-color: #2d2d30;
+    #555555: #555555;
+    -fx-border-width: 1px 0 0 0;
+}
+
+/* === CONTRÔLES DE SAISIE === */
+.text-field, .text-area, .password-field {
+    -fx-background-color: #3c3c3c;
+    -fx-text-fill: #ffffff;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 5px 8px;
+}
+
+.text-field:focused, .text-area:focused, .password-field:focused {
+    #555555: #007acc;
+    -fx-border-width: 2px;
+}
+
+.text-field:disabled, .text-area:disabled, .password-field:disabled {
+    -fx-background-color: #3e3e42;
+    -fx-text-fill: #888888;
+    -fx-opacity: 0.6;
+}
+
+/* ComboBox */
+.combo-box {
+    -fx-background-color: #3c3c3c;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: #3c3c3c;
+    -fx-text-fill: #ffffff;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #3e3e42;
+    #555555: #555555;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: #3e3e42;
+    -fx-text-fill: #ffffff;
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: #007acc;
+}
+
+/* === BOUTONS === */
+.button {
+    -fx-background-color: #3e3e42;
+    -fx-text-fill: #ffffff;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #1e80c7;
+    #555555: #007acc;
+}
+
+.button:pressed {
+    -fx-background-color: #007acc;
+}
+
+.button:disabled {
+    -fx-background-color: #3e3e42;
+    -fx-text-fill: #888888;
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+/* Boutons primaires */
+.button.primary, .button-primary {
+    -fx-background-color: #007acc;
+    -fx-text-fill: #ffffff;
+}
+
+.button.primary:hover, .button-primary:hover {
+    -fx-background-color: #1e80c7;
+}
+
+/* Boutons de succès */
+.button.success, .button-success {
+    -fx-background-color: #4caf50;
+    -fx-text-fill: #ffffff;
+}
+
+/* Boutons d'avertissement */
+.button.warning, .button-warning {
+    -fx-background-color: #ff9800;
+    -fx-text-fill: #ffffff;
+}
+
+/* Boutons d'erreur */
+.button.error, .button-error {
+    -fx-background-color: #f44336;
+    -fx-text-fill: #ffffff;
+}
+
+/* === TABLEAUX === */
+.table-view {
+    -fx-background-color: #2d2d30;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-table-cell-border-color: #555555;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #3e3e42;
+}
+
+.table-view .column-header {
+    -fx-background-color: #3e3e42;
+    -fx-text-fill: #ffffff;
+    #555555: #555555;
+    -fx-border-width: 0 1px 1px 0;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-cell {
+    -fx-background-color: #2d2d30;
+    -fx-text-fill: #ffffff;
+    #555555: #555555;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 8px;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: #2d2d30;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: #252526;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #007acc;
+    -fx-text-fill: #ffffff;
+}
+
+.table-view .table-row-cell:hover {
+    -fx-background-color: #3e3e42;
+}
+
+/* === LABELS ET TEXTE === */
+.label {
+    -fx-text-fill: #ffffff;
+}
+
+.label.title, .title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.label.subtitle, .subtitle {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #cccccc;
+}
+
+.label.muted, .muted {
+    -fx-text-fill: #cccccc;
+}
+
+.label.error, .error-text {
+    -fx-text-fill: #f44336;
+}
+
+.label.success, .success-text {
+    -fx-text-fill: #4caf50;
+}
+
+.label.warning, .warning-text {
+    -fx-text-fill: #ff9800;
+}
+
+/* === BARRES DE DÉFILEMENT === */
+.scroll-bar {
+    -fx-background-color: #3e3e42;
+}
+
+.scroll-bar .track {
+    -fx-background-color: #3e3e42;
+    #555555: #555555;
+    -fx-background-radius: 0px;
+}
+
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: #3e3e42;
+    #555555: #555555;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-background-color: #cccccc;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #007acc;
+    -fx-background-radius: 5px;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #1e80c7;
+}
+
+/* === MENUS === */
+.menu-bar {
+    -fx-background-color: #3e3e42;
+    #555555: #555555;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.menu-bar .menu {
+    -fx-background-color: #3e3e42;
+    -fx-text-fill: #ffffff;
+}
+
+.menu-bar .menu:hover {
+    -fx-background-color: #007acc;
+}
+
+.context-menu {
+    -fx-background-color: #3e3e42;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.menu-item {
+    -fx-background-color: #3e3e42;
+    -fx-text-fill: #ffffff;
+}
+
+.menu-item:hover {
+    -fx-background-color: #007acc;
+}
+
+/* === CASES À COCHER ET BOUTONS RADIO === */
+.check-box, .radio-button {
+    -fx-text-fill: #ffffff;
+}
+
+.check-box .box, .radio-button .radio {
+    -fx-background-color: #3c3c3c;
+    #555555: #555555;
+    -fx-border-width: 1px;
+}
+
+.check-box:selected .box, .radio-button:selected .radio {
+    -fx-background-color: #007acc;
+    #555555: #007acc;
+}
+
+/* === BARRES DE PROGRESSION === */
+.progress-bar {
+    -fx-background-color: #3e3e42;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.progress-bar .bar {
+    -fx-background-color: #007acc;
+    -fx-background-radius: 2px;
+}
+
+/* === TOOLTIPS === */
+.tooltip {
+    -fx-background-color: #3e3e42;
+    -fx-text-fill: #ffffff;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 5px 8px;
+    -fx-font-size: 12px;
+}
+
+/* === LISTES === */
+.list-view {
+    -fx-background-color: #2d2d30;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.list-view .list-cell {
+    -fx-background-color: #2d2d30;
+    -fx-text-fill: #ffffff;
+    #555555: #555555;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 8px;
+}
+
+.list-view .list-cell:selected {
+    -fx-background-color: #007acc;
+}
+
+.list-view .list-cell:hover {
+    -fx-background-color: #3e3e42;
+}
+
+/* === ARBRES === */
+.tree-view {
+    -fx-background-color: #2d2d30;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.tree-view .tree-cell {
+    -fx-background-color: #2d2d30;
+    -fx-text-fill: #ffffff;
+}
+
+.tree-view .tree-cell:selected {
+    -fx-background-color: #007acc;
+}
+
+/* === SÉPARATEURS === */
+.separator {
+    -fx-background-color: #555555;
+}
+
+/* === CLASSES UTILITAIRES === */
+.spacing-small { -fx-spacing: 5px; }
+.spacing-medium { -fx-spacing: 10px; }
+.spacing-large { -fx-spacing: 15px; }
+
+.padding-small { -fx-padding: 5px; }
+.padding-medium { -fx-padding: 10px; }
+.padding-large { -fx-padding: 15px; }
+
+.margin-small { -fx-margin: 5px; }
+.margin-medium { -fx-margin: 10px; }
+.margin-large { -fx-margin: 15px; }
+
+/* === STYLES SPÉCIFIQUES MAGSAV === */
+.detail-form {
+    -fx-background-color: #2d2d30;
+    -fx-padding: 20px;
+    -fx-spacing: 15px;
+}
+
+.detail-section {
+    -fx-background-color: #3e3e42;
+    #555555: #555555;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 15px;
+    -fx-spacing: 10px;
+}
+
+.detail-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 0 0 10px 0;
+}
+
+.form-row {
+    -fx-spacing: 10px;
+    -fx-alignment: center-left;
+}
+
+.form-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-min-width: 120px;
+}
+
+.form-field {
+    -fx-pref-width: 200px;
+}
+
+.action-bar {
+    -fx-spacing: 10px;
+    -fx-alignment: center-right;
+    -fx-padding: 15px 0 0 0;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 800px) {
+    .form-field {
+        -fx-pref-width: 150px;
+    }
+    
+    .form-label {
+        -fx-min-width: 100px;
+    }
+}

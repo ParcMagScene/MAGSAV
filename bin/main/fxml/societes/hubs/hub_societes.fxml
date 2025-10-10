@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.magsav.gui.hub.SocietesHubController" prefWidth="1000" prefHeight="700">
+  
+  <top>
+    <VBox style="-fx-background-color: linear-gradient(to bottom, #f8f9fa, #e9ecef); -fx-padding: 15;">
+      <Label text="🏢 Gestion des Sociétés MAGSAV" style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+      <Label text="Gérez fabricants, fournisseurs et partenaires SAV" style="-fx-font-size: 14; -fx-text-fill: #6c757d;"/>
+    </VBox>
+  </top>
+  
+  <center>
+    <TabPane fx:id="societesTabPane" tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 10;">
+      
+      <!-- Onglet Fabricants -->
+      <Tab text="🏭 Fabricants" closable="false">
+        <VBox spacing="15" style="-fx-padding: 20;">
+          
+          <!-- Barre d'outils Fabricants -->
+          <HBox spacing="10" alignment="CENTER_LEFT">
+            <TextField fx:id="manufacturerSearchField" promptText="Rechercher un fabricant..." HBox.hgrow="ALWAYS"/>
+            <Button text="❌" onAction="#onClearManufacturerSearch" style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+            <Separator orientation="VERTICAL"/>
+            <Button text="➕ Nouveau" onAction="#onNewManufacturer" style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+            <Button fx:id="btnEditManufacturer" text="✏️ Modifier" onAction="#onEditManufacturer" disable="true" style="-fx-background-color: #4a90e2; -fx-text-fill: white;"/>
+            <Button fx:id="btnDeleteManufacturer" text="🗑️ Supprimer" onAction="#onDeleteManufacturer" disable="true" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+          </HBox>
+          
+          <!-- Table Fabricants -->
+          <TableView fx:id="manufacturersTable" VBox.vgrow="ALWAYS">
+            <columns>
+              <TableColumn fx:id="colManufacturerId" text="ID" prefWidth="60"/>
+              <TableColumn fx:id="colManufacturerName" text="Nom" prefWidth="200"/>
+              <TableColumn fx:id="colManufacturerEmail" text="Email" prefWidth="180"/>
+              <TableColumn fx:id="colManufacturerPhone" text="Téléphone" prefWidth="120"/>
+              <TableColumn fx:id="colManufacturerWebsite" text="Site Web" prefWidth="150"/>
+              <TableColumn fx:id="colManufacturerCountry" text="Pays" prefWidth="100"/>
+              <TableColumn fx:id="colManufacturerLogo" text="Logo" prefWidth="80"/>
+            </columns>
+            <placeholder><Label text="Aucun fabricant enregistré"/></placeholder>
+          </TableView>
+          
+        </VBox>
+      </Tab>
+      
+      <!-- Onglet Fournisseurs -->
+      <Tab text="📦 Fournisseurs" closable="false">
+        <VBox spacing="15" style="-fx-padding: 20;">
+          
+          <!-- Barre d'outils Fournisseurs -->
+          <HBox spacing="10" alignment="CENTER_LEFT">
+            <TextField fx:id="supplierSearchField" promptText="Rechercher un fournisseur..." HBox.hgrow="ALWAYS"/>
+            <Button text="❌" onAction="#onClearSupplierSearch" style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+            <Separator orientation="VERTICAL"/>
+            <Button text="➕ Nouveau" onAction="#onNewSupplier" style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+            <Button fx:id="btnEditSupplier" text="✏️ Modifier" onAction="#onEditSupplier" disable="true" style="-fx-background-color: #4a90e2; -fx-text-fill: white;"/>
+            <Button fx:id="btnDeleteSupplier" text="🗑️ Supprimer" onAction="#onDeleteSupplier" disable="true" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+          </HBox>
+          
+          <!-- Table Fournisseurs -->
+          <TableView fx:id="suppliersTable" VBox.vgrow="ALWAYS">
+            <columns>
+              <TableColumn fx:id="colSupplierId" text="ID" prefWidth="60"/>
+              <TableColumn fx:id="colSupplierName" text="Nom" prefWidth="200"/>
+              <TableColumn fx:id="colSupplierEmail" text="Email" prefWidth="180"/>
+              <TableColumn fx:id="colSupplierPhone" text="Téléphone" prefWidth="120"/>
+              <TableColumn fx:id="colSupplierAddress" text="Adresse" prefWidth="200"/>
+              <TableColumn fx:id="colSupplierSpecialty" text="Spécialité" prefWidth="150"/>
+            </columns>
+            <placeholder><Label text="Aucun fournisseur enregistré"/></placeholder>
+          </TableView>
+          
+        </VBox>
+      </Tab>
+      
+      <!-- Onglet SAV Externes -->
+      <Tab text="🔧 SAV Externes" closable="false">
+        <VBox spacing="15" style="-fx-padding: 20;">
+          
+          <!-- Barre d'outils SAV -->
+          <HBox spacing="10" alignment="CENTER_LEFT">
+            <TextField fx:id="savSearchField" promptText="Rechercher un SAV externe..." HBox.hgrow="ALWAYS"/>
+            <Button text="❌" onAction="#onClearSavSearch" style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+            <Separator orientation="VERTICAL"/>
+            <Button text="➕ Nouveau" onAction="#onNewSav" style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+            <Button fx:id="btnEditSav" text="✏️ Modifier" onAction="#onEditSav" disable="true" style="-fx-background-color: #4a90e2; -fx-text-fill: white;"/>
+            <Button fx:id="btnDeleteSav" text="🗑️ Supprimer" onAction="#onDeleteSav" disable="true" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+          </HBox>
+          
+          <!-- Table SAV Externes -->
+          <TableView fx:id="savTable" VBox.vgrow="ALWAYS">
+            <columns>
+              <TableColumn fx:id="colSavId" text="ID" prefWidth="60"/>
+              <TableColumn fx:id="colSavName" text="Nom" prefWidth="200"/>
+              <TableColumn fx:id="colSavEmail" text="Email" prefWidth="180"/>
+              <TableColumn fx:id="colSavPhone" text="Téléphone" prefWidth="120"/>
+              <TableColumn fx:id="colSavSpecialties" text="Spécialités" prefWidth="200"/>
+              <TableColumn fx:id="colSavStatus" text="Statut" prefWidth="100"/>
+            </columns>
+            <placeholder><Label text="Aucun SAV externe enregistré"/></placeholder>
+          </TableView>
+          
+        </VBox>
+      </Tab>
+      
+    </TabPane>
+  </center>
+  
+  <bottom>
+    <HBox style="-fx-padding: 10; -fx-background-color: #f8f9fa;" spacing="10" alignment="CENTER_LEFT">
+      <Label fx:id="lblStatus" text="Prêt" style="-fx-text-fill: #666;"/>
+      <Pane HBox.hgrow="ALWAYS"/>
+      <Button text="🔄 Actualiser" onAction="#onRefresh" style="-fx-background-color: #17a2b8; -fx-text-fill: white;"/>
+      <Button text="❌ Fermer" onAction="#onClose"/>
+    </HBox>
+  </bottom>
+  
+</BorderPane>

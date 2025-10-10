@@ -21,43 +21,45 @@ public class ProductRepository {
   private ProductRow mapRow(ResultSet rs) throws SQLException {
     return new ProductRow(
         rs.getLong("id"),
-        rs.getString("nom"),
-        rs.getString("sn"),
-        rs.getString("fabricant"),
-        rs.getString("uid"),
-        rs.getString("situation")
+        rs.getString("nom_produit"),
+        rs.getString("numero_serie"),
+        rs.getString("nom_fabricant"), // Champ déprécié temporaire
+        rs.getString("uid_unique"),
+        rs.getString("statut_produit")
     );
   }
   
   private ProductRowDetailed mapDetailedRow(ResultSet rs) throws SQLException {
     return new ProductRowDetailed(
         rs.getLong("id"),
-        rs.getString("nom"),
-        rs.getString("sn"),
-        rs.getString("fabricant"),
-        rs.getString("uid"),
-        rs.getString("situation"),
-        rs.getString("photo"),
-        rs.getString("category"),
-        rs.getString("subcategory"),
-        rs.getString("prix"),
+        rs.getString("nom_produit"),
+        rs.getString("numero_serie"),
+        rs.getString("nom_fabricant"), // Champ déprécié temporaire
+        rs.getString("uid_unique"),
+        rs.getString("statut_produit"),
+        rs.getString("photo_produit"),
+        rs.getString("categorie_principale"), // Champ déprécié temporaire
+        rs.getString("sous_categorie"), // Champ déprécié temporaire
+        rs.getString("prix_achat"),
         rs.getString("date_achat"),
-        rs.getString("client"),
-        rs.getString("description"),
-        rs.getString("garantie")
+        rs.getString("nom_client"), // Champ déprécié temporaire
+        rs.getString("description_produit"),
+        rs.getString("duree_garantie")
     );
   }
 
   public Optional<ProductRowDetailed> findDetailedById(long id) {
-    String sql = "SELECT id, nom, sn, fabricant, uid, situation, photo, category, subcategory, prix, date_achat, client, description, garantie FROM produits WHERE id=?";
+    String sql = "SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit, photo_produit, categorie_principale, sous_categorie, prix_achat, date_achat, nom_client, description_produit, duree_garantie FROM produits WHERE id=?";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setLong(1, id);
-      try (ResultSet rs = ps.executeQuery()) { return rs.next() ? Optional.of(mapDetailedRow(rs)) : Optional.empty(); }
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next() ? Optional.of(mapDetailedRow(rs)) : Optional.empty();
+      }
     } catch (SQLException e) { throw new com.magsav.exception.DatabaseException("findDetailedById failed", e); }
   }
 
   public Optional<ProductRow> findById(long id) {
-    String sql = "SELECT id, nom, sn, fabricant, uid, situation FROM produits WHERE id=?";
+    String sql = "SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit FROM produits WHERE id=?";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setLong(1, id);
       try (ResultSet rs = ps.executeQuery()) { return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty(); }
@@ -65,7 +67,7 @@ public class ProductRepository {
   }
 
   public Optional<ProductRow> findBySN(String sn) {
-    String sql = "SELECT id, nom, sn, fabricant, uid, situation FROM produits WHERE sn=? LIMIT 1";
+    String sql = "SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit FROM produits WHERE numero_serie=? LIMIT 1";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setString(1, sn);
       try (ResultSet rs = ps.executeQuery()) { return rs.next() ? Optional.of(mapRow(rs)) : Optional.empty(); }
@@ -76,7 +78,7 @@ public class ProductRepository {
     // Valider et normaliser la situation
     String validatedSituation = validateAndNormalizeSituation(situation);
     
-    String sql = "INSERT INTO produits(nom, sn, fabricant, uid, situation) VALUES(?,?,?,?,?)";
+    String sql = "INSERT INTO produits(nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit) VALUES(?,?,?,?,?)";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       ps.setString(1, nom);
       ps.setString(2, sn);
@@ -89,7 +91,7 @@ public class ProductRepository {
   }
 
   public void updateUid(long id, String uid) {
-    try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement("UPDATE produits SET uid=? WHERE id=?")) {
+    try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement("UPDATE produits SET uid_unique=? WHERE id=?")) {
       ps.setString(1, uid);
       ps.setLong(2, id);
       ps.executeUpdate();
@@ -100,7 +102,7 @@ public class ProductRepository {
     // Valider et normaliser la situation
     String validatedSituation = validateAndNormalizeSituation(situation);
     
-    try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement("UPDATE produits SET situation=? WHERE id=?")) {
+    try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement("UPDATE produits SET statut_produit=? WHERE id=?")) {
       ps.setString(1, validatedSituation);
       ps.setLong(2, id);
       ps.executeUpdate();
@@ -108,7 +110,7 @@ public class ProductRepository {
   }
 
   public boolean existsUid(String uid) {
-    String sql = "SELECT 1 FROM produits WHERE uid=? LIMIT 1";
+    String sql = "SELECT 1 FROM produits WHERE uid_unique=? LIMIT 1";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setString(1, uid);
       try (ResultSet rs = ps.executeQuery()) { return rs.next(); }
@@ -117,7 +119,7 @@ public class ProductRepository {
 
   public Optional<ProductRow> findByUid(String uid) {
     if (uid == null || uid.trim().isEmpty()) return Optional.empty();
-    String sql = "SELECT id, nom, sn, fabricant, uid, situation FROM produits WHERE uid = ?";
+    String sql = "SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit FROM produits WHERE uid_unique = ?";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setString(1, uid);
       try (ResultSet rs = ps.executeQuery()) {
@@ -128,9 +130,10 @@ public class ProductRepository {
 
   public Optional<ProductRow> findByInterventionId(long interventionId) {
     String sql = """
-      SELECT p.id, p.code, p.nom, p.sn, p.fabricant, p.uid, p.situation
-      FROM produits p JOIN interventions i ON i.product_id = p.id
-      WHERE i.id = ? LIMIT 1
+            SELECT p.id, p.code_produit, p.nom_produit, p.numero_serie, p.nom_fabricant, p.uid_unique, p.statut_produit
+      FROM produits p
+      JOIN interventions i ON p.id = i.produit_id
+      WHERE i.id = ?
     """;
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setLong(1, interventionId);
@@ -139,7 +142,7 @@ public class ProductRepository {
   }
 
   public List<String> listFabricants() {
-    String sql = "SELECT DISTINCT fabricant FROM produits WHERE COALESCE(TRIM(fabricant),'')<>'' ORDER BY fabricant";
+    String sql = "SELECT DISTINCT nom_fabricant FROM produits WHERE COALESCE(TRIM(nom_fabricant),'')<>'' ORDER BY nom_fabricant";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
       List<String> out = new ArrayList<>();
       while (rs.next()) out.add(rs.getString(1));
@@ -157,7 +160,7 @@ public class ProductRepository {
       //   // Méthode temporairement commentée - à implémenter dans SocieteRepository si nécessaire
       // }
       try (PreparedStatement ps = c.prepareStatement(
-          "UPDATE produits SET fabricant=?, fabricant_id=? WHERE UPPER(nom)=UPPER(?)")) {
+          "UPDATE produits SET nom_fabricant=?, fabricant_id=? WHERE UPPER(nom_produit)=UPPER(?)")) {
         ps.setString(1, fabricantName);
         ps.setNull(2, Types.INTEGER); // fabricant_id temporairement null
         ps.setString(3, name);
@@ -170,7 +173,7 @@ public class ProductRepository {
     try (Connection c = DB.getConnection()) {
       String name = findNameById(c, productId).orElse(null);
       if (name == null || name.isBlank()) return;
-      try (PreparedStatement ps = c.prepareStatement("UPDATE produits SET photo=? WHERE UPPER(nom)=UPPER(?)")) {
+      try (PreparedStatement ps = c.prepareStatement("UPDATE produits SET photo_produit=? WHERE UPPER(nom_produit)=UPPER(?)")) {
         ps.setString(1, photoPath);
         ps.setString(2, name);
         ps.executeUpdate();
@@ -183,7 +186,7 @@ public class ProductRepository {
       String name = findNameById(c, productId).orElse(null);
       if (name == null || name.isBlank()) return;
       try (PreparedStatement ps = c.prepareStatement(
-          "UPDATE produits SET category=?, subcategory=? WHERE UPPER(nom)=UPPER(?)")) {
+          "UPDATE produits SET categorie_principale=?, sous_categorie=? WHERE UPPER(nom_produit)=UPPER(?)")) {
         ps.setString(1, category);
         ps.setString(2, subcategory);
         ps.setString(3, name);
@@ -224,10 +227,10 @@ public class ProductRepository {
 
   public List<ProductRow> findByFabricant(String fabricant) {
     String sql = """
-      SELECT id, nom, sn, fabricant, uid, situation
+      SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit
       FROM produits
-      WHERE UPPER(fabricant)=UPPER(?)
-      ORDER BY nom, id
+      WHERE UPPER(nom_fabricant)=UPPER(?)
+      ORDER BY nom_produit, id
     """;
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setString(1, fabricant);
@@ -241,9 +244,9 @@ public class ProductRepository {
 
   public List<com.magsav.model.ProductRow> findAllProducts() {
     String sql = """
-      SELECT id, nom, sn, fabricant, situation
+      SELECT id, nom_produit, numero_serie, nom_fabricant, statut_produit
       FROM produits
-      ORDER BY nom, id
+      ORDER BY nom_produit, id
     """;
     AppLogger.logSql("SELECT", "produits", "findAll");
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
@@ -251,10 +254,10 @@ public class ProductRepository {
       while (rs.next()) {
         out.add(new com.magsav.model.ProductRow(
           rs.getLong("id"),
-          rs.getString("nom"),
-          rs.getString("sn"),
-          rs.getString("fabricant"),
-          rs.getString("situation")
+          rs.getString("nom_produit"),
+          rs.getString("numero_serie"),
+          rs.getString("nom_fabricant"),
+          rs.getString("statut_produit")
         ));
       }
       AppLogger.debug("ProductRepository: {} produits chargés", out.size());
@@ -267,9 +270,9 @@ public class ProductRepository {
 
   public List<ProductRow> findAllProductsWithUID() {
     String sql = """
-      SELECT id, nom, sn, fabricant, uid, situation
+      SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit
       FROM produits
-      ORDER BY nom, id
+      ORDER BY nom_produit, id
     """;
     AppLogger.logSql("SELECT", "produits", "findAllWithUID");
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
@@ -277,11 +280,11 @@ public class ProductRepository {
       while (rs.next()) {
         out.add(new ProductRow(
           rs.getLong("id"),
-          rs.getString("nom"),
-          rs.getString("sn"),
-          rs.getString("fabricant"),
-          rs.getString("uid"),
-          rs.getString("situation")
+          rs.getString("nom_produit"),
+          rs.getString("numero_serie"),
+          rs.getString("nom_fabricant"),
+          rs.getString("uid_unique"),
+          rs.getString("statut_produit")
         ));
       }
       AppLogger.debug("ProductRepository: {} produits avec UID chargés", out.size());
@@ -293,7 +296,7 @@ public class ProductRepository {
   }
 
   private Optional<String> findNameById(Connection c, long id) throws SQLException {
-    try (PreparedStatement ps = c.prepareStatement("SELECT nom FROM produits WHERE id=?")) {
+    try (PreparedStatement ps = c.prepareStatement("SELECT nom_produit FROM produits WHERE id=?")) {
       ps.setLong(1, id);
       try (ResultSet rs = ps.executeQuery()) { return rs.next() ? Optional.ofNullable(rs.getString(1)) : Optional.empty(); }
     }
@@ -302,10 +305,10 @@ public class ProductRepository {
   // Méthodes manquantes essentielles pour le fonctionnement de l'application
   public List<ProductRowDetailed> findAllDetailed() {
     String sql = """
-      SELECT id, nom, sn, fabricant, uid, situation, photo, category, subcategory, 
-             prix, date_achat, client, description, garantie 
+      SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit, photo_produit, categorie_principale, sous_categorie, 
+             prix_achat, date_achat, nom_client, description_produit, duree_garantie 
       FROM produits 
-      ORDER BY nom, id
+      ORDER BY nom_produit, id
     """;
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
       List<ProductRowDetailed> out = new ArrayList<>();
@@ -316,11 +319,11 @@ public class ProductRepository {
 
   public List<ProductRowDetailed> findAllVisible() {
     String sql = """
-      SELECT id, nom, sn, fabricant, uid, situation, photo, category, subcategory, 
-             prix, date_achat, client, description, garantie 
+      SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit, photo_produit, categorie_principale, sous_categorie, 
+             prix_achat, date_achat, nom_client, description_produit, duree_garantie 
       FROM produits 
-      WHERE situation != 'Supprimé' 
-      ORDER BY nom, id
+      WHERE statut_produit != 'Supprimé' 
+      ORDER BY nom_produit, id
     """;
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
       List<ProductRowDetailed> out = new ArrayList<>();
@@ -334,7 +337,7 @@ public class ProductRepository {
   }
 
   public List<String> listDistinctSituations() {
-    String sql = "SELECT DISTINCT situation FROM produits WHERE COALESCE(TRIM(situation),'')<>'' ORDER BY situation";
+    String sql = "SELECT DISTINCT statut_produit FROM produits WHERE COALESCE(TRIM(statut_produit),'')<>'' ORDER BY statut_produit";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
       List<String> out = new ArrayList<>();
       while (rs.next()) out.add(rs.getString(1));
@@ -344,11 +347,11 @@ public class ProductRepository {
 
   public List<ProductRowDetailed> findBySituation(String situation) {
     String sql = """
-      SELECT id, nom, sn, fabricant, uid, situation, photo, category, subcategory, 
-             prix, date_achat, client, description, garantie 
+      SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit, photo_produit, categorie_principale, sous_categorie, 
+             prix_achat, date_achat, nom_client, description_produit, duree_garantie 
       FROM produits 
-      WHERE UPPER(situation)=UPPER(?) 
-      ORDER BY nom, id
+      WHERE UPPER(statut_produit)=UPPER(?) 
+      ORDER BY nom_produit, id
     """;
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setString(1, situation);
@@ -362,11 +365,11 @@ public class ProductRepository {
 
   public List<ProductRowDetailed> findBySavExterne(long savExterneId) {
     String sql = """
-      SELECT id, nom, sn, fabricant, uid, situation, photo, category, subcategory, 
-             prix, date_achat, client, description, garantie 
+      SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit, photo_produit, categorie_principale, sous_categorie, 
+             prix_achat, date_achat, nom_client, description_produit, duree_garantie 
       FROM produits 
       WHERE sav_externe_id=? 
-      ORDER BY nom, id
+      ORDER BY nom_produit, id
     """;
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setLong(1, savExterneId);
@@ -379,7 +382,7 @@ public class ProductRepository {
   }
 
   public void updateFabricantById(long id, String fabricant) {
-    try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement("UPDATE produits SET fabricant=? WHERE id=?")) {
+    try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement("UPDATE produits SET nom_fabricant=? WHERE id=?")) {
       ps.setString(1, fabricant);
       ps.setLong(2, id);
       ps.executeUpdate();
@@ -440,10 +443,10 @@ public class ProductRepository {
 
   public List<ProductRow> findAllVisibleCompatible() {
     String sql = """
-      SELECT id, nom, sn, fabricant, uid, situation 
+      SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit 
       FROM produits 
-      WHERE situation != 'Supprimé' 
-      ORDER BY nom, id
+      WHERE statut_produit != 'Supprimé' 
+      ORDER BY nom_produit, id
     """;
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
       List<ProductRow> out = new ArrayList<>();
@@ -611,5 +614,51 @@ public class ProductRepository {
     }
     
     return situation;
+  }
+  
+  /**
+   * Compte le nombre de produits dans une catégorie donnée
+   */
+  public int getProductCountByCategory(long categoryId) {
+    String sql = "SELECT COUNT(*) FROM produits WHERE categorieId = ?";
+    
+    try (Connection conn = DB.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+      
+      stmt.setLong(1, categoryId);
+      
+      try (ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) {
+          return rs.getInt(1);
+        }
+        return 0;
+      }
+      
+    } catch (SQLException e) {
+      AppLogger.error("Erreur lors du comptage des produits pour la catégorie " + categoryId, e);
+      return 0;
+    }
+  }
+  
+  /**
+   * Compte le nombre total de produits
+   */
+  public int getTotalProductCount() {
+    String sql = "SELECT COUNT(*) FROM produits";
+    
+    try (Connection conn = DB.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+      
+      try (ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) {
+          return rs.getInt(1);
+        }
+        return 0;
+      }
+      
+    } catch (SQLException e) {
+      AppLogger.error("Erreur lors du comptage total des produits", e);
+      return 0;
+    }
   }
 }

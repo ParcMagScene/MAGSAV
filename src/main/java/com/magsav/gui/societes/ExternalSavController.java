@@ -122,7 +122,7 @@ public class ExternalSavController implements Initializable {
     try {
       // Charger la fiche détaillée du SAV externe
       javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-        getClass().getResource("/fxml/societes/sav_detail.fxml")
+        getClass().getResource("/fxml/societes/details/sav_detail.fxml")
       );
       
       javafx.scene.Parent root = loader.load();

@@ -5,6 +5,11 @@
       fx:controller="com.magsav.gui.categories.CategoryFormController"
       spacing="10" style="-fx-padding: 12;">
   <children>
+    <HBox spacing="8">
+      <Label text="Type:"/>
+      <RadioButton fx:id="rbCategory" text="Catégorie" selected="true"/>
+      <RadioButton fx:id="rbSubcategory" text="Sous-catégorie"/>
+    </HBox>
     <GridPane hgap="8" vgap="8">
       <columnConstraints>
         <ColumnConstraints minWidth="120"/>

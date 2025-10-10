@@ -3,6 +3,7 @@ package com.magsav.gui.hub;
 import com.magsav.model.Company;
 import com.magsav.repo.CompanyRepository;
 import com.magsav.util.AppLogger;
+import com.magsav.util.CompanyProtectionManager;
 import com.magsav.db.DB;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -92,8 +93,22 @@ public class SocietesHubController implements Initializable {
       manufacturersTable.setItems(manufacturersData);
       manufacturersTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
         boolean hasSelection = newSel != null;
-        if (btnEditManufacturer != null) btnEditManufacturer.setDisable(!hasSelection);
-        if (btnDeleteManufacturer != null) btnDeleteManufacturer.setDisable(!hasSelection);
+        boolean isProtected = hasSelection && CompanyProtectionManager.isProtectedCompany(newSel);
+        
+        if (btnEditManufacturer != null) btnEditManufacturer.setDisable(!hasSelection || isProtected);
+        if (btnDeleteManufacturer != null) btnDeleteManufacturer.setDisable(!hasSelection || isProtected);
+      });
+      
+      // Rendre les lignes cliquables pour ouvrir la fiche fabricant
+      manufacturersTable.setRowFactory(tv -> {
+        TableRow<Company> row = new TableRow<>();
+        row.setOnMouseClicked(event -> {
+          if (event.getClickCount() == 2 && !row.isEmpty()) {
+            Company selectedManufacturer = row.getItem();
+            openManufacturerDetail(selectedManufacturer);
+          }
+        });
+        return row;
       });
     }
   }
@@ -110,8 +125,22 @@ public class SocietesHubController implements Initializable {
       suppliersTable.setItems(suppliersData);
       suppliersTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
         boolean hasSelection = newSel != null;
-        if (btnEditSupplier != null) btnEditSupplier.setDisable(!hasSelection);
-        if (btnDeleteSupplier != null) btnDeleteSupplier.setDisable(!hasSelection);
+        boolean isProtected = hasSelection && CompanyProtectionManager.isProtectedCompany(newSel);
+        
+        if (btnEditSupplier != null) btnEditSupplier.setDisable(!hasSelection || isProtected);
+        if (btnDeleteSupplier != null) btnDeleteSupplier.setDisable(!hasSelection || isProtected);
+      });
+      
+      // Rendre les lignes cliquables pour ouvrir la fiche fournisseur
+      suppliersTable.setRowFactory(tv -> {
+        TableRow<Company> row = new TableRow<>();
+        row.setOnMouseClicked(event -> {
+          if (event.getClickCount() == 2 && !row.isEmpty()) {
+            Company selectedSupplier = row.getItem();
+            openSupplierDetail(selectedSupplier);
+          }
+        });
+        return row;
       });
     }
   }
@@ -128,8 +157,22 @@ public class SocietesHubController implements Initializable {
       savTable.setItems(savData);
       savTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
         boolean hasSelection = newSel != null;
-        if (btnEditSav != null) btnEditSav.setDisable(!hasSelection);
-        if (btnDeleteSav != null) btnDeleteSav.setDisable(!hasSelection);
+        boolean isProtected = hasSelection && CompanyProtectionManager.isProtectedCompany(newSel);
+        
+        if (btnEditSav != null) btnEditSav.setDisable(!hasSelection || isProtected);
+        if (btnDeleteSav != null) btnDeleteSav.setDisable(!hasSelection || isProtected);
+      });
+      
+      // Rendre les lignes cliquables pour ouvrir la fiche SAV
+      savTable.setRowFactory(tv -> {
+        TableRow<Company> row = new TableRow<>();
+        row.setOnMouseClicked(event -> {
+          if (event.getClickCount() == 2 && !row.isEmpty()) {
+            Company selectedSav = row.getItem();
+            openSavDetail(selectedSav);
+          }
+        });
+        return row;
       });
     }
   }
@@ -243,5 +286,81 @@ public class SocietesHubController implements Initializable {
     if (manufacturersTable != null && manufacturersTable.getScene() != null && manufacturersTable.getScene().getWindow() != null) {
       manufacturersTable.getScene().getWindow().hide();
     }
+  }
+  
+  // Méthodes pour ouvrir les fiches détaillées
+  private void openManufacturerDetail(Company manufacturer) {
+    try {
+      AppLogger.info("Ouverture de la fiche fabricant: " + manufacturer.getName() + " (ID: " + manufacturer.getId() + ")");
+      
+      // Vérifier si la société est protégée
+      if (CompanyProtectionManager.isProtectedCompany(manufacturer)) {
+        updateStatus("Société protégée : " + manufacturer.getName() + " - Modification uniquement dans les préférences");
+        showProtectedCompanyAlert(manufacturer.getName());
+        return;
+      }
+      
+      // Pour l'instant, on ne fait que logger. Dans une vraie implémentation,
+      // on ouvrirait une nouvelle fenêtre avec ManufacturerDetailController
+      updateStatus("Ouverture de la fiche fabricant: " + manufacturer.getName());
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors de l'ouverture de la fiche fabricant: " + e.getMessage(), e);
+      updateStatus("Erreur lors de l'ouverture de la fiche");
+    }
+  }
+  
+  private void openSupplierDetail(Company supplier) {
+    try {
+      AppLogger.info("Ouverture de la fiche fournisseur: " + supplier.getName() + " (ID: " + supplier.getId() + ")");
+      
+      // Vérifier si la société est protégée
+      if (CompanyProtectionManager.isProtectedCompany(supplier)) {
+        updateStatus("Société protégée : " + supplier.getName() + " - Modification uniquement dans les préférences");
+        showProtectedCompanyAlert(supplier.getName());
+        return;
+      }
+      
+      // Pour l'instant, on ne fait que logger. Dans une vraie implémentation,
+      // on ouvrirait une nouvelle fenêtre avec SupplierDetailController
+      updateStatus("Ouverture de la fiche fournisseur: " + supplier.getName());
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors de l'ouverture de la fiche fournisseur: " + e.getMessage(), e);
+      updateStatus("Erreur lors de l'ouverture de la fiche");
+    }
+  }
+  
+  private void openSavDetail(Company sav) {
+    try {
+      AppLogger.info("Ouverture de la fiche SAV: " + sav.getName() + " (ID: " + sav.getId() + ")");
+      
+      // Vérifier si la société est protégée
+      if (CompanyProtectionManager.isProtectedCompany(sav)) {
+        updateStatus("Société protégée : " + sav.getName() + " - Modification uniquement dans les préférences");
+        showProtectedCompanyAlert(sav.getName());
+        return;
+      }
+      
+      // Pour l'instant, on ne fait que logger. Dans une vraie implémentation,
+      // on ouvrirait une nouvelle fenêtre avec SavDetailController
+      updateStatus("Ouverture de la fiche SAV: " + sav.getName());
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors de l'ouverture de la fiche SAV: " + e.getMessage(), e);
+      updateStatus("Erreur lors de l'ouverture de la fiche");
+    }
+  }
+  
+  /**
+   * Affiche une alerte informant que la société est protégée
+   */
+  private void showProtectedCompanyAlert(String companyName) {
+    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    alert.setTitle("Société protégée");
+    alert.setHeaderText("Modification non autorisée");
+    alert.setContentText("La société '" + companyName + "' est protégée et ne peut être modifiée que dans les préférences de l'application.\n\n" +
+        "Pour modifier cette société, allez dans :\nFichier → Préférences → Onglet Société");
+    alert.showAndWait();
   }
 }

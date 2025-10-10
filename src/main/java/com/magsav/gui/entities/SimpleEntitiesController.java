@@ -86,11 +86,8 @@ public class SimpleEntitiesController {
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setContentText("Supprimer l'entité \"" + selected.getNom() + "\" ?");
-
-        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+        if (com.magsav.util.DialogUtils.showConfirmationAlert("Confirmation", 
+            "Supprimer l'entité \"" + selected.getNom() + "\" ?")) {
             try {
                 repo.delete(selected.getId());
                 loadData();
@@ -145,27 +142,15 @@ public class SimpleEntitiesController {
     }
 
     private void showError(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        com.magsav.util.DialogUtils.showErrorAlert(title, message);
     }
 
     private void showWarning(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        com.magsav.util.DialogUtils.showWarningAlert(title, message);
     }
 
     private void showInfo(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        com.magsav.util.DialogUtils.showInfoAlert(title, message);
     }
 
     // Classe pour le modèle de ligne du tableau

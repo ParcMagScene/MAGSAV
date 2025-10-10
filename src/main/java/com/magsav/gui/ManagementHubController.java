@@ -274,7 +274,7 @@ public class ManagementHubController implements Initializable {
     
     @FXML private void onOpenProductManagement() {
         AppLogger.info("management_hub", "Ouverture de l'interface complète de gestion des produits");
-        NavigationService.openInNewWindow("/fxml/product_management.fxml", "Gestion des Produits");
+        NavigationService.openInNewWindow("/fxml/products/management/product_management.fxml", "Gestion des Produits");
     }
     
     // ======================= ACTIONS - FABRICANTS =======================
@@ -312,7 +312,7 @@ public class ManagementHubController implements Initializable {
     }
     
     @FXML private void onOpenManufacturerInterface() {
-        NavigationService.openInNewWindow("/fxml/manufacturers.fxml", "Gestion des Fabricants");
+        NavigationService.openInNewWindow("/fxml/societes/lists/manufacturers.fxml", "Gestion des Fabricants");
     }
     
     // ======================= ACTIONS - FOURNISSEURS =======================
@@ -350,7 +350,7 @@ public class ManagementHubController implements Initializable {
     }
     
     @FXML private void onOpenSupplierInterface() {
-        NavigationService.openInNewWindow("/fxml/suppliers.fxml", "Gestion des Fournisseurs");
+        NavigationService.openInNewWindow("/fxml/societes/lists/suppliers.fxml", "Gestion des Fournisseurs");
     }
     
     // ======================= ACTIONS - SAV EXTERNES =======================
@@ -388,7 +388,7 @@ public class ManagementHubController implements Initializable {
     }
     
     @FXML private void onOpenSavInterface() {
-        NavigationService.openInNewWindow("/fxml/external_sav.fxml", "Gestion des SAV Externes");
+        NavigationService.openInNewWindow("/fxml/societes/lists/external_sav.fxml", "Gestion des SAV Externes");
     }
     
     // ======================= ACTIONS - CLIENTS =======================
@@ -724,30 +724,30 @@ public class ManagementHubController implements Initializable {
     @FXML
     private void onOpenProductsHub() {
         AppLogger.info("Redirection vers le Hub Produits");
-        NavigationService.openInNewWindow("/fxml/hub_products.fxml", "Hub Produits - Mag Scène");
+        NavigationService.openInNewWindow("/fxml/products/hubs/hub_products.fxml", "Hub Produits - Mag Scène");
     }
     
     @FXML
     private void onOpenSocietesHub() {
         AppLogger.info("Redirection vers le Hub Sociétés");
-        NavigationService.openInNewWindow("/fxml/hub_societes.fxml", "Hub Sociétés - Mag Scène");
+        NavigationService.openInNewWindow("/fxml/societes/hubs/hub_societes.fxml", "Hub Sociétés - Mag Scène");
     }
     
     @FXML
     private void onOpenSocietesHubFournisseurs() {
         AppLogger.info("Redirection vers le Hub Sociétés (onglet Fournisseurs)");
-        NavigationService.openInNewWindow("/fxml/hub_societes.fxml", "Hub Sociétés - Fournisseurs - Mag Scène");
+        NavigationService.openInNewWindow("/fxml/societes/hubs/hub_societes.fxml", "Hub Sociétés - Fournisseurs - Mag Scène");
     }
     
     @FXML
     private void onOpenSocietesHubSav() {
         AppLogger.info("Redirection vers le Hub Sociétés (onglet SAV)");
-        NavigationService.openInNewWindow("/fxml/hub_societes.fxml", "Hub Sociétés - SAV - Mag Scène");
+        NavigationService.openInNewWindow("/fxml/societes/hubs/hub_societes.fxml", "Hub Sociétés - SAV - Mag Scène");
     }
     
     @FXML
     private void onOpenClientsHub() {
         AppLogger.info("Redirection vers le Hub Clients");
-        NavigationService.openInNewWindow("/fxml/hub_clients.fxml", "Hub Clients - Mag Scène");
+        NavigationService.openInNewWindow("/fxml/societes/hubs/hub_clients.fxml", "Hub Clients - Mag Scène");
     }
 }

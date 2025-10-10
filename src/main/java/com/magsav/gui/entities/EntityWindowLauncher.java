@@ -25,7 +25,11 @@ public class EntityWindowLauncher {
             Preferences prefs = Preferences.userNodeForPackage(EntityWindowLauncher.class);
             double width = prefs.getDouble("entitiesWindow.width", 1000);
             double height = prefs.getDouble("entitiesWindow.height", 600);
-            stage.setScene(new Scene(root, width, height));
+            
+            Scene scene = new Scene(root, width, height);
+            // Appliquer le thème dark
+            scene.getStylesheets().add(EntityWindowLauncher.class.getResource("/css/simple-dark.css").toExternalForm());
+            stage.setScene(scene);
             stage.setOnCloseRequest(e -> {
                 prefs.putDouble("entitiesWindow.width", stage.getWidth());
                 prefs.putDouble("entitiesWindow.height", stage.getHeight());

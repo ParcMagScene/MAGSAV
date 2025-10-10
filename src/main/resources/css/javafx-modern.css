@@ -1,0 +1,389 @@
+/* MAGSAV - Styles Modernes JavaFX */
+
+/* Configuration de base */
+.root {
+    -fx-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -fx-font-size: 14px;
+    -fx-background-color: #F8F9FA;
+    -fx-text-fill: #212529;
+}
+
+/* Boutons modernes */
+.modern-button {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 12 24;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);
+}
+
+.modern-button:hover {
+    -fx-background-color: #1976D2;
+}
+
+.modern-button:pressed {
+    -fx-background-color: #1565C0;
+}
+
+.modern-button-secondary {
+    -fx-background-color: #6C757D;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 12 24;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.modern-button-secondary:hover {
+    -fx-background-color: #5A6268;
+}
+
+.modern-button-outline {
+    -fx-background-color: transparent;
+    -fx-border-color: #2196F3;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-text-fill: #2196F3;
+    -fx-padding: 10 22;
+    -fx-cursor: hand;
+}
+
+.modern-button-outline:hover {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: white;
+}
+
+.modern-button-danger {
+    -fx-background-color: #DC3545;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 12 24;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.modern-button-danger:hover {
+    -fx-background-color: #C82333;
+}
+
+.modern-button-success {
+    -fx-background-color: #28A745;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 12 24;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.modern-button-success:hover {
+    -fx-background-color: #218838;
+}
+
+/* Cartes modernes */
+.modern-card {
+    -fx-background-color: white;
+    -fx-border-color: #E9ECEF;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 24;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);
+}
+
+.modern-card-header {
+    -fx-background-color: white;
+    -fx-border-color: #E9ECEF;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 16 24;
+    -fx-background-radius: 12 12 0 0;
+}
+
+.modern-card-body {
+    -fx-background-color: white;
+    -fx-padding: 24;
+}
+
+.modern-card-footer {
+    -fx-background-color: #F8F9FA;
+    -fx-border-color: #E9ECEF;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 16 24;
+    -fx-background-radius: 0 0 12 12;
+}
+
+/* Champs de texte modernes */
+.modern-text-field {
+    -fx-background-color: white;
+    -fx-border-color: #CED4DA;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12 16;
+    -fx-font-size: 14px;
+}
+
+.modern-text-field:focused {
+    -fx-border-color: #2196F3;
+    -fx-effect: dropshadow(gaussian, rgba(33,150,243,0.25), 4, 0, 0, 0);
+}
+
+/* Tables modernes */
+.modern-table-view {
+    -fx-background-color: white;
+    -fx-border-color: #E9ECEF;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-table-cell-border-color: transparent;
+}
+
+.modern-table-view .column-header-background {
+    -fx-background-color: #F8F9FA;
+    -fx-border-color: #E9ECEF;
+    -fx-border-width: 0 0 1 0;
+}
+
+.modern-table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+    -fx-padding: 16 12;
+}
+
+.modern-table-view .table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent;
+    -fx-padding: 12 0;
+}
+
+.modern-table-view .table-row-cell:odd {
+    -fx-background-color: #F8F9FA;
+}
+
+.modern-table-view .table-row-cell:selected {
+    -fx-background-color: #E3F2FD;
+    -fx-text-fill: #1976D2;
+}
+
+.modern-table-view .table-cell {
+    -fx-padding: 12;
+    -fx-border-color: transparent;
+}
+
+/* En-tête moderne */
+.modern-header {
+    -fx-background-color: white;
+    -fx-border-color: #E9ECEF;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 16 24;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0, 0, 2);
+}
+
+.modern-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212529;
+}
+
+.modern-subtitle {
+    -fx-font-size: 16px;
+    -fx-text-fill: #6C757D;
+}
+
+/* Zone de contenu */
+.content-area {
+    -fx-background-color: #F8F9FA;
+    -fx-padding: 24;
+}
+
+/* Menu latéral */
+.sidebar {
+    -fx-background-color: white;
+    -fx-border-color: #E9ECEF;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 16;
+    -fx-pref-width: 250;
+}
+
+.sidebar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #495057;
+    -fx-font-size: 14px;
+    -fx-padding: 12 16;
+    -fx-alignment: center-left;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: #F8F9FA;
+}
+
+.sidebar-button:pressed,
+.sidebar-button.active {
+    -fx-background-color: #E3F2FD;
+    -fx-text-fill: #1976D2;
+    -fx-font-weight: bold;
+}
+
+/* Badges */
+.badge {
+    -fx-background-color: #6C757D;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-padding: 4 8;
+    -fx-background-radius: 12;
+}
+
+.badge-primary {
+    -fx-background-color: #2196F3;
+}
+
+.badge-success {
+    -fx-background-color: #28A745;
+}
+
+.badge-warning {
+    -fx-background-color: #FFC107;
+    -fx-text-fill: #212529;
+}
+
+.badge-danger {
+    -fx-background-color: #DC3545;
+}
+
+/* Barres d'outils */
+.modern-toolbar {
+    -fx-background-color: white;
+    -fx-border-color: #E9ECEF;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 12 24;
+    -fx-spacing: 12;
+}
+
+/* Séparateurs */
+.modern-separator {
+    -fx-background-color: #E9ECEF;
+}
+
+/* Zones de texte */
+.modern-text-area {
+    -fx-background-color: white;
+    -fx-border-color: #CED4DA;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12;
+    -fx-font-size: 14px;
+}
+
+.modern-text-area:focused {
+    -fx-border-color: #2196F3;
+    -fx-effect: dropshadow(gaussian, rgba(33,150,243,0.25), 4, 0, 0, 0);
+}
+
+/* ComboBox moderne */
+.modern-combo-box {
+    -fx-background-color: white;
+    -fx-border-color: #CED4DA;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+}
+
+.modern-combo-box:focused {
+    -fx-border-color: #2196F3;
+}
+
+/* CheckBox moderne */
+.modern-check-box {
+    -fx-text-fill: #495057;
+}
+
+.modern-check-box .box {
+    -fx-background-color: white;
+    -fx-border-color: #CED4DA;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.modern-check-box:selected .box {
+    -fx-background-color: #2196F3;
+    -fx-border-color: #2196F3;
+}
+
+/* Onglets modernes */
+.modern-tab-pane {
+    -fx-background-color: transparent;
+}
+
+.modern-tab-pane .tab-header-area {
+    -fx-background-color: white;
+    -fx-border-color: #E9ECEF;
+    -fx-border-width: 0 0 1 0;
+}
+
+.modern-tab-pane .tab {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 12 24;
+    -fx-cursor: hand;
+}
+
+.modern-tab-pane .tab:selected {
+    -fx-background-color: transparent;
+    -fx-border-color: #2196F3;
+    -fx-border-width: 0 0 3 0;
+    -fx-text-fill: #2196F3;
+    -fx-font-weight: bold;
+}
+
+.modern-tab-pane .tab-content-area {
+    -fx-background-color: white;
+    -fx-padding: 24;
+}
+
+/* Notifications/Alertes */
+.alert-info {
+    -fx-background-color: #D1ECF1;
+    -fx-border-color: #BEE5EB;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12 16;
+    -fx-text-fill: #0C5460;
+}
+
+.alert-success {
+    -fx-background-color: #D4EDDA;
+    -fx-border-color: #C3E6CB;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12 16;
+    -fx-text-fill: #155724;
+}
+
+.alert-warning {
+    -fx-background-color: #FFF3CD;
+    -fx-border-color: #FFEAA7;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12 16;
+    -fx-text-fill: #856404;
+}
+
+.alert-danger {
+    -fx-background-color: #F8D7DA;
+    -fx-border-color: #F5C6CB;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 12 16;
+    -fx-text-fill: #721C24;
+}

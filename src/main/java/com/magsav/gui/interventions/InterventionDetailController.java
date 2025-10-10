@@ -3,9 +3,7 @@ package com.magsav.gui.interventions;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import com.magsav.model.InterventionRow;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -14,8 +12,20 @@ public class InterventionDetailController implements Initializable {
   @FXML private Label lbHeader, lbProduct, lbSerial, lbDetector;
   @FXML private TextArea taDesc, taPrediag;
   @FXML private ComboBox<String> cbNext;
+  
+  // Boutons de contrôle d'édition
+  @FXML private Button btnEdit;
+  @FXML private Button btnSave;
+  @FXML private Button btnCancel;
 
   private long interventionId;
+  
+  // État d'édition
+  private boolean isEditMode = false;
+  
+  // Valeurs originales pour l'annulation
+  private String originalPrediag;
+  private String originalSuite;
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -32,6 +42,10 @@ public class InterventionDetailController implements Initializable {
       // Permettre l'édition libre si nécessaire
       cbNext.setEditable(false);
     }
+    
+    // Initialiser en mode lecture seule
+    isEditMode = false;
+    updateEditableControls();
   }
 
   public void load(long id) { 
@@ -40,7 +54,10 @@ public class InterventionDetailController implements Initializable {
     if (intervention != null) {
       if (taDesc != null) taDesc.setText(intervention.panne());
       if (lbHeader != null) lbHeader.setText("Intervention #" + intervention.id());
-      // Préremplir le statut, dates, etc. si besoin
+      
+      // Sauvegarder les valeurs originales pour l'annulation
+      originalPrediag = taPrediag != null ? taPrediag.getText() : "";
+      originalSuite = cbNext != null ? cbNext.getValue() : "";
     }
   }
   
@@ -74,5 +91,58 @@ public class InterventionDetailController implements Initializable {
     String suiteEnvisagee = getSelectedSuite();
     System.out.println("Suite envisagée sélectionnée: " + suiteEnvisagee);
     return true; 
+  }
+  
+  @FXML
+  private void onToggleEdit() {
+    isEditMode = !isEditMode;
+    updateEditableControls();
+  }
+  
+  @FXML
+  private void onSaveChanges() {
+    if (save()) {
+      // Sauvegarder les nouvelles valeurs comme originales
+      originalPrediag = taPrediag != null ? taPrediag.getText() : "";
+      originalSuite = cbNext != null ? cbNext.getValue() : "";
+      
+      // Revenir en mode lecture
+      isEditMode = false;
+      updateEditableControls();
+      
+      // Afficher confirmation
+      Alert success = new Alert(Alert.AlertType.INFORMATION);
+      success.setTitle("Modifications sauvegardées");
+      success.setHeaderText("Intervention mise à jour");
+      success.setContentText("Les modifications ont été sauvegardées avec succès.");
+      // Appliquer le thème dark
+      success.getDialogPane().getStylesheets().add(getClass().getResource("/css/simple-dark.css").toExternalForm());
+      success.showAndWait();
+    }
+  }
+  
+  @FXML
+  private void onCancelEdit() {
+    // Restaurer les valeurs originales
+    if (taPrediag != null) taPrediag.setText(originalPrediag);
+    if (cbNext != null) cbNext.setValue(originalSuite);
+    
+    // Revenir en mode lecture
+    isEditMode = false;
+    updateEditableControls();
+  }
+  
+  /**
+   * Met à jour l'état des contrôles selon le mode d'édition
+   */
+  private void updateEditableControls() {
+    // Activer/désactiver les champs modifiables
+    if (taPrediag != null) taPrediag.setEditable(isEditMode);
+    if (cbNext != null) cbNext.setDisable(!isEditMode);
+    
+    // Contrôler la visibilité des boutons de contrôle
+    if (btnEdit != null) btnEdit.setVisible(!isEditMode);
+    if (btnSave != null) btnSave.setVisible(isEditMode);
+    if (btnCancel != null) btnCancel.setVisible(isEditMode);
   }
 }

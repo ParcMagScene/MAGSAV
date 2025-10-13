@@ -62,7 +62,7 @@
   </top>
 
   <center>
-    <TabPane>
+    <TabPane styleClass="dark-tab-pane">
       <tabs>
         <Tab text="Historique" closable="false">
           <content>

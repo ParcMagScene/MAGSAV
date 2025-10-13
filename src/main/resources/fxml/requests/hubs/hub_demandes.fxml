@@ -12,7 +12,7 @@
   </top>
   
   <center>
-    <TabPane fx:id="demandesTabPane" tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 10;">
+    <TabPane fx:id="demandesTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane" style="-fx-padding: 10;">
       
       <!-- Onglet Demandes de Pièces -->
       <Tab text="🔧 Demandes de Pièces" closable="false">

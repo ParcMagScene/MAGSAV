@@ -1,26 +1,42 @@
 /* MAGSAV - CSS de Base Moderne pour JavaFX */
 
 .root {
+    font-family: "System", "SF Pro Display", "Segoe UI", "Helvetica Neue", sans-serif;
+    font-family: "System", "SF Pro Display", "Segoe UI", "Helvetica Neue", sans-serif;
     -fx-font-family: "System", "SF Pro Display", "Segoe UI", "Helvetica Neue", sans-serif;
+    font-size: 14px;
+    font-size: 14px;
     -fx-font-size: 14px;
     -fx-font-smoothing-type: lcd;
 }
 
 /* Typography */
-.text-xs { -fx-font-size: 11px; }
-.text-sm { -fx-font-size: 12px; }
-.text-md { -fx-font-size: 14px; }
-.text-lg { -fx-font-size: 16px; }
-.text-xl { -fx-font-size: 18px; }
-.text-title { -fx-font-size: 32px; -fx-font-weight: bold; }
+.text-xs { font-size: 11px; font-size: 11px;
+    -fx-font-size: 11px; }
+.text-sm { font-size: 12px; font-size: 12px;
+    -fx-font-size: 12px; }
+.text-md { font-size: 14px; font-size: 14px;
+    -fx-font-size: 14px; }
+.text-lg { font-size: 16px; font-size: 16px;
+    -fx-font-size: 16px; }
+.text-xl { font-size: 18px; font-size: 18px;
+    -fx-font-size: 18px; }
+.text-title { font-size: 32px; font-size: 32px;
+    -fx-font-size: 32px; font-weight: bold; font-weight: bold;
+    -fx-font-weight: bold; }
 
-.font-light { -fx-font-weight: lighter; }
-.font-bold { -fx-font-weight: bold; }
+.font-light { font-weight: lighter; font-weight: lighter;
+    -fx-font-weight: lighter; }
+.font-bold { font-weight: bold; font-weight: bold;
+    -fx-font-weight: bold; }
 
 /* Espacements */
-.p-sm { -fx-padding: 8px; }
-.p-md { -fx-padding: 16px; }
-.p-lg { -fx-padding: 24px; }
+.p-sm { padding: 8px; padding: 8px;
+    -fx-padding: 8px; }
+.p-md { padding: 16px; padding: 16px;
+    -fx-padding: 16px; }
+.p-lg { padding: 24px; padding: 24px;
+    -fx-padding: 24px; }
 
 .m-sm { -fx-spacing: 8px; }
 .m-md { -fx-spacing: 16px; }
@@ -32,27 +48,40 @@
 .shadow-lg { -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 16, 0.5, 0, 4); }
 
 /* Bordures */
-.rounded-sm { -fx-background-radius: 4px; -fx-border-radius: 4px; }
-.rounded-md { -fx-background-radius: 8px; -fx-border-radius: 8px; }
-.rounded-lg { -fx-background-radius: 12px; -fx-border-radius: 12px; }
+.rounded-sm { -fx-background-radius: 4px; border-radius: 4px; border-radius: 4px;
+    -fx-border-radius: 4px; }
+.rounded-md { -fx-background-radius: 8px; border-radius: 8px; border-radius: 8px;
+    -fx-border-radius: 8px; }
+.rounded-lg { -fx-background-radius: 12px; border-radius: 12px; border-radius: 12px;
+    -fx-border-radius: 12px; }
 
 /* Interactions */
-.interactive { -fx-cursor: hand; }
-.interactive:hover { -fx-opacity: 0.8; }
+.interactive { cursor: pointer; cursor: pointer;
+    -fx-cursor: hand; }
+.interactive:hover { opacity: 0.8; opacity: 0.8;
+    -fx-opacity: 0.8; }
 
 /* Focus moderne */
 .focus-ring:focused {
+    border-width: 2px;
+    border-width: 2px;
     -fx-border-width: 2px;
+    border-color: #2196F3;
+    border-color: #2196F3;
     -fx-border-color: #2196F3;
     -fx-background-insets: -2;
     -fx-border-insets: -2;
 }
 
 /* Couleurs de base */
-.bg-primary { -fx-background-color: #2196F3; }
-.bg-success { -fx-background-color: #4CAF50; }
-.bg-warning { -fx-background-color: #FF9800; }
-.bg-error { -fx-background-color: #F44336; }
+.bg-primary { background-color: #2196F3; background-color: #2196F3;
+    -fx-background-color: #2196F3; }
+.bg-success { background-color: #4CAF50; background-color: #4CAF50;
+    -fx-background-color: #4CAF50; }
+.bg-warning { background-color: #FF9800; background-color: #FF9800;
+    -fx-background-color: #FF9800; }
+.bg-error { background-color: #F44336; background-color: #F44336;
+    -fx-background-color: #F44336; }
 
 .text-primary { -fx-text-fill: #2196F3; }
 .text-success { -fx-text-fill: #4CAF50; }

@@ -2,6 +2,9 @@ package com.magsav.util;
 
 import com.magsav.db.DB;
 import com.magsav.model.Company;
+import com.magsav.model.Vehicule;
+import com.magsav.model.Vehicule.TypeVehicule;
+import com.magsav.model.Vehicule.StatutVehicule;
 import com.magsav.repo.*;
 
 /**
@@ -27,6 +30,12 @@ public class SimpleTestDataGenerator {
             
             // 3. Générer les produits
             generateProducts();
+            
+            // 4. Générer les véhicules
+            generateVehicules();
+            
+            // 5. Générer les interventions
+            generateInterventions();
             
             System.out.println("✅ Données de test générées avec succès !");
             
@@ -56,6 +65,18 @@ public class SimpleTestDataGenerator {
             
             // Vérifier s'il y a des produits
             rs = stmt.executeQuery("SELECT COUNT(*) FROM produits");
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true;
+            }
+            
+            // Vérifier s'il y a des véhicules
+            rs = stmt.executeQuery("SELECT COUNT(*) FROM vehicules");
+            if (rs.next() && rs.getInt(1) > 0) {
+                return true;
+            }
+            
+            // Vérifier s'il y a des interventions
+            rs = stmt.executeQuery("SELECT COUNT(*) FROM interventions");
             if (rs.next() && rs.getInt(1) > 0) {
                 return true;
             }
@@ -205,6 +226,131 @@ public class SimpleTestDataGenerator {
             
         } catch (Exception e) {
             System.err.println("   ❌ Erreur produits: " + e.getMessage());
+        }
+    }
+    
+    private static void generateVehicules() {
+        System.out.println("🚗 Génération des véhicules...");
+        try {
+            VehiculeRepository vehiculeRepo = new VehiculeRepository();
+            
+            // Véhicules légers
+            Vehicule vl1 = new Vehicule();
+            vl1.setImmatriculation("AB-123-CD");
+            vl1.setTypeVehicule(TypeVehicule.VL);
+            vl1.setMarque("Peugeot");
+            vl1.setModele("Partner");
+            vl1.setAnnee(2020);
+            vl1.setKilometrage(45000);
+            vl1.setStatut(StatutVehicule.DISPONIBLE);
+            vl1.setNotes("Véhicule de service pour interventions");
+            vehiculeRepo.save(vl1);
+            
+            Vehicule vl2 = new Vehicule();
+            vl2.setImmatriculation("EF-456-GH");
+            vl2.setTypeVehicule(TypeVehicule.VL);
+            vl2.setMarque("Renault");
+            vl2.setModele("Kangoo");
+            vl2.setAnnee(2019);
+            vl2.setKilometrage(62000);
+            vl2.setStatut(StatutVehicule.EN_SERVICE);
+            vl2.setNotes("Équipé pour transport matériel audiovisuel");
+            vehiculeRepo.save(vl2);
+            
+            // Poids lourds
+            Vehicule pl1 = new Vehicule();
+            pl1.setImmatriculation("IJ-789-KL");
+            pl1.setTypeVehicule(TypeVehicule.PL);
+            pl1.setMarque("Mercedes");
+            pl1.setModele("Sprinter");
+            pl1.setAnnee(2018);
+            pl1.setKilometrage(120000);
+            pl1.setStatut(StatutVehicule.DISPONIBLE);
+            pl1.setNotes("Véhicule principal pour gros matériel");
+            vehiculeRepo.save(pl1);
+            
+            // Scène mobile
+            Vehicule scene = new Vehicule();
+            scene.setImmatriculation("MN-012-OP");
+            scene.setTypeVehicule(TypeVehicule.SCENE_MOBILE);
+            scene.setMarque("Iveco");
+            scene.setModele("Daily");
+            scene.setAnnee(2021);
+            scene.setKilometrage(25000);
+            scene.setStatut(StatutVehicule.DISPONIBLE);
+            scene.setNotes("Scène mobile pour événements extérieurs");
+            vehiculeRepo.save(scene);
+            
+            // Remorque
+            Vehicule remorque = new Vehicule();
+            remorque.setImmatriculation("QR-345-ST");
+            remorque.setTypeVehicule(TypeVehicule.REMORQUE);
+            remorque.setMarque("Hapert");
+            remorque.setModele("Azure H-2");
+            remorque.setAnnee(2020);
+            remorque.setKilometrage(0);
+            remorque.setStatut(StatutVehicule.MAINTENANCE);
+            remorque.setNotes("Remorque fermée pour transport sécurisé");
+            vehiculeRepo.save(remorque);
+            
+            System.out.println("   ✓ Véhicules créés");
+            
+        } catch (Exception e) {
+            System.err.println("   ❌ Erreur véhicules: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private static void generateInterventions() {
+        System.out.println("🔧 Génération des interventions...");
+        try {
+            InterventionRepository interventionRepo = new InterventionRepository();
+            
+            // Requête pour récupérer les IDs des produits créés
+            try (java.sql.Connection conn = DB.getConnection()) {
+                String sql = "SELECT id, nom_produit FROM produits LIMIT 5";
+                java.sql.Statement stmt = conn.createStatement();
+                java.sql.ResultSet rs = stmt.executeQuery(sql);
+                
+                int interventionCount = 0;
+                while (rs.next() && interventionCount < 5) {
+                    long productId = rs.getLong("id");
+                    String productName = rs.getString("nom_produit");
+                    
+                    // Créer une intervention pour ce produit
+                    String[] descriptions = {
+                        "Écran LCD défaillant, affichage déformé",
+                        "Connecteur audio endommagé, pas de signal",
+                        "Problème d'alimentation, arrêt intempestif",
+                        "Télécommande ne répond plus",
+                        "Ventilation bruyante, surchauffe constatée"
+                    };
+                    
+                    String[] clientNotes = {
+                        "Problème survenu lors d'un événement important",
+                        "Matériel utilisé intensivement ces derniers mois",
+                        "Panne subite, aucun signe avant-coureur",
+                        "Problème récurrent depuis quelques semaines",
+                        "Matériel tombé en panne en pleine utilisation"
+                    };
+                    
+                    long interventionId = interventionRepo.insert(
+                        productId,
+                        "TEST-" + String.format("%03d", interventionCount + 1),
+                        clientNotes[interventionCount],
+                        descriptions[interventionCount]
+                    );
+                    
+                    System.out.println("   ✓ Intervention créée pour " + productName + " (ID: " + interventionId + ")");
+                    interventionCount++;
+                }
+            }
+            
+            System.out.println("   ✓ Interventions créées");
+            
+        } catch (Exception e) {
+            System.err.println("   ❌ Erreur interventions: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

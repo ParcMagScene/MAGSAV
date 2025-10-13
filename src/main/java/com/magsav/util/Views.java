@@ -9,6 +9,10 @@ import javafx.stage.Stage;
 import java.util.prefs.Preferences;
 
 public final class Views {
+  
+  // Constantes pour les vues FXML
+  public static final String COMMANDE_FORM = "/fxml/commandes/commande_form.fxml";
+  
   private Views() {}
 
   public static void openProductSheet(long productId) {

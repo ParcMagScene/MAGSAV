@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.CommandesController">
+   <top>
+      <VBox spacing="10.0">
+         <children>
+            <!-- En-tête -->
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Label text="Gestion des Commandes">
+                     <font>
+                        <Font name="System Bold" size="24.0" />
+                     </font>
+                  </Label>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button fx:id="btnNouvelleCommande" mnemonicParsing="false" onAction="#onNouvelleCommande" style="-fx-background-color: #28a745; -fx-text-fill: white;" text="➕ Nouvelle Commande">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                  </Button>
+               </children>
+            </HBox>
+            
+            <!-- Barre d'outils et filtres -->
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Label text="Recherche:" />
+                  <TextField fx:id="txtRecherche" prefWidth="200.0" promptText="Numéro, fournisseur..." />
+                  <Button fx:id="btnRechercher" mnemonicParsing="false" onAction="#onRechercher" text="🔍" />
+                  
+                  <Separator orientation="VERTICAL" />
+                  
+                  <Label text="Statut:" />
+                  <ComboBox fx:id="cbStatut" prefWidth="150.0" promptText="Tous les statuts" />
+                  
+                  <Label text="Fournisseur:" />
+                  <ComboBox fx:id="cbFournisseur" prefWidth="200.0" promptText="Tous les fournisseurs" />
+                  
+                  <Button fx:id="btnFiltrer" mnemonicParsing="false" onAction="#onFiltrer" text="Filtrer" />
+                  <Button fx:id="btnReset" mnemonicParsing="false" onAction="#onResetFiltres" text="Reset" />
+                  
+                  <Region HBox.hgrow="ALWAYS" />
+                  
+                  <Button fx:id="btnActualiser" mnemonicParsing="false" onAction="#onActualiser" text="🔄" />
+               </children>
+            </HBox>
+            
+            <!-- Statistiques rapides -->
+            <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-background-color: #f8f9fa; -fx-padding: 10; -fx-background-radius: 5;">
+               <children>
+                  <VBox alignment="CENTER">
+                     <children>
+                        <Label fx:id="lblTotalCommandes" text="0" textFill="#495057">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <Label text="Total Commandes" textFill="#6c757d">
+                           <font>
+                              <Font size="11.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </VBox>
+                  
+                  <Separator orientation="VERTICAL" />
+                  
+                  <VBox alignment="CENTER">
+                     <children>
+                        <Label fx:id="lblCommandesEnAttente" text="0" textFill="#fd7e14">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <Label text="En Attente" textFill="#6c757d">
+                           <font>
+                              <Font size="11.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </VBox>
+                  
+                  <Separator orientation="VERTICAL" />
+                  
+                  <VBox alignment="CENTER">
+                     <children>
+                        <Label fx:id="lblCommandesLivrees" text="0" textFill="#28a745">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <Label text="Livrées" textFill="#6c757d">
+                           <font>
+                              <Font size="11.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </VBox>
+                  
+                  <Separator orientation="VERTICAL" />
+                  
+                  <VBox alignment="CENTER">
+                     <children>
+                        <Label fx:id="lblMontantTotal" text="0,00 €" textFill="#17a2b8">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <Label text="Montant Total" textFill="#6c757d">
+                           <font>
+                              <Font size="11.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </VBox>
+   </top>
+   
+   <center>
+      <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane">
+         <tabs>
+            <!-- Onglet Liste des commandes -->
+            <Tab text="📋 Liste des Commandes">
+               <content>
+                  <VBox spacing="10.0">
+                     <children>
+                        <TableView fx:id="tableCommandes" prefHeight="400.0" VBox.vgrow="ALWAYS">
+                           <columns>
+                              <TableColumn fx:id="colNumero" prefWidth="120.0" text="Numéro" />
+                              <TableColumn fx:id="colFournisseur" prefWidth="150.0" text="Fournisseur" />
+                              <TableColumn fx:id="colDateCommande" prefWidth="100.0" text="Date Commande" />
+                              <TableColumn fx:id="colStatut" prefWidth="100.0" text="Statut" />
+                              <TableColumn fx:id="colType" prefWidth="80.0" text="Type" />
+                              <TableColumn fx:id="colMontantTTC" prefWidth="100.0" text="Montant TTC" />
+                              <TableColumn fx:id="colDateLivraison" prefWidth="120.0" text="Livraison Prévue" />
+                              <TableColumn fx:id="colNbLignes" prefWidth="70.0" text="Lignes" />
+                              <TableColumn fx:id="colActions" prefWidth="80.0" text="Actions" />
+                           </columns>
+                        </TableView>
+                        
+                        <!-- Barre d'actions pour la commande sélectionnée -->
+                        <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #e9ecef; -fx-padding: 10; -fx-background-radius: 5;">
+                           <children>
+                              <Label text="Actions pour la commande sélectionnée:" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Button fx:id="btnVoirCommande" disable="true" mnemonicParsing="false" onAction="#onVoirCommande" text="👁 Voir" />
+                              <Button fx:id="btnModifierCommande" disable="true" mnemonicParsing="false" onAction="#onModifierCommande" text="✏️ Modifier" />
+                              <Button fx:id="btnDupliquerCommande" disable="true" mnemonicParsing="false" onAction="#onDupliquerCommande" text="📋 Dupliquer" />
+                              <Button fx:id="btnSupprimerCommande" disable="true" mnemonicParsing="false" onAction="#onSupprimerCommande" style="-fx-background-color: #dc3545; -fx-text-fill: white;" text="🗑 Supprimer" />
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+            
+            <!-- Onglet Suivi des livraisons -->
+            <Tab text="🚛 Suivi Livraisons">
+               <content>
+                  <VBox spacing="10.0">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Commandes en attente de livraison">
+                                 <font>
+                                    <Font name="System Bold" size="16.0" />
+                                 </font>
+                              </Label>
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Button fx:id="btnActualiserLivraisons" mnemonicParsing="false" onAction="#onActualiserLivraisons" text="🔄 Actualiser" />
+                           </children>
+                        </HBox>
+                        
+                        <TableView fx:id="tableLivraisons" prefHeight="350.0" VBox.vgrow="ALWAYS">
+                           <columns>
+                              <TableColumn fx:id="colLivNumero" prefWidth="120.0" text="Numéro" />
+                              <TableColumn fx:id="colLivFournisseur" prefWidth="150.0" text="Fournisseur" />
+                              <TableColumn fx:id="colLivDatePrevue" prefWidth="120.0" text="Date Prévue" />
+                              <TableColumn fx:id="colLivTransporteur" prefWidth="120.0" text="Transporteur" />
+                              <TableColumn fx:id="colLivNumeroSuivi" prefWidth="150.0" text="N° Suivi" />
+                              <TableColumn fx:id="colLivStatut" prefWidth="100.0" text="Statut" />
+                              <TableColumn fx:id="colLivActions" prefWidth="100.0" text="Actions" />
+                           </columns>
+                        </TableView>
+                        
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Button fx:id="btnMarquerLivree" disable="true" mnemonicParsing="false" onAction="#onMarquerLivree" style="-fx-background-color: #28a745; -fx-text-fill: white;" text="✅ Marquer Livrée" />
+                              <Button fx:id="btnMettreAJourSuivi" disable="true" mnemonicParsing="false" onAction="#onMettreAJourSuivi" text="📦 Mettre à jour suivi" />
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </content>
+            </Tab>
+            
+            <!-- Onglet Statistiques -->
+            <Tab text="📊 Statistiques">
+               <content>
+                  <ScrollPane fitToWidth="true">
+                     <content>
+                        <VBox spacing="20.0">
+                           <children>
+                              <Label text="Tableau de bord des commandes">
+                                 <font>
+                                    <Font name="System Bold" size="18.0" />
+                                 </font>
+                              </Label>
+                              
+                              <!-- Statistiques par statut -->
+                              <VBox spacing="10.0" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
+                                 <children>
+                                    <Label text="Répartition par Statut">
+                                       <font>
+                                          <Font name="System Bold" size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <GridPane fx:id="gridStatuts" hgap="20.0" vgap="10.0" />
+                                 </children>
+                              </VBox>
+                              
+                              <!-- Statistiques financières -->
+                              <VBox spacing="10.0" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
+                                 <children>
+                                    <Label text="Statistiques Financières">
+                                       <font>
+                                          <Font name="System Bold" size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <GridPane fx:id="gridFinances" hgap="20.0" vgap="10.0" />
+                                 </children>
+                              </VBox>
+                              
+                              <!-- Top fournisseurs -->
+                              <VBox spacing="10.0" style="-fx-background-color: white; -fx-padding: 15; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
+                                 <children>
+                                    <Label text="Top Fournisseurs">
+                                       <font>
+                                          <Font name="System Bold" size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <TableView fx:id="tableFournisseurs" prefHeight="200.0">
+                                       <columns>
+                                          <TableColumn fx:id="colFournisseurNom" prefWidth="200.0" text="Fournisseur" />
+                                          <TableColumn fx:id="colFournisseurNbCommandes" prefWidth="120.0" text="Nb Commandes" />
+                                          <TableColumn fx:id="colFournisseurMontant" prefWidth="120.0" text="Montant Total" />
+                                       </columns>
+                                    </TableView>
+                                 </children>
+                              </VBox>
+                           </children>
+                           <padding>
+                              <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                           </padding>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+               </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </center>
+   
+   <bottom>
+      <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-width: 1 0 0 0;">
+         <children>
+            <Label fx:id="lblStatus" text="Prêt" textFill="#6c757d" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="lblNombreCommandes" text="0 commande(s)" textFill="#6c757d" />
+         </children>
+         <padding>
+            <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+         </padding>
+      </HBox>
+   </bottom>
+</BorderPane>

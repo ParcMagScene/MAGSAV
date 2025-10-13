@@ -13,7 +13,7 @@
   </top>
   
   <center>
-    <TabPane fx:id="productsTabPane" tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 10;">
+    <TabPane fx:id="productsTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane" style="-fx-padding: 10;">
       
       <!-- Onglet Vue d'ensemble -->
       <Tab text="📊 Vue d'ensemble" closable="false">

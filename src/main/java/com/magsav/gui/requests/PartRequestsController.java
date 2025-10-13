@@ -132,12 +132,14 @@ public class PartRequestsController {
       Optional<ButtonType> res = d.showAndWait();
       if (res.isPresent() && res.get().getButtonData().isDefaultButton()) {
         if (current == null) {
-          long id = repo.create(TYPE, ctl.commentaire(), ctl.fournisseurId());
+          String title = "Demande de pièces #" + System.currentTimeMillis();
+          long id = repo.create(TYPE, title, ctl.commentaire(), ctl.fournisseurId());
           onRefresh();
           // sélectionner la nouvelle demande
           table.getItems().stream().filter(r -> r.id() == id).findFirst().ifPresent(r -> table.getSelectionModel().select(r));
         } else {
-          repo.update(current.id(), ctl.commentaire(), ctl.fournisseurId());
+          String title = "Demande de pièces #" + current.id();
+          repo.update(current.id(), title, ctl.commentaire(), ctl.fournisseurId());
           onRefresh();
         }
       }

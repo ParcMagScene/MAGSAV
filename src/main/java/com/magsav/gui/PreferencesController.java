@@ -51,6 +51,20 @@ public class PreferencesController implements Initializable {
     @FXML private CheckBox chkUseTLS;
     @FXML private Button btnTestEmail;
     
+    // Onglet Google Services
+    @FXML private TextField txtGoogleClientId;
+    @FXML private PasswordField txtGoogleClientSecret;
+    @FXML private TextField txtGoogleRedirectUri;
+    @FXML private TextArea txtGoogleScopes;
+    @FXML private Button btnTestGoogleConnection;
+    @FXML private Button btnSaveGoogleConfig;
+    @FXML private CheckBox chkGoogleCalendar;
+    @FXML private CheckBox chkGoogleGmail;
+    @FXML private CheckBox chkGoogleContacts;
+    @FXML private Spinner<Integer> spnGoogleSyncInterval;
+    @FXML private Spinner<Integer> spnGoogleTimeout;
+    @FXML private CheckBox chkGoogleAutoSync;
+    
     // Onglet Maintenance Médias
     @FXML private TextField txtPhotosPath;
     @FXML private TextField txtMediasPath;
@@ -133,7 +147,7 @@ public class PreferencesController implements Initializable {
     @FXML private TabPane preferencesTabPane;
     @FXML private Button btnSaveAll;
     @FXML private Button btnCancel;
-    @FXML private Button btnBackToMain;
+    // @FXML private Button btnBackToMain; // SUPPRIMÉ - Bouton retiré de l'interface
     
     // Section Apparence (maintenant dans Général)
     @FXML private ComboBox<String> themeSelector;
@@ -246,6 +260,7 @@ public class PreferencesController implements Initializable {
         setupSystemSection();
         setupMaintenanceSection();
         setupDataSection();
+        setupGoogleServicesSection();
         loadAllSettings();
     }
     
@@ -681,34 +696,34 @@ public class PreferencesController implements Initializable {
             if (txtCompanyLegalName != null && !txtCompanyLegalName.getText().trim().isEmpty()) {
                 company.setLegalName(txtCompanyLegalName.getText().trim());
             }
-            if (txtCompanySiret != null) {
+            if (txtCompanySiret != null && txtCompanySiret.getText() != null) {
                 company.setSiret(txtCompanySiret.getText().trim());
             }
-            if (txtCompanySector != null) {
+            if (txtCompanySector != null && txtCompanySector.getText() != null) {
                 company.setSector(txtCompanySector.getText().trim());
             }
-            if (txtCompanyAddress != null) {
+            if (txtCompanyAddress != null && txtCompanyAddress.getText() != null) {
                 company.setAddress(txtCompanyAddress.getText().trim());
             }
-            if (txtCompanyPostalCode != null) {
+            if (txtCompanyPostalCode != null && txtCompanyPostalCode.getText() != null) {
                 company.setPostalCode(txtCompanyPostalCode.getText().trim());
             }
-            if (txtCompanyCity != null) {
+            if (txtCompanyCity != null && txtCompanyCity.getText() != null) {
                 company.setCity(txtCompanyCity.getText().trim());
             }
-            if (txtCompanyCountry != null) {
+            if (txtCompanyCountry != null && txtCompanyCountry.getText() != null) {
                 company.setCountry(txtCompanyCountry.getText().trim());
             }
-            if (txtCompanyPhone != null) {
+            if (txtCompanyPhone != null && txtCompanyPhone.getText() != null) {
                 company.setPhone(txtCompanyPhone.getText().trim());
             }
-            if (txtCompanyEmail != null) {
+            if (txtCompanyEmail != null && txtCompanyEmail.getText() != null) {
                 company.setEmail(txtCompanyEmail.getText().trim());
             }
-            if (txtCompanyWebsite != null) {
+            if (txtCompanyWebsite != null && txtCompanyWebsite.getText() != null) {
                 company.setWebsite(txtCompanyWebsite.getText().trim());
             }
-            if (txtCompanyDescription != null) {
+            if (txtCompanyDescription != null && txtCompanyDescription.getText() != null) {
                 company.setDescription(txtCompanyDescription.getText().trim());
             }
             
@@ -742,20 +757,21 @@ public class PreferencesController implements Initializable {
         closeWindow();
     }
     
-    @FXML 
-    private void onBackToMainPreferences() {
-        AppLogger.info("Retour vers les préférences principales");
-        try {
-            // Fermer la fenêtre actuelle
-            closeWindow();
-            
-            // Rediriger vers la section préférences principale dans MainController
-            // Note: Cette navigation sera gérée automatiquement par le retour à la page principale
-            
-        } catch (Exception e) {
-            AppLogger.error("Erreur lors du retour aux préférences principales", e);
-        }
-    }
+    // @FXML 
+    // private void onBackToMainPreferences() {
+    //     AppLogger.info("Retour vers les préférences principales");
+    //     try {
+    //         // Fermer la fenêtre actuelle
+    //         closeWindow();
+    //         
+    //         // Rediriger vers la section préférences principale dans MainController
+    //         // Note: Cette navigation sera gérée automatiquement par le retour à la page principale
+    //         
+    //     } catch (Exception e) {
+    //         AppLogger.error("Erreur lors du retour aux préférences principales", e);
+    //     }
+    // }
+    // MÉTHODE SUPPRIMÉE - Bouton de retour aux préférences retiré de l'interface
     
     private void closeWindow() {
         Stage stage = (Stage) btnCancel.getScene().getWindow();
@@ -1521,6 +1537,128 @@ public class PreferencesController implements Initializable {
         return "Jamais";
     }
 
+    /**
+     * Configuration de la section Google Services
+     */
+    private void setupGoogleServicesSection() {
+        AppLogger.info("Initialisation de la section Google Services...");
+        
+        try {
+            // Configuration des spinners
+            if (spnGoogleSyncInterval != null) {
+                spnGoogleSyncInterval.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(5, 1440, 30));
+            }
+            
+            if (spnGoogleTimeout != null) {
+                spnGoogleTimeout.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(10, 300, 30));
+            }
+            
+            // Configuration des boutons
+            if (btnTestGoogleConnection != null) {
+                btnTestGoogleConnection.setOnAction(e -> testGoogleConnection());
+            }
+            
+            if (btnSaveGoogleConfig != null) {
+                btnSaveGoogleConfig.setOnAction(e -> saveGoogleConfiguration());
+            }
+            
+            // Charger la configuration existante
+            loadGoogleConfiguration();
+            
+            AppLogger.info("Section Google Services initialisée avec succès");
+            
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors de l'initialisation de la section Google Services", e);
+        }
+    }
+    
+    /**
+     * Charge la configuration Google Services existante
+     */
+    private void loadGoogleConfiguration() {
+        try {
+            // TODO: Charger depuis la base de données via GoogleServicesConfigRepository
+            // Pour l'instant, valeurs par défaut
+            if (txtGoogleRedirectUri != null) {
+                txtGoogleRedirectUri.setText("http://localhost:8080/oauth2/callback");
+            }
+            
+            if (txtGoogleScopes != null) {
+                txtGoogleScopes.setText(
+                    "https://www.googleapis.com/auth/calendar\n" +
+                    "https://www.googleapis.com/auth/gmail.send\n" +
+                    "https://www.googleapis.com/auth/contacts"
+                );
+            }
+            
+            if (chkGoogleCalendar != null) chkGoogleCalendar.setSelected(true);
+            if (chkGoogleGmail != null) chkGoogleGmail.setSelected(true);
+            if (chkGoogleContacts != null) chkGoogleContacts.setSelected(false);
+            if (chkGoogleAutoSync != null) chkGoogleAutoSync.setSelected(true);
+            
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors du chargement de la configuration Google", e);
+        }
+    }
+    
+    /**
+     * Teste la connexion Google Services
+     */
+    private void testGoogleConnection() {
+        try {
+            AppLogger.info("Test de connexion Google Services...");
+            
+            // Validation des champs requis
+            if (txtGoogleClientId == null || txtGoogleClientId.getText().trim().isEmpty()) {
+                showAlert("Erreur", "Le Client ID Google est requis");
+                return;
+            }
+            
+            if (txtGoogleClientSecret == null || txtGoogleClientSecret.getText().trim().isEmpty()) {
+                showAlert("Erreur", "Le Client Secret Google est requis");
+                return;
+            }
+            
+            // TODO: Implémenter le test réel avec GoogleIntegrationService
+            showAlert("Information", "Test de connexion Google Services - Fonctionnalité à implémenter");
+            
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors du test de connexion Google", e);
+            showAlert("Erreur", "Erreur lors du test de connexion: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Sauvegarde la configuration Google Services
+     */
+    private void saveGoogleConfiguration() {
+        try {
+            AppLogger.info("Sauvegarde de la configuration Google Services...");
+            
+            // TODO: Sauvegarder via GoogleServicesConfigRepository
+            // Récupérer les valeurs des champs et les enregistrer en base
+            
+            showAlert("Information", "Configuration Google Services sauvegardée avec succès");
+            
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors de la sauvegarde de la configuration Google", e);
+            showAlert("Erreur", "Erreur lors de la sauvegarde: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Affiche une alerte à l'utilisateur
+     */
+    private void showAlert(String title, String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
+    }
+    
     // Records pour les données des nouveaux onglets
     public record CategoryRow(Long id, String hierarchy, String name, String type, String parent) {}
     

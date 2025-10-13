@@ -34,7 +34,7 @@
   
   <!-- Contenu principal avec onglets -->
   <center>
-    <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 8;">
+    <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane" style="-fx-padding: 8;">
       
       <!-- Onglet Utilisateurs -->
       <Tab text="Utilisateurs Standard">

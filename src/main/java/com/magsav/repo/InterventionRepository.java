@@ -36,7 +36,7 @@ public class InterventionRepository {
 
   public long insert(long productId, String serialNumber, String clientNote, String defectDescription) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "INSERT INTO interventions (produit_id, numero_serie, note_client, description_panne, date_entree) VALUES (?, ?, ?, ?, datetime('now'))";
+      String sql = "INSERT INTO interventions (produit_id, numero_serie_intervention, note_client, description_panne, date_entree) VALUES (?, ?, ?, ?, datetime('now'))";
       PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       stmt.setLong(1, productId);
       stmt.setString(2, serialNumber);

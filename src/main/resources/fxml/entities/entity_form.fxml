@@ -6,7 +6,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.entities.EntityFormController" prefHeight="600.0" prefWidth="800.0">
    <center>
-      <TabPane tabClosingPolicy="UNAVAILABLE">
+      <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane">
          <!-- Onglet Informations générales -->
          <Tab text="Informations générales">
             <ScrollPane fitToWidth="true">

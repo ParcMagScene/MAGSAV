@@ -23,7 +23,7 @@
     <Separator/>
     
     <!-- Conteneur principal avec onglets -->
-    <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+    <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane" VBox.vgrow="ALWAYS">
         
         <!-- Onglet 1: Demandes de Matériel -->
         <Tab text="📦 Demandes de Matériel">

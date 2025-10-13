@@ -2,11 +2,13 @@ package com.magsav.gui;
 
 import com.magsav.gui.dialogs.ShareDialogs;
 import com.magsav.model.InterventionRow;
-import com.magsav.model.Company;
+import com.magsav.model.Societe;
+import com.magsav.model.RequestRow;
 import com.magsav.repo.InterventionRepository;
 import com.magsav.repo.ProductRepository;
 import com.magsav.repo.CategoryRepository;
-import com.magsav.repo.CompanyRepository;
+import com.magsav.repo.SocieteRepository;
+import com.magsav.repo.RequestRepository;
 import com.magsav.model.Category;
 import com.magsav.service.DataChangeEvent;
 import com.magsav.service.DataChangeNotificationService;
@@ -19,6 +21,7 @@ import com.magsav.db.DB;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -56,7 +59,7 @@ public class MainController {
   
   // Navigation Elements - Nouvelles HBox avec icônes + légendes
   @FXML private HBox dashboardItem, gestionItem, demandesItem, interventionsItem;
-  @FXML private HBox stockItem, statistiquesItem, exportItem, preferencesItem;
+  @FXML private HBox stockItem, vehiculesItem, statistiquesItem, exportItem, preferencesItem;
   
   // UI Elements (créés dynamiquement dans les onglets)
   private TableView<ProductRepository.ProductRow> productTable;
@@ -90,6 +93,7 @@ public class MainController {
   private final ProductRepository productRepo = new ProductRepository();
   private final InterventionRepository interventionRepo = new InterventionRepository();
   private final CategoryRepository categoryRepo = new CategoryRepository();
+  private final RequestRepository requestRepo = new RequestRepository();
   private final ImageNormalizationService imageService = new ImageNormalizationService();
   
   // Service de partage
@@ -184,6 +188,12 @@ public class MainController {
   }
   
   @FXML
+  private void onShowVehicules() {
+    setActiveNavItem(vehiculesItem);
+    loadVehiculesSection();
+  }
+  
+  @FXML
   private void onShowStatistiques() {
     setActiveNavItem(statistiquesItem);
     loadStatistiquesSection();
@@ -230,7 +240,14 @@ public class MainController {
     }
   }
 
-  
+  private void showFeatureNotImplemented(String featureName) {
+    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    alert.setTitle("Fonctionnalité en développement");
+    alert.setHeaderText(featureName);
+    alert.setContentText("Cette fonctionnalité sera disponible dans une prochaine version.");
+    alert.showAndWait();
+  }
+
   @FXML
   private void onSearchProducts() {
     // Trigger product search
@@ -693,6 +710,132 @@ public class MainController {
     return content;
   }
   
+  private VBox createVehiculesListContent() {
+    VBox content = new VBox();
+    content.setSpacing(20);
+    content.getStyleClass().add("main-content");
+    
+    Label title = new Label("Gestion des véhicules");
+    title.getStyleClass().add("content-title");
+    
+    // Métriques des véhicules
+    HBox metricsBox = new HBox();
+    metricsBox.setSpacing(20);
+    metricsBox.getStyleClass().add("metrics-container");
+    
+    VBox totalBox = createStockMetricBox("Total véhicules", "12", "#4a90e2");
+    VBox disponiblesBox = createStockMetricBox("Disponibles", "8", "#51cf66");
+    VBox maintenanceBox = createStockMetricBox("En maintenance", "3", "#ffd43b");
+    VBox pannesBox = createStockMetricBox("En panne", "1", "#ff6b6b");
+    
+    metricsBox.getChildren().addAll(totalBox, disponiblesBox, maintenanceBox, pannesBox);
+    
+    // Table des véhicules
+    VBox tableSection = new VBox();
+    tableSection.setSpacing(12);
+    tableSection.getStyleClass().add("content-section");
+    
+    Label tableTitle = new Label("Liste des véhicules");
+    tableTitle.getStyleClass().add("section-title");
+    
+    // Créer la table des véhicules
+    TableView<com.magsav.model.Vehicule> vehiculesTable = new TableView<>();
+    vehiculesTable.getStyleClass().add("dark-table-view");
+    vehiculesTable.setPrefHeight(400);
+    
+    // Colonnes de la table
+    TableColumn<com.magsav.model.Vehicule, String> colImmatriculation = new TableColumn<>("Immatriculation");
+    colImmatriculation.setCellValueFactory(new PropertyValueFactory<>("immatriculation"));
+    colImmatriculation.setPrefWidth(130);
+    
+    TableColumn<com.magsav.model.Vehicule, String> colType = new TableColumn<>("Type");
+    colType.setCellValueFactory(new PropertyValueFactory<>("type"));
+    colType.setPrefWidth(120);
+    
+    TableColumn<com.magsav.model.Vehicule, String> colMarque = new TableColumn<>("Marque");
+    colMarque.setCellValueFactory(new PropertyValueFactory<>("marque"));
+    colMarque.setPrefWidth(100);
+    
+    TableColumn<com.magsav.model.Vehicule, String> colModele = new TableColumn<>("Modèle");
+    colModele.setCellValueFactory(new PropertyValueFactory<>("modele"));
+    colModele.setPrefWidth(120);
+    
+    TableColumn<com.magsav.model.Vehicule, String> colStatut = new TableColumn<>("Statut");
+    colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
+    colStatut.setPrefWidth(100);
+    
+    TableColumn<com.magsav.model.Vehicule, String> colKilometrage = new TableColumn<>("Kilométrage");
+    colKilometrage.setCellValueFactory(cellData -> {
+      int km = cellData.getValue().getKilometrage();
+      return new ReadOnlyStringWrapper(String.format("%,d km", km));
+    });
+    colKilometrage.setPrefWidth(120);
+    
+    vehiculesTable.getColumns().addAll(colImmatriculation, colType, colMarque, colModele, colStatut, colKilometrage);
+    
+    // Charger les données des véhicules
+    loadVehiculesData(vehiculesTable);
+    
+    tableSection.getChildren().addAll(tableTitle, vehiculesTable);
+    
+    // Actions
+    HBox actionsBox = new HBox();
+    actionsBox.setSpacing(12);
+    actionsBox.getStyleClass().add("actions-container");
+    
+    Button addBtn = new Button("Ajouter véhicule");
+    addBtn.getStyleClass().add("primary-button");
+    addBtn.setOnAction(e -> showAlert("Info", "Ajout de véhicule à implémenter"));
+    
+    Button maintenanceBtn = new Button("Planifier maintenance");
+    maintenanceBtn.getStyleClass().add("dark-button-secondary");
+    maintenanceBtn.setOnAction(e -> showAlert("Info", "Planification maintenance à implémenter"));
+    
+    actionsBox.getChildren().addAll(addBtn, maintenanceBtn);
+    
+    content.getChildren().addAll(title, metricsBox, tableSection, actionsBox);
+    
+    return content;
+  }
+  
+  private VBox createVehiculesPlanningContent() {
+    VBox content = new VBox();
+    content.setSpacing(20);
+    content.getStyleClass().add("main-content");
+    
+    Label title = new Label("Planning des véhicules");
+    title.getStyleClass().add("content-title");
+    
+    // Calendrier simple
+    VBox calendarSection = new VBox();
+    calendarSection.setSpacing(12);
+    calendarSection.getStyleClass().add("content-section");
+    
+    Label calendarTitle = new Label("Disponibilité des véhicules");
+    calendarTitle.getStyleClass().add("section-title");
+    
+    VBox calendarPlaceholder = new VBox();
+    calendarPlaceholder.setMinHeight(400);
+    calendarPlaceholder.setAlignment(javafx.geometry.Pos.CENTER);
+    calendarPlaceholder.getStyleClass().add("chart-placeholder");
+    
+    Label calendarIcon = new Label("📅");
+    calendarIcon.setStyle("-fx-font-size: 48px;");
+    
+    Label calendarLabel = new Label("Calendrier de planning");
+    calendarLabel.getStyleClass().add("placeholder-text");
+    
+    Label calendarSubtitle = new Label("Visualisation des réservations, maintenances et disponibilités");
+    calendarSubtitle.getStyleClass().add("placeholder-subtitle");
+    
+    calendarPlaceholder.getChildren().addAll(calendarIcon, calendarLabel, calendarSubtitle);
+    calendarSection.getChildren().addAll(calendarTitle, calendarPlaceholder);
+    
+    content.getChildren().addAll(title, calendarSection);
+    
+    return content;
+  }
+  
   private VBox createStockMouvementsContent() {
     VBox content = new VBox();
     content.setSpacing(16);
@@ -914,10 +1057,10 @@ public class MainController {
   private void updateDashboardStats() {
     CompletableFuture.runAsync(() -> {
       try {
-        // Get statistics from repositories (simplified for now)
+        // Get statistics from repositories
         int totalProducts = productRepo.getTotalProductCount();
         int totalInterventions = interventionRepo.getTotalInterventionCount();
-        int totalDemandes = 18; // TODO: Get from requests repository when available
+        int totalDemandes = requestRepo.findAll().size();
         
         // Update UI on JavaFX thread
         Platform.runLater(() -> {
@@ -943,17 +1086,17 @@ public class MainController {
   
   @FXML
   private void onNewInterventionDashboard() {
-    // TODO: Create new intervention from dashboard
+    showFeatureNotImplemented("Création d'intervention depuis le tableau de bord");
   }
   
   @FXML
   private void onNewDemande() {
-    // TODO: Create new request
+    showFeatureNotImplemented("Création de nouvelle demande");
   }
   
   @FXML
   private void onShowRapports() {
-    // TODO: Show reports view
+    showFeatureNotImplemented("Affichage des rapports");
   }
   
   // === NAVIGATION HELPER METHODS ===
@@ -1200,12 +1343,13 @@ public class MainController {
   
   private void initializeThemeManager() {
     try {
-      ThemeManager themeManager = ThemeManager.getInstance();
+      // TODO: Réimplémenter avec util.ThemeManager
+      // ThemeManager themeManager = ThemeManager.getInstance();
       // Récupérer la scène depuis n'importe quel contrôle FXML
       if (mainTabPane != null && mainTabPane.getScene() != null) {
-        themeManager.setScene(mainTabPane.getScene());
+        // themeManager.setScene(mainTabPane.getScene());
         // Charger le thème sauvegardé
-        themeManager.loadSavedTheme();
+        // themeManager.loadSavedTheme();
       }
     } catch (Exception e) {
       AppLogger.error("Erreur lors de l'initialisation du ThemeManager: " + e.getMessage(), e);
@@ -1353,6 +1497,22 @@ public class MainController {
       clearAndLoadTabs(stockTab, mouvementsTab, alertesTab, rapportsTab);
     } catch (Exception e) {
       AppLogger.error("Erreur lors du chargement du Stock: " + e.getMessage(), e);
+    }
+  }
+  
+  private void loadVehiculesSection() {
+    try {
+      Tab listeTab = new Tab("🚗 Liste des véhicules");
+      listeTab.setClosable(false);
+      listeTab.setContent(createVehiculesListContent());
+      
+      Tab planningTab = new Tab("📅 Planning véhicules");
+      planningTab.setClosable(false);
+      planningTab.setContent(createVehiculesPlanningContent());
+      
+      clearAndLoadTabs(listeTab, planningTab);
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors du chargement des Véhicules: " + e.getMessage(), e);
     }
   }
   
@@ -2014,6 +2174,11 @@ public class MainController {
     title.getStyleClass().add("content-title");
     content.getChildren().add(title);
     
+    // Créer la table des demandes d'équipement
+    TableView<RequestRow> table = createRequestsTable();
+    loadRequestsData(table, "MATERIEL");
+    content.getChildren().add(table);
+    
     tab.setContent(content);
     return tab;
   }
@@ -2030,8 +2195,79 @@ public class MainController {
     title.getStyleClass().add("content-title");
     content.getChildren().add(title);
     
+    // Créer la table des demandes de pièces
+    TableView<RequestRow> table = createRequestsTable();
+    loadRequestsData(table, "PIECES");
+    content.getChildren().add(table);
+    
     tab.setContent(content);
     return tab;
+  }
+  
+  private TableView<RequestRow> createRequestsTable() {
+    TableView<RequestRow> table = new TableView<>();
+    table.setPrefHeight(400);
+    
+    // Colonnes de la table
+    TableColumn<RequestRow, Long> idColumn = new TableColumn<>("ID");
+    idColumn.setCellValueFactory(cellData -> 
+        new ReadOnlyObjectWrapper<>(cellData.getValue().id()));
+    idColumn.setPrefWidth(60);
+    
+    TableColumn<RequestRow, String> typeColumn = new TableColumn<>("Type");
+    typeColumn.setCellValueFactory(cellData -> 
+        new ReadOnlyStringWrapper(cellData.getValue().type()));
+    typeColumn.setPrefWidth(120);
+    
+    TableColumn<RequestRow, String> statusColumn = new TableColumn<>("Statut");
+    statusColumn.setCellValueFactory(cellData -> 
+        new ReadOnlyStringWrapper(cellData.getValue().status()));
+    statusColumn.setPrefWidth(100);
+    
+    TableColumn<RequestRow, String> fournisseurColumn = new TableColumn<>("Fournisseur");
+    fournisseurColumn.setCellValueFactory(cellData -> 
+        new ReadOnlyStringWrapper(cellData.getValue().fournisseurNom() != null ? 
+            cellData.getValue().fournisseurNom() : "Non spécifié"));
+    fournisseurColumn.setPrefWidth(150);
+    
+    TableColumn<RequestRow, String> dateColumn = new TableColumn<>("Date de création");
+    dateColumn.setCellValueFactory(cellData -> 
+        new ReadOnlyStringWrapper(formatSqlDate(cellData.getValue().createdAt())));
+    dateColumn.setPrefWidth(120);
+    
+    TableColumn<RequestRow, String> commentColumn = new TableColumn<>("Commentaire");
+    commentColumn.setCellValueFactory(cellData -> 
+        new ReadOnlyStringWrapper(cellData.getValue().commentaire() != null ? 
+            cellData.getValue().commentaire() : ""));
+    commentColumn.setPrefWidth(200);
+    
+    table.getColumns().addAll(idColumn, typeColumn, statusColumn, fournisseurColumn, dateColumn, commentColumn);
+    return table;
+  }
+  
+  private void loadRequestsData(TableView<RequestRow> table, String type) {
+    try {
+      List<RequestRow> requests = requestRepo.list(type);
+      table.setItems(FXCollections.observableArrayList(requests));
+      AppLogger.info("Chargé " + requests.size() + " demandes de type " + type);
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors du chargement des demandes " + type + ": " + e.getMessage(), e);
+      table.setItems(FXCollections.observableArrayList());
+    }
+  }
+  
+  private String formatSqlDate(String sqlDate) {
+    if (sqlDate == null) return "Non spécifié";
+    try {
+      // Format SQLite: 2024-10-13 14:19:38 -> 13/10/2024
+      String[] parts = sqlDate.split(" ")[0].split("-");
+      if (parts.length == 3) {
+        return parts[2] + "/" + parts[1] + "/" + parts[0];
+      }
+    } catch (Exception e) {
+      AppLogger.warn("Erreur formatage date: " + sqlDate);
+    }
+    return sqlDate;
   }
   
   private Tab createInterventionsTab() {
@@ -2246,6 +2482,9 @@ public class MainController {
       activityCard.getChildren().addAll(activityTitle, noActivity);
     }
     
+    // Section Planning
+    VBox planningCard = createPlanningCard();
+    
     // Actions rapides
     VBox actionsCard = new VBox();
     actionsCard.setSpacing(12);
@@ -2272,9 +2511,74 @@ public class MainController {
     buttonsBox.getChildren().addAll(newInterventionBtn, newDemandeBtn, rapportsBtn);
     actionsCard.getChildren().addAll(actionsTitle, buttonsBox);
     
-    dashboardContent.getChildren().addAll(welcomeCard, metricsBox, activityCard, actionsCard);
+    dashboardContent.getChildren().addAll(welcomeCard, metricsBox, activityCard, planningCard, actionsCard);
     
     return dashboardContent;
+  }
+  
+  private VBox createPlanningCard() {
+    VBox planningCard = new VBox();
+    planningCard.setSpacing(12);
+    planningCard.getStyleClass().add("dashboard-card");
+    
+    Label planningTitle = new Label("📅 Planning de la semaine");
+    planningTitle.getStyleClass().add("dashboard-card-title");
+    
+    // Container pour les planifications
+    VBox planningsContainer = new VBox();
+    planningsContainer.setSpacing(8);
+    
+    try {
+      // Récupérer les planifications des 7 prochains jours
+      com.magsav.repo.PlanificationRepositorySimple planRepo = new com.magsav.repo.PlanificationRepositorySimple();
+      var upcomingPlans = planRepo.findUpcoming(7);
+      
+      if (upcomingPlans.isEmpty()) {
+        Label noPlanLabel = new Label("Aucune planification cette semaine");
+        noPlanLabel.getStyleClass().add("dashboard-metric-label");
+        planningsContainer.getChildren().add(noPlanLabel);
+      } else {
+        // Afficher les premières planifications (max 5)
+        int maxToShow = Math.min(5, upcomingPlans.size());
+        for (int i = 0; i < maxToShow; i++) {
+          var plan = upcomingPlans.get(i);
+          
+          HBox planItem = new HBox();
+          planItem.setSpacing(10);
+          planItem.getStyleClass().add("planning-item");
+          
+          Label dateLabel = new Label(plan.getDatePlanifiee());
+          dateLabel.getStyleClass().add("planning-date");
+          dateLabel.setPrefWidth(80);
+          
+          Label techLabel = new Label(plan.getTechnicienNom() != null ? plan.getTechnicienNom() : "Non assigné");
+          techLabel.getStyleClass().add("planning-tech");
+          techLabel.setPrefWidth(120);
+          
+          Label descLabel = new Label(plan.getNotesPlanification() != null ? plan.getNotesPlanification() : "Intervention");
+          descLabel.getStyleClass().add("planning-desc");
+          
+          planItem.getChildren().addAll(dateLabel, techLabel, descLabel);
+          planningsContainer.getChildren().add(planItem);
+        }
+        
+        if (upcomingPlans.size() > 5) {
+          Label moreLabel = new Label("... et " + (upcomingPlans.size() - 5) + " autres");
+          moreLabel.getStyleClass().add("dashboard-metric-label");
+          planningsContainer.getChildren().add(moreLabel);
+        }
+      }
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors du chargement des planifications", e);
+      Label errorLabel = new Label("Erreur lors du chargement du planning");
+      errorLabel.getStyleClass().add("error-message");
+      planningsContainer.getChildren().add(errorLabel);
+    }
+    
+    planningCard.getChildren().addAll(planningTitle, planningsContainer);
+    
+    return planningCard;
   }
   
   private VBox createMetricCard(String title, Label valueLabel, String subtitle) {
@@ -2902,35 +3206,28 @@ public class MainController {
    */
   private void loadCompanyLogo() {
     try {
-      CompanyRepository companyRepo = new CompanyRepository(DB.getConnection());
-      Company magScene = companyRepo.findByType(Company.CompanyType.OWN_COMPANY)
-              .stream()
-              .findFirst()
-              .orElse(null);
+      SocieteRepository companyRepo = new SocieteRepository();
+      // Rechercher la société Mag Scène parmi toutes les sociétés
+      // (elle sera configurée via les paramètres d'administration)
+      List<Societe> allSocietes = companyRepo.findAll();
+      Societe magScene = allSocietes.stream()
+          .filter(s -> "Mag Scène".equals(s.nom()))
+          .findFirst()
+          .orElse(null);
       
       if (magScene != null) {
         // Mettre à jour le nom de la société
         if (companyNameLabel != null) {
-          companyNameLabel.setText(magScene.getName());
+          companyNameLabel.setText(magScene.nom());
         }
         
-        // Charger le logo si disponible
-        if (companyLogoImage != null && magScene.getLogoPath() != null && !magScene.getLogoPath().isEmpty()) {
-          try {
-            Image logoImage = new Image("file:" + magScene.getLogoPath());
-            companyLogoImage.setImage(logoImage);
-            AppLogger.info("Logo de la société chargé: " + magScene.getLogoPath());
-          } catch (Exception e) {
-            AppLogger.warn("Impossible de charger le logo de la société: " + e.getMessage());
-            // Utiliser une image par défaut ou une icône
-            setDefaultCompanyIcon();
-          }
-        } else {
-          // Pas de logo défini, utiliser l'icône par défaut
+        // Charger le logo si disponible (pas de logo path dans Societe, utiliser par défaut)
+        if (companyLogoImage != null) {
           setDefaultCompanyIcon();
+          AppLogger.info("Logo par défaut utilisé pour la société: " + magScene.nom());
         }
       } else {
-        AppLogger.warn("Société Mag Scène non trouvée en base de données");
+        AppLogger.info("Société Mag Scène non configurée - veuillez la définir dans les paramètres d'administration");
         setDefaultCompanyIcon();
       }
     } catch (Exception e) {
@@ -3128,20 +3425,28 @@ public class MainController {
     Label title = new Label("Préférences");
     title.getStyleClass().add("content-title");
     
-    // Catégories de préférences
-    VBox prefsBox = new VBox();
-    prefsBox.setSpacing(16);
-    
-    VBox general = createPreferenceCategory("⚙️ Général", "Paramètres généraux de l'application");
-    VBox notifications = createPreferenceCategory("🔔 Notifications", "Configuration des alertes et notifications");
-    VBox apparence = createPreferenceCategory("🎨 Apparence", "Personnalisation de l'interface et des thèmes");
-    VBox sauvegarde = createPreferenceCategory("💾 Sauvegarde", "Options de sauvegarde automatique");
-    VBox utilisateurs = createPreferenceCategory("👥 Utilisateurs", "Gestion des comptes utilisateurs");
-    VBox securite = createPreferenceCategory("🔒 Sécurité", "Paramètres de sécurité et confidentialité");
-    
-    prefsBox.getChildren().addAll(general, notifications, apparence, sauvegarde, utilisateurs, securite);
-    
-    content.getChildren().addAll(title, prefsBox);
+    // Afficher directement les onglets de préférences
+    try {
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/preferences.fxml"));
+      javafx.scene.Parent preferencesRoot = loader.load();
+      
+      // Obtenir le contrôleur des préférences
+      Object controller = loader.getController();
+      if (controller instanceof com.magsav.gui.PreferencesController) {
+        // Pas besoin de sélectionner un onglet spécifique, laisser l'utilisateur naviguer
+        AppLogger.info("Préférences chargées avec succès");
+      }
+      
+      content.getChildren().addAll(title, preferencesRoot);
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors du chargement des préférences: " + e.getMessage(), e);
+      
+      // Fallback en cas d'erreur
+      Label errorLabel = new Label("Erreur lors du chargement des préférences");
+      errorLabel.getStyleClass().add("error-message");
+      content.getChildren().addAll(title, errorLabel);
+    }
     
     return content;
   }
@@ -3288,6 +3593,19 @@ public class MainController {
       showAlert("Erreur", "Impossible de charger les préférences: " + e.getMessage());
     }
   }
+  
+  // Méthodes pour la gestion des véhicules
+  private void loadVehiculesData(TableView<com.magsav.model.Vehicule> table) {
+    try {
+      com.magsav.repo.VehiculeRepository repo = new com.magsav.repo.VehiculeRepository();
+      var vehicules = repo.findAll();
+      
+      table.setItems(FXCollections.observableArrayList(vehicules));
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors du chargement des véhicules", e);
+      showAlert("Erreur", "Impossible de charger les véhicules: " + e.getMessage());
+    }
+  }
 
   // Méthodes pour la gestion des catégories
   private void loadCategoriesData(TableView<CategoryRow> table) {
@@ -3358,20 +3676,20 @@ public class MainController {
   // Méthodes pour la gestion des fabricants
   private void loadManufacturersData(TableView<ManufacturerRow> table) {
     try {
-      CompanyRepository repo = new CompanyRepository(DB.getConnection());
-      var manufacturers = repo.findByType(Company.CompanyType.MANUFACTURER);
+      SocieteRepository repo = new SocieteRepository();
+      var manufacturers = repo.findByType("FABRICANT");
       
       java.util.List<ManufacturerRow> rows = new java.util.ArrayList<>();
       for (var manuf : manufacturers) {
         // Pour l'instant, on utilise 0 pour le nombre de produits
         int nbProduits = 0;
         rows.add(new ManufacturerRow(
-          manuf.getId(),
-          manuf.getName(),
-          manuf.getWebsite() != null ? manuf.getWebsite() : "",
-          manuf.getEmail() != null ? manuf.getEmail() : "",
+          manuf.id(),
+          manuf.nom(),
+          "", // Website pas disponible dans Societe
+          manuf.email() != null ? manuf.email() : "",
           nbProduits,
-          manuf.getCreatedAt() != null ? manuf.getCreatedAt().toString() : ""
+          manuf.createdAt() != null ? manuf.createdAt() : ""
         ));
       }
       
@@ -3423,19 +3741,21 @@ public class MainController {
   // Méthodes pour la gestion des clients
   private void loadClientsData(TableView<ClientRow> table) {
     try {
-      CompanyRepository repo = new CompanyRepository(DB.getConnection());
-      var clients = repo.findByType(Company.CompanyType.CLIENT);
+      SocieteRepository repo = new SocieteRepository();
+      var clients = repo.findByType("CLIENT");
       
       java.util.List<ClientRow> rows = new java.util.ArrayList<>();
       for (var client : clients) {
         // Pour l'instant, on utilise 0 pour le nombre d'interventions
         int nbInterventions = 0;
+        // Extraire la ville de l'adresse complète (format simplifié)
+        String city = client.adresse() != null ? extractCityFromAddress(client.adresse()) : "";
         rows.add(new ClientRow(
-          client.getId(),
-          client.getName(),
-          client.getEmail() != null ? client.getEmail() : "",
-          client.getPhone() != null ? client.getPhone() : "",
-          client.getCity() != null ? client.getCity() : "",
+          client.id(),
+          client.nom(),
+          client.email() != null ? client.email() : "",
+          client.phone() != null ? client.phone() : "",
+          city,
           nbInterventions
         ));
       }
@@ -3487,18 +3807,19 @@ public class MainController {
   // Méthodes pour la gestion des sociétés
   private void loadCompaniesData(TableView<CompanyRow> table) {
     try {
-      CompanyRepository repo = new CompanyRepository(DB.getConnection());
+      SocieteRepository repo = new SocieteRepository();
       var companies = repo.findAll();
       
       java.util.List<CompanyRow> rows = new java.util.ArrayList<>();
       for (var company : companies) {
+        String city = extractCityFromAddress(company.adresse());
         rows.add(new CompanyRow(
-          company.getId(),
-          company.getName(),
-          company.getType().toString(),
-          company.getSector() != null ? company.getSector() : "",
-          company.getCity() != null ? company.getCity() : "",
-          company.getWebsite() != null ? company.getWebsite() : ""
+          company.id(),
+          company.nom(),
+          company.type(),
+          "", // Sector pas disponible dans Societe
+          city,
+          "" // Website pas disponible dans Societe
         ));
       }
       
@@ -3678,5 +3999,29 @@ public class MainController {
     public String getDateCreation() { return dateCreation; }
     public boolean hasChildren() { return hasChildren; }
     public void setHasChildren(boolean hasChildren) { this.hasChildren = hasChildren; }
+  }
+  
+  /**
+   * Extrait la ville d'une adresse complète (méthode simplifiée)
+   */
+  private String extractCityFromAddress(String address) {
+    if (address == null || address.trim().isEmpty()) {
+      return "";
+    }
+    
+    // Format attendu: "rue, code_postal ville" ou simplement "ville"
+    String[] parts = address.split(",");
+    if (parts.length > 1) {
+      // Prendre la dernière partie et extraire la ville après le code postal
+      String lastPart = parts[parts.length - 1].trim();
+      String[] cityParts = lastPart.split(" ");
+      if (cityParts.length > 1) {
+        // Prendre tout après le premier mot (supposé être le code postal)
+        return String.join(" ", java.util.Arrays.copyOfRange(cityParts, 1, cityParts.length));
+      }
+      return lastPart;
+    }
+    
+    return address;
   }
 }

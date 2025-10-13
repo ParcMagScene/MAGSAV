@@ -2,6 +2,7 @@
 
 .root {
     -fx-base: #000000;
+    background: #000000;
     -fx-background: #000000;
     -fx-control-inner-background: #1a1a1a;
     -fx-text-base-color: #ffffff;
@@ -14,54 +15,73 @@
 
 /* Sidebar - Bleu Marine */
 .sidebar {
+    background-color: #1e3a5f;
     -fx-background-color: #1e3a5f;
+    padding: 0;
     -fx-padding: 0;
     -fx-spacing: 0;
     -fx-min-width: 260;
+    border-color: #2c5282;
     -fx-border-color: #2c5282;
+    border-width: 0 1 0 0;
     -fx-border-width: 0 1 0 0;
 }
 
 .sidebar-header {
+    background-color: #2c5282;
     -fx-background-color: #2c5282;
+    padding: 20;
     -fx-padding: 20;
     -fx-alignment: center;
+    border-color: #4a90e2;
     -fx-border-color: #4a90e2;
+    border-width: 0 0 1 0;
     -fx-border-width: 0 0 1 0;
 }
 
 .sidebar-logo {
     -fx-text-fill: #ffffff;
+    font-size: 20;
     -fx-font-size: 20;
+    font-weight: bold;
     -fx-font-weight: bold;
 }
 
 /* Navigation Items - Icônes + Légendes en lignes */
 .sidebar-nav {
+    background-color: transparent;
     -fx-background-color: transparent;
+    padding: 0;
     -fx-padding: 0;
     -fx-spacing: 0;
 }
 
 .nav-item {
+    background-color: transparent;
     -fx-background-color: transparent;
+    padding: 15px 20px;
     -fx-padding: 15 20;
     -fx-spacing: 15;
     -fx-alignment: center-left;
+    border-color: #2c5282;
     -fx-border-color: #2c5282;
+    border-width: 0 0 1 0;
     -fx-border-width: 0 0 1 0;
 }
 
 .nav-item:hover {
+    background-color: #2c5282;
     -fx-background-color: #2c5282;
 }
 
 .nav-item.active {
+    background-color: #4a90e2;
     -fx-background-color: #4a90e2;
 }
 
 .nav-icon {
     -fx-text-fill: #ffffff;
+    font-size: 16;
     -fx-font-size: 16;
     -fx-min-width: 20;
     -fx-alignment: center;
@@ -69,231 +89,314 @@
 
 .nav-label {
     -fx-text-fill: #ffffff;
+    font-size: 14;
     -fx-font-size: 14;
+    font-weight: normal;
     -fx-font-weight: normal;
 }
 
 /* Dashboard - Fond Noir */
 .dashboard-card {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
     -fx-background-radius: 8;
+    padding: 20;
     -fx-padding: 20;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 8;
     -fx-border-radius: 8;
 }
 
 .dashboard-title {
     -fx-text-fill: #ffffff;
+    font-size: 18;
     -fx-font-size: 18;
+    font-weight: bold;
     -fx-font-weight: bold;
 }
 
 .dashboard-stat {
     -fx-text-fill: #4a90e2;
+    font-size: 24;
     -fx-font-size: 24;
+    font-weight: bold;
     -fx-font-weight: bold;
 }
 
 /* Tables - Fond Noir */
 .table-view {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
     -fx-table-cell-border-color: #333333;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
 }
 
 .table-view .column-header-background {
+    background-color: #2a2a2a;
     -fx-background-color: #2a2a2a;
 }
 
 .table-view .column-header {
     -fx-text-fill: #ffffff;
+    background-color: transparent;
     -fx-background-color: transparent;
 }
 
 .table-view .table-cell {
     -fx-text-fill: #ffffff;
+    background-color: transparent;
     -fx-background-color: transparent;
 }
 
 .table-row-cell:selected {
+    background-color: rgba(74, 144, 226, 0.3);
     -fx-background-color: rgba(74, 144, 226, 0.3);
 }
 
 /* Tab Pane - Fond Noir */
 .tab-pane {
+    background-color: #000000;
     -fx-background-color: #000000;
 }
 
 .tab-pane .tab-header-area {
+    background-color: #000000;
     -fx-background-color: #000000;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 0 0 1 0;
     -fx-border-width: 0 0 1 0;
 }
 
 .tab-pane .tab {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
     -fx-text-fill: #ffffff;
     -fx-background-radius: 0;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 0 1 0 0;
     -fx-border-width: 0 1 0 0;
+    padding: 12px 20px;
     -fx-padding: 12 20;
 }
 
 .tab-pane .tab:selected {
+    background-color: #4a90e2;
     -fx-background-color: #4a90e2;
     -fx-text-fill: #ffffff;
 }
 
 .tab-pane .tab:hover {
+    background-color: #2a2a2a;
     -fx-background-color: #2a2a2a;
 }
 
 .tab-pane .tab-content-area {
+    background-color: #000000;
     -fx-background-color: #000000;
+    padding: 20;
     -fx-padding: 20;
 }
 
 /* Configuration spécifique pour l'onglet Apparence */
 .config-content {
+    background-color: #000000;
     -fx-background-color: #000000;
+    padding: 20;
     -fx-padding: 20;
 }
 
 .config-section {
+    background-color: #0a0a0a;
     -fx-background-color: #0a0a0a;
+    padding: 15;
     -fx-padding: 15;
     -fx-background-radius: 8;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 8;
     -fx-border-radius: 8;
 }
 
 .section-title {
+    font-size: 18px;
     -fx-font-size: 18px;
+    font-weight: bold;
     -fx-font-weight: bold;
     -fx-text-fill: #ffffff;
 }
 
 .section-header {
+    font-size: 14px;
     -fx-font-size: 14px;
+    font-weight: bold;
     -fx-font-weight: bold;
     -fx-text-fill: #4a90e2;
 }
 
 .color-value {
+    font-family: "Consolas", "Monaco", monospace;
     -fx-font-family: "Consolas", "Monaco", monospace;
     -fx-text-fill: #4a90e2;
+    font-size: 12px;
     -fx-font-size: 12px;
 }
 
 .theme-preview {
+    background-color: #000000;
     -fx-background-color: #000000;
+    border-color: #4a90e2;
     -fx-border-color: #4a90e2;
+    border-width: 2;
     -fx-border-width: 2;
+    border-radius: 8;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
+    padding: 15;
     -fx-padding: 15;
 }
 
 .preview-sidebar {
+    background-color: #1e3a5f;
     -fx-background-color: #1e3a5f;
+    padding: 10;
     -fx-padding: 10;
     -fx-background-radius: 4;
 }
 
 .preview-content {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
+    padding: 10;
     -fx-padding: 10;
     -fx-background-radius: 4;
 }
 
 .preview-icon {
     -fx-text-fill: #ffffff;
+    font-size: 14px;
     -fx-font-size: 14px;
 }
 
 .preview-text {
     -fx-text-fill: #ffffff;
+    font-size: 12px;
     -fx-font-size: 12px;
 }
 
 .preview-title {
     -fx-text-fill: #ffffff;
+    font-size: 13px;
     -fx-font-size: 13px;
+    font-weight: bold;
     -fx-font-weight: bold;
 }
 
 /* Styles pour les boutons d'action */
 .primary-button {
+    background-color: #4a90e2;
     -fx-background-color: #4a90e2;
     -fx-text-fill: white;
+    font-weight: bold;
     -fx-font-weight: bold;
 }
 
 .primary-button:hover {
+    background-color: #357abd;
     -fx-background-color: #357abd;
 }
 
 .secondary-button {
+    background-color: #333333;
     -fx-background-color: #333333;
     -fx-text-fill: #ffffff;
+    border-color: #4a90e2;
     -fx-border-color: #4a90e2;
 }
 
 .danger-button {
+    background-color: #d32f2f;
     -fx-background-color: #d32f2f;
     -fx-text-fill: white;
 }
 
 .danger-button:hover {
+    background-color: #b71c1c;
     -fx-background-color: #b71c1c;
 }
 
 /* Liste des presets */
 .presets-list {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 4;
     -fx-border-radius: 4;
 }
 
 .presets-list .list-cell {
+    background-color: transparent;
     -fx-background-color: transparent;
     -fx-text-fill: #ffffff;
+    padding: 8;
     -fx-padding: 8;
 }
 
 .presets-list .list-cell:selected {
+    background-color: #4a90e2;
     -fx-background-color: #4a90e2;
     -fx-text-fill: white;
 }
 
 .presets-list .list-cell:hover {
+    background-color: derive(#4a90e2, 10%);
     -fx-background-color: derive(#4a90e2, 10%);
 }
 
 /* === VOLET DE DÉTAIL DES PRODUITS === */
 .detail-panel {
+    background-color: #0a0a0a;
     -fx-background-color: #0a0a0a;
+    padding: 16;
     -fx-padding: 16;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1 0 0 1;
     -fx-border-width: 1 0 0 1;
 }
 
 .detail-title {
     -fx-text-fill: #ffffff;
+    font-size: 16;
     -fx-font-size: 16;
+    font-weight: bold;
     -fx-font-weight: bold;
+    padding: 0px 0px 12px 0px;
     -fx-padding: 0 0 12 0;
 }
 
 .product-image-box {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 8;
     -fx-border-radius: 8;
+    padding: 20;
     -fx-padding: 20;
     -fx-alignment: center;
     -fx-spacing: 8;
@@ -301,262 +404,356 @@
 
 .no-image-label {
     -fx-text-fill: #666666;
+    font-size: 12;
     -fx-font-size: 12;
 }
 
 .info-label {
     -fx-text-fill: #cccccc;
+    font-size: 11;
     -fx-font-size: 11;
+    font-weight: bold;
     -fx-font-weight: bold;
+    padding: 4px 0px 2px 0px;
     -fx-padding: 4 0 2 0;
 }
 
 .info-value {
     -fx-text-fill: #ffffff;
+    font-size: 13;
     -fx-font-size: 13;
+    padding: 0px 0px 8px 0px;
     -fx-padding: 0 0 8 0;
 }
 
 /* === SPLITPANE === */
 .dark-split-pane {
+    background-color: #000000;
     -fx-background-color: #000000;
 }
 
 .dark-split-pane .split-pane-divider {
+    background-color: #333333;
     -fx-background-color: #333333;
+    padding: 0px 1px 0px 1px;
     -fx-padding: 0 1 0 1;
 }
 
 .dark-split-pane .split-pane-divider:horizontal {
+    background-color: #333333;
     -fx-background-color: #333333;
 }
 
 /* === FORMULAIRES === */
 .form-title {
     -fx-text-fill: #ffffff;
+    font-size: 18;
     -fx-font-size: 18;
+    font-weight: bold;
     -fx-font-weight: bold;
+    padding: 0px 0px 16px 0px;
     -fx-padding: 0 0 16 0;
 }
 
 .form-content {
+    padding: 16;
     -fx-padding: 16;
     -fx-spacing: 16;
 }
 
 .form-section {
+    background-color: #0a0a0a;
     -fx-background-color: #0a0a0a;
+    padding: 16;
     -fx-padding: 16;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 8;
     -fx-border-radius: 8;
     -fx-spacing: 12;
 }
 
 .section-title {
     -fx-text-fill: #4a90e2;
+    font-size: 14;
     -fx-font-size: 14;
+    font-weight: bold;
     -fx-font-weight: bold;
 }
 
 .field-label {
     -fx-text-fill: #cccccc;
+    font-size: 12;
     -fx-font-size: 12;
+    font-weight: bold;
     -fx-font-weight: bold;
 }
 
 .form-buttons {
+    padding: 16;
     -fx-padding: 16;
+    background-color: #0a0a0a;
     -fx-background-color: #0a0a0a;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1 0 0 0;
     -fx-border-width: 1 0 0 0;
     -fx-spacing: 12;
 }
 
 /* Champs de texte dans les formulaires */
 .dark-text-field {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
     -fx-text-fill: #ffffff;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 4;
     -fx-border-radius: 4;
+    padding: 8px 12px;
     -fx-padding: 8 12;
 }
 
 .dark-text-field:focused {
+    border-color: #4a90e2;
     -fx-border-color: #4a90e2;
     -fx-effect: dropshadow(three-pass-box, #4a90e240, 4, 0, 0, 0);
 }
 
 .dark-text-area {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
     -fx-text-fill: #ffffff;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 4;
     -fx-border-radius: 4;
+    padding: 8px 12px;
     -fx-padding: 8 12;
 }
 
 .dark-text-area:focused {
+    border-color: #4a90e2;
     -fx-border-color: #4a90e2;
     -fx-effect: dropshadow(three-pass-box, #4a90e240, 4, 0, 0, 0);
 }
 
 .dark-text-area .content {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
 }
 
 .dark-combo-box {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
     -fx-text-fill: #ffffff;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 4;
     -fx-border-radius: 4;
 }
 
 .dark-combo-box:focused {
+    border-color: #4a90e2;
     -fx-border-color: #4a90e2;
 }
 
 .dark-combo-box .list-cell {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
     -fx-text-fill: #ffffff;
 }
 
 .dark-combo-box .arrow-button {
+    background-color: #2a2a2a;
     -fx-background-color: #2a2a2a;
 }
 
 .dark-combo-box .arrow {
+    background-color: #ffffff;
     -fx-background-color: #ffffff;
 }
 
 .dark-date-picker {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
     -fx-text-fill: #ffffff;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 4;
     -fx-border-radius: 4;
 }
 
 .dark-date-picker:focused {
+    border-color: #4a90e2;
     -fx-border-color: #4a90e2;
 }
 
 .dark-date-picker .arrow-button {
+    background-color: #2a2a2a;
     -fx-background-color: #2a2a2a;
 }
 
 .dark-date-picker .date-picker-display-node {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
     -fx-text-fill: #ffffff;
 }
 
 /* === MÉTRIQUES ET DASHBOARD === */
 .metrics-container {
+    padding: 16;
     -fx-padding: 16;
     -fx-spacing: 20;
+    background-color: transparent;
     -fx-background-color: transparent;
 }
 
 .metric-box {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
+    padding: 20;
     -fx-padding: 20;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 8;
     -fx-border-radius: 8;
     -fx-min-width: 150;
     -fx-alignment: center;
 }
 
 .metric-value {
+    font-size: 24;
     -fx-font-size: 24;
+    font-weight: bold;
     -fx-font-weight: bold;
 }
 
 .metric-label {
     -fx-text-fill: #cccccc;
+    font-size: 12;
     -fx-font-size: 12;
 }
 
 /* === GRAPHIQUES ET PLACEHOLDERS === */
 .chart-placeholder {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 8;
     -fx-border-radius: 8;
+    padding: 40;
     -fx-padding: 40;
 }
 
 .placeholder-text {
     -fx-text-fill: #666666;
+    font-size: 16;
     -fx-font-size: 16;
 }
 
 .placeholder-subtitle {
     -fx-text-fill: #555555;
+    font-size: 12;
     -fx-font-size: 12;
 }
 
 /* === ALERTES === */
 .alert-box {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
+    padding: 16;
     -fx-padding: 16;
+    border-radius: 8;
     -fx-border-radius: 8;
     -fx-spacing: 12;
 }
 
 .alert-icon {
+    font-size: 18;
     -fx-font-size: 18;
 }
 
 .alert-type {
+    font-size: 14;
     -fx-font-size: 14;
+    font-weight: bold;
     -fx-font-weight: bold;
 }
 
 .alert-message {
     -fx-text-fill: #cccccc;
+    font-size: 12;
     -fx-font-size: 12;
 }
 
 .alert-action {
+    background-color: transparent;
     -fx-background-color: transparent;
     -fx-text-fill: #4a90e2;
+    border-color: #4a90e2;
     -fx-border-color: #4a90e2;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 4;
     -fx-border-radius: 4;
+    padding: 4px 12px;
     -fx-padding: 4 12;
 }
 
 .alert-action:hover {
+    background-color: #4a90e2;
     -fx-background-color: #4a90e2;
     -fx-text-fill: white;
 }
 
 /* === RAPPORTS === */
 .rapport-option {
+    background-color: #1a1a1a;
     -fx-background-color: #1a1a1a;
+    padding: 16;
     -fx-padding: 16;
+    border-color: #333333;
     -fx-border-color: #333333;
+    border-width: 1;
     -fx-border-width: 1;
+    border-radius: 8;
     -fx-border-radius: 8;
     -fx-spacing: 8;
 }
 
 .rapport-title {
     -fx-text-fill: #ffffff;
+    font-size: 14;
     -fx-font-size: 14;
+    font-weight: bold;
     -fx-font-weight: bold;
 }
 
 .rapport-description {
     -fx-text-fill: #cccccc;
+    font-size: 12;
     -fx-font-size: 12;
 }
 
 /* === ACTIONS CONTAINER === */
 .actions-container {
+    padding: 16px 0px;
     -fx-padding: 16 0;
     -fx-spacing: 12;
     -fx-alignment: center-left;
@@ -565,6 +762,8 @@
 /* === PLACEHOLDER POUR TABLES === */
 .table-placeholder {
     -fx-text-fill: #666666;
+    font-size: 14;
     -fx-font-size: 14;
+    padding: 40;
     -fx-padding: 40;
 }

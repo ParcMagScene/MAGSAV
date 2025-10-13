@@ -1,0 +1,183 @@
+# Configuration MAGSAV API 1.3
+spring:
+  application:
+    name: MAGSAV API 1.3
+    
+  profiles:
+    active: dev
+    
+  # Configuration base de données SQLite
+  datasource:
+    url: jdbc:sqlite:../data/magsav.db
+    driver-class-name: org.sqlite.JDBC
+    
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        
+  # Configuration Web
+  web:
+    resources:
+      add-mappings: true
+      
+  # Configuration Jackson pour JSON
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    time-zone: Europe/Paris
+    
+  # Configuration multipart pour upload
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# Configuration serveur
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+  error:
+    include-stacktrace: on_param
+    include-message: always
+
+# Configuration Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    env:
+      enabled: true
+      
+# Configuration Swagger/OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+    filter: true
+    displayRequestDuration: true
+  packages-to-scan: com.magsav.api.controller
+  paths-to-match: /api/**
+
+# Configuration logging
+logging:
+  level:
+    com.magsav: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/magsav-api.log
+    max-size: 10MB
+    max-history: 10
+
+# Configuration CORS
+cors:
+  allowed-origins: "*"
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: false
+  max-age: 3600
+
+# Configuration Google Services
+google:
+  client-id: ${GOOGLE_CLIENT_ID:}
+  client-secret: ${GOOGLE_CLIENT_SECRET:}
+  redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/oauth/callback}
+  scopes: https://www.googleapis.com/auth/calendar,https://www.googleapis.com/auth/gmail.send,https://www.googleapis.com/auth/contacts
+  
+# Configuration MAGSAV spécifique
+magsav:
+  version: 1.3.0
+  build-time: ${BUILD_TIME:unknown}
+  git-commit: ${GIT_COMMIT:unknown}
+  
+  # Configuration base de données
+  database:
+    path: ../data/magsav.db
+    auto-backup: true
+    backup-interval: 24h
+    
+  # Configuration emails
+  email:
+    sender: ${MAGSAV_EMAIL_SENDER:noreply@magsav.com}
+    sender-name: ${MAGSAV_EMAIL_SENDER_NAME:MAGSAV Service Client}
+    
+  # Configuration sync
+  sync:
+    google-calendar: true
+    interval-minutes: 30
+    auto-retry: true
+    max-retries: 3
+
+---
+# Profil développement
+spring:
+  config:
+    activate:
+      on-profile: dev
+      
+logging:
+  level:
+    root: INFO
+    com.magsav: DEBUG
+    
+server:
+  error:
+    include-stacktrace: always
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+---
+# Profil production
+spring:
+  config:
+    activate:
+      on-profile: prod
+      
+logging:
+  level:
+    root: WARN
+    com.magsav: INFO
+    
+server:
+  error:
+    include-stacktrace: never
+    include-message: never
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

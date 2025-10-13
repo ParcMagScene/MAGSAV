@@ -8,7 +8,7 @@ import javafx.scene.Node;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.magsav.ui.theme.ThemeManager;
+import com.magsav.util.ThemeManager;
 import com.magsav.ui.animation.AnimationService;
 import com.magsav.ui.animation.AnimationUtils;
 import com.magsav.ui.icons.IconService;
@@ -21,7 +21,7 @@ import com.magsav.util.AppLogger;
 public class ModernMainController implements Initializable {
     
     // Services UI
-    private final ThemeManager themeManager = ThemeManager.getInstance();
+    // private final ThemeManager themeManager = ThemeManager.getInstance(); // TODO: Réimplémenter
     private final AnimationService animationService = AnimationService.getInstance();
     private final IconService iconService = IconService.getInstance();
     
@@ -192,7 +192,8 @@ public class ModernMainController implements Initializable {
      */
     @FXML
     private void toggleTheme() {
-        themeManager.toggleDarkMode();
+        // TODO: Réimplémenter avec util.ThemeManager
+        // themeManager.toggleDarkMode();
         
         // Animation de feedback
         if (preferencesBtn != null) {

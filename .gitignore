@@ -1,10 +1,53 @@
-/build/
-/.gradle/
-/out/
-*.iml
-*.log
-.DS_Store
+# Gradle
+.gradle/
+build/
+bin/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
-# Base de données locale et données
-/data/
-/medias/
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Application data
+data/
+medias/
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+*.log
+*.tgz
+*.tar.gz
+
+# JavaFX
+*.fxml.bak
+
+# Documentation temporary
+*.md.bak
+DOCUMENTATION_*.md
+RAPPORT_*.md
+GUIDE_*.md
+ARCHITECTURE_*.md
+ROADMAP_*.md
+VALIDATION_*.md
+MIGRATION_*.md
+PREFERENCES_*.md
+IMAGE_*.md
+MODULES_*.md
+CONTROLEURS_*.md
+
+# Keep essential docs
+!README.md
+!CHANGELOG.md
+!DOCUMENTATION_UNIFIEE.md
+!ADDRESS_AUTOCOMPLETE_GUIDE.md

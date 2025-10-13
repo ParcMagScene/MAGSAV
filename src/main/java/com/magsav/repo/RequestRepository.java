@@ -10,13 +10,14 @@ import java.util.List;
 
 public class RequestRepository {
 
-  public long insert(String type, String commentaire, String status) {
+  public long insert(String type, String title, String description, String status) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "INSERT INTO requests (type, commentaire, status, created_at) VALUES (?, ?, ?, datetime('now'))";
+      String sql = "INSERT INTO requests (type, title, description, status, created_at) VALUES (?, ?, ?, ?, datetime('now'))";
       try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
         stmt.setString(1, type);
-        stmt.setString(2, commentaire);
-        stmt.setString(3, status);
+        stmt.setString(2, title);
+        stmt.setString(3, description);
+        stmt.setString(4, status);
         stmt.executeUpdate();
         try (ResultSet rs = stmt.getGeneratedKeys()) {
           if (rs.next()) {
@@ -33,9 +34,9 @@ public class RequestRepository {
   public List<RequestRow> findAll() {
     List<RequestRow> requests = new ArrayList<>();
     try (Connection conn = DB.getConnection()) {
-      String sql = "SELECT r.id, r.type, r.status, s.nom as fournisseur_nom, r.commentaire, r.created_at, r.validated_at " +
+      String sql = "SELECT r.id, r.type, r.status, s.nom_societe as fournisseur_nom, r.description, r.created_at, r.validated_at " +
                    "FROM requests r " +
-                   "LEFT JOIN societes s ON r.fournisseur_id = s.id " +
+                   "LEFT JOIN societes s ON r.societe_id = s.id " +
                    "ORDER BY r.created_at DESC";
       try (PreparedStatement stmt = conn.prepareStatement(sql);
            ResultSet rs = stmt.executeQuery()) {
@@ -45,7 +46,7 @@ public class RequestRepository {
               rs.getString("type"),
               rs.getString("status"),
               rs.getString("fournisseur_nom"),
-              rs.getString("commentaire"),
+              rs.getString("description"),
               rs.getString("created_at"),
               rs.getString("validated_at")
           ));
@@ -60,9 +61,9 @@ public class RequestRepository {
   public List<RequestRow> list(String type) {
     List<RequestRow> requests = new ArrayList<>();
     try (Connection conn = DB.getConnection()) {
-      String sql = "SELECT r.id, r.type, r.status, s.nom as fournisseur_nom, r.commentaire, r.created_at, r.validated_at " +
+      String sql = "SELECT r.id, r.type, r.status, s.nom_societe as fournisseur_nom, r.description, r.created_at, r.validated_at " +
                    "FROM requests r " +
-                   "LEFT JOIN societes s ON r.fournisseur_id = s.id " +
+                   "LEFT JOIN societes s ON r.societe_id = s.id " +
                    "WHERE r.type = ? " +
                    "ORDER BY r.created_at DESC";
       try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -74,7 +75,7 @@ public class RequestRepository {
                 rs.getString("type"),
                 rs.getString("status"),
                 rs.getString("fournisseur_nom"),
-                rs.getString("commentaire"),
+                rs.getString("description"),
                 rs.getString("created_at"),
                 rs.getString("validated_at")
             ));
@@ -109,16 +110,17 @@ public class RequestRepository {
     return items;
   }
 
-  public long create(String type, String commentaire, Long fournisseurId) {
+  public long create(String type, String title, String description, Long societeId) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "INSERT INTO requests (type, commentaire, fournisseur_id, status, created_at) VALUES (?, ?, ?, 'EN_ATTENTE', datetime('now'))";
+      String sql = "INSERT INTO requests (type, title, description, societe_id, status, created_at) VALUES (?, ?, ?, ?, 'EN_ATTENTE', datetime('now'))";
       PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       stmt.setString(1, type);
-      stmt.setString(2, commentaire);
-      if (fournisseurId != null) {
-        stmt.setLong(3, fournisseurId);
+      stmt.setString(2, title);
+      stmt.setString(3, description);
+      if (societeId != null) {
+        stmt.setLong(4, societeId);
       } else {
-        stmt.setNull(3, Types.BIGINT);
+        stmt.setNull(4, Types.BIGINT);
       }
       stmt.executeUpdate();
       ResultSet rs = stmt.getGeneratedKeys();
@@ -131,17 +133,18 @@ public class RequestRepository {
     return -1;
   }
 
-  public void update(long id, String commentaire, Long fournisseurId) {
+  public void update(long id, String title, String description, Long societeId) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "UPDATE requests SET commentaire = ?, fournisseur_id = ? WHERE id = ?";
+      String sql = "UPDATE requests SET title = ?, description = ?, societe_id = ? WHERE id = ?";
       PreparedStatement stmt = conn.prepareStatement(sql);
-      stmt.setString(1, commentaire);
-      if (fournisseurId != null) {
-        stmt.setLong(2, fournisseurId);
+      stmt.setString(1, title);
+      stmt.setString(2, description);
+      if (societeId != null) {
+        stmt.setLong(3, societeId);
       } else {
-        stmt.setNull(2, Types.BIGINT);
+        stmt.setNull(3, Types.BIGINT);
       }
-      stmt.setLong(3, id);
+      stmt.setLong(4, id);
       stmt.executeUpdate();
     } catch (SQLException e) {
       throw new DatabaseException("Erreur mise à jour demande", e);

@@ -1,0 +1,14 @@
+com/magsav/api/config/SecurityConfig.class
+com/magsav/api/entity/Produit$StatutProduit.class
+com/magsav/api/entity/Vehicule.class
+com/magsav/api/entity/Vehicule$StatutVehicule.class
+com/magsav/api/controller/VehiculeController$VehiculeStats.class
+com/magsav/api/entity/Categorie.class
+com/magsav/api/MagsavApiApplication.class
+com/magsav/api/service/VehiculeService.class
+com/magsav/api/entity/Produit.class
+com/magsav/api/entity/Societe$TypeSociete.class
+com/magsav/api/repository/VehiculeRepository.class
+com/magsav/api/controller/VehiculeController.class
+com/magsav/api/entity/Vehicule$TypeVehicule.class
+com/magsav/api/entity/Societe.class

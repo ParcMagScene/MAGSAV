@@ -43,6 +43,11 @@
           <Label styleClass="nav-label" text="Stock"/>
         </HBox>
         
+        <HBox fx:id="vehiculesItem" styleClass="nav-item" onMouseClicked="#onShowVehicules">
+          <Label styleClass="nav-icon" text="🚗"/>
+          <Label styleClass="nav-label" text="Véhicules"/>
+        </HBox>
+        
         <HBox fx:id="statistiquesItem" styleClass="nav-item" onMouseClicked="#onShowStatistiques">
           <Label styleClass="nav-icon" text="📈"/>
           <Label styleClass="nav-label" text="Statistiques"/>

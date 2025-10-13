@@ -7,9 +7,13 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import com.magsav.service.NavigationService;
+import com.magsav.repo.RequestRepository;
+import com.magsav.model.RequestRow;
+import com.magsav.util.AppLogger;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.List;
 
 public class RequestsHubController implements Initializable {
 
@@ -102,20 +106,25 @@ public class RequestsHubController implements Initializable {
     
     private ObservableList<EquipmentRequestRow> equipmentRequests = FXCollections.observableArrayList();
     private ObservableList<PartRequestRow> partRequests = FXCollections.observableArrayList();
+    
+    private RequestRepository requestRepository;
     private ObservableList<InterventionRow> interventions = FXCollections.observableArrayList();
     private ObservableList<TechnicianRow> technicians = FXCollections.observableArrayList();
     
     // ========== INITIALISATION ==========
     
-    @Override
+        @Override
     public void initialize(URL location, ResourceBundle resources) {
+        requestRepository = new RequestRepository();
+        
         setupEquipmentRequestsTable();
         setupPartRequestsTable();
         setupInterventionsTable();
         setupTechniciansTable();
-        setupInterventionFilter();
+        // setupEventHandlers(); // TODO: Méthode manquante
+        // setupEditRightsTable(); // TODO: Méthode manquante
+        
         loadAllData();
-        setupTableSelectionListeners();
     }
     
     private void setupEquipmentRequestsTable() {
@@ -223,26 +232,48 @@ public class RequestsHubController implements Initializable {
     
     private void loadEquipmentRequestsData() {
         equipmentRequests.clear();
-        // Données de test
-        equipmentRequests.addAll(
-            new EquipmentRequestRow(1, "15/12/2024", "Jean Dupont", "Oscilloscope", 1, "En attente", "Haute", "Urgence réparation"),
-            new EquipmentRequestRow(2, "14/12/2024", "Marie Martin", "Multimètre", 2, "Approuvée", "Moyenne", "Stock insuffisant"),
-            new EquipmentRequestRow(3, "13/12/2024", "Pierre Durand", "Fer à souder", 5, "En attente", "Basse", "Maintenance atelier"),
-            new EquipmentRequestRow(4, "12/12/2024", "Sophie Bernard", "Générateur", 1, "Refusée", "Haute", "Budget dépassé"),
-            new EquipmentRequestRow(5, "11/12/2024", "Luc Moreau", "Alimentation", 3, "Approuvée", "Moyenne", "Projet client")
-        );
+        try {
+            List<RequestRow> requests = requestRepository.list("EQUIPEMENT");
+            for (RequestRow request : requests) {
+                // Convertir RequestRow vers EquipmentRequestRow
+                equipmentRequests.add(new EquipmentRequestRow(
+                    (int) request.id(),
+                    formatDate(request.createdAt()),
+                    request.fournisseurNom() != null ? request.fournisseurNom() : "Non spécifié",
+                    request.type(),
+                    1, // Quantité par défaut, devrait venir des items
+                    request.status(),
+                    "Normale", // Priorité par défaut
+                    request.commentaire() != null ? request.commentaire() : ""
+                ));
+            }
+            AppLogger.info("Chargé " + equipmentRequests.size() + " demandes d'équipement");
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors du chargement des demandes d'équipement: " + e.getMessage(), e);
+        }
     }
     
     private void loadPartRequestsData() {
         partRequests.clear();
-        // Données de test
-        partRequests.addAll(
-            new PartRequestRow(1, "15/12/2024", "Tech1", "Condensateur", "C100-47µF", 10, "En cours", "Critique"),
-            new PartRequestRow(2, "14/12/2024", "Tech2", "Résistance", "R220-1kΩ", 50, "Livrée", "Normale"),
-            new PartRequestRow(3, "13/12/2024", "Tech3", "Circuit intégré", "IC-TL081", 5, "En cours", "Haute"),
-            new PartRequestRow(4, "12/12/2024", "Tech1", "Diode", "D1N4007", 20, "Annulée", "Basse"),
-            new PartRequestRow(5, "11/12/2024", "Tech4", "Transistor", "BC547", 15, "Livrée", "Normale")
-        );
+        try {
+            List<RequestRow> requests = requestRepository.list("PIECES");
+            for (RequestRow request : requests) {
+                // Convertir RequestRow vers PartRequestRow
+                partRequests.add(new PartRequestRow(
+                    (int) request.id(),
+                    formatDate(request.createdAt()),
+                    request.fournisseurNom() != null ? request.fournisseurNom() : "Non spécifié",
+                    request.type(),
+                    "REF-" + request.id(), // Référence basée sur l'ID
+                    1, // Quantité par défaut, devrait venir des items
+                    request.status(),
+                    "Normale" // Urgence par défaut
+                ));
+            }
+            AppLogger.info("Chargé " + partRequests.size() + " demandes de pièces");
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors du chargement des demandes de pièces: " + e.getMessage(), e);
+        }
     }
     
     private void loadInterventionsData() {
@@ -522,6 +553,23 @@ public class RequestsHubController implements Initializable {
     private void onClose() {
         Stage stage = (Stage) mainTabPane.getScene().getWindow();
         stage.close();
+    }
+    
+    // ========== MÉTHODES UTILITAIRES ==========
+    
+    private String formatDate(String sqlDate) {
+        if (sqlDate == null) return "Non spécifié";
+        // Format SQLite: 2024-10-13 14:19:38
+        // Format souhaité: 13/10/2024
+        try {
+            String[] parts = sqlDate.split(" ")[0].split("-");
+            if (parts.length == 3) {
+                return parts[2] + "/" + parts[1] + "/" + parts[0];
+            }
+        } catch (Exception e) {
+            AppLogger.warn("Erreur formatage date: " + sqlDate);
+        }
+        return sqlDate;
     }
     
     // ========== CLASSES DE DONNÉES ==========

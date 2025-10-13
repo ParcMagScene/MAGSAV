@@ -9,7 +9,7 @@
   </top>
   
   <center>
-    <TabPane fx:id="managementTabPane" tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 10;">
+    <TabPane fx:id="managementTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane" style="-fx-padding: 10;">
       
       <!-- Onglet Produits -->
       <Tab text="📦 Produits" closable="false">

@@ -38,7 +38,7 @@ public class AppearanceController implements Initializable {
     @FXML private Button deletePresetButton;
     
     private Preferences prefs;
-    private ThemeManager themeManager;
+    // private ThemeManager themeManager; // TODO: Réimplémenter avec util.ThemeManager
     
     // Couleurs par défaut du thème dark authentique
     private final Color DEFAULT_SIDEBAR_COLOR = Color.web("#1e3a5f");
@@ -50,7 +50,7 @@ public class AppearanceController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         prefs = Preferences.userNodeForPackage(AppearanceController.class);
-        themeManager = ThemeManager.getInstance();
+        // themeManager = ThemeManager.getInstance(); // TODO: Réimplémenter
         
         setupColorPickers();
         setupThemeSelector();
@@ -195,8 +195,8 @@ public class AppearanceController implements Initializable {
             colorToHex(textColorPicker.getValue())
         );
         
-        // Appliquer le thème via le ThemeManager instantanément
-        themeManager.applyCustomTheme(customTheme);
+        // TODO: Appliquer le thème via le ThemeManager instantanément
+        // themeManager.applyCustomTheme(customTheme);
     }
     
     private void resetToDefaults() {

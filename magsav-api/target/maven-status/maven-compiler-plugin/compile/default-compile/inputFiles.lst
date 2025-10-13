@@ -1,0 +1,9 @@
+/Users/reunion/MAGSAV-1.2/magsav-api/src/main/java/com/magsav/api/repository/VehiculeRepository.java
+/Users/reunion/MAGSAV-1.2/magsav-api/src/main/java/com/magsav/api/controller/VehiculeController.java
+/Users/reunion/MAGSAV-1.2/magsav-api/src/main/java/com/magsav/api/config/SecurityConfig.java
+/Users/reunion/MAGSAV-1.2/magsav-api/src/main/java/com/magsav/api/MagsavApiApplication.java
+/Users/reunion/MAGSAV-1.2/magsav-api/src/main/java/com/magsav/api/entity/Societe.java
+/Users/reunion/MAGSAV-1.2/magsav-api/src/main/java/com/magsav/api/entity/Produit.java
+/Users/reunion/MAGSAV-1.2/magsav-api/src/main/java/com/magsav/api/entity/Categorie.java
+/Users/reunion/MAGSAV-1.2/magsav-api/src/main/java/com/magsav/api/entity/Vehicule.java
+/Users/reunion/MAGSAV-1.2/magsav-api/src/main/java/com/magsav/api/service/VehiculeService.java

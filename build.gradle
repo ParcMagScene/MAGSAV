@@ -65,10 +65,25 @@ tasks.withType(JavaCompile).configureEach {
 test {
   useJUnitPlatform()
   testLogging {
-    events "passed", "skipped", "failed"
-    exceptionFormat "full"
+    events = ["passed", "skipped", "failed"]
+    exceptionFormat = "full"
   }
-  timeout = Duration.ofMinutes(10)
+  timeout.set(Duration.ofMinutes(10))
+}
+
+// Tâche pour tester l'extension de base de données
+task testDatabase(type: JavaExec) {
+  group = 'verification'
+  description = 'Test de l\'extension de base de données'
+  classpath = sourceSets.main.runtimeClasspath + sourceSets.test.runtimeClasspath
+  mainClass = 'com.magsav.test.TestDatabaseExtension'
+  jvmArgs = [
+    '--add-exports', 'javafx.controls/com.sun.javafx.scene.control.behavior=ALL-UNNAMED',
+    '--add-exports', 'javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED',
+    '--add-exports', 'javafx.base/com.sun.javafx.binding=ALL-UNNAMED',
+    '--add-exports', 'javafx.base/com.sun.javafx.event=ALL-UNNAMED',
+    '--add-exports', 'javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED'
+  ]
 }
 
 task qualityCheck(dependsOn: ['compileJava', 'compileTestJava', 'test']) {

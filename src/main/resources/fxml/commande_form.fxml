@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.CommandeFormController">
+   <top>
+      <VBox spacing="10.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <children>
+                  <Label fx:id="lblTitre" text="Nouvelle Commande">
+                     <font>
+                        <Font name="System Bold" size="20.0" />
+                     </font>
+                  </Label>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Label fx:id="lblStatutCommande" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-padding: 5 10; -fx-background-radius: 15;" text="BROUILLON">
+                     <font>
+                        <Font name="System Bold" size="11.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="15.0" right="15.0" top="15.0" />
+         </padding>
+      </VBox>
+   </top>
+   
+   <center>
+      <ScrollPane fitToWidth="true">
+         <content>
+            <VBox spacing="20.0">
+               <children>
+                  <!-- Informations générales -->
+                  <VBox spacing="15.0" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
+                     <children>
+                        <Label text="Informations Générales">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Label>
+                        
+                        <GridPane hgap="15.0" vgap="10.0">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="NEVER" minWidth="120.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" />
+                              <ColumnConstraints hgrow="NEVER" minWidth="120.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints />
+                              <RowConstraints />
+                              <RowConstraints />
+                           </rowConstraints>
+                           <children>
+                              <Label text="Numéro:*" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                              <TextField fx:id="txtNumeroCommande" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                              
+                              <Label text="Fournisseur:*" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                              <ComboBox fx:id="cbFournisseur" prefWidth="200.0" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                              
+                              <Label text="Date Commande:*" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                              <DatePicker fx:id="dpDateCommande" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              
+                              <Label text="Type:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                              <ComboBox fx:id="cbTypeCommande" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                              
+                              <Label text="Statut:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                              <ComboBox fx:id="cbStatutCommande" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                           </children>
+                        </GridPane>
+                     </children>
+                  </VBox>
+                  
+                  <!-- Livraison -->
+                  <VBox spacing="15.0" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
+                     <children>
+                        <Label text="Informations de Livraison">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Label>
+                        
+                        <GridPane hgap="15.0" vgap="10.0">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="NEVER" minWidth="120.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" />
+                              <ColumnConstraints hgrow="NEVER" minWidth="120.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints />
+                              <RowConstraints />
+                              <RowConstraints />
+                           </rowConstraints>
+                           <children>
+                              <Label text="Date Prévue:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                              <DatePicker fx:id="dpDateLivraisonPrevue" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                              
+                              <Label text="Date Réelle:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                              <DatePicker fx:id="dpDateLivraisonReelle" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+                              
+                              <Label text="Transporteur:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                              <TextField fx:id="txtTransporteur" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              
+                              <Label text="N° Suivi:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                              <TextField fx:id="txtNumeroSuivi" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                              
+                              <Label text="Contact:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                              <TextField fx:id="txtContactLivraison" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                           </children>
+                        </GridPane>
+                        
+                        <VBox spacing="5.0">
+                           <children>
+                              <Label text="Adresse de Livraison:" />
+                              <TextArea fx:id="txtAdresseLivraison" maxHeight="60.0" prefRowCount="3" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </VBox>
+                  
+                  <!-- Lignes de commande -->
+                  <VBox spacing="15.0" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);" VBox.vgrow="ALWAYS">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Label text="Lignes de Commande">
+                                 <font>
+                                    <Font name="System Bold" size="16.0" />
+                                 </font>
+                              </Label>
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Button fx:id="btnAjouterLigne" mnemonicParsing="false" onAction="#onAjouterLigne" style="-fx-background-color: #28a745; -fx-text-fill: white;" text="➕ Ajouter Produit" />
+                           </children>
+                        </HBox>
+                        
+                        <TableView fx:id="tableLignes" prefHeight="300.0" VBox.vgrow="ALWAYS">
+                           <columns>
+                              <TableColumn fx:id="colProduitRef" prefWidth="100.0" text="Référence" />
+                              <TableColumn fx:id="colProduitNom" prefWidth="200.0" text="Produit" />
+                              <TableColumn fx:id="colQuantite" prefWidth="80.0" text="Qté" />
+                              <TableColumn fx:id="colUnite" prefWidth="60.0" text="Unité" />
+                              <TableColumn fx:id="colPrixUnitaire" prefWidth="100.0" text="Prix Unit. HT" />
+                              <TableColumn fx:id="colTVA" prefWidth="60.0" text="TVA %" />
+                              <TableColumn fx:id="colMontantHT" prefWidth="100.0" text="Montant HT" />
+                              <TableColumn fx:id="colMontantTTC" prefWidth="100.0" text="Montant TTC" />
+                              <TableColumn fx:id="colLigneActions" prefWidth="80.0" text="Actions" />
+                           </columns>
+                        </TableView>
+                        
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                           <children>
+                              <Button fx:id="btnModifierLigne" disable="true" mnemonicParsing="false" onAction="#onModifierLigne" text="✏️ Modifier" />
+                              <Button fx:id="btnSupprimerLigne" disable="true" mnemonicParsing="false" onAction="#onSupprimerLigne" style="-fx-background-color: #dc3545; -fx-text-fill: white;" text="🗑 Supprimer" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              
+                              <!-- Totaux -->
+                              <VBox alignment="CENTER_RIGHT" spacing="5.0">
+                                 <children>
+                                    <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                                       <children>
+                                          <Label text="Total HT:" />
+                                          <Label fx:id="lblTotalHT" text="0,00 €">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                                       <children>
+                                          <Label text="Total TVA:" />
+                                          <Label fx:id="lblTotalTVA" text="0,00 €">
+                                             <font>
+                                                <Font name="System Bold" size="12.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                                       <children>
+                                          <Label text="Total TTC:" />
+                                          <Label fx:id="lblTotalTTC" text="0,00 €" textFill="#007bff">
+                                             <font>
+                                                <Font name="System Bold" size="14.0" />
+                                             </font>
+                                          </Label>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+                  
+                  <!-- Commentaires et options -->
+                  <VBox spacing="15.0" style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);">
+                     <children>
+                        <Label text="Commentaires et Options">
+                           <font>
+                              <Font name="System Bold" size="16.0" />
+                           </font>
+                        </Label>
+                        
+                        <VBox spacing="10.0">
+                           <children>
+                              <Label text="Commentaires:" />
+                              <TextArea fx:id="txtCommentaires" maxHeight="80.0" prefRowCount="4" promptText="Commentaires sur la commande..." />
+                              
+                              <HBox spacing="20.0">
+                                 <children>
+                                    <CheckBox fx:id="cbReceptionComplete" mnemonicParsing="false" text="Réception complète" />
+                                    <CheckBox fx:id="cbFactureRecue" mnemonicParsing="false" text="Facture reçue" />
+                                 </children>
+                              </HBox>
+                              
+                              <HBox spacing="10.0">
+                                 <children>
+                                    <Label text="N° Facture Fournisseur:" />
+                                    <TextField fx:id="txtNumeroFactureFournisseur" prefWidth="200.0" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </children>
+                  </VBox>
+               </children>
+               <padding>
+                  <Insets bottom="20.0" left="15.0" right="15.0" top="0.0" />
+               </padding>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </center>
+   
+   <bottom>
+      <HBox alignment="CENTER_RIGHT" spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-width: 1 0 0 0;">
+         <children>
+            <Button fx:id="btnAnnuler" mnemonicParsing="false" onAction="#onAnnuler" text="Annuler" />
+            <Button fx:id="btnEnregistrer" mnemonicParsing="false" onAction="#onEnregistrer" style="-fx-background-color: #007bff; -fx-text-fill: white;" text="💾 Enregistrer">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+            <Button fx:id="btnEnregistrerEtValider" mnemonicParsing="false" onAction="#onEnregistrerEtValider" style="-fx-background-color: #28a745; -fx-text-fill: white;" text="✅ Enregistrer et Valider">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Button>
+         </children>
+         <padding>
+            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+         </padding>
+      </HBox>
+   </bottom>
+</BorderPane>

@@ -5,6 +5,7 @@ import com.magsav.model.ProductSituation;
 import com.magsav.util.AppLogger;
 
 import java.sql.*;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -620,7 +621,9 @@ public class ProductRepository {
    * Compte le nombre de produits dans une catégorie donnée
    */
   public int getProductCountByCategory(long categoryId) {
-    String sql = "SELECT COUNT(*) FROM produits WHERE categorieId = ?";
+    // Note: La table produits utilise categorie_principale (TEXT) pas categorieId (INTEGER)
+    // Il faudrait d'abord récupérer le nom de la catégorie depuis l'ID
+    String sql = "SELECT COUNT(*) FROM produits p JOIN categories c ON p.categorie_principale = c.nom_categorie WHERE c.id = ?";
     
     try (Connection conn = DB.getConnection();
          PreparedStatement stmt = conn.prepareStatement(sql)) {

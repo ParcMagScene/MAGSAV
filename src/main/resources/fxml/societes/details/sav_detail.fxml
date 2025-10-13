@@ -60,7 +60,7 @@
    </top>
    
    <center>
-      <TabPane tabClosingPolicy="UNAVAILABLE">
+      <TabPane tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane">
          <!-- Onglet Produits actuels -->
          <Tab text="Produits actuels">
             <VBox spacing="10.0">

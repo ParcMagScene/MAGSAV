@@ -186,6 +186,7 @@ Label {
     -fx-text-fill: #888888;
     opacity: 0.5;
     -fx-opacity: 0.5;
+    cursor: default;
     -fx-cursor: default;
 }
 
@@ -566,6 +567,7 @@ Label {
     -fx-text-fill: #ffffff;
     font-weight: bold;
     -fx-font-weight: bold;
+    min-width: 120px;
     -fx-min-width: 120px;
 }
 

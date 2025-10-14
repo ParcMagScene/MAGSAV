@@ -34,7 +34,7 @@ public class App extends Application {
 
     MediaValidator.ensureDirs();
     Parent root = FXMLLoader.load(getClass().getResource("/fxml/main.fxml"));
-    stage.setTitle("MAGSAV 1.2");
+    stage.setTitle("MAGSAV 1.2 - Mag Scène");
 
     // Préférences pour mémoriser/restaurer la taille de la fenêtre principale
     Preferences prefs = Preferences.userNodeForPackage(App.class);

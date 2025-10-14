@@ -1,6 +1,6 @@
 package com.magsav.gui;
 
-import com.magsav.repo.ProductRepository;
+
 import com.magsav.service.NavigationService;
 import com.magsav.util.AppLogger;
 import javafx.application.Platform;
@@ -91,7 +91,7 @@ public class ManagementHubController implements Initializable {
     
     // ======================= SERVICES =======================
     
-    private final ProductRepository productRepository;
+
     
     // ======================= DATA =======================
     
@@ -102,7 +102,7 @@ public class ManagementHubController implements Initializable {
     private final ObservableList<ClientRow> clientData = FXCollections.observableArrayList();
     
     public ManagementHubController() {
-        this.productRepository = new ProductRepository();
+        // Constructeur simplifié
     }
     
     @Override

@@ -15,7 +15,7 @@ public record User(
     Role role,
     String fullName,
     String phone,
-    Long companyId, // Référence vers la société (Mag Scène ou autre)
+    Long societeId, // Référence vers la société (Mag Scène ou autre)
     String position, // Poste/fonction dans l'entreprise
     String avatarPath, // Chemin vers la photo de profil
     boolean isActive,
@@ -31,6 +31,8 @@ public record User(
     public enum Role {
         ADMIN("Administrateur", "Accès complet application desktop + API complète"),
         TECHNICIEN_MAG_SCENE("Technicien Mag Scène", "Visualisation complète + demandes d'intervention/pièces/matériel"),
+        CHAUFFEUR_PL("Chauffeur PL", "Accès aux livraisons et transport poids lourds"),
+        CHAUFFEUR_SPL("Chauffeur SPL", "Accès aux livraisons et transport spécialisé"),
         INTERMITTENT("Intermittent", "Visualisation seule + possibilité de demander élévation des droits");
         
         private final String label;
@@ -55,8 +57,9 @@ public record User(
         public int getPriority() {
             return switch (this) {
                 case INTERMITTENT -> 1;
-                case TECHNICIEN_MAG_SCENE -> 2;
-                case ADMIN -> 3;
+                case CHAUFFEUR_PL, CHAUFFEUR_SPL -> 2;
+                case TECHNICIEN_MAG_SCENE -> 3;
+                case ADMIN -> 4;
             };
         }
         
@@ -130,15 +133,15 @@ public record User(
     }
     
     public boolean canCreateDemandeIntervention() {
-        return isAdmin() || isTechnicienMagScene();
+        return isActive(); // Tous les utilisateurs actifs peuvent créer des demandes d'intervention
     }
     
     public boolean canCreateDemandePieces() {
-        return isAdmin() || isTechnicienMagScene();
+        return isActive(); // Tous les utilisateurs actifs peuvent créer des demandes de pièces
     }
     
     public boolean canCreateDemandeMateriel() {
-        return isAdmin() || isTechnicienMagScene();
+        return isActive(); // Tous les utilisateurs actifs peuvent créer des demandes de matériel
     }
     
     public boolean canValidateDemandes() {
@@ -161,6 +164,83 @@ public record User(
         return isAdmin(); // API complète uniquement pour les admins
     }
     
+    // ========= NOUVELLES PERMISSIONS GRANULAIRES =========
+    
+    /**
+     * Vérifie si l'utilisateur a une permission spécifique
+     */
+    public boolean hasPermission(TechnicianPermissions.Permission permission) {
+        return TechnicianPermissions.hasPermission(this, permission);
+    }
+    
+    /**
+     * Permissions spécifiques pour la gestion des contacts
+     */
+    public boolean canCreateContacts() {
+        return hasPermission(TechnicianPermissions.Permission.CREATE_CONTACTS);
+    }
+    
+    public boolean canDeleteContacts() {
+        return hasPermission(TechnicianPermissions.Permission.DELETE_CONTACTS);
+    }
+    
+    /**
+     * Permissions spécifiques pour la gestion des sociétés
+     */
+    public boolean canCreateCompanies() {
+        return hasPermission(TechnicianPermissions.Permission.CREATE_COMPANIES);
+    }
+    
+    public boolean canDeleteCompanies() {
+        return hasPermission(TechnicianPermissions.Permission.DELETE_COMPANIES);
+    }
+    
+    /**
+     * Permissions techniques spécialisées
+     */
+    public boolean canManageDistribution() {
+        return hasPermission(TechnicianPermissions.Permission.MANAGE_DISTRIBUTION);
+    }
+    
+    public boolean canManageLighting() {
+        return hasPermission(TechnicianPermissions.Permission.MANAGE_LIGHTING);
+    }
+    
+    public boolean canManageStructure() {
+        return hasPermission(TechnicianPermissions.Permission.MANAGE_STRUCTURE);
+    }
+    
+    public boolean canManageAudio() {
+        return hasPermission(TechnicianPermissions.Permission.MANAGE_AUDIO);
+    }
+    
+    /**
+     * Permissions véhicules et planning
+     */
+    public boolean canManageVehicles() {
+        return hasPermission(TechnicianPermissions.Permission.MANAGE_VEHICLES);
+    }
+    
+    public boolean canManagePlanning() {
+        return hasPermission(TechnicianPermissions.Permission.MANAGE_PLANNING);
+    }
+    
+    /**
+     * Permissions de validation
+     */
+    public boolean canApproveColleagueRequests() {
+        return hasPermission(TechnicianPermissions.Permission.APPROVE_COLLEAGUE_REQUESTS);
+    }
+    
+    /**
+     * Récupère le résumé des permissions pour cet utilisateur
+     */
+    public String getPermissionsSummary() {
+        return TechnicianPermissions.getPermissionsSummary(this);
+    }
+    
+    // ====================================================
+    
     /**
      * Vérifie si le token de reset est valide
      */
@@ -175,7 +255,7 @@ public record User(
      */
     public User withLastLogin(LocalDateTime lastLogin) {
         return new User(id, username, email, passwordHash, role, fullName, phone, 
-                       companyId, position, avatarPath, isActive, createdAt, lastLogin, resetToken, resetTokenExpires);
+                       societeId, position, avatarPath, isActive, createdAt, lastLogin, resetToken, resetTokenExpires);
     }
     
     /**
@@ -183,7 +263,7 @@ public record User(
      */
     public User withResetToken(String resetToken, LocalDateTime expires) {
         return new User(id, username, email, passwordHash, role, fullName, phone, 
-                       companyId, position, avatarPath, isActive, createdAt, lastLogin, resetToken, expires);
+                       societeId, position, avatarPath, isActive, createdAt, lastLogin, resetToken, expires);
     }
     
     /**
@@ -191,7 +271,7 @@ public record User(
      */
     public User withNewPassword(String newPasswordHash) {
         return new User(id, username, email, newPasswordHash, role, fullName, phone, 
-                       companyId, position, avatarPath, isActive, createdAt, lastLogin, null, null);
+                       societeId, position, avatarPath, isActive, createdAt, lastLogin, null, null);
     }
     
     /**
@@ -199,7 +279,7 @@ public record User(
      */
     public User withActiveStatus(boolean active) {
         return new User(id, username, email, passwordHash, role, fullName, phone, 
-                       companyId, position, avatarPath, active, createdAt, lastLogin, resetToken, resetTokenExpires);
+                       societeId, position, avatarPath, active, createdAt, lastLogin, resetToken, resetTokenExpires);
     }
     
     /**
@@ -215,7 +295,7 @@ public record User(
      */
     public User withPosition(String position) {
         return new User(id, username, email, passwordHash, role, fullName, phone, 
-                       companyId, position, avatarPath, isActive, createdAt, lastLogin, resetToken, resetTokenExpires);
+                       societeId, position, avatarPath, isActive, createdAt, lastLogin, resetToken, resetTokenExpires);
     }
     
     /**
@@ -223,7 +303,7 @@ public record User(
      */
     public User withAvatar(String avatarPath) {
         return new User(id, username, email, passwordHash, role, fullName, phone, 
-                       companyId, position, avatarPath, isActive, createdAt, lastLogin, resetToken, resetTokenExpires);
+                       societeId, position, avatarPath, isActive, createdAt, lastLogin, resetToken, resetTokenExpires);
     }
     
     /**

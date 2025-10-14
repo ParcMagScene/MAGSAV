@@ -179,48 +179,7 @@ public class RequestsHubController implements Initializable {
         techniciansTable.setItems(technicians);
     }
     
-    private void setupInterventionFilter() {
-        cmbInterventionFilter.setItems(FXCollections.observableArrayList(
-            "Tous", "Planifiée", "En cours", "Terminée", "Annulée"
-        ));
-        cmbInterventionFilter.setValue("Tous");
-    }
-    
-    private void setupTableSelectionListeners() {
-        // Demandes de matériel
-        equipmentRequestsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            boolean hasSelection = newSelection != null;
-            btnEditEquipmentRequest.setDisable(!hasSelection);
-            btnDeleteEquipmentRequest.setDisable(!hasSelection);
-        });
-        
-        // Demandes de pièces
-        partRequestsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            boolean hasSelection = newSelection != null;
-            btnEditPartRequest.setDisable(!hasSelection);
-            btnDeletePartRequest.setDisable(!hasSelection);
-        });
-        
-        // Interventions
-        interventionsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            boolean hasSelection = newSelection != null;
-            btnEditIntervention.setDisable(!hasSelection);
-            btnViewInterventionDetails.setDisable(!hasSelection);
-            btnCloseIntervention.setDisable(!hasSelection);
-        });
-        
-        // Techniciens
-        techniciansTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            boolean hasSelection = newSelection != null;
-            btnEditTechnicianRights.setDisable(!hasSelection);
-            btnInheritRights.setDisable(!hasSelection);
-            btnTechnicianActivityReport.setDisable(!hasSelection);
-            
-            if (newSelection != null) {
-                loadTechnicianRights(newSelection);
-            }
-        });
-    }
+
     
     private void loadAllData() {
         loadEquipmentRequestsData();
@@ -355,16 +314,7 @@ public class RequestsHubController implements Initializable {
         lblTechEnFormation.setText("En formation: " + enFormation);
     }
     
-    private void loadTechnicianRights(TechnicianRow technician) {
-        // Simuler le chargement des droits basé sur la chaîne droits
-        String droits = technician.droits().toLowerCase();
-        chkConsultation.setSelected(droits.contains("consultation"));
-        chkCréationDemandes.setSelected(droits.contains("demandes"));
-        chkModificationProduits.setSelected(droits.contains("modification"));
-        chkGestionStock.setSelected(droits.contains("stock"));
-        chkRapports.setSelected(droits.contains("rapports"));
-        chkAdministration.setSelected(droits.contains("admin"));
-    }
+
     
     // ========== ACTIONS DEMANDES DE MATÉRIEL ==========
     

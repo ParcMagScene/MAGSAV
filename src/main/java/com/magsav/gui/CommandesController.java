@@ -1,9 +1,9 @@
 package com.magsav.gui;
 
 import com.magsav.model.Commande;
-import com.magsav.model.LigneCommande;
+
 import com.magsav.repo.CommandeRepository;
-import com.magsav.service.NavigationService;
+
 import com.magsav.util.Views;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -19,7 +19,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
+
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
@@ -100,7 +100,7 @@ public class CommandesController implements Initializable {
 
     // Services et données
     private CommandeRepository commandeRepository;
-    private NavigationService navigationService;
+
     private ObservableList<Commande> commandes;
     private FilteredList<Commande> commandesFiltrees;
     private NumberFormat currencyFormat;

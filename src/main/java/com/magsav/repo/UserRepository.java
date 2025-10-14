@@ -1,44 +1,54 @@
 package com.magsav.repo;
 
+import com.magsav.cache.CacheManager;
 import com.magsav.db.DB;
 import com.magsav.model.User;
 import com.magsav.model.User.Role;
 
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Repository pour la gestion des utilisateurs
+ * Repository pour la gestion des utilisateurs avec cache optimisé
  */
 public class UserRepository {
     
+    private static final CacheManager cache = CacheManager.getInstance();
+    
+    // Formateur pour les dates SQLite (format: 2025-10-13 16:03:18)
+    private static final DateTimeFormatter SQLITE_DATETIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    
     /**
-     * S'assure que les nouvelles colonnes existent dans la table users
+     * Parse une date SQLite vers LocalDateTime
+     */
+    private static LocalDateTime parseSQLiteDateTime(String dateStr) {
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return LocalDateTime.parse(dateStr, SQLITE_DATETIME_FORMAT);
+        } catch (Exception e) {
+            // Fallback: essayer le format ISO par défaut
+            try {
+                return LocalDateTime.parse(dateStr);
+            } catch (Exception e2) {
+                System.err.println("Impossible de parser la date: " + dateStr + " - Erreur: " + e2.getMessage());
+                return null;
+            }
+        }
+    }
+    
+    /**
+     * S'assure que la table users est créée (utilisée lors de la création de table)
+     * Note: Maintenant gérée par DB.ensureSchema()
      */
     public static void ensureUserTableUpdated() {
-        String[] alterStatements = {
-            "ALTER TABLE users ADD COLUMN company_id INTEGER DEFAULT NULL",
-            "ALTER TABLE users ADD COLUMN position TEXT DEFAULT NULL",
-            "ALTER TABLE users ADD COLUMN avatar_path TEXT DEFAULT NULL"
-        };
-        
-        try (Connection conn = DB.getConnection()) {
-            for (String alterSql : alterStatements) {
-                try (Statement stmt = conn.createStatement()) {
-                    stmt.execute(alterSql);
-                } catch (SQLException e) {
-                    // Ignore l'erreur si la colonne existe déjà
-                    if (!e.getMessage().contains("duplicate column name")) {
-                        System.err.println("Erreur lors de l'ajout de colonne: " + e.getMessage());
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la mise à jour de la table users: " + e.getMessage());
-        }
+        // La table users est maintenant créée directement dans DB.ensureSchema()
+        // Cette méthode est conservée pour la compatibilité mais ne fait plus rien
     }
     
     /**
@@ -49,7 +59,7 @@ public class UserRepository {
         
         String sql = """
             INSERT INTO users (username, email, password_hash, role, full_name, phone, 
-                             company_id, position, avatar_path, is_active, created_at)
+                             societe_id, position, avatar_path, is_active, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
         
@@ -63,8 +73,8 @@ public class UserRepository {
             stmt.setString(5, user.fullName());
             stmt.setString(6, user.phone());
             
-            if (user.companyId() != null) {
-                stmt.setLong(7, user.companyId());
+            if (user.societeId() != null) {
+                stmt.setLong(7, user.societeId());
             } else {
                 stmt.setNull(7, Types.BIGINT);
             }
@@ -78,6 +88,9 @@ public class UserRepository {
             if (affectedRows == 0) {
                 throw new RuntimeException("Échec de la création de l'utilisateur");
             }
+            
+            // Invalider le cache
+            invalidateUserCache();
             
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -100,59 +113,63 @@ public class UserRepository {
     }
     
     /**
-     * Trouve un utilisateur par nom d'utilisateur
+     * Trouve un utilisateur par nom d'utilisateur (avec cache)
      */
     public Optional<User> findByUsername(String username) {
-        String sql = """
-            SELECT id, username, email, password_hash, role, full_name, phone, 
-                   company_id, position, avatar_path, is_active, created_at, last_login, reset_token, reset_token_expires
-            FROM users WHERE username = ?
-        """;
-        
-        try (Connection conn = DB.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        return cache.get("user:username:" + username, () -> {
+            String sql = """
+                SELECT id, username, email, password_hash, role, full_name, phone, 
+                       societe_id, position, avatar_path, is_active, created_at, last_login, reset_token, reset_token_expires
+                FROM users WHERE username = ?
+            """;
             
-            stmt.setString(1, username);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapResultSetToUser(rs));
+            try (Connection conn = DB.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+                stmt.setString(1, username);
+                
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return Optional.of(mapResultSetToUser(rs));
+                    }
                 }
+                
+            } catch (SQLException e) {
+                throw new RuntimeException("Erreur lors de la recherche de l'utilisateur", e);
             }
             
-        } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la recherche de l'utilisateur", e);
-        }
-        
-        return Optional.empty();
+            return Optional.<User>empty();
+        });
     }
     
     /**
-     * Trouve un utilisateur par email
+     * Trouve un utilisateur par email (avec cache)
      */
     public Optional<User> findByEmail(String email) {
-        String sql = """
-            SELECT id, username, email, password_hash, role, full_name, phone, 
-                   company_id, position, avatar_path, is_active, created_at, last_login, reset_token, reset_token_expires
-            FROM users WHERE email = ?
-        """;
-        
-        try (Connection conn = DB.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        return cache.get("user:email:" + email, () -> {
+            String sql = """
+                SELECT id, username, email, password_hash, role, full_name, phone, 
+                       societe_id, position, avatar_path, is_active, created_at, last_login, reset_token, reset_token_expires
+                FROM users WHERE email = ?
+            """;
             
-            stmt.setString(1, email);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapResultSetToUser(rs));
+            try (Connection conn = DB.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+                stmt.setString(1, email);
+                
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return Optional.of(mapResultSetToUser(rs));
+                    }
                 }
+                
+            } catch (SQLException e) {
+                throw new RuntimeException("Erreur lors de la recherche de l'utilisateur par email", e);
             }
             
-        } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la recherche de l'utilisateur par email", e);
-        }
-        
-        return Optional.empty();
+            return Optional.<User>empty();
+        });
     }
     
     /**
@@ -161,7 +178,8 @@ public class UserRepository {
     public Optional<User> findById(long id) {
         String sql = """
             SELECT id, username, email, password_hash, role, full_name, phone, 
-                   is_active, created_at, last_login, reset_token, reset_token_expires
+                   societe_id, position, avatar_path, is_active, created_at, 
+                   last_login, reset_token, reset_token_expires
             FROM users WHERE id = ?
         """;
         
@@ -189,7 +207,8 @@ public class UserRepository {
     public List<User> findByRole(Role role) {
         String sql = """
             SELECT id, username, email, password_hash, role, full_name, phone, 
-                   is_active, created_at, last_login, reset_token, reset_token_expires
+                   societe_id, position, avatar_path, is_active, created_at, 
+                   last_login, reset_token, reset_token_expires
             FROM users WHERE role = ?
             ORDER BY created_at DESC
         """;
@@ -212,6 +231,58 @@ public class UserRepository {
         }
         
         return users;
+    }
+    
+    /**
+     * Récupère tous les utilisateurs (avec cache - TTL plus court)
+     */
+    public List<User> findAll() {
+        return cache.get("users:all", () -> {
+            String sql = """
+                SELECT id, username, email, password_hash, role, full_name, phone, 
+                       societe_id, position, avatar_path, is_active, created_at, 
+                       last_login, reset_token, reset_token_expires
+                FROM users 
+                ORDER BY created_at DESC
+            """;
+            
+            List<User> users = new ArrayList<>();
+            
+            try (Connection conn = DB.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+                
+                while (rs.next()) {
+                    users.add(mapResultSetToUser(rs));
+                }
+                
+            } catch (SQLException e) {
+                throw new RuntimeException("Erreur lors de la récupération de tous les utilisateurs", e);
+            }
+            
+            return users;
+        }, 2); // TTL de 2 minutes pour les listes
+    }
+    
+    /**
+     * Supprime un utilisateur par ID
+     */
+    public void delete(int userId) {
+        String sql = "DELETE FROM users WHERE id = ?";
+        
+        try (Connection conn = DB.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, userId);
+            int affected = stmt.executeUpdate();
+            
+            if (affected == 0) {
+                throw new RuntimeException("Aucun utilisateur trouvé avec l'ID: " + userId);
+            }
+            
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la suppression de l'utilisateur", e);
+        }
     }
     
     /**
@@ -367,11 +438,11 @@ public class UserRepository {
      * Mappe un ResultSet vers un objet User
      */
     private User mapResultSetToUser(ResultSet rs) throws SQLException {
-        // Gestion du company_id qui peut être null
-        Long companyId = null;
-        long companyIdValue = rs.getLong("company_id");
+        // Gestion du societe_id qui peut être null
+        Long societeId = null;
+        long societeIdValue = rs.getLong("societe_id");
         if (!rs.wasNull()) {
-            companyId = companyIdValue;
+            societeId = societeIdValue;
         }
         
         return new User(
@@ -382,25 +453,25 @@ public class UserRepository {
             Role.fromString(rs.getString("role")),
             rs.getString("full_name"),
             rs.getString("phone"),
-            companyId,
+            societeId,
             rs.getString("position"),
             rs.getString("avatar_path"),
             rs.getBoolean("is_active"),
-            LocalDateTime.parse(rs.getString("created_at")),
-            rs.getString("last_login") != null ? LocalDateTime.parse(rs.getString("last_login")) : null,
+            parseSQLiteDateTime(rs.getString("created_at")),
+            parseSQLiteDateTime(rs.getString("last_login")),
             rs.getString("reset_token"),
-            rs.getString("reset_token_expires") != null ? LocalDateTime.parse(rs.getString("reset_token_expires")) : null
+            parseSQLiteDateTime(rs.getString("reset_token_expires"))
         );
     }
     
     /**
      * Trouve tous les utilisateurs d'une société
      */
-    public List<User> findByCompanyId(Long companyId) {
+    public List<User> findBySocieteId(Long societeId) {
         String sql = """
             SELECT id, username, email, password_hash, role, full_name, phone, 
-                   company_id, position, avatar_path, is_active, created_at, last_login, reset_token, reset_token_expires
-            FROM users WHERE company_id = ? ORDER BY full_name
+                   societe_id, position, avatar_path, is_active, created_at, last_login, reset_token, reset_token_expires
+            FROM users WHERE societe_id = ? ORDER BY full_name
         """;
         
         List<User> users = new ArrayList<>();
@@ -408,7 +479,7 @@ public class UserRepository {
         try (Connection conn = DB.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            stmt.setLong(1, companyId);
+            stmt.setLong(1, societeId);
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -426,14 +497,14 @@ public class UserRepository {
     /**
      * Met à jour la société d'un utilisateur
      */
-    public void updateUserCompany(int userId, Long companyId) {
-        String sql = "UPDATE users SET company_id = ? WHERE id = ?";
+    public void updateUserSociete(int userId, Long societeId) {
+        String sql = "UPDATE users SET societe_id = ? WHERE id = ?";
         
         try (Connection conn = DB.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
-            if (companyId != null) {
-                stmt.setLong(1, companyId);
+            if (societeId != null) {
+                stmt.setLong(1, societeId);
             } else {
                 stmt.setNull(1, Types.BIGINT);
             }
@@ -482,5 +553,16 @@ public class UserRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la mise à jour de l'avatar de l'utilisateur", e);
         }
+        
+        // Invalider le cache après modification
+        invalidateUserCache();
+    }
+    
+    /**
+     * Invalide le cache des utilisateurs
+     */
+    private void invalidateUserCache() {
+        cache.invalidatePrefix("user:");
+        cache.invalidate("users:all");
     }
 }

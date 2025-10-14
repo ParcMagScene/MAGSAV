@@ -2,7 +2,7 @@ package com.magsav.util;
 
 import com.magsav.db.DB;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+
 import java.sql.SQLException;
 
 /**

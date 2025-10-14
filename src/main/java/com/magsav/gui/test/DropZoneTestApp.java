@@ -1,7 +1,7 @@
 package com.magsav.gui.test;
 
 import com.magsav.gui.component.FileDropZone;
-import com.magsav.util.MediaImporter;
+
 import com.magsav.util.AppLogger;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -10,7 +10,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.util.List;
+
 
 /**
  * Application de test pour les zones de glisser-déposer

@@ -5,9 +5,7 @@ import com.magsav.model.DemandeIntervention.TypeDemande;
 import com.magsav.model.DemandeIntervention.StatutDemande;
 import com.magsav.repo.DemandeInterventionRepository;
 import com.magsav.repo.ProductRepository;
-import com.magsav.repo.CategoryRepository;
 import com.magsav.service.QrScannerService;
-import com.magsav.service.UidGenerationService;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -19,9 +17,7 @@ public class NouvelleDemandeInterventionController {
     
     // Services
     private final QrScannerService qrScanner = new QrScannerService();
-    private final UidGenerationService uidService = new UidGenerationService();
     private final ProductRepository productRepo = new ProductRepository();
-    private final CategoryRepository categoryRepo = new CategoryRepository();
     private final DemandeInterventionRepository demandeRepo = new DemandeInterventionRepository();
     
     // État de l'identification
@@ -266,8 +262,5 @@ public class NouvelleDemandeInterventionController {
         return str == null ? "" : str.trim();
     }
     
-    // Getters pour accès externe si nécessaire
-    public String getProduitUidIdentifie() { return produitUidIdentifie; }
-    public TypeDemande getTypeDemande() { return typeDemande; }
-    public Long getProduitIdExistant() { return produitIdExistant; }
+
 }

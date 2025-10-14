@@ -5,7 +5,8 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.magsav.gui.PreferencesController">
-  <!-- Suppression du header avec bouton de retour - navigation directe -->
+  
+
   
   <center>
     <TabPane fx:id="preferencesTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane" style="-fx-padding: 10;">
@@ -251,6 +252,27 @@
                 
                 <Label fx:id="lblDatabaseStats" text="Statistiques: Chargement..." style="-fx-text-fill: #666; -fx-font-size: 12;"/>
               </VBox>
+            </VBox>
+            
+            <!-- Section Développement et Tests -->
+            <VBox spacing="15" styleClass="dark-section-card" style="-fx-padding: 20;">
+              <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="🔧" style="-fx-font-size: 16;"/>
+                <Label text="Outils de Développement" styleClass="dark-section-title" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+              </HBox>
+              
+              <Label text="Outils pour les développeurs et les tests de l'application." 
+                     style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
+              
+              <HBox spacing="10">
+                <Button fx:id="btnGenerateTestData" text="🔧 Générer données de test" onAction="#onGenerateTestData" 
+                        style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                <Button fx:id="btnClearTestData" text="🧹 Vider données de test" onAction="#onClearTestData" 
+                        style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;"/>
+              </HBox>
+              
+              <Label text="⚠️ Attention: Ces outils sont destinés au développement uniquement." 
+                     style="-fx-text-fill: #e67e22; -fx-font-size: 11; -fx-font-style: italic;"/>
             </VBox>
             
           </VBox>

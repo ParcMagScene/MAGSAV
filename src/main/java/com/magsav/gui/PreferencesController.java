@@ -1,8 +1,6 @@
 package com.magsav.gui;
 
-import com.magsav.service.ImageScrapingService;
 import com.magsav.service.ScrapingConfigService;
-import com.magsav.service.ImageNormalizationService;
 import com.magsav.service.DataCacheService;
 import com.magsav.service.DataChangeNotificationService;
 import com.magsav.service.DataChangeEvent;
@@ -197,6 +195,10 @@ public class PreferencesController implements Initializable {
     @FXML private Button btnOptimizeDB;
     @FXML private Label lblDatabaseStats;
     
+    // Section Outils de Développement
+    @FXML private Button btnGenerateTestData;
+    @FXML private Button btnClearTestData;
+    
     // Section Import/Export
     @FXML private Button btnImportProducts;
     @FXML private Button btnImportClients;
@@ -244,8 +246,6 @@ public class PreferencesController implements Initializable {
     
     private ObservableList<SourceRow> sourceData = FXCollections.observableArrayList();
     private ObservableList<CompanyUserRow> companyUserData = FXCollections.observableArrayList();
-    private ImageScrapingService scrapingService = new ImageScrapingService();
-    private ImageNormalizationService normalizationService = new ImageNormalizationService();
     private ProductRepository productRepo = new ProductRepository();
     private AddressService addressService = new AddressService();
     
@@ -1085,7 +1085,7 @@ public class PreferencesController implements Initializable {
         try {
             UserRepository userRepo = new UserRepository();
             // Tentative de chargement des utilisateurs par société
-            List<User> users = userRepo.findByCompanyId(companyId);
+            List<User> users = userRepo.findBySocieteId(companyId);
             
             companyUserData.clear();
             for (User user : users) {
@@ -1657,6 +1657,54 @@ public class PreferencesController implements Initializable {
             alert.setContentText(message);
             alert.showAndWait();
         });
+    }
+    
+    // ==================== ACTIONS OUTILS DE DÉVELOPPEMENT ====================
+    
+    @FXML
+    private void onGenerateTestData() {
+        try {
+            AppLogger.info("génération de données de test demandée depuis les préférences");
+            
+            Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmation.setTitle("Générer des données de test");
+            confirmation.setHeaderText("Êtes-vous sûr ?");
+            confirmation.setContentText("Cette action va créer des données de test dans la base de données. Continuer ?");
+            
+            ButtonType result = confirmation.showAndWait().orElse(ButtonType.CANCEL);
+            if (result == ButtonType.OK) {
+                // Utiliser la même logique que dans MainController
+                com.magsav.util.SimpleTestDataGenerator.generateTestData(true);
+                
+                showAlert("Succès", "Les données de test ont été générées avec succès !");
+                AppLogger.info("Données de test générées depuis les préférences");
+            }
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors de la génération des données de test", e);
+            showAlert("Erreur", "Erreur lors de la génération : " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void onClearTestData() {
+        try {
+            AppLogger.info("suppression des données de test demandée depuis les préférences");
+            
+            Alert confirmation = new Alert(Alert.AlertType.WARNING);
+            confirmation.setTitle("Vider les données de test");
+            confirmation.setHeaderText("⚠️ Attention - Action irréversible");
+            confirmation.setContentText("Cette action va supprimer TOUTES les données de test de la base de données. Cette action ne peut pas être annulée. Continuer ?");
+            
+            ButtonType result = confirmation.showAndWait().orElse(ButtonType.CANCEL);
+            if (result == ButtonType.OK) {
+                // TODO: Implémenter la suppression des données de test
+                showAlert("Info", "La fonction de suppression des données de test sera implémentée prochainement.");
+                AppLogger.info("Suppression des données de test demandée (non implémentée)");
+            }
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors de la suppression des données de test", e);
+            showAlert("Erreur", "Erreur lors de la suppression : " + e.getMessage());
+        }
     }
     
     // Records pour les données des nouveaux onglets

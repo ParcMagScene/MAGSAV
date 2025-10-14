@@ -2,10 +2,8 @@ package com.magsav.gui.societes;
 
 import com.magsav.gui.component.FileDropZone;
 import com.magsav.model.Company;
-import com.magsav.repo.CompanyRepository;
 import com.magsav.util.MediaImporter;
 import com.magsav.util.AppLogger;
-import com.magsav.db.DB;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -38,13 +36,11 @@ public class EnhancedManufacturerFormController implements Initializable {
     
     // Données
     private Company currentCompany;
-    private CompanyRepository companyRepository;
     private boolean isEditMode = false;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            companyRepository = new CompanyRepository(DB.getConnection());
             setupDropZones();
             updateUI();
             AppLogger.info("Formulaire fabricant amélioré initialisé");

@@ -15,49 +15,26 @@ import java.util.Optional;
  */
 public class CompanyRepository {
     
-    // Requêtes SQL
-    private static final String CREATE_TABLE = """
-        CREATE TABLE IF NOT EXISTS companies (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            legal_name TEXT,
-            type TEXT NOT NULL DEFAULT 'COMPANY',
-            siret TEXT,
-            address TEXT,
-            postal_code TEXT,
-            city TEXT,
-            country TEXT DEFAULT 'France',
-            phone TEXT,
-            email TEXT,
-            website TEXT,
-            description TEXT,
-            logo_path TEXT,
-            sector TEXT,
-            is_active INTEGER DEFAULT 1,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-        )
-    """;
-    
+    // Requêtes SQL - utilise la table societes existante
     private static final String INSERT_COMPANY = """
-        INSERT INTO companies (name, legal_name, type, siret, address, postal_code, city, country, 
-                              phone, email, website, description, logo_path, sector, is_active, created_at, updated_at)
+        INSERT INTO societes (nom_societe, raison_sociale, type_societe, siret, adresse_societe, code_postal, ville, pays, 
+                              telephone_societe, email_societe, site_web, description, logo_path, secteur, is_active, date_creation, date_modification)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """;
     
     private static final String UPDATE_COMPANY = """
-        UPDATE companies SET name = ?, legal_name = ?, type = ?, siret = ?, address = ?, postal_code = ?, 
-                            city = ?, country = ?, phone = ?, email = ?, website = ?, description = ?, 
-                            logo_path = ?, sector = ?, is_active = ?, updated_at = ?
+        UPDATE societes SET nom_societe = ?, raison_sociale = ?, type_societe = ?, siret = ?, adresse_societe = ?, code_postal = ?, 
+                            ville = ?, pays = ?, telephone_societe = ?, email_societe = ?, site_web = ?, description = ?, 
+                            logo_path = ?, secteur = ?, is_active = ?, date_modification = ?
         WHERE id = ?
     """;
     
-    private static final String SELECT_ALL = "SELECT * FROM companies ORDER BY name";
-    private static final String SELECT_BY_ID = "SELECT * FROM companies WHERE id = ?";
-    private static final String SELECT_BY_TYPE = "SELECT * FROM companies WHERE type = ? ORDER BY name";
-    private static final String SELECT_ACTIVE = "SELECT * FROM companies WHERE is_active = 1 ORDER BY name";
-    private static final String DELETE_BY_ID = "DELETE FROM companies WHERE id = ?";
-    private static final String COUNT_ALL = "SELECT COUNT(*) FROM companies";
+    private static final String SELECT_ALL = "SELECT * FROM societes ORDER BY nom_societe";
+    private static final String SELECT_BY_ID = "SELECT * FROM societes WHERE id = ?";
+    private static final String SELECT_BY_TYPE = "SELECT * FROM societes WHERE type_societe = ? ORDER BY nom_societe";
+    private static final String SELECT_ACTIVE = "SELECT * FROM societes WHERE is_active = 1 ORDER BY nom_societe";
+    private static final String DELETE_BY_ID = "DELETE FROM societes WHERE id = ?";
+    private static final String COUNT_ALL = "SELECT COUNT(*) FROM societes";
     
     private final Connection connection;
     
@@ -67,13 +44,8 @@ public class CompanyRepository {
     }
     
     private void createTableIfNotExists() {
-        try (Statement stmt = connection.createStatement()) {
-            stmt.execute(CREATE_TABLE);
-            AppLogger.info("CompanyRepository", "Table companies créée ou vérifiée");
-        } catch (SQLException e) {
-            AppLogger.error("Erreur lors de la création de la table companies", e);
-            throw new RuntimeException("Impossible de créer la table companies", e);
-        }
+        // Table societes déjà créée dans DB.ensureSchema()
+        AppLogger.info("CompanyRepository", "Table societes vérifiée (créée dans DB.ensureSchema)");
     }
     
     /**
@@ -302,10 +274,10 @@ public class CompanyRepository {
     private Company mapResultSetToCompany(ResultSet rs) throws SQLException {
         Company company = new Company();
         company.setId(rs.getLong("id"));
-        company.setName(rs.getString("name"));
-        company.setLegalName(rs.getString("legal_name"));
+        company.setName(rs.getString("nom_societe"));
+        company.setLegalName(rs.getString("raison_sociale"));
         
-        String typeStr = rs.getString("type");
+        String typeStr = rs.getString("type_societe");
         try {
             company.setType(Company.CompanyType.valueOf(typeStr));
         } catch (IllegalArgumentException e) {
@@ -313,25 +285,25 @@ public class CompanyRepository {
         }
         
         company.setSiret(rs.getString("siret"));
-        company.setAddress(rs.getString("address"));
-        company.setPostalCode(rs.getString("postal_code"));
-        company.setCity(rs.getString("city"));
-        company.setCountry(rs.getString("country"));
-        company.setPhone(rs.getString("phone"));
-        company.setEmail(rs.getString("email"));
-        company.setWebsite(rs.getString("website"));
+        company.setAddress(rs.getString("adresse_societe"));
+        company.setPostalCode(rs.getString("code_postal"));
+        company.setCity(rs.getString("ville"));
+        company.setCountry(rs.getString("pays"));
+        company.setPhone(rs.getString("telephone_societe"));
+        company.setEmail(rs.getString("email_societe"));
+        company.setWebsite(rs.getString("site_web"));
         company.setDescription(rs.getString("description"));
         company.setLogoPath(rs.getString("logo_path"));
-        company.setSector(rs.getString("sector"));
+        company.setSector(rs.getString("secteur"));
         company.setActive(rs.getInt("is_active") == 1);
         
-        String createdAtStr = rs.getString("created_at");
+        String createdAtStr = rs.getString("date_creation");
         if (createdAtStr != null) {
             // Parse SQLite datetime format (yyyy-MM-dd HH:mm:ss)
             company.setCreatedAt(LocalDateTime.parse(createdAtStr.replace(" ", "T")));
         }
         
-        String updatedAtStr = rs.getString("updated_at");
+        String updatedAtStr = rs.getString("date_modification");
         if (updatedAtStr != null) {
             // Parse SQLite datetime format (yyyy-MM-dd HH:mm:ss)
             company.setUpdatedAt(LocalDateTime.parse(updatedAtStr.replace(" ", "T")));

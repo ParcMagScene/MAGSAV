@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="200" height="200" fill="#F4F4F4"/>
+  
+  <!-- Photo frame -->
+  <rect x="30" y="40" width="140" height="120" fill="white" stroke="#BDC3C7" stroke-width="3"/>
+  
+  <!-- Photo placeholder -->
+  <rect x="40" y="50" width="120" height="100" fill="#ECF0F1"/>
+  
+  <!-- Mountain landscape -->
+  <polygon points="40,150 70,120 100,140 130,110 160,150" fill="#95A5A6"/>
+  <polygon points="40,150 80,130 120,150" fill="#7F8C8D"/>
+  
+  <!-- Sun -->
+  <circle cx="140" cy="70" r="12" fill="#F39C12"/>
+  
+  <!-- Camera icon -->
+  <rect x="85" y="75" width="30" height="20" rx="3" fill="#34495E"/>
+  <circle cx="100" cy="85" r="6" fill="#2C3E50"/>
+  <circle cx="100" cy="85" r="3" fill="white"/>
+  <rect x="88" y="72" width="4" height="3" fill="#34495E"/>
+  
+  <!-- Image text -->
+  <text x="100" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#7F8C8D">IMAGE</text>
+</svg>

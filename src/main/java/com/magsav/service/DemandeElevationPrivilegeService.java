@@ -239,7 +239,8 @@ public class DemandeElevationPrivilegeService {
      */
     public List<User.Role> getRolesDisponiblesPourElevation(User.Role roleActuel) {
         return switch (roleActuel) {
-            case INTERMITTENT -> List.of(User.Role.TECHNICIEN_MAG_SCENE);
+            case INTERMITTENT -> List.of(User.Role.CHAUFFEUR_PL, User.Role.CHAUFFEUR_SPL, User.Role.TECHNICIEN_MAG_SCENE);
+            case CHAUFFEUR_PL, CHAUFFEUR_SPL -> List.of(User.Role.TECHNICIEN_MAG_SCENE);
             case TECHNICIEN_MAG_SCENE -> List.of(User.Role.ADMIN);
             case ADMIN -> List.of(); // Aucune élévation possible
         };

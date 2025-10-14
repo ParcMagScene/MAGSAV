@@ -5,7 +5,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.beans.value.ChangeListener;
+
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -187,7 +187,7 @@ public class AppearanceController implements Initializable {
     
     private void applyThemeChangesInstantly() {
         // Créer un nouveau thème personnalisé avec les couleurs sélectionnées
-        CustomTheme customTheme = new CustomTheme(
+        new CustomTheme(
             colorToHex(sidebarColorPicker.getValue()),
             colorToHex(backgroundColorPicker.getValue()),
             colorToHex(tabColorPicker.getValue()),

@@ -18,7 +18,7 @@ public class InterventionDetailController implements Initializable {
   @FXML private Button btnSave;
   @FXML private Button btnCancel;
 
-  private long interventionId;
+
   
   // État d'édition
   private boolean isEditMode = false;
@@ -49,7 +49,6 @@ public class InterventionDetailController implements Initializable {
   }
 
   public void load(long id) { 
-    this.interventionId = id;
     InterventionRow intervention = new com.magsav.repo.InterventionRepository().findById(id);
     if (intervention != null) {
       if (taDesc != null) taDesc.setText(intervention.panne());

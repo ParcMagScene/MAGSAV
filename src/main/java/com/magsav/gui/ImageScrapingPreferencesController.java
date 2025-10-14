@@ -1,6 +1,6 @@
 package com.magsav.gui;
 
-import com.magsav.service.ImageScrapingService;
+
 import com.magsav.service.ScrapingConfigService;
 import com.magsav.repo.ProductRepository;
 import com.magsav.util.AppLogger;
@@ -60,7 +60,6 @@ public class ImageScrapingPreferencesController implements Initializable {
     @FXML private Button btnCancel;
     
     private ObservableList<SourceRow> sourceData = FXCollections.observableArrayList();
-    private ImageScrapingService scrapingService = new ImageScrapingService();
     private ProductRepository productRepo = new ProductRepository();
     
     @Override

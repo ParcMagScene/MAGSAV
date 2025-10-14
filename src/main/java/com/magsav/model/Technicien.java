@@ -15,9 +15,26 @@ public class Technicien {
     private final StringProperty prenom = new SimpleStringProperty("");
     private final StringProperty email = new SimpleStringProperty("");
     private final StringProperty telephone = new SimpleStringProperty("");
+    private final StringProperty fonction = new SimpleStringProperty(""); // Fonction spécifique (Distribution, Lumière, etc.)
     private final StringProperty specialites = new SimpleStringProperty(""); // JSON
     private final ObjectProperty<StatutTechnicien> statut = new SimpleObjectProperty<>(StatutTechnicien.ACTIF);
     private final StringProperty notes = new SimpleStringProperty("");
+    
+    // Informations de contact et adresse
+    private final StringProperty adresse = new SimpleStringProperty("");
+    private final StringProperty codePostal = new SimpleStringProperty("");
+    private final StringProperty ville = new SimpleStringProperty("");
+    private final StringProperty telephoneUrgence = new SimpleStringProperty("");
+    
+    // Permis de conduire et habilitations
+    private final StringProperty permisConduire = new SimpleStringProperty(""); // VL, PL, etc.
+    private final StringProperty habilitations = new SimpleStringProperty(""); // JSON des habilitations
+    private final StringProperty dateObtentionPermis = new SimpleStringProperty("");
+    private final StringProperty dateValiditeHabilitations = new SimpleStringProperty("");
+    
+    // Association société
+    private final IntegerProperty societeId = new SimpleIntegerProperty(0);
+    private final StringProperty societeNom = new SimpleStringProperty("");
     
     // Intégration Google
     private final StringProperty googleContactId = new SimpleStringProperty("");
@@ -85,6 +102,10 @@ public class Technicien {
     public void setTelephone(String telephone) { this.telephone.set(telephone); }
     public StringProperty telephoneProperty() { return telephone; }
     
+    public String getFonction() { return fonction.get(); }
+    public void setFonction(String fonction) { this.fonction.set(fonction); }
+    public StringProperty fonctionProperty() { return fonction; }
+    
     public String getSpecialites() { return specialites.get(); }
     public void setSpecialites(String specialites) { this.specialites.set(specialites); }
     public StringProperty specialitesProperty() { return specialites; }
@@ -96,6 +117,49 @@ public class Technicien {
     public String getNotes() { return notes.get(); }
     public void setNotes(String notes) { this.notes.set(notes); }
     public StringProperty notesProperty() { return notes; }
+    
+    // Informations de contact et adresse
+    public String getAdresse() { return adresse.get(); }
+    public void setAdresse(String adresse) { this.adresse.set(adresse); }
+    public StringProperty adresseProperty() { return adresse; }
+    
+    public String getCodePostal() { return codePostal.get(); }
+    public void setCodePostal(String codePostal) { this.codePostal.set(codePostal); }
+    public StringProperty codePostalProperty() { return codePostal; }
+    
+    public String getVille() { return ville.get(); }
+    public void setVille(String ville) { this.ville.set(ville); }
+    public StringProperty villeProperty() { return ville; }
+    
+    public String getTelephoneUrgence() { return telephoneUrgence.get(); }
+    public void setTelephoneUrgence(String telephoneUrgence) { this.telephoneUrgence.set(telephoneUrgence); }
+    public StringProperty telephoneUrgenceProperty() { return telephoneUrgence; }
+    
+    // Permis et habilitations
+    public String getPermisConduire() { return permisConduire.get(); }
+    public void setPermisConduire(String permisConduire) { this.permisConduire.set(permisConduire); }
+    public StringProperty permisConduireProperty() { return permisConduire; }
+    
+    public String getHabilitations() { return habilitations.get(); }
+    public void setHabilitations(String habilitations) { this.habilitations.set(habilitations); }
+    public StringProperty habilitationsProperty() { return habilitations; }
+    
+    public String getDateObtentionPermis() { return dateObtentionPermis.get(); }
+    public void setDateObtentionPermis(String dateObtentionPermis) { this.dateObtentionPermis.set(dateObtentionPermis); }
+    public StringProperty dateObtentionPermisProperty() { return dateObtentionPermis; }
+    
+    public String getDateValiditeHabilitations() { return dateValiditeHabilitations.get(); }
+    public void setDateValiditeHabilitations(String dateValiditeHabilitations) { this.dateValiditeHabilitations.set(dateValiditeHabilitations); }
+    public StringProperty dateValiditeHabilitationsProperty() { return dateValiditeHabilitations; }
+    
+    // Association société
+    public int getSocieteId() { return societeId.get(); }
+    public void setSocieteId(int societeId) { this.societeId.set(societeId); }
+    public IntegerProperty societeIdProperty() { return societeId; }
+    
+    public String getSocieteNom() { return societeNom.get(); }
+    public void setSocieteNom(String societeNom) { this.societeNom.set(societeNom); }
+    public StringProperty societeNomProperty() { return societeNom; }
     
     // Propriétés Google
     public String getGoogleContactId() { return googleContactId.get(); }

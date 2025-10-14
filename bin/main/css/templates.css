@@ -64,6 +64,7 @@
 
 .form-container {
     -fx-alignment: top-center;
+    max-width: 600px;
     -fx-max-width: 600;
 }
 
@@ -105,6 +106,7 @@
 }
 
 .dashboard-icon {
+    fill: var(--primary-color);
     -fx-fill: var(--primary-color);
 }
 
@@ -220,7 +222,9 @@
 @media screen and (max-width: 599px) {
     .main-layout .modern-sidebar {
         -fx-pref-width: 0;
+        min-width: 0;
         -fx-min-width: 0;
+        max-width: 0;
         -fx-max-width: 0;
     }
     
@@ -230,6 +234,7 @@
     }
     
     .form-container {
+        max-width: none;
         -fx-max-width: none;
         padding: 16;
     -fx-padding: 16;
@@ -237,6 +242,7 @@
     
     .dashboard-card {
         -fx-pref-width: none;
+        max-width: none;
         -fx-max-width: none;
     }
 }
@@ -346,6 +352,7 @@
 }
 
 .full-width {
+    max-width: none;
     -fx-max-width: none;
     -fx-pref-width: none;
 }

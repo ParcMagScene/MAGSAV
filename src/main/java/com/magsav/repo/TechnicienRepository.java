@@ -1,5 +1,6 @@
 package com.magsav.repo;
 
+import com.magsav.cache.CacheManager;
 import com.magsav.db.DB;
 import com.magsav.model.Technicien;
 import com.magsav.model.Technicien.StatutTechnicien;
@@ -11,78 +12,89 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Repository pour la gestion des techniciens
+ * Repository pour la gestion des techniciens avec cache optimisé
  */
 public class TechnicienRepository {
     
-    /**
-     * Récupère tous les techniciens
-     */
-    public ObservableList<Technicien> findAll() {
-        ObservableList<Technicien> techniciens = FXCollections.observableArrayList();
-        
-        String sql = """
-            SELECT id, nom, prenom, email, telephone, specialites, statut, notes,
-                   google_contact_id, google_calendar_id, sync_google_enabled, last_google_sync,
-                   date_creation, date_modification
-            FROM techniciens 
-            ORDER BY nom, prenom
-        """;
-        
-        try (Connection conn = DB.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-            
-            while (rs.next()) {
-                techniciens.add(mapResultSetToTechnicien(rs));
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la récupération des techniciens: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return techniciens;
-    }
+    private static final CacheManager cache = CacheManager.getInstance();
     
     /**
-     * Recherche des techniciens par nom, prénom ou email
+     * Récupère tous les techniciens (avec cache)
      */
-    public ObservableList<Technicien> search(String query) {
-        ObservableList<Technicien> techniciens = FXCollections.observableArrayList();
-        
-        String sql = """
-            SELECT id, nom, prenom, email, telephone, specialites, statut, notes,
-                   google_contact_id, google_calendar_id, sync_google_enabled, last_google_sync,
-                   date_creation, date_modification
-            FROM techniciens 
-            WHERE UPPER(nom) LIKE UPPER(?) 
-               OR UPPER(prenom) LIKE UPPER(?) 
-               OR UPPER(email) LIKE UPPER(?)
-            ORDER BY nom, prenom
-        """;
-        
-        String searchPattern = "%" + query + "%";
-        
-        try (Connection conn = DB.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    public ObservableList<Technicien> findAll() {
+        return cache.get("techniciens:all", () -> {
+            ObservableList<Technicien> techniciens = FXCollections.observableArrayList();
             
-            pstmt.setString(1, searchPattern);
-            pstmt.setString(2, searchPattern);
-            pstmt.setString(3, searchPattern);
+            String sql = """
+                SELECT id, nom, prenom, fonction, email, telephone, telephone_urgence,
+                       adresse, code_postal, ville, permis_conduire, habilitations, 
+                       date_obtention_permis, date_validite_habilitations, specialites, statut, notes,
+                       societe_id, societe_nom,
+                       google_contact_id, google_calendar_id, sync_google_enabled, last_google_sync,
+                       date_creation, date_modification
+                FROM techniciens 
+                ORDER BY nom, prenom
+            """;
             
-            try (ResultSet rs = pstmt.executeQuery()) {
+            try (Connection conn = DB.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(sql);
+                 ResultSet rs = pstmt.executeQuery()) {
+                
                 while (rs.next()) {
                     techniciens.add(mapResultSetToTechnicien(rs));
                 }
+                
+            } catch (SQLException e) {
+                System.err.println("Erreur lors de la récupération des techniciens: " + e.getMessage());
+                e.printStackTrace();
             }
             
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la recherche de techniciens: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        return techniciens;
+            return techniciens;
+        }, 3); // TTL de 3 minutes
+    }
+    
+    /**
+     * Recherche des techniciens par nom, prénom ou email (avec cache)
+     */
+    public ObservableList<Technicien> search(String query) {
+        // Cache avec clé basée sur la requête normalisée
+        String normalizedQuery = query.trim().toLowerCase();
+        return cache.get("techniciens:search:" + normalizedQuery, () -> {
+            ObservableList<Technicien> techniciens = FXCollections.observableArrayList();
+            
+            String sql = """
+                SELECT id, nom, prenom, email, telephone, specialites, statut, notes,
+                       google_contact_id, google_calendar_id, sync_google_enabled, last_google_sync,
+                       date_creation, date_modification
+                FROM techniciens 
+                WHERE UPPER(nom) LIKE UPPER(?) 
+                   OR UPPER(prenom) LIKE UPPER(?) 
+                   OR UPPER(email) LIKE UPPER(?)
+                ORDER BY nom, prenom
+            """;
+            
+            String searchPattern = "%" + query + "%";
+            
+            try (Connection conn = DB.getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                
+                pstmt.setString(1, searchPattern);
+                pstmt.setString(2, searchPattern);
+                pstmt.setString(3, searchPattern);
+                
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        techniciens.add(mapResultSetToTechnicien(rs));
+                    }
+                }
+                
+            } catch (SQLException e) {
+                System.err.println("Erreur lors de la recherche de techniciens: " + e.getMessage());
+                e.printStackTrace();
+            }
+            
+            return techniciens;
+        }, 1); // TTL court de 1 minute pour les recherches
     }
     
     /**
@@ -366,13 +378,33 @@ public class TechnicienRepository {
     private Technicien mapResultSetToTechnicien(ResultSet rs) throws SQLException {
         Technicien technicien = new Technicien();
         
+        // Informations de base
         technicien.setId(rs.getInt("id"));
         technicien.setNom(rs.getString("nom"));
         technicien.setPrenom(rs.getString("prenom"));
+        technicien.setFonction(rs.getString("fonction"));
         technicien.setEmail(rs.getString("email"));
         technicien.setTelephone(rs.getString("telephone"));
+        technicien.setTelephoneUrgence(rs.getString("telephone_urgence"));
+        
+        // Adresse
+        technicien.setAdresse(rs.getString("adresse"));
+        technicien.setCodePostal(rs.getString("code_postal"));
+        technicien.setVille(rs.getString("ville"));
+        
+        // Permis et habilitations
+        technicien.setPermisConduire(rs.getString("permis_conduire"));
+        technicien.setHabilitations(rs.getString("habilitations"));
+        technicien.setDateObtentionPermis(rs.getString("date_obtention_permis"));
+        technicien.setDateValiditeHabilitations(rs.getString("date_validite_habilitations"));
+        
+        // Spécialités et informations générales
         technicien.setSpecialites(rs.getString("specialites"));
         technicien.setNotes(rs.getString("notes"));
+        
+        // Association société
+        technicien.setSocieteId(rs.getInt("societe_id"));
+        technicien.setSocieteNom(rs.getString("societe_nom"));
         
         // Conversion sécurisée de l'enum
         String statutStr = rs.getString("statut");
@@ -396,4 +428,6 @@ public class TechnicienRepository {
         
         return technicien;
     }
+    
+
 }

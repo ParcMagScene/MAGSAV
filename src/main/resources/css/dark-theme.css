@@ -204,6 +204,7 @@
     padding: 0;
     -fx-padding: 0;
     -fx-pref-width: 260;
+    min-width: 260px;
     -fx-min-width: 260;
 }
 

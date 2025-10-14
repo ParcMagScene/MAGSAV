@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="200" height="200" fill="#F8F9FA"/>
+  
+  <!-- Product box -->
+  <rect x="50" y="70" width="100" height="80" fill="#E9ECEF" stroke="#DEE2E6" stroke-width="2"/>
+  
+  <!-- Box lines for 3D effect -->
+  <line x1="150" y1="70" x2="170" y2="50" stroke="#DEE2E6" stroke-width="2"/>
+  <line x1="170" y1="50" x2="170" y2="130" stroke="#DEE2E6" stroke-width="2"/>
+  <line x1="170" y1="130" x2="150" y2="150" stroke="#DEE2E6" stroke-width="2"/>
+  <line x1="150" y1="70" x2="170" y2="50" stroke="#DEE2E6" stroke-width="2"/>
+  <line x1="50" y1="70" x2="70" y2="50" stroke="#DEE2E6" stroke-width="2"/>
+  <line x1="70" y1="50" x2="170" y2="50" stroke="#DEE2E6" stroke-width="2"/>
+  
+  <!-- Question mark icon -->
+  <circle cx="100" cy="110" r="25" fill="#6C757D"/>
+  <text x="100" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white">?</text>
+  
+  <!-- Product text -->
+  <text x="100" y="180" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#6C757D">PRODUIT</text>
+</svg>

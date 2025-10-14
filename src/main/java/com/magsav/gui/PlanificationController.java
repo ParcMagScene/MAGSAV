@@ -22,7 +22,7 @@ import javafx.util.StringConverter;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -98,7 +98,6 @@ public class PlanificationController implements Initializable {
     
     private LocalDate semaineCourante;
     private DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private DateTimeFormatter formatHeure = DateTimeFormatter.ofPattern("HH:mm");
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {

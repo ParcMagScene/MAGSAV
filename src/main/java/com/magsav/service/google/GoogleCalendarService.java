@@ -4,8 +4,7 @@ import com.magsav.model.GoogleServicesConfig;
 import com.magsav.model.Planification;
 import com.magsav.util.AppLogger;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

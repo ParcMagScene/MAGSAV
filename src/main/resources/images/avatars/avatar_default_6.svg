@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="64" fill="#1ABC9C"/>
+  
+  <!-- Face -->
+  <circle cx="64" cy="48" r="20" fill="#F8C471"/>
+  
+  <!-- Eyes -->
+  <circle cx="58" cy="45" r="2" fill="#2C3E50"/>
+  <circle cx="70" cy="45" r="2" fill="#2C3E50"/>
+  
+  <!-- Beard -->
+  <ellipse cx="64" cy="58" rx="12" ry="8" fill="#34495E"/>
+  
+  <!-- Mouth -->
+  <ellipse cx="64" cy="54" rx="2" ry="1" fill="#2C3E50"/>
+  
+  <!-- Body -->
+  <ellipse cx="64" cy="95" rx="25" ry="18" fill="#16A085"/>
+  
+  <!-- Collar -->
+  <ellipse cx="64" cy="78" rx="20" ry="8" fill="#ECF0F1"/>
+</svg>

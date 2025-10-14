@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="64" fill="#E74C3C"/>
+  
+  <!-- Face -->
+  <circle cx="64" cy="48" r="20" fill="#F4C2A1"/>
+  
+  <!-- Eyes -->
+  <circle cx="58" cy="45" r="2" fill="#2C3E50"/>
+  <circle cx="70" cy="45" r="2" fill="#2C3E50"/>
+  
+  <!-- Smile -->
+  <path d="M 58 52 Q 64 58 70 52" stroke="#2C3E50" stroke-width="1.5" fill="none"/>
+  
+  <!-- Body -->
+  <ellipse cx="64" cy="95" rx="25" ry="18" fill="#8E44AD"/>
+  
+  <!-- Collar -->
+  <ellipse cx="64" cy="78" rx="20" ry="8" fill="#ECF0F1"/>
+</svg>

@@ -3,7 +3,7 @@ package com.magsav.service.google;
 import com.magsav.model.GoogleServicesConfig;
 import com.magsav.util.AppLogger;
 
-import java.io.IOException;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;

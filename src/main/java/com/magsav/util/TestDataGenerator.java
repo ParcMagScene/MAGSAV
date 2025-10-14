@@ -1,7 +1,7 @@
 package com.magsav.util;
 
 import com.magsav.db.DB;
-import com.magsav.exception.DatabaseException;
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,9 +39,7 @@ public class TestDataGenerator {
         "Récepteurs HF", "Émetteurs HF", "Projecteurs LED", "Projecteurs traditionnels"
     );
     
-    private static final List<String> TYPES_SOCIETES = Arrays.asList(
-        "CLIENT", "FOURNISSEUR", "PARTENAIRE", "SOUS_TRAITANT"
-    );
+
     
     private static final List<String> STATUTS_INTERVENTION = Arrays.asList(
         "EN_ATTENTE", "EN_COURS", "TERMINE", "ANNULE", "REPORTE"
@@ -166,11 +164,11 @@ public class TestDataGenerator {
             // Vérifier si Mag Scène existe déjà pour éviter les doublons
             String checkSql = "SELECT COUNT(*) FROM societes WHERE nom_societe = 'Mag Scène'";
             PreparedStatement checkStmt = conn.prepareStatement(checkSql);
-            boolean magSceneExists = false;
             try {
                 var rs = checkStmt.executeQuery();
+                // Vérification de l'existence - pas besoin de stocker le résultat
                 if (rs.next() && rs.getInt(1) > 0) {
-                    magSceneExists = true;
+                    // Mag Scène existe déjà
                 }
             } catch (SQLException e) {
                 // Ignore l'erreur si la table n'existe pas encore
@@ -971,36 +969,7 @@ public class TestDataGenerator {
         };
     }
     
-    /**
-     * Vide toutes les tables (optionnel - à utiliser avec précaution)
-     */
-    private static void clearAllTables() throws SQLException {
-        System.out.println("🗑️ Suppression des données existantes...");
-        
-        try (Connection conn = DB.getConnection(); 
-             PreparedStatement stmt = conn.prepareStatement("")) {
-            
-            // Désactiver les contraintes FK temporairement
-            stmt.execute("PRAGMA foreign_keys = OFF");
-            
-            // Lister toutes les tables à vider
-            String[] tables = {
-                "communications", "disponibilites_techniciens", "alertes_stock", 
-                "mouvements_stock", "lignes_commandes", "commandes", "planifications",
-                "sav_history", "interventions", "produits", "vehicules", "techniciens",
-                "categories", "societes", "email_templates"
-            };
-            
-            for (String table : tables) {
-                stmt.execute("DELETE FROM " + table);
-                stmt.execute("DELETE FROM sqlite_sequence WHERE name = '" + table + "'");
-            }
-            
-            // Réactiver les contraintes FK
-            stmt.execute("PRAGMA foreign_keys = ON");
-        }
-        System.out.println("✅ Tables vidées");
-    }
+
     
     /**
      * Point d'entrée principal pour génération de données de test

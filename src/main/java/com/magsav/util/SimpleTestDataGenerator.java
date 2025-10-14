@@ -1,7 +1,7 @@
 package com.magsav.util;
 
 import com.magsav.db.DB;
-import com.magsav.model.Company;
+import com.magsav.model.User;
 import com.magsav.model.Vehicule;
 import com.magsav.model.Vehicule.TypeVehicule;
 import com.magsav.model.Vehicule.StatutVehicule;
@@ -13,9 +13,13 @@ import com.magsav.repo.*;
 public class SimpleTestDataGenerator {
     
     public static void generateTestData() {
+        generateTestData(false);
+    }
+    
+    public static void generateTestData(boolean force) {
         try {
-            // Vérifier d'abord s'il y a déjà des données
-            if (hasExistingData()) {
+            // Vérifier d'abord s'il y a déjà des données (sauf si forcé)
+            if (!force && hasExistingData()) {
                 System.out.println("⚠️ Données existantes détectées - génération ignorée");
                 return;
             }
@@ -28,13 +32,16 @@ public class SimpleTestDataGenerator {
             // 2. Générer les sociétés
             generateCompanies();
             
-            // 3. Générer les produits
+            // 3. Générer les utilisateurs
+            generateUsers();
+            
+            // 4. Générer les produits
             generateProducts();
             
-            // 4. Générer les véhicules
+            // 5. Générer les véhicules
             generateVehicules();
             
-            // 5. Générer les interventions
+            // 6. Générer les interventions
             generateInterventions();
             
             System.out.println("✅ Données de test générées avec succès !");
@@ -57,8 +64,8 @@ public class SimpleTestDataGenerator {
                 return true;
             }
             
-            // Vérifier s'il y a des companies
-            rs = stmt.executeQuery("SELECT COUNT(*) FROM companies");
+            // Vérifier s'il y a des sociétés
+            rs = stmt.executeQuery("SELECT COUNT(*) FROM societes");
             if (rs.next() && rs.getInt(1) > 0) {
                 return true;
             }
@@ -133,63 +140,60 @@ public class SimpleTestDataGenerator {
     private static void generateCompanies() {
         System.out.println("🏢 Génération des sociétés...");
         try {
-            CompanyRepository companyRepo = new CompanyRepository(DB.getConnection());
+            SocieteRepository societeRepo = new SocieteRepository();
             
-            // S'assurer que Mag Scène existe
-            companyRepo.createDefaultMagScene();
-            
-            // Fabricants
-            Company sony = new Company("Sony", Company.CompanyType.MANUFACTURER);
-            sony.setWebsite("https://www.sony.fr");
-            sony.setCountry("Japon");
-            companyRepo.save(sony);
-            
-            Company apple = new Company("Apple", Company.CompanyType.MANUFACTURER);
-            apple.setWebsite("https://www.apple.com");
-            apple.setCountry("États-Unis");
-            companyRepo.save(apple);
-            
-            Company yamaha = new Company("Yamaha", Company.CompanyType.MANUFACTURER);
-            yamaha.setWebsite("https://www.yamaha.com");
-            yamaha.setCountry("Japon");
-            companyRepo.save(yamaha);
+            // Fabricants (si pas déjà existants)
+            societeRepo.insert("MANUFACTURER", "Sony Corporation", "contact@sony.fr", "01.23.45.67.89", "Tokyo, Japon", "Fabricant équipements audiovisuels");
+            societeRepo.insert("MANUFACTURER", "Apple Inc.", "contact@apple.com", "01.34.56.78.90", "Cupertino, États-Unis", "Fabricant ordinateurs et tablettes");
+            societeRepo.insert("MANUFACTURER", "Panasonic Corporation", "contact@panasonic.com", "01.45.67.89.01", "Osaka, Japon", "Fabricant équipements électroniques");
             
             // Fournisseurs
-            Company ldlc = new Company("LDLC", Company.CompanyType.SUPPLIER);
-            ldlc.setWebsite("https://www.ldlc.com");
-            ldlc.setCity("Limonest");
-            companyRepo.save(ldlc);
+            societeRepo.insert("SUPPLIER", "TechDistrib", "contact@techdistrib.fr", "01.56.78.90.12", "Paris, France", "Distributeur équipements techniques");
+            societeRepo.insert("SUPPLIER", "AudioPro", "contact@audiopro.fr", "01.67.89.01.23", "Lyon, France", "Fournisseur matériel audio");
             
             // Clients
-            Company mairie = new Company("Mairie de Lyon", Company.CompanyType.ADMINISTRATION);
-            mairie.setCity("Lyon");
-            companyRepo.save(mairie);
+            societeRepo.insert("CLIENT", "Théâtre Municipal", "contact@theatre-municipal.fr", "01.78.90.12.34", "Marseille, France", "Théâtre municipal");
+            societeRepo.insert("CLIENT", "Centre Culturel", "contact@centre-culturel.fr", "01.89.01.23.45", "Toulouse, France", "Centre culturel et événementiel");
             
-            Company clientA = new Company("Hôpital de la Croix-Rousse", Company.CompanyType.CLIENT);
-            clientA.setAddress("103 Grande Rue de la Croix-Rousse");
-            clientA.setCity("Lyon");
-            clientA.setPhone("04 72 07 17 17");
-            clientA.setEmail("contact@chu-lyon.fr");
-            companyRepo.save(clientA);
-            
-            Company clientB = new Company("Théâtre des Célestins", Company.CompanyType.CLIENT);
-            clientB.setAddress("4 rue Charles Dullin");
-            clientB.setCity("Lyon");
-            clientB.setPhone("04 72 77 40 00");
-            clientB.setEmail("direction@celestins-lyon.org");
-            companyRepo.save(clientB);
-            
-            Company clientC = new Company("Centre Culturel Charlie Chaplin", Company.CompanyType.CLIENT);
-            clientC.setAddress("12 avenue Charlie Chaplin");
-            clientC.setCity("Vaulx-en-Velin");
-            clientC.setPhone("04 72 04 81 18");
-            clientC.setEmail("accueil@4c-vaulxenvelin.com");
-            companyRepo.save(clientC);
             
             System.out.println("   ✓ Sociétés créées");
             
         } catch (Exception e) {
             System.err.println("   ❌ Erreur sociétés: " + e.getMessage());
+        }
+    }
+
+    private static void generateUsers() {
+        System.out.println("👥 Génération des utilisateurs...");
+        try {
+            UserRepository userRepo = new UserRepository();
+            
+            // Récupérer l'ID de Mag Scene (societe ID 1)
+            long magSceneId = 1;
+            
+            // Créer des utilisateurs de test avec les bons objets User (utilisation de hash simple pour les tests)
+            User admin = new User(null, "admin", "admin@magscene.fr", 
+                "admin123", // Password en dur pour les tests
+                User.Role.ADMIN, "Administrateur Système", "01.02.03.04.05", 
+                magSceneId, "Responsable IT", null, true, null, null, null, null);
+            userRepo.createUser(admin);
+            
+            User tech1 = new User(null, "pierre", "pierre.martin@magscene.fr", 
+                "tech123", // Password en dur pour les tests
+                User.Role.TECHNICIEN_MAG_SCENE, "Pierre Martin", "01.12.23.34.45", 
+                magSceneId, "Technicien Audio", null, true, null, null, null, null);
+            userRepo.createUser(tech1);
+            
+            User tech2 = new User(null, "marie", "marie.dubois@magscene.fr", 
+                "tech123", // Password en dur pour les tests
+                User.Role.TECHNICIEN_MAG_SCENE, "Marie Dubois", "01.23.34.45.56", 
+                magSceneId, "Technicienne Éclairage", null, true, null, null, null, null);
+            userRepo.createUser(tech2);
+            
+            System.out.println("   ✓ Utilisateurs créés");
+            
+        } catch (Exception e) {
+            System.err.println("   ❌ Erreur utilisateurs: " + e.getMessage());
         }
     }
     

@@ -8,7 +8,7 @@ import javafx.scene.Node;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.magsav.util.ThemeManager;
+
 import com.magsav.ui.animation.AnimationService;
 import com.magsav.ui.animation.AnimationUtils;
 import com.magsav.ui.icons.IconService;

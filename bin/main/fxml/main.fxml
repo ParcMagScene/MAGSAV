@@ -63,11 +63,9 @@
           <Label styleClass="nav-label" text="Préférences"/>
         </HBox>
         
-        <Separator style="-fx-background-color: #444;"/>
-        
-        <HBox fx:id="debugItem" styleClass="nav-item" onMouseClicked="#onGenerateTestData">
-          <Label styleClass="nav-icon" text="🔧"/>
-          <Label styleClass="nav-label" text="Générer test"/>
+        <HBox fx:id="technicienUsersItem" styleClass="nav-item" onMouseClicked="#onShowTechnicienUsers">
+          <Label styleClass="nav-icon" text="👤"/>
+          <Label styleClass="nav-label" text="Utilisateurs"/>
         </HBox>
       </VBox>
       

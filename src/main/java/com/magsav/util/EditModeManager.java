@@ -246,7 +246,9 @@ public class EditModeManager {
         } else if (control instanceof TextArea && value instanceof String) {
             ((TextArea) control).setText((String) value);
         } else if (control instanceof ComboBox) {
-            ((ComboBox<Object>) control).setValue(value);
+            @SuppressWarnings("unchecked")
+            ComboBox<Object> comboBox = (ComboBox<Object>) control;
+            comboBox.setValue(value);
         } else if (control instanceof CheckBox && value instanceof Boolean) {
             ((CheckBox) control).setSelected((Boolean) value);
         }

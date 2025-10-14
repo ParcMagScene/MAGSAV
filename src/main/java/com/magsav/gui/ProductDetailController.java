@@ -8,7 +8,8 @@ import com.magsav.gui.dialogs.PhotoMosaicController;
 import com.magsav.service.ImageNormalizationService;
 import com.magsav.service.DataChangeNotificationService;
 import com.magsav.service.DataChangeEvent;
-import com.magsav.util.EditModeManager;
+import com.magsav.service.AvatarService;
+
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,7 +18,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.util.prefs.Preferences;
@@ -57,7 +57,7 @@ public class ProductDetailController {
   private boolean isEditMode = false;
   
   // Gestionnaire de mode d'édition
-  private EditModeManager editManager;
+
 
   @FXML
   private void initialize() {
@@ -149,8 +149,11 @@ public class ProductDetailController {
   private void loadProductPhoto(String photoFilename) {
     if (imgPhoto == null) return;
     if (photoFilename == null || photoFilename.trim().isEmpty()) {
-      System.out.println("DEBUG: Aucune photo à charger (photoFilename null ou vide)");
-      javafx.application.Platform.runLater(() -> imgPhoto.setImage(null));
+      System.out.println("DEBUG: Aucune photo à charger (photoFilename null ou vide), utilisation de l'image par défaut");
+      javafx.application.Platform.runLater(() -> {
+        Image defaultImage = AvatarService.getInstance().getDefaultProductImage();
+        imgPhoto.setImage(defaultImage);
+      });
       return;
     }
     try {
@@ -179,20 +182,27 @@ public class ProductDetailController {
             System.out.println("DEBUG: Image fallback définie dans l'ImageView");
           });
         } else {
-          System.out.println("DEBUG: Photo introuvable: " + photoPath);
-          javafx.application.Platform.runLater(() -> imgPhoto.setImage(null));
+          System.out.println("DEBUG: Photo introuvable: " + photoPath + ", utilisation de l'image par défaut");
+          javafx.application.Platform.runLater(() -> {
+            Image defaultImage = AvatarService.getInstance().getDefaultProductImage();
+            imgPhoto.setImage(defaultImage);
+          });
         }
       }
     } catch (Exception ex) {
-      System.out.println("DEBUG: Erreur lors du chargement de la photo: " + ex.getMessage());
-      javafx.application.Platform.runLater(() -> imgPhoto.setImage(null));
+      System.out.println("DEBUG: Erreur lors du chargement de la photo: " + ex.getMessage() + ", utilisation de l'image par défaut");
+      javafx.application.Platform.runLater(() -> {
+        Image defaultImage = AvatarService.getInstance().getDefaultProductImage();
+        imgPhoto.setImage(defaultImage);
+      });
     }
   }
 
   private void loadManufacturerLogo(String manufacturerName) {
     if (imgLogo == null) return;
     if (manufacturerName == null || manufacturerName.trim().isEmpty()) {
-      imgLogo.setImage(null);
+      Image defaultLogo = AvatarService.getInstance().getDefaultCompanyLogo();
+      imgLogo.setImage(defaultLogo);
       return;
     }
     try {
@@ -232,11 +242,13 @@ public class ProductDetailController {
         System.out.println("DEBUG: Erreur lors de la recherche de logo: " + e.getMessage());
       }
       
-      System.out.println("DEBUG: Aucun logo trouvé pour: " + manufacturerName + " (slug: " + base + ")");
-      imgLogo.setImage(null);
+      System.out.println("DEBUG: Aucun logo trouvé pour: " + manufacturerName + " (slug: " + base + "), utilisation du logo par défaut");
+      Image defaultLogo = AvatarService.getInstance().getDefaultCompanyLogo();
+      imgLogo.setImage(defaultLogo);
     } catch (Exception ex) {
-      System.out.println("DEBUG: Erreur lors du chargement du logo: " + ex.getMessage());
-      imgLogo.setImage(null);
+      System.out.println("DEBUG: Erreur lors du chargement du logo: " + ex.getMessage() + ", utilisation du logo par défaut");
+      Image defaultLogo = AvatarService.getInstance().getDefaultCompanyLogo();
+      imgLogo.setImage(defaultLogo);
     }
   }
 
@@ -342,38 +354,7 @@ public class ProductDetailController {
     }
   }
 
-  private void importPhoto() {
-    FileChooser fc = new FileChooser();
-    fc.setTitle("Importer une photo");
-    fc.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.tiff"),
-        new FileChooser.ExtensionFilter("Tous les fichiers", "*.*")
-    );
-    var file = fc.showOpenDialog(lblName.getScene().getWindow());
-    if (file == null) return;
-    
-    try {
-      // Créer un nom de fichier basé sur le nom du produit et l'ID
-      String productName = nz(lblName.getText());
-      String baseName = productName.toLowerCase().replaceAll("[^a-z0-9]+", "_").replaceAll("^_+|_+$", "") + "_" + productId;
-      
-      System.out.println("DEBUG: Normalisation de l'image importée: " + file.getName());
-      
-      // Normaliser l'image (crée toutes les tailles nécessaires)
-      String normalizedFileName = imageService.normalizeImage(file.toPath(), baseName);
-      
-      System.out.println("DEBUG: Image normalisée avec succès: " + normalizedFileName);
-      
-      // Mettre à jour seulement l'affichage local, la propagation se fera via "Valider les changements"
-      currentPhotoFilename = normalizedFileName;
-      loadProductPhoto(normalizedFileName);
-      
-    } catch (Exception ex) {
-      System.err.println("Erreur lors de la normalisation: " + ex.getMessage());
-      ex.printStackTrace();
-      new Alert(Alert.AlertType.ERROR, "Erreur lors de l'import et de la normalisation: " + ex.getMessage()).showAndWait();
-    }
-  }
+
 
   @FXML
   private void onAddCategoryOrSubcategory() {

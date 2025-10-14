@@ -28,7 +28,6 @@ public class ImageScrapingService {
     private final ImageNormalizationService normalizationService;
     
     // Configuration par défaut
-    private static final int DEFAULT_MAX_IMAGES = 3;
     private static final int SCRAPING_TIMEOUT_MINUTES = 5;
     private static final String PYTHON_EXECUTABLE = "python3";
     private static final String SCRAPER_SCRIPT = "image_scraper.py";

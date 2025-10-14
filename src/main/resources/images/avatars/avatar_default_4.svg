@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="64" fill="#F39C12"/>
+  
+  <!-- Face -->
+  <circle cx="64" cy="48" r="20" fill="#E8B892"/>
+  
+  <!-- Eyes -->
+  <circle cx="58" cy="45" r="2" fill="#2C3E50"/>
+  <circle cx="70" cy="45" r="2" fill="#2C3E50"/>
+  
+  <!-- Glasses -->
+  <circle cx="58" cy="45" r="6" fill="none" stroke="#34495E" stroke-width="2"/>
+  <circle cx="70" cy="45" r="6" fill="none" stroke="#34495E" stroke-width="2"/>
+  <line x1="64" y1="45" x2="66" y2="45" stroke="#34495E" stroke-width="2"/>
+  
+  <!-- Mouth -->
+  <path d="M 60 52 Q 64 56 68 52" stroke="#2C3E50" stroke-width="1.5" fill="none"/>
+  
+  <!-- Body -->
+  <ellipse cx="64" cy="95" rx="25" ry="18" fill="#D35400"/>
+  
+  <!-- Collar -->
+  <ellipse cx="64" cy="78" rx="20" ry="8" fill="#ECF0F1"/>
+</svg>

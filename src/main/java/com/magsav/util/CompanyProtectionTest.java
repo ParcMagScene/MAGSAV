@@ -1,8 +1,7 @@
 package com.magsav.util;
 
 import com.magsav.model.Company;
-import com.magsav.repo.CompanyRepository;
-import com.magsav.db.DB;
+
 
 /**
  * Test simple pour vérifier le système de protection des sociétés

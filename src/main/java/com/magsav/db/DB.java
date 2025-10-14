@@ -7,6 +7,7 @@ import java.sql.*;
 
 public final class DB {
   private static String URL;
+  private static ConnectionPool connectionPool;
 
   static { try { Class.forName("org.sqlite.JDBC"); } catch (Throwable ignore) {} }
 
@@ -24,6 +25,12 @@ public final class DB {
       try { Files.createDirectories(dataDir); } catch (Exception ignore) {}
       URL = "jdbc:sqlite:" + db.toAbsolutePath();
     }
+    
+    // Initialiser le pool de connexions
+    if (connectionPool == null) {
+      connectionPool = ConnectionPool.getInstance(URL);
+    }
+    
     ensureSchema();
   }
 
@@ -61,7 +68,31 @@ public final class DB {
 
   public static Connection getConnection() throws SQLException {
     if (URL == null) init();
+    
+    if (connectionPool != null) {
+      return connectionPool.getConnection();
+    }
+    
+    // Fallback pour les tests ou cas d'erreur
     return DriverManager.getConnection(URL);
+  }
+  
+  public static void shutdown() {
+    if (connectionPool != null) {
+      connectionPool.shutdown();
+      connectionPool = null;
+    }
+  }
+  
+  public static ConnectionPool.Stats getConnectionStats() {
+    if (connectionPool != null) {
+      return new ConnectionPool.Stats(
+        connectionPool.getActiveConnections(),
+        connectionPool.getAvailableConnections(),
+        connectionPool.getTotalConnections()
+      );
+    }
+    return new ConnectionPool.Stats(0, 0, 0);
   }
 
   public static Path dataDir() {
@@ -98,10 +129,24 @@ public final class DB {
       st.execute("""
         CREATE TABLE IF NOT EXISTS societes(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          type_societe TEXT, nom_societe TEXT,
-          email_societe TEXT, telephone_societe TEXT,
-          adresse_societe TEXT, notes_societe TEXT,
-          date_creation TEXT DEFAULT (datetime('now'))
+          type_societe TEXT DEFAULT 'COMPANY', 
+          nom_societe TEXT NOT NULL,
+          raison_sociale TEXT,
+          siret TEXT,
+          adresse_societe TEXT, 
+          code_postal TEXT,
+          ville TEXT,
+          pays TEXT DEFAULT 'France',
+          telephone_societe TEXT,
+          email_societe TEXT,
+          site_web TEXT,
+          description TEXT,
+          logo_path TEXT,
+          secteur TEXT,
+          notes_societe TEXT,
+          is_active INTEGER DEFAULT 1,
+          date_creation TEXT DEFAULT (datetime('now')),
+          date_modification TEXT DEFAULT (datetime('now'))
         )
       """);
       st.execute("""
@@ -435,6 +480,27 @@ public final class DB {
           FOREIGN KEY (request_id) REFERENCES requests(id),
           FOREIGN KEY (supplier_id) REFERENCES societes(id)
         )""");
+
+      // Table des utilisateurs pour l'authentification et la gestion des droits
+      st.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT UNIQUE NOT NULL,
+          email TEXT UNIQUE NOT NULL,
+          password_hash TEXT NOT NULL,
+          role TEXT NOT NULL CHECK(role IN ('ADMIN', 'USER', 'TECHNICIEN_MAG_SCENE', 'INTERMITTENT')) DEFAULT 'USER',
+          full_name TEXT,
+          phone TEXT,
+          societe_id INTEGER,
+          position TEXT,
+          avatar_path TEXT,
+          is_active BOOLEAN DEFAULT 1,
+          created_at TEXT DEFAULT (datetime('now')),
+          last_login TEXT,
+          reset_token TEXT,
+          reset_token_expires TEXT,
+          FOREIGN KEY (societe_id) REFERENCES societes(id) ON DELETE SET NULL
+        )""");
       
       // Index pour optimiser les requêtes fréquentes
       st.execute("CREATE INDEX IF NOT EXISTS idx_prod_nom ON produits(UPPER(nom_produit))");
@@ -448,6 +514,9 @@ public final class DB {
       st.execute("CREATE INDEX IF NOT EXISTS idx_prod_sav_externe ON produits(sav_externe_id)");
       st.execute("CREATE INDEX IF NOT EXISTS idx_sav_history_product ON sav_history(produit_id)");
       st.execute("CREATE INDEX IF NOT EXISTS idx_sav_history_sav_externe ON sav_history(sav_externe_id)");
+      st.execute("CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)");
+      st.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)");
+      st.execute("CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)");
       st.execute("CREATE INDEX IF NOT EXISTS idx_vehicules_immatriculation ON vehicules(immatriculation)");
       st.execute("CREATE INDEX IF NOT EXISTS idx_vehicules_statut ON vehicules(statut)");
       st.execute("CREATE INDEX IF NOT EXISTS idx_vehicules_type ON vehicules(type_vehicule)");
@@ -498,6 +567,16 @@ public final class DB {
       
       st.execute("CREATE INDEX IF NOT EXISTS idx_email_templates_type ON email_templates(type_template)");
       st.execute("CREATE INDEX IF NOT EXISTS idx_email_templates_actif ON email_templates(actif)");
+      
+      // Migration : Ajouter colonne scraped_images si elle n'existe pas
+      try {
+        st.execute("ALTER TABLE produits ADD COLUMN scraped_images TEXT");
+      } catch (SQLException e) {
+        // Colonne existe déjà, ignorer l'erreur
+      }
+      
+      // Index pour scraped_images si besoin
+      st.execute("CREATE INDEX IF NOT EXISTS idx_produits_scraped_images ON produits(scraped_images)");
       
       // Insertion des données de base si nécessaire
       insertDefaultData();
@@ -615,39 +694,7 @@ public final class DB {
    * Insère la configuration Google par défaut
    * Commenté car géré maintenant par GoogleServicesConfigRepository
    */
-  private static void insertDefaultGoogleConfig(Connection conn) throws SQLException {
-    // Méthode commentée car gérée par GoogleServicesConfigRepository
-    /*String checkConfig = "SELECT COUNT(*) FROM configuration_google WHERE service_type = ?";
-    String insertConfig = """
-      INSERT INTO configuration_google (service_type, enabled, scope, sync_frequency, auto_sync)
-      VALUES (?, ?, ?, ?, ?)
-    """;
-    
-    String[] services = {"CALENDAR", "GMAIL", "CONTACTS", "DRIVE"};
-    String[] scopes = {
-      "https://www.googleapis.com/auth/calendar",
-      "https://www.googleapis.com/auth/gmail.modify",
-      "https://www.googleapis.com/auth/contacts",
-      "https://www.googleapis.com/auth/drive.file"
-    };
-    
-    for (int i = 0; i < services.length; i++) {
-      try (PreparedStatement check = conn.prepareStatement(checkConfig)) {
-        check.setString(1, services[i]);
-        ResultSet rs = check.executeQuery();
-        if (rs.next() && rs.getInt(1) == 0) {
-          try (PreparedStatement insert = conn.prepareStatement(insertConfig)) {
-            insert.setString(1, services[i]);
-            insert.setBoolean(2, false); // Désactivé par défaut
-            insert.setString(3, scopes[i]);
-            insert.setInt(4, 15); // Synchronisation toutes les 15 minutes
-            insert.setBoolean(5, false); // Auto-sync désactivé par défaut
-            insert.executeUpdate();
-          }
-        }
-      }
-    }*/
-  }
+
 
   private DB() {}
 }

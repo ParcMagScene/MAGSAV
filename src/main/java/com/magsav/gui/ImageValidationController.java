@@ -1,7 +1,6 @@
 package com.magsav.gui;
 
-import com.magsav.service.ImageNormalizationService;
-import com.magsav.repo.ProductRepository;
+
 import com.magsav.util.AppLogger;
 
 import javafx.application.Platform;
@@ -75,8 +74,7 @@ public class ImageValidationController implements Initializable {
     
     private ObservableList<ImageCorrespondence> correspondenceData = FXCollections.observableArrayList();
     private FilteredList<ImageCorrespondence> filteredData;
-    private ImageNormalizationService normalizationService = new ImageNormalizationService();
-    private ProductRepository productRepo = new ProductRepository();
+
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {

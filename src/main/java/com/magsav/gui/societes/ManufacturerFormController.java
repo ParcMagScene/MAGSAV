@@ -9,7 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.stage.FileChooser;
+
 
 import java.nio.file.*;
 import java.util.regex.Pattern;
@@ -26,7 +26,7 @@ public class ManufacturerFormController implements FormDialogManager.FormControl
   private final SocieteRepository repo = new SocieteRepository();
   private final AddressService addressService = new AddressService();
   private Societe currentSociete;
-  private boolean isEditMode = false;
+
   private String societeType = "FABRICANT"; // Par défaut
 
   @FXML
@@ -80,7 +80,6 @@ public class ManufacturerFormController implements FormDialogManager.FormControl
 
   public void init(Societe current) {
     this.currentSociete = current;
-    this.isEditMode = (current != null);
     
     if (current != null) {
       tfNom.setText(current.nom());
@@ -157,31 +156,7 @@ public class ManufacturerFormController implements FormDialogManager.FormControl
     }
   }
 
-  private void importLogo() {
-    FileChooser fc = new FileChooser();
-    fc.setTitle("Importer un logo");
-    fc.getExtensionFilters().setAll(
-        new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.svg", "*.gif"),
-        new FileChooser.ExtensionFilter("Tous les fichiers", "*.*")
-    );
-    var file = fc.showOpenDialog(tfNom.getScene().getWindow());
-    if (file == null) return;
-    try {
-      Path dir = MediaPaths.logosDir();
-      String name = file.getName();
-      String ext = "";
-      int i = name.lastIndexOf('.');
-      if (i > 0) ext = name.substring(i);
-      String base = slug(tfNom.getText());
-      String filename = base + ext.toLowerCase();
-      Path target = dir.resolve(filename);
-      Files.copy(file.toPath(), target, StandardCopyOption.REPLACE_EXISTING);
-      selectedLogo = filename;
-      imgLogo.setImage(new Image(target.toUri().toString(), true));
-    } catch (Exception ex) {
-      new Alert(Alert.AlertType.ERROR, "Import impossible: " + ex.getMessage()).showAndWait();
-    }
-  }
+
 
   private static String slug(String s) {
     if (s == null) return "unknown";

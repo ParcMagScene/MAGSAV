@@ -2144,24 +2144,9 @@ public class MainController {
       supprimerBtn.setDisable(!hasSelection);
     });
     
-    // Configurer le double-clic pour ouvrir les détails de la société et mettre en évidence Mag Scène
+    // Configurer le double-clic pour ouvrir les détails de la société
     table.setRowFactory(tv -> {
-      TableRow<CompanyRow> row = new TableRow<CompanyRow>() {
-        @Override
-        protected void updateItem(CompanyRow item, boolean empty) {
-          super.updateItem(item, empty);
-          if (empty || item == null) {
-            setStyle("");
-          } else {
-            // Mettre en évidence la ligne Mag Scène
-            if ("OWN_COMPANY".equals(item.getType())) {
-              setStyle("-fx-background-color: #fff3cd; -fx-border-color: #ffc107; -fx-border-width: 1px; -fx-font-weight: bold;");
-            } else {
-              setStyle("");
-            }
-          }
-        }
-      };
+      TableRow<CompanyRow> row = new TableRow<CompanyRow>();
       
       row.setOnMouseClicked(event -> {
         if (event.getClickCount() == 2 && !row.isEmpty()) {

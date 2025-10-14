@@ -143,10 +143,8 @@ public class TechnicienUsersController implements Initializable {
                         row.setStyle("");
                     } else if (!newUser.isActive()) {
                         row.setStyle("-fx-background-color: #ffebee;"); // Rouge clair pour inactif
-                    } else if (newUser.role() == User.Role.TECHNICIEN_MAG_SCENE) {
-                        row.setStyle("-fx-background-color: #f8fcf8; -fx-border-color: #c8e6c9; -fx-border-width: 0 0 0 3px;"); // Surlignage subtil pour techniciens Mag Scène
                     } else {
-                        row.setStyle("");
+                        row.setStyle(""); // Tous les utilisateurs actifs ont le même style
                     }
                 });
                 return row;

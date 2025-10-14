@@ -31,7 +31,7 @@ public class LogoMosaicController {
     private final Path logosDir;
     
     public LogoMosaicController() {
-        this.logosDir = Paths.get(System.getProperty("user.home"), "MAGSAV", "medias", "logos");
+        this.logosDir = Paths.get(com.magsav.config.AppConfig.getMediaDirectory(), "logos");
     }
     
     @FXML

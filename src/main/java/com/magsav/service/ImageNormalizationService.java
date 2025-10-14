@@ -27,7 +27,7 @@ public class ImageNormalizationService {
     private final Path logosDir;
     
     public ImageNormalizationService() {
-        Path baseDir = Paths.get(System.getProperty("user.home"), "MAGSAV", "medias");
+        Path baseDir = Paths.get(com.magsav.config.AppConfig.getMediaDirectory());
         this.photosDir = baseDir.resolve("photos");
         this.thumbsDir = baseDir.resolve("thumbs");
         this.mediumDir = baseDir.resolve("medium");

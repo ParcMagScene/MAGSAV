@@ -32,7 +32,7 @@ public class PhotoMosaicController {
     private final ImageNormalizationService imageService = new ImageNormalizationService();
     
     public PhotoMosaicController() {
-        this.photosDir = Paths.get(System.getProperty("user.home"), "MAGSAV", "medias", "photos");
+        this.photosDir = Paths.get(com.magsav.config.AppConfig.getMediaDirectory(), "photos");
     }
     
     @FXML

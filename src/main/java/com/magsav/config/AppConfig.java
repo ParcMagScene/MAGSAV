@@ -19,11 +19,11 @@ public final class AppConfig {
     private static final Properties properties = new Properties();
     private static boolean initialized = false;
     
-    // Valeurs par défaut
-    private static final String DEFAULT_HOME_DIR = System.getProperty("user.home");
-    private static final String DEFAULT_MAGSAV_DIR = DEFAULT_HOME_DIR + "/MAGSAV";
+    // Valeurs par défaut - utiliser le répertoire de travail courant du projet
+    private static final String DEFAULT_PROJECT_DIR = System.getProperty("user.dir");
+    private static final String DEFAULT_MAGSAV_DIR = DEFAULT_PROJECT_DIR;
     private static final String DEFAULT_MEDIA_DIR = DEFAULT_MAGSAV_DIR + "/medias";
-    private static final String DEFAULT_DB_PATH = DEFAULT_MAGSAV_DIR + "/MAGSAV.db";
+    private static final String DEFAULT_DB_PATH = DEFAULT_MAGSAV_DIR + "/data/MAGSAV.db";
     private static final String DEFAULT_LOGS_DIR = DEFAULT_MAGSAV_DIR + "/logs";
     
     static {

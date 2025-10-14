@@ -30,7 +30,7 @@ public class MediaImporter {
     
     public MediaImporter() {
         // Créer le répertoire media de base s'il n'existe pas
-        this.baseMediaDirectory = Path.of(System.getProperty("user.home"), "MAGSAV", "medias");
+        this.baseMediaDirectory = Path.of(com.magsav.config.AppConfig.getMediaDirectory());
         try {
             Files.createDirectories(baseMediaDirectory);
             // Créer les sous-dossiers photos et logos

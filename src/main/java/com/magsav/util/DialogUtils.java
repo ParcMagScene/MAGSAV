@@ -94,4 +94,11 @@ public class DialogUtils {
         Alert alert = createDarkAlert(Alert.AlertType.CONFIRMATION, title, null, message);
         return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
     }
+    
+    /**
+     * Affiche une information simple (alias pour showInfoAlert)
+     */
+    public static void showInfo(String title, String message) {
+        showInfoAlert(title, message);
+    }
 }

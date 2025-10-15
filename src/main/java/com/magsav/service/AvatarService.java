@@ -180,6 +180,56 @@ public class AvatarService {
     }
     
     /**
+     * Crée une grande icône par défaut avec du texte pour un produit sans photo
+     * @param productName Nom du produit
+     * @return ImageView avec une icône personnalisée
+     */
+    public ImageView createProductPlaceholderIcon(String productName, double size) {
+            // Utiliser l'image par défaut du produit
+        ImageView imageView = new ImageView(getDefaultProductImage());
+        imageView.setFitWidth(size);
+        imageView.setFitHeight(size);
+        imageView.setPreserveRatio(true);
+        imageView.setSmooth(true);
+        
+        // Ajouter style pour une grande icône
+        imageView.getStyleClass().add("large-default-icon");
+        
+        // Ajouter une tooltip avec le nom du produit
+        if (productName != null && !productName.trim().isEmpty()) {
+            javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip("Aucune photo pour : " + productName);
+            javafx.scene.control.Tooltip.install(imageView, tooltip);
+        }
+        
+        return imageView;
+    }
+    
+    /**
+     * Crée une grande icône par défaut avec du texte pour un fabricant sans logo
+     * @param manufacturerName Nom du fabricant
+     * @return ImageView avec une icône personnalisée
+     */
+    public ImageView createManufacturerPlaceholderIcon(String manufacturerName, double size) {
+        // Utiliser l'image par défaut du fabricant
+        ImageView imageView = new ImageView(getDefaultCompanyLogo());
+        imageView.setFitWidth(size);
+        imageView.setFitHeight(size);
+        imageView.setPreserveRatio(true);
+        imageView.setSmooth(true);
+        
+        // Ajouter style pour une grande icône
+        imageView.getStyleClass().add("large-default-icon");
+        
+        // Ajouter une tooltip avec le nom du fabricant
+        if (manufacturerName != null && !manufacturerName.trim().isEmpty()) {
+            javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip("Aucun logo pour : " + manufacturerName);
+            javafx.scene.control.Tooltip.install(imageView, tooltip);
+        }
+        
+        return imageView;
+    }
+    
+    /**
      * Crée un ImageView avec une image par défaut
      */
     public ImageView createDefaultImageView(DefaultImageType type, double width, double height) {

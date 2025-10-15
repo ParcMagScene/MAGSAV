@@ -14,6 +14,9 @@ import com.magsav.service.DataChangeEvent;
 import com.magsav.service.DataChangeNotificationService;
 import com.magsav.service.NavigationService;
 import com.magsav.service.ProductServiceStatic;
+import com.magsav.service.AvatarService;
+import com.magsav.service.QrCodeService;
+import com.magsav.service.RequestToOrderWorkflowService;
 
 import com.magsav.service.ShareService;
 import com.magsav.util.AppLogger;
@@ -33,6 +36,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
@@ -92,7 +96,12 @@ public class MainController {
   //                     lblProdManufacturer, lblProdSituation, statusIndicator, historyCountLabel;
   // @FXML private Label lblCategoryTitle, lblSubcategoryTitle, lblSubSubcategoryTitle;
   // @FXML private Label lblQrUID, lblQrSN;
-  // @FXML private ImageView imgProductPhoto, imgManufacturerLogo, imgQr;
+  @FXML private ImageView imgProductPhoto, imgManufacturerLogo, imgQr;
+  private ImageView userAvatarImg, vehiculeQrImg;
+  
+  // Éléments pour la validation des demandes
+  private VBox validationInfoBox;
+  private Button validateRequestBtn, rejectRequestBtn, detailsRequestBtn;
   // @FXML private TableView<InterventionRow> historyTable;
   // @FXML private TableColumn<InterventionRow, Long> hColId;
   // @FXML private TableColumn<InterventionRow, String> hColStatut, hColPanne, hColEntree, hColSortie;
@@ -283,20 +292,48 @@ public class MainController {
     Label detailTitle = new Label("Détails du produit");
     detailTitle.getStyleClass().add("detail-title");
     
-    // Zone d'image du produit
+    // Zone d'image du produit et QR Code
+    HBox mediaBox = new HBox();
+    mediaBox.setSpacing(10);
+    mediaBox.setAlignment(javafx.geometry.Pos.CENTER);
+    mediaBox.setPrefHeight(200);
+    mediaBox.getStyleClass().add("product-media-box");
+    
+    // Image du produit
     VBox imageBox = new VBox();
-    imageBox.setSpacing(0);
+    imageBox.setSpacing(5);
     imageBox.setAlignment(javafx.geometry.Pos.CENTER);
-    imageBox.setPrefHeight(200);
-    imageBox.getStyleClass().add("product-image-box");
+    imageBox.setPrefWidth(140);
     
-    Label imageLabel = new Label("📷");
-    imageLabel.setStyle("-fx-font-size: 48px; -fx-text-fill: #666666;");
+    imgProductPhoto = new ImageView();
+    imgProductPhoto.setFitWidth(120);
+    imgProductPhoto.setFitHeight(120);
+    imgProductPhoto.setPreserveRatio(true);
+    imgProductPhoto.getStyleClass().add("product-image");
     
-    Label noImageLabel = new Label("Aucune image disponible");
-    noImageLabel.getStyleClass().add("no-image-label");
+    Label imageTitle = new Label("Photo");
+    imageTitle.getStyleClass().add("media-title");
     
-    imageBox.getChildren().addAll(imageLabel, noImageLabel);
+    imageBox.getChildren().addAll(imageTitle, imgProductPhoto);
+    
+    // QR Code
+    VBox qrBox = new VBox();
+    qrBox.setSpacing(5);
+    qrBox.setAlignment(javafx.geometry.Pos.CENTER);
+    qrBox.setPrefWidth(140);
+    
+    imgQr = new ImageView();
+    imgQr.setFitWidth(120);
+    imgQr.setFitHeight(120);
+    imgQr.setPreserveRatio(true);
+    imgQr.getStyleClass().add("qr-code-image");
+    
+    Label qrTitle = new Label("QR Code");
+    qrTitle.getStyleClass().add("media-title");
+    
+    qrBox.getChildren().addAll(qrTitle, imgQr);
+    
+    mediaBox.getChildren().addAll(imageBox, qrBox);
     
     // Informations du produit
     VBox infoBox = new VBox();
@@ -353,7 +390,7 @@ public class MainController {
     Region spacer = new Region();
     VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
     
-    detailPanel.getChildren().addAll(detailTitle, imageBox, infoBox, spacer, buttonsBox);
+    detailPanel.getChildren().addAll(detailTitle, mediaBox, infoBox, spacer, buttonsBox);
     
     // Sauvegarder les références pour mise à jour
     this.productNameDetail = productName;
@@ -1290,18 +1327,115 @@ public class MainController {
   }
 
   private void loadProductPhoto(String photoFilename) {
-    // TODO: Implement for new UI design
-    // Old photo loading method - commented out for new design
+    if (imgProductPhoto == null) return;
+    
+    if (photoFilename == null || photoFilename.trim().isEmpty()) {
+      // Utiliser l'image par défaut du produit avec style de grande icône
+      Image defaultImage = AvatarService.getInstance().getDefaultProductImage();
+      imgProductPhoto.setImage(defaultImage);
+      imgProductPhoto.getStyleClass().add("large-default-icon");
+      return;
+    }
+    
+    try {
+      String photoPath = "medias/photos/" + photoFilename;
+      java.nio.file.Path imagePath = java.nio.file.Paths.get(photoPath);
+      
+      if (java.nio.file.Files.exists(imagePath)) {
+        Image photo = new Image(imagePath.toUri().toString());
+        if (!photo.isError()) {
+          imgProductPhoto.setImage(photo);
+          imgProductPhoto.getStyleClass().remove("large-default-icon");
+        } else {
+          imgProductPhoto.setImage(AvatarService.getInstance().getDefaultProductImage());
+          imgProductPhoto.getStyleClass().add("large-default-icon");
+        }
+      } else {
+        imgProductPhoto.setImage(AvatarService.getInstance().getDefaultProductImage());
+        imgProductPhoto.getStyleClass().add("large-default-icon");
+      }
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors du chargement de la photo produit: " + photoFilename, e);
+      imgProductPhoto.setImage(AvatarService.getInstance().getDefaultProductImage());
+      imgProductPhoto.getStyleClass().add("large-default-icon");
+    }
   }
 
   private void loadManufacturerLogo(String manufacturerName) {
-    // TODO: Implement for new UI design
-    // Old logo loading method - commented out for new design
+    // Note: imgManufacturerLogo n'est pas encore utilisé dans l'interface actuelle
+    // Cette méthode est prête pour une future implémentation
+    if (imgManufacturerLogo == null) return;
+    
+    if (manufacturerName == null || manufacturerName.trim().isEmpty()) {
+      Image defaultLogo = AvatarService.getInstance().getDefaultCompanyLogo();
+      imgManufacturerLogo.setImage(defaultLogo);
+      imgManufacturerLogo.getStyleClass().add("large-default-icon");
+      return;
+    }
+    
+    try {
+      String logoPath = "medias/logos/" + manufacturerName.toLowerCase().replaceAll("[^a-z0-9]", "_") + ".png";
+      java.nio.file.Path imagePath = java.nio.file.Paths.get(logoPath);
+      
+      if (java.nio.file.Files.exists(imagePath)) {
+        Image logo = new Image(imagePath.toUri().toString());
+        if (!logo.isError()) {
+          imgManufacturerLogo.setImage(logo);
+          imgManufacturerLogo.getStyleClass().remove("large-default-icon");
+        } else {
+          imgManufacturerLogo.setImage(AvatarService.getInstance().getDefaultCompanyLogo());
+          imgManufacturerLogo.getStyleClass().add("large-default-icon");
+        }
+      } else {
+        imgManufacturerLogo.setImage(AvatarService.getInstance().getDefaultCompanyLogo());
+        imgManufacturerLogo.getStyleClass().add("large-default-icon");
+      }
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors du chargement du logo fabricant: " + manufacturerName, e);
+      imgManufacturerLogo.setImage(AvatarService.getInstance().getDefaultCompanyLogo());
+      imgManufacturerLogo.getStyleClass().add("large-default-icon");
+    }
   }
 
   private void loadQrCode(String uid) {
-    // TODO: Implement for new UI design
-    // Old QR code loading method - commented out for new design
+    if (imgQr == null) return;
+    
+    if (uid == null || uid.trim().isEmpty()) {
+      imgQr.setImage(null);
+      return;
+    }
+    
+    // Charger le QR code de manière asynchrone
+    javafx.concurrent.Task<Void> qrTask = new javafx.concurrent.Task<Void>() {
+      @Override
+      protected Void call() throws Exception {
+        try {
+          java.nio.file.Path qrPath = QrCodeService.ensureQrPng(uid);
+          if (java.nio.file.Files.exists(qrPath)) {
+            javafx.application.Platform.runLater(() -> {
+              try {
+                Image qrImage = new Image(qrPath.toUri().toString(), true);
+                imgQr.setImage(qrImage);
+                AppLogger.debug("QR code chargé pour UID: " + uid);
+              } catch (Exception e) {
+                AppLogger.error("Erreur lors de l'affichage du QR code: " + uid, e);
+                imgQr.setImage(null);
+              }
+            });
+          } else {
+            javafx.application.Platform.runLater(() -> imgQr.setImage(null));
+          }
+        } catch (Exception e) {
+          AppLogger.error("Erreur lors de la génération du QR code: " + uid, e);
+          javafx.application.Platform.runLater(() -> imgQr.setImage(null));
+        }
+        return null;
+      }
+    };
+    
+    Thread qrThread = new Thread(qrTask);
+    qrThread.setDaemon(true);
+    qrThread.start();
   }
 
   @FXML 
@@ -1447,8 +1581,9 @@ public class MainController {
       Tab demandesEquipementTab = createDemandesEquipementTab();
       Tab demandesPiecesTab = createDemandesPiecesTab();
       Tab demandesInterventionTab = createDemandesInterventionTab();
+      Tab validationTab = createValidationDemandesTab();
       
-      clearAndLoadTabs(demandesEquipementTab, demandesPiecesTab, demandesInterventionTab);
+      clearAndLoadTabs(demandesEquipementTab, demandesPiecesTab, demandesInterventionTab, validationTab);
     } catch (Exception e) {
       AppLogger.error("Erreur lors du chargement des Demandes: " + e.getMessage(), e);
     }
@@ -2072,32 +2207,78 @@ public class MainController {
     // Titre du panneau
     Label titleLabel = new Label("Détails du véhicule");
     titleLabel.getStyleClass().add("detail-panel-title");
-    panel.getChildren().add(titleLabel);
+    
+    // Zone QR Code pour véhicule avec titre
+    VBox qrBox = new VBox();
+    qrBox.setSpacing(5);
+    qrBox.setAlignment(javafx.geometry.Pos.CENTER);
+    qrBox.setPrefHeight(120);
+    qrBox.getStyleClass().add("vehicule-qr-box");
+    
+    Label qrTitle = new Label("QR Code");
+    qrTitle.getStyleClass().add("media-title");
+    
+    ImageView vehiculeQrImg = new ImageView();
+    vehiculeQrImg.setFitWidth(100);
+    vehiculeQrImg.setFitHeight(100);
+    vehiculeQrImg.setPreserveRatio(true);
+    vehiculeQrImg.getStyleClass().add("vehicule-qr-image");
+    
+    qrBox.getChildren().addAll(qrTitle, vehiculeQrImg);
+    
+    panel.getChildren().addAll(titleLabel, qrBox);
+    
+    // Sauvegarder la référence pour mise à jour
+    this.vehiculeQrImg = vehiculeQrImg;
     
     return panel;
   }
   
   private void updateVehiculeDetailPanel(VBox panel, com.magsav.model.Vehicule vehicule) {
-    // Effacer le contenu existant sauf le titre
-    panel.getChildren().removeIf(node -> !(node instanceof Label && 
-      ((Label)node).getText().equals("Détails du véhicule")));
+    // Charger le QR code du véhicule (basé sur l'immatriculation)
+    loadVehiculeQrCode(vehicule.getImmatriculation());
     
-    // Ajouter les informations du véhicule
-    panel.getChildren().addAll(
-      new Label("Immatriculation: " + vehicule.getImmatriculation()),
-      new Label("Type: " + vehicule.getTypeVehicule()),
-      new Label("Marque: " + vehicule.getMarque()),
-      new Label("Modèle: " + vehicule.getModele()),
-      new Label("Statut: " + vehicule.getStatut()),
-      new Label("Kilométrage: " + String.format("%,d km", vehicule.getKilometrage()))
+    // Effacer le contenu existant sauf le titre et la zone QR
+    panel.getChildren().removeIf(node -> 
+      !(node instanceof Label && ((Label)node).getText().equals("Détails du véhicule")) &&
+      !(node instanceof VBox && ((VBox)node).getStyleClass().contains("vehicule-qr-box"))
+    );
+    
+    // Trouver l'index après la zone QR pour insérer les nouvelles informations
+    int insertIndex = -1;
+    for (int i = 0; i < panel.getChildren().size(); i++) {
+      if (panel.getChildren().get(i) instanceof VBox && 
+          ((VBox)panel.getChildren().get(i)).getStyleClass().contains("vehicule-qr-box")) {
+        insertIndex = i + 1;
+        break;
+      }
+    }
+    
+    if (insertIndex == -1) insertIndex = panel.getChildren().size();
+    
+    // Créer les informations du véhicule
+    VBox infoBox = new VBox();
+    infoBox.setSpacing(5);
+    infoBox.getStyleClass().add("vehicule-info-box");
+    
+    infoBox.getChildren().addAll(
+      createInfoLabel("Immatriculation:", vehicule.getImmatriculation()),
+      createInfoLabel("Type:", vehicule.getTypeVehicule() != null ? vehicule.getTypeVehicule().toString() : "-"),
+      createInfoLabel("Marque:", vehicule.getMarque()),
+      createInfoLabel("Modèle:", vehicule.getModele()),
+      createInfoLabel("Statut:", vehicule.getStatut() != null ? vehicule.getStatut().toString() : "-"),
+      createInfoLabel("Kilométrage:", String.format("%,d km", vehicule.getKilometrage()))
     );
     
     // Espacement
     javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
     VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
-    panel.getChildren().add(spacer);
     
     // Boutons d'actions
+    HBox buttonsBox = new HBox();
+    buttonsBox.setSpacing(8);
+    buttonsBox.setAlignment(javafx.geometry.Pos.CENTER);
+    
     Button detailBtn = new Button("Voir détail complet");
     detailBtn.getStyleClass().addAll("button", "button-primary");
     detailBtn.setOnAction(e -> NavigationService.openVehiculeDetail(vehicule.getId()));
@@ -2106,7 +2287,11 @@ public class MainController {
     maintenanceBtn.getStyleClass().addAll("button", "button-secondary");
     maintenanceBtn.setOnAction(e -> showAlert("Info", "Planification maintenance à implémenter"));
     
-    panel.getChildren().addAll(detailBtn, maintenanceBtn);
+    buttonsBox.getChildren().addAll(detailBtn, maintenanceBtn);
+    
+    panel.getChildren().add(insertIndex, infoBox);
+    panel.getChildren().add(insertIndex + 1, spacer);
+    panel.getChildren().add(insertIndex + 2, buttonsBox);
   }
 
   private VBox createUserDetailPanel() {
@@ -2120,31 +2305,77 @@ public class MainController {
     // Titre du panneau
     Label titleLabel = new Label("Détails de l'utilisateur");
     titleLabel.getStyleClass().add("detail-panel-title");
-    panel.getChildren().add(titleLabel);
+    
+    // Zone d'avatar avec titre
+    VBox avatarBox = new VBox();
+    avatarBox.setSpacing(5);
+    avatarBox.setAlignment(javafx.geometry.Pos.CENTER);
+    avatarBox.setPrefHeight(120);
+    avatarBox.getStyleClass().add("user-avatar-box");
+    
+    Label avatarTitle = new Label("Avatar");
+    avatarTitle.getStyleClass().add("media-title");
+    
+    ImageView userAvatarImg = new ImageView();
+    userAvatarImg.setFitWidth(80);
+    userAvatarImg.setFitHeight(80);
+    userAvatarImg.setPreserveRatio(true);
+    userAvatarImg.getStyleClass().add("user-avatar-image");
+    
+    avatarBox.getChildren().addAll(avatarTitle, userAvatarImg);
+    
+    panel.getChildren().addAll(titleLabel, avatarBox);
+    
+    // Sauvegarder la référence pour mise à jour
+    this.userAvatarImg = userAvatarImg;
     
     return panel;
   }
   
   private void updateUserDetailPanel(VBox panel, UserRow user) {
-    // Effacer le contenu existant sauf le titre
-    panel.getChildren().removeIf(node -> !(node instanceof Label && 
-      ((Label)node).getText().equals("Détails de l'utilisateur")));
+    // Charger l'avatar de l'utilisateur
+    loadUserAvatar(user.getNom() + " " + user.getPrenom());
     
-    // Ajouter les informations de l'utilisateur
-    panel.getChildren().addAll(
-      new Label("Nom: " + user.getNom()),
-      new Label("Prénom: " + user.getPrenom()),
-      new Label("Email: " + user.getEmail()),
-      new Label("Rôle: " + user.getRole()),
-      new Label("Statut: " + user.getStatut())
+    // Effacer le contenu existant sauf le titre et la zone avatar
+    panel.getChildren().removeIf(node -> 
+      !(node instanceof Label && ((Label)node).getText().equals("Détails de l'utilisateur")) &&
+      !(node instanceof VBox && ((VBox)node).getStyleClass().contains("user-avatar-box"))
+    );
+    
+    // Trouver l'index après la zone avatar pour insérer les nouvelles informations
+    int insertIndex = -1;
+    for (int i = 0; i < panel.getChildren().size(); i++) {
+      if (panel.getChildren().get(i) instanceof VBox && 
+          ((VBox)panel.getChildren().get(i)).getStyleClass().contains("user-avatar-box")) {
+        insertIndex = i + 1;
+        break;
+      }
+    }
+    
+    if (insertIndex == -1) insertIndex = panel.getChildren().size();
+    
+    // Créer les informations de l'utilisateur
+    VBox infoBox = new VBox();
+    infoBox.setSpacing(5);
+    infoBox.getStyleClass().add("user-info-box");
+    
+    infoBox.getChildren().addAll(
+      createInfoLabel("Nom:", user.getNom()),
+      createInfoLabel("Prénom:", user.getPrenom()),
+      createInfoLabel("Email:", user.getEmail()),
+      createInfoLabel("Rôle:", user.getRole()),
+      createInfoLabel("Statut:", user.getStatut())
     );
     
     // Espacement
     javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
     VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
-    panel.getChildren().add(spacer);
     
     // Boutons d'actions
+    HBox buttonsBox = new HBox();
+    buttonsBox.setSpacing(8);
+    buttonsBox.setAlignment(javafx.geometry.Pos.CENTER);
+    
     Button detailBtn = new Button("Voir détail complet");
     detailBtn.getStyleClass().addAll("button", "button-primary");
     detailBtn.setOnAction(e -> showAlert("Info", "Détail complet de l'utilisateur: " + user.getNom()));
@@ -2153,7 +2384,82 @@ public class MainController {
     editBtn.getStyleClass().addAll("button", "button-secondary");
     editBtn.setOnAction(e -> showAlert("Info", "Modification de l'utilisateur: " + user.getNom()));
     
-    panel.getChildren().addAll(detailBtn, editBtn);
+    Button changeAvatarBtn = new Button("Avatar");
+    changeAvatarBtn.getStyleClass().addAll("button", "button-info");
+    changeAvatarBtn.setOnAction(e -> showAlert("Info", "Changement d'avatar à implémenter"));
+    
+    buttonsBox.getChildren().addAll(detailBtn, editBtn, changeAvatarBtn);
+    
+    panel.getChildren().add(insertIndex, infoBox);
+    panel.getChildren().add(insertIndex + 1, spacer);
+    panel.getChildren().add(insertIndex + 2, buttonsBox);
+  }
+  
+  private VBox createInfoLabel(String label, String value) {
+    VBox infoItem = new VBox();
+    infoItem.setSpacing(2);
+    
+    Label labelText = new Label(label);
+    labelText.getStyleClass().add("info-label");
+    
+    Label valueText = new Label(value != null ? value : "-");
+    valueText.getStyleClass().add("info-value");
+    
+    infoItem.getChildren().addAll(labelText, valueText);
+    return infoItem;
+  }
+  
+  private void loadUserAvatar(String userName) {
+    if (userAvatarImg == null) return;
+    
+    // Pour l'instant, utiliser un avatar basé sur le nom
+    // Plus tard, on pourra charger des images personnalisées
+    Image avatar = AvatarService.getInstance().getAvatarForUsername(userName);
+    userAvatarImg.setImage(avatar);
+  }
+  
+  private void loadVehiculeQrCode(String immatriculation) {
+    if (vehiculeQrImg == null) return;
+    
+    if (immatriculation == null || immatriculation.trim().isEmpty()) {
+      vehiculeQrImg.setImage(null);
+      return;
+    }
+    
+    // Générer un UID basé sur l'immatriculation pour le QR code
+    String vehiculeUid = "VEH-" + immatriculation.replaceAll("[^A-Z0-9]", "");
+    
+    // Charger le QR code de manière asynchrone
+    javafx.concurrent.Task<Void> qrTask = new javafx.concurrent.Task<Void>() {
+      @Override
+      protected Void call() throws Exception {
+        try {
+          java.nio.file.Path qrPath = QrCodeService.ensureQrPng(vehiculeUid);
+          if (java.nio.file.Files.exists(qrPath)) {
+            javafx.application.Platform.runLater(() -> {
+              try {
+                Image qrImage = new Image(qrPath.toUri().toString(), true);
+                vehiculeQrImg.setImage(qrImage);
+                AppLogger.debug("QR code véhicule chargé pour: " + immatriculation);
+              } catch (Exception e) {
+                AppLogger.error("Erreur lors de l'affichage du QR code véhicule: " + immatriculation, e);
+                vehiculeQrImg.setImage(null);
+              }
+            });
+          } else {
+            javafx.application.Platform.runLater(() -> vehiculeQrImg.setImage(null));
+          }
+        } catch (Exception e) {
+          AppLogger.error("Erreur lors de la génération du QR code véhicule: " + immatriculation, e);
+          javafx.application.Platform.runLater(() -> vehiculeQrImg.setImage(null));
+        }
+        return null;
+      }
+    };
+    
+    Thread qrThread = new Thread(qrTask);
+    qrThread.setDaemon(true);
+    qrThread.start();
   }
   
   private void loadUsersData(TableView<UserRow> table, Label totalLabel, Label activeLabel, Label inactiveLabel) {
@@ -2587,6 +2893,66 @@ public class MainController {
     table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
       if (newSelection != null) {
         updateRequestDetailPanel(rightPane, newSelection);
+      }
+    });
+    
+    tab.setContent(splitPane);
+    return tab;
+  }
+  
+  private Tab createValidationDemandesTab() {
+    Tab tab = new Tab("✅ Validation Admin");
+    tab.setClosable(false);
+    
+    // Créer le SplitPane principal
+    SplitPane splitPane = new SplitPane();
+    splitPane.setOrientation(Orientation.HORIZONTAL);
+    splitPane.getStyleClass().add("split-pane");
+    
+    // Partie gauche - Liste des demandes en attente
+    VBox leftPane = new VBox();
+    leftPane.setSpacing(10);
+    leftPane.getStyleClass().add("main-content");
+    leftPane.setPadding(new javafx.geometry.Insets(10));
+    
+    // Titre et statistiques
+    Label titleLabel = new Label("Demandes en attente de validation");
+    titleLabel.getStyleClass().add("section-title");
+    
+    HBox statsBox = new HBox();
+    statsBox.setSpacing(20);
+    statsBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+    
+    Label pendingCountLabel = new Label("En attente: 0");
+    pendingCountLabel.getStyleClass().add("stats-label");
+    
+    Button refreshBtn = new Button("Actualiser");
+    refreshBtn.getStyleClass().add("button-secondary");
+    
+    statsBox.getChildren().addAll(pendingCountLabel, refreshBtn);
+    
+    // Table des demandes en attente
+    TableView<RequestToOrderWorkflowService.PendingRequest> pendingTable = createPendingRequestsTable();
+    VBox.setVgrow(pendingTable, javafx.scene.layout.Priority.ALWAYS);
+    
+    leftPane.getChildren().addAll(titleLabel, statsBox, pendingTable);
+    
+    // Partie droite - Panneau de validation
+    VBox rightPane = createValidationPanel();
+    
+    splitPane.getItems().addAll(leftPane, rightPane);
+    splitPane.setDividerPositions(0.65);
+    
+    // Charger les données initiales
+    loadPendingRequestsData(pendingTable, pendingCountLabel);
+    
+    // Gestion du bouton refresh
+    refreshBtn.setOnAction(e -> loadPendingRequestsData(pendingTable, pendingCountLabel));
+    
+    // Gestion de la sélection
+    pendingTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+      if (newSelection != null) {
+        updateValidationPanel(rightPane, newSelection);
       }
     });
     
@@ -4051,5 +4417,203 @@ public class MainController {
   
   private void refreshCompaniesTable() {
     // Méthode pour recharger la table des sociétés
+  }
+  
+  // === MÉTHODES POUR LA VALIDATION DES DEMANDES ===
+  
+  private TableView<RequestToOrderWorkflowService.PendingRequest> createPendingRequestsTable() {
+    TableView<RequestToOrderWorkflowService.PendingRequest> table = new TableView<>();
+    table.getStyleClass().add("table-view");
+    
+    // Colonnes
+    TableColumn<RequestToOrderWorkflowService.PendingRequest, String> colType = new TableColumn<>("Type");
+    colType.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().type()));
+    colType.setPrefWidth(80);
+    
+    TableColumn<RequestToOrderWorkflowService.PendingRequest, String> colTitle = new TableColumn<>("Titre");
+    colTitle.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().title()));
+    colTitle.setPrefWidth(200);
+    
+    TableColumn<RequestToOrderWorkflowService.PendingRequest, String> colRequester = new TableColumn<>("Demandeur");
+    colRequester.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().requesterName()));
+    colRequester.setPrefWidth(120);
+    
+    TableColumn<RequestToOrderWorkflowService.PendingRequest, String> colPriority = new TableColumn<>("Priorité");
+    colPriority.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().priority()));
+    colPriority.setPrefWidth(80);
+    
+    TableColumn<RequestToOrderWorkflowService.PendingRequest, String> colCost = new TableColumn<>("Coût estimé");
+    colCost.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(
+        String.format("%.2f €", cellData.getValue().estimatedCost())
+    ));
+    colCost.setPrefWidth(100);
+    
+    TableColumn<RequestToOrderWorkflowService.PendingRequest, String> colItems = new TableColumn<>("Items");
+    colItems.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(
+        String.valueOf(cellData.getValue().itemCount())
+    ));
+    colItems.setPrefWidth(60);
+    
+    TableColumn<RequestToOrderWorkflowService.PendingRequest, String> colDate = new TableColumn<>("Créée le");
+    colDate.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(
+        cellData.getValue().createdAt().substring(0, 10) // Format YYYY-MM-DD seulement
+    ));
+    colDate.setPrefWidth(100);
+    
+    table.getColumns().add(colType);
+    table.getColumns().add(colTitle);
+    table.getColumns().add(colRequester);
+    table.getColumns().add(colPriority);
+    table.getColumns().add(colCost);
+    table.getColumns().add(colItems);
+    table.getColumns().add(colDate);
+    
+    return table;
+  }
+  
+  private VBox createValidationPanel() {
+    VBox panel = new VBox();
+    panel.setSpacing(15);
+    panel.setPadding(new javafx.geometry.Insets(20));
+    panel.getStyleClass().add("detail-panel");
+    panel.setPrefWidth(350);
+    panel.setMinWidth(300);
+    
+    // Titre du panneau
+    Label titleLabel = new Label("Validation de la demande");
+    titleLabel.getStyleClass().add("detail-panel-title");
+    
+    // Zone d'informations de la demande
+    VBox infoBox = new VBox();
+    infoBox.setSpacing(10);
+    infoBox.getStyleClass().add("info-box");
+    
+    Label infoLabel = new Label("Sélectionnez une demande pour voir les détails");
+    infoLabel.getStyleClass().add("placeholder-text");
+    infoBox.getChildren().add(infoLabel);
+    
+    // Boutons d'action
+    HBox buttonsBox = new HBox();
+    buttonsBox.setSpacing(10);
+    buttonsBox.setAlignment(javafx.geometry.Pos.CENTER);
+    
+    Button validateBtn = new Button("✅ Valider et créer commandes");
+    validateBtn.getStyleClass().addAll("button", "button-success");
+    validateBtn.setDisable(true);
+    
+    Button rejectBtn = new Button("❌ Rejeter");
+    rejectBtn.getStyleClass().addAll("button", "button-danger");
+    rejectBtn.setDisable(true);
+    
+    Button detailsBtn = new Button("📋 Voir détails");
+    detailsBtn.getStyleClass().addAll("button", "button-secondary");
+    detailsBtn.setDisable(true);
+    
+    buttonsBox.getChildren().addAll(validateBtn, rejectBtn, detailsBtn);
+    
+    // Espacement
+    javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+    VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+    
+    panel.getChildren().addAll(titleLabel, infoBox, spacer, buttonsBox);
+    
+    // Sauvegarder les références pour la mise à jour
+    this.validationInfoBox = infoBox;
+    this.validateRequestBtn = validateBtn;
+    this.rejectRequestBtn = rejectBtn;
+    this.detailsRequestBtn = detailsBtn;
+    
+    return panel;
+  }
+  
+  private void loadPendingRequestsData(TableView<RequestToOrderWorkflowService.PendingRequest> table, Label countLabel) {
+    try {
+      List<RequestToOrderWorkflowService.PendingRequest> pendingRequests = 
+          RequestToOrderWorkflowService.getInstance().getPendingRequests();
+      
+      table.getItems().clear();
+      table.getItems().addAll(pendingRequests);
+      
+      countLabel.setText("En attente: " + pendingRequests.size());
+      
+      AppLogger.info("Chargé " + pendingRequests.size() + " demandes en attente de validation");
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors du chargement des demandes en attente", e);
+      showAlert("Erreur", "Impossible de charger les demandes en attente: " + e.getMessage());
+    }
+  }
+  
+  private void updateValidationPanel(VBox panel, RequestToOrderWorkflowService.PendingRequest request) {
+    // Effacer l'ancienne info
+    validationInfoBox.getChildren().clear();
+    
+    // Informations de la demande
+    VBox requestInfo = new VBox();
+    requestInfo.setSpacing(8);
+    
+    requestInfo.getChildren().addAll(
+        createInfoLabel("ID:", String.valueOf(request.id())),
+        createInfoLabel("Type:", request.type()),
+        createInfoLabel("Titre:", request.title()),
+        createInfoLabel("Description:", request.description() != null ? request.description() : "-"),
+        createInfoLabel("Demandeur:", request.requesterName()),
+        createInfoLabel("Priorité:", request.priority()),
+        createInfoLabel("Coût estimé:", String.format("%.2f €", request.estimatedCost())),
+        createInfoLabel("Nombre d'items:", String.valueOf(request.itemCount())),
+        createInfoLabel("Créée le:", request.createdAt())
+    );
+    
+    validationInfoBox.getChildren().add(requestInfo);
+    
+    // Activer les boutons
+    validateRequestBtn.setDisable(false);
+    rejectRequestBtn.setDisable(false);
+    detailsRequestBtn.setDisable(false);
+    
+    // Configuration des actions des boutons
+    validateRequestBtn.setOnAction(e -> validateSelectedRequest(request));
+    rejectRequestBtn.setOnAction(e -> rejectSelectedRequest(request));
+    detailsRequestBtn.setOnAction(e -> showRequestDetails(request));
+  }
+  
+  private void validateSelectedRequest(RequestToOrderWorkflowService.PendingRequest request) {
+    // Demander confirmation
+    boolean confirmed = com.magsav.util.DialogUtils.showConfirmationAlert(
+        "Validation de demande",
+        "Êtes-vous sûr de vouloir valider cette demande ?\n\n" +
+        "Cette action va créer ou mettre à jour les commandes fournisseurs correspondantes."
+    );
+    
+    if (confirmed) {
+      try {
+        boolean success = RequestToOrderWorkflowService.getInstance()
+            .validateRequestAndCreateOrders(request.id(), "ADMIN"); // TODO: récupérer l'utilisateur actuel
+        
+        if (success) {
+          showAlert("Succès", "Demande validée et commandes créées/mises à jour avec succès!");
+          
+          // Actualiser la liste
+          // TODO: Actualiser automatiquement
+          
+        } else {
+          showAlert("Erreur", "Erreur lors de la validation de la demande.");
+        }
+        
+      } catch (Exception e) {
+        AppLogger.error("Erreur lors de la validation de la demande " + request.id(), e);
+        showAlert("Erreur", "Erreur lors de la validation: " + e.getMessage());
+      }
+    }
+  }
+  
+  private void rejectSelectedRequest(RequestToOrderWorkflowService.PendingRequest request) {
+    // TODO: Implémenter le rejet de demande
+    showAlert("Info", "Rejet de demande à implémenter");
+  }
+  
+  private void showRequestDetails(RequestToOrderWorkflowService.PendingRequest request) {
+    // TODO: Ouvrir une fenêtre de détails complète
+    showAlert("Info", "Détails de la demande ID: " + request.id());
   }
 }

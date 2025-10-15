@@ -812,3 +812,109 @@
     -fx-padding: 0 15;
     padding: 0 15;
 }
+
+/* === STYLES POUR QRCODES ET AVATARS === */
+
+/* Zone d'affichage des médias (photos, QR codes) */
+.product-media-box {
+    -fx-background-color: #1a1a1a;
+    background-color: #1a1a1a;
+    -fx-padding: 10;
+    padding: 10;
+}
+
+.product-image, .qr-code-image, .user-avatar-image, .vehicule-qr-image {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 2);
+    -fx-background-color: #2a2a2a;
+    background-color: #2a2a2a;
+    -fx-padding: 5;
+    padding: 5;
+}
+
+.product-image:hover, .qr-code-image:hover, .user-avatar-image:hover, .vehicule-qr-image:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(74, 144, 226, 0.5), 8, 0, 0, 2);
+}
+
+.media-title {
+    -fx-font-size: 12px;
+    font-size: 12px;
+    -fx-text-fill: #cccccc;
+    color: #cccccc;
+    -fx-font-weight: bold;
+    font-weight: bold;
+    -fx-text-alignment: center;
+    text-align: center;
+}
+
+/* Zone d'avatar utilisateur */
+.user-avatar-box, .vehicule-qr-box {
+    -fx-background-color: #1a1a1a;
+    background-color: #1a1a1a;
+    -fx-padding: 10;
+    padding: 10;
+}
+
+.user-avatar-image {
+    -fx-background-radius: 40;
+    -fx-border-radius: 40;
+}
+
+/* Boîtes d'informations */
+.user-info-box, .vehicule-info-box {
+    -fx-background-color: #2a2a2a;
+    background-color: #2a2a2a;
+    -fx-padding: 10;
+    padding: 10;
+}
+
+.info-label {
+    -fx-font-size: 11px;
+    font-size: 11px;
+    -fx-text-fill: #888888;
+    color: #888888;
+    -fx-font-weight: bold;
+    font-weight: bold;
+}
+
+.info-value {
+    -fx-font-size: 13px;
+    font-size: 13px;
+    -fx-text-fill: #ffffff;
+    color: #ffffff;
+}
+
+/* Images par défaut */
+.product-image[empty="true"], .qr-code-image[empty="true"] {
+    -fx-background-color: #333333;
+    background-color: #333333;
+    -fx-text-fill: #666666;
+    color: #666666;
+}
+
+/* Grandes icônes par défaut */
+.large-default-icon {
+    -fx-background-color: #1e3a5f;
+    -fx-padding: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(74, 144, 226, 0.3), 10, 0, 0, 3);
+}
+
+.large-default-icon:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(74, 144, 226, 0.6), 15, 0, 0, 5);
+}
+
+/* Boutons pour changement d'avatar */
+.button-info {
+    -fx-background-color: #17a2b8;
+    background-color: #17a2b8;
+    -fx-text-fill: white;
+    color: white;
+    -fx-font-size: 12px;
+    font-size: 12px;
+    -fx-padding: 5 10;
+    padding: 5px 10px;
+}
+
+.button-info:hover {
+    -fx-background-color: #138496;
+    background-color: #138496;
+}

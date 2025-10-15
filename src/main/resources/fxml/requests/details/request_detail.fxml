@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.RequestDetailController">
+   <children>
+      <ScrollPane fitToWidth="true" styleClass="detail-scroll-pane">
+         <content>
+            <VBox styleClass="detail-content">
+               <children>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <Label styleClass="detail-panel-title" text="Détails de la Demande" />
+                     </children>
+                  </HBox>
+                  
+                  <GridPane hgap="10.0" vgap="10.0">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" minWidth="120.0" prefWidth="120.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label text="ID:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label fx:id="lblId" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        
+                        <Label text="Type:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <Label fx:id="lblType" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        
+                        <Label text="Titre:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <Label fx:id="lblTitle" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        
+                        <Label text="Statut:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <Label fx:id="lblStatus" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        
+                        <Label text="Priorité:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                        <Label fx:id="lblPriority" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        
+                        <Label text="Demandeur:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                        <Label fx:id="lblRequesterName" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        
+                        <Label text="Société:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                        <Label fx:id="lblSociete" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        
+                        <Label text="Assigné à:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                        <Label fx:id="lblAssignedTo" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                        
+                        <Label text="Créé le:" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                        <Label fx:id="lblCreatedAt" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                        
+                        <Label text="Validé le:" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                        <Label fx:id="lblValidatedAt" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                        
+                        <Label text="Email demandeur:" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+                        <Label fx:id="lblRequesterEmail" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                        
+                        <Label text="Téléphone demandeur:" GridPane.columnIndex="0" GridPane.rowIndex="11" />
+                        <Label fx:id="lblRequesterPhone" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                        
+                        <Label text="Coût estimé:" GridPane.columnIndex="0" GridPane.rowIndex="12" />
+                        <Label fx:id="lblEstimatedCost" GridPane.columnIndex="1" GridPane.rowIndex="12" />
+                        
+                        <Label text="Coût réel:" GridPane.columnIndex="0" GridPane.rowIndex="13" />
+                        <Label fx:id="lblActualCost" GridPane.columnIndex="1" GridPane.rowIndex="13" />
+                        
+                        <Label text="Description:" GridPane.columnIndex="0" GridPane.rowIndex="14" />
+                        <TextArea fx:id="txtDescription" prefRowCount="3" GridPane.columnIndex="1" GridPane.rowIndex="14" />
+                        
+                        <Label text="Commentaires:" GridPane.columnIndex="0" GridPane.rowIndex="15" />
+                        <TextArea fx:id="txtComments" prefRowCount="3" GridPane.columnIndex="1" GridPane.rowIndex="15" />
+                     </children>
+                  </GridPane>
+                  
+                  <Label text="Articles demandés:" styleClass="detail-panel-title" />
+                  <TableView fx:id="tableItems" prefHeight="200.0">
+                     <columns>
+                        <TableColumn fx:id="colItemRef" prefWidth="150.0" text="Référence" />
+                        <TableColumn fx:id="colItemQty" prefWidth="80.0" text="Quantité" />
+                        <TableColumn fx:id="colItemDescription" prefWidth="300.0" text="Description" />
+                     </columns>
+                  </TableView>
+                  
+                  <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                     <children>
+                        <Button fx:id="btnEdit" text="Modifier" />
+                        <Button fx:id="btnValidate" text="Valider" />
+                        <Button fx:id="btnReject" text="Rejeter" />
+                        <Button fx:id="btnClose" text="Fermer" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </children>
+</VBox>

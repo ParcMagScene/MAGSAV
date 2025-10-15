@@ -10,23 +10,25 @@ public class InterventionRepository {
   public InterventionRow findById(long id) {
     try (Connection conn = DB.getConnection()) {
       String sql = "SELECT i.id, p.nom_produit as produit_nom, i.statut_intervention, " +
-                   "COALESCE(i.panne, i.defect_description, '') as panne, " +
+                   "COALESCE(i.description_panne, i.description_defaut, '') as panne, " +
                    "i.date_entree, i.date_sortie " +
                    "FROM interventions i " +
                    "JOIN produits p ON i.produit_id = p.id " +
                    "WHERE i.id = ?";
-      PreparedStatement stmt = conn.prepareStatement(sql);
-      stmt.setLong(1, id);
-      ResultSet rs = stmt.executeQuery();
-      if (rs.next()) {
-        return new InterventionRow(
-            rs.getLong("id"),
-            rs.getString("produit_nom"),
-            rs.getString("statut_intervention"),
-            rs.getString("panne"),
-            rs.getString("date_entree"),
-            rs.getString("date_sortie")
-        );
+      try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setLong(1, id);
+        try (ResultSet rs = stmt.executeQuery()) {
+          if (rs.next()) {
+            return new InterventionRow(
+                rs.getLong("id"),
+                rs.getString("produit_nom"),
+                rs.getString("statut_intervention"),
+                rs.getString("panne"),
+                rs.getString("date_entree"),
+                rs.getString("date_sortie")
+            );
+          }
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Erreur récupération intervention par ID", e);
@@ -37,15 +39,17 @@ public class InterventionRepository {
   public long insert(long productId, String serialNumber, String clientNote, String defectDescription) {
     try (Connection conn = DB.getConnection()) {
       String sql = "INSERT INTO interventions (produit_id, numero_serie_intervention, note_client, description_panne, date_entree) VALUES (?, ?, ?, ?, datetime('now'))";
-      PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-      stmt.setLong(1, productId);
-      stmt.setString(2, serialNumber);
-      stmt.setString(3, clientNote);
-      stmt.setString(4, defectDescription);
-      stmt.executeUpdate();
-      ResultSet rs = stmt.getGeneratedKeys();
-      if (rs.next()) {
-        return rs.getLong(1);
+      try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        stmt.setLong(1, productId);
+        stmt.setString(2, serialNumber);
+        stmt.setString(3, clientNote);
+        stmt.setString(4, defectDescription);
+        stmt.executeUpdate();
+        try (ResultSet rs = stmt.getGeneratedKeys()) {
+          if (rs.next()) {
+            return rs.getLong(1);
+          }
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Erreur insertion intervention", e);
@@ -63,18 +67,20 @@ public class InterventionRepository {
                    "JOIN produits p ON i.produit_id = p.id " +
                    "WHERE i.produit_id = ? " +
                    "ORDER BY i.date_entree DESC";
-      PreparedStatement stmt = conn.prepareStatement(sql);
-      stmt.setLong(1, productId);
-      ResultSet rs = stmt.executeQuery();
-      while (rs.next()) {
-        interventions.add(new InterventionRow(
-            rs.getLong("id"),
-            rs.getString("produit_nom"),
-            rs.getString("statut_intervention"),
-            rs.getString("panne"),
-            rs.getString("date_entree"),
-            rs.getString("date_sortie")
-        ));
+      try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setLong(1, productId);
+        try (ResultSet rs = stmt.executeQuery()) {
+          while (rs.next()) {
+            interventions.add(new InterventionRow(
+                rs.getLong("id"),
+                rs.getString("produit_nom"),
+                rs.getString("statut_intervention"),
+                rs.getString("panne"),
+                rs.getString("date_entree"),
+                rs.getString("date_sortie")
+            ));
+          }
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Erreur récupération interventions", e);
@@ -91,17 +97,19 @@ public class InterventionRepository {
                    "FROM interventions i " +
                    "JOIN produits p ON i.produit_id = p.id " +
                    "ORDER BY i.date_entree DESC";
-      PreparedStatement stmt = conn.prepareStatement(sql);
-      ResultSet rs = stmt.executeQuery();
-      while (rs.next()) {
-        interventions.add(new InterventionRow(
-            rs.getLong("id"),
-            rs.getString("produit_nom"),
-            rs.getString("statut_intervention"),
-            rs.getString("panne"),
-            rs.getString("date_entree"),
-            rs.getString("date_sortie")
-        ));
+      try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (ResultSet rs = stmt.executeQuery()) {
+          while (rs.next()) {
+            interventions.add(new InterventionRow(
+                rs.getLong("id"),
+                rs.getString("produit_nom"),
+                rs.getString("statut_intervention"),
+                rs.getString("panne"),
+                rs.getString("date_entree"),
+                rs.getString("date_sortie")
+            ));
+          }
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Erreur récupération toutes interventions", e);
@@ -112,10 +120,11 @@ public class InterventionRepository {
   public boolean close(long interventionId) {
     try (Connection conn = DB.getConnection()) {
       String sql = "UPDATE interventions SET statut_intervention = 'Terminée', date_sortie = datetime('now') WHERE id = ?";
-      PreparedStatement stmt = conn.prepareStatement(sql);
-      stmt.setLong(1, interventionId);
-      int rowsAffected = stmt.executeUpdate();
-      return rowsAffected > 0;
+      try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setLong(1, interventionId);
+        int rowsAffected = stmt.executeUpdate();
+        return rowsAffected > 0;
+      }
     } catch (SQLException e) {
       throw new DatabaseException("Erreur fermeture intervention", e);
     }
@@ -128,7 +137,7 @@ public class InterventionRepository {
       String sql = "INSERT INTO interventions (produit_id, statut_intervention, panne, detecteur, " +
                    "date_entree, date_sortie, owner_type, owner_societe_id) " +
                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-      PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+      try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       if (productId != null) {
         stmt.setLong(1, productId);
       } else {
@@ -145,10 +154,12 @@ public class InterventionRepository {
       } else {
         stmt.setNull(8, Types.BIGINT);
       }
-      stmt.executeUpdate();
-      ResultSet rs = stmt.getGeneratedKeys();
-      if (rs.next()) {
-        return rs.getLong(1);
+        stmt.executeUpdate();
+        try (ResultSet rs = stmt.getGeneratedKeys()) {
+          if (rs.next()) {
+            return rs.getLong(1);
+          }
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Erreur insertion intervention depuis import", e);
@@ -170,19 +181,21 @@ public class InterventionRepository {
                    "WHERE i.owner_societe_id = ? " +
                    "ORDER BY i.date_entree DESC";
       
-      PreparedStatement stmt = conn.prepareStatement(sql);
-      stmt.setLong(1, clientId);
-      ResultSet rs = stmt.executeQuery();
+      try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setLong(1, clientId);
+        try (ResultSet rs = stmt.executeQuery()) {
       
-      while (rs.next()) {
-        interventions.add(new InterventionRow(
-            rs.getLong("id"),
-            rs.getString("produit_nom"),
-            rs.getString("statut_intervention"),
-            rs.getString("panne"),
-            rs.getString("date_entree"),
-            rs.getString("date_sortie")
-        ));
+          while (rs.next()) {
+            interventions.add(new InterventionRow(
+                rs.getLong("id"),
+                rs.getString("produit_nom"),
+                rs.getString("statut_intervention"),
+                rs.getString("panne"),
+                rs.getString("date_entree"),
+                rs.getString("date_sortie")
+            ));
+          }
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Erreur récupération interventions par client ID", e);

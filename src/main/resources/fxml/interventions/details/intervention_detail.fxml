@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.InterventionDetailController">
+   <children>
+      <ScrollPane fitToWidth="true" styleClass="detail-scroll-pane">
+         <content>
+            <VBox styleClass="detail-content">
+               <children>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <Label styleClass="detail-panel-title" text="Détails de l'Intervention" />
+                     </children>
+                  </HBox>
+                  
+                  <GridPane hgap="10.0" vgap="10.0">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" minWidth="120.0" prefWidth="120.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label text="ID:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label fx:id="lblId" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        
+                        <Label text="Titre:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <TextField fx:id="txtTitre" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        
+                        <Label text="Client:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <ComboBox fx:id="cbClient" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        
+                        <Label text="Technicien:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <ComboBox fx:id="cbTechnicien" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        
+                        <Label text="Date:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                        <DatePicker fx:id="dpDate" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        
+                        <Label text="Statut:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                        <ComboBox fx:id="cbStatut" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        
+                        <Label text="Description:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                        <TextArea fx:id="txtDescription" prefRowCount="4" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        
+                        <Label text="Notes:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                        <TextArea fx:id="txtNotes" prefRowCount="3" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                     </children>
+                  </GridPane>
+                  
+                  <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                     <children>
+                        <Button fx:id="btnSave" onAction="#saveIntervention" text="Enregistrer" />
+                        <Button fx:id="btnCancel" onAction="#cancel" text="Annuler" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </children>
+</VBox>

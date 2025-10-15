@@ -59,7 +59,7 @@ javafx {
 }
 
 tasks.withType(JavaCompile).configureEach {
-  options.compilerArgs += ['-Xdiags:verbose']
+  options.compilerArgs += ['-Xdiags:verbose', '-Xlint:unchecked', '-Xlint:deprecation', '-Xlint:all']
 }
 
 test {

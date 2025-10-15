@@ -1,19 +1,33 @@
-/* MAGSAV - Thème Dark Authentique */
+/* MAGSAV - Thème Dark Authentique SANS BORDURES */
+
+/* Règles globales pour éliminer ABSOLUMENT toutes les bordures */
+*, .root, .content, .table-view, .tab-pane, .tab, .sidebar, .dashboard-card, .config-section, .theme-preview {
+    -fx-border-color: transparent !important;
+    -fx-border-width: 0 !important;
+    border-color: transparent !important;
+    border-width: 0 !important;
+    -fx-border-insets: 0 !important;
+    -fx-background-insets: 0 !important;
+    -fx-table-cell-border-color: transparent !important;
+    -fx-background-radius: 0 !important;
+    -fx-border-radius: 0 !important;
+    border-radius: 0 !important;
+}
 
 .root {
-    -fx-base: #000000;
-    background: #000000;
-    -fx-background: #000000;
+    -fx-base: #1e3a5f;
+    background: #1e3a5f;
+    -fx-background: #1e3a5f;
     -fx-control-inner-background: #1a1a1a;
     -fx-text-base-color: #ffffff;
     -fx-text-fill: #ffffff;
     -fx-accent: #4a90e2;
-    -fx-focus-color: #4a90e2;
-    -fx-faint-focus-color: #4a90e240;
+    -fx-focus-color: transparent !important;
+    -fx-faint-focus-color: transparent !important;
     -fx-selection-bar: #4a90e2;
 }
 
-/* Sidebar - Bleu Marine */
+/* Sidebar - Bleu Marine SANS BORDURES */
 .sidebar {
     background-color: #1e3a5f;
     -fx-background-color: #1e3a5f;
@@ -22,10 +36,12 @@
     -fx-spacing: 0;
     min-width: 260px;
     -fx-min-width: 260;
-    border-color: #2c5282;
-    -fx-border-color: #2c5282;
-    border-width: 0 1 0 0;
-    -fx-border-width: 0 1 0 0;
+    border-width: 0 !important;
+    -fx-border-width: 0 !important;
+    border-color: transparent !important;
+    -fx-border-color: transparent !important;
+    -fx-border-insets: 0 !important;
+    -fx-background-insets: 0 !important;
 }
 
 .sidebar-header {
@@ -163,13 +179,13 @@
 
 /* Tab Pane - Fond Noir */
 .tab-pane {
-    background-color: #000000;
-    -fx-background-color: #000000;
+    background-color: #1e3a5f;
+    -fx-background-color: #1e3a5f;
 }
 
 .tab-pane .tab-header-area {
-    background-color: #000000;
-    -fx-background-color: #000000;
+    background-color: #1e3a5f;
+    -fx-background-color: #1e3a5f;
     border-color: #333333;
     -fx-border-color: #333333;
     border-width: 0 0 1 0;
@@ -201,16 +217,16 @@
 }
 
 .tab-pane .tab-content-area {
-    background-color: #000000;
-    -fx-background-color: #000000;
+    background-color: #1e3a5f;
+    -fx-background-color: #1e3a5f;
     padding: 20;
     -fx-padding: 20;
 }
 
 /* Configuration spécifique pour l'onglet Apparence */
 .config-content {
-    background-color: #000000;
-    -fx-background-color: #000000;
+    background-color: #1e3a5f;
+    -fx-background-color: #1e3a5f;
     padding: 20;
     -fx-padding: 20;
 }
@@ -254,8 +270,8 @@
 }
 
 .theme-preview {
-    background-color: #000000;
-    -fx-background-color: #000000;
+    background-color: #1e3a5f;
+    -fx-background-color: #1e3a5f;
     border-color: #4a90e2;
     -fx-border-color: #4a90e2;
     border-width: 2;
@@ -430,8 +446,8 @@
 
 /* === SPLITPANE === */
 .dark-split-pane {
-    background-color: #000000;
-    -fx-background-color: #000000;
+    background-color: #1e3a5f;
+    -fx-background-color: #1e3a5f;
 }
 
 .dark-split-pane .split-pane-divider {
@@ -769,4 +785,30 @@
     -fx-font-size: 14;
     padding: 40;
     -fx-padding: 40;
+}
+
+/* === MARGES POUR FICHES DETAIL ET TABPANE === */
+.detail-content {
+    -fx-padding: 0 15 0 15;
+    padding: 0 15 0 15;
+}
+
+.detail-margins {
+    -fx-padding: 0 15;
+    padding: 0 15;
+}
+
+.tab-content-margins {
+    -fx-padding: 10 15 10 15;
+    padding: 10 15 10 15;
+}
+
+.tab-pane-margins .tab-content-area {
+    -fx-padding: 0 15;
+    padding: 0 15;
+}
+
+.detail-scroll-pane {
+    -fx-padding: 0 15;
+    padding: 0 15;
 }

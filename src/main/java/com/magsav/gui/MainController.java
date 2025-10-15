@@ -3,7 +3,7 @@ package com.magsav.gui;
 import com.magsav.gui.dialogs.ShareDialogs;
 import com.magsav.model.InterventionRow;
 import com.magsav.model.Societe;
-import com.magsav.model.RequestRow;
+
 import com.magsav.repo.InterventionRepository;
 import com.magsav.repo.ProductRepository;
 import com.magsav.repo.CategoryRepository;
@@ -17,7 +17,11 @@ import com.magsav.service.ProductServiceStatic;
 
 import com.magsav.service.ShareService;
 import com.magsav.util.AppLogger;
-
+import com.magsav.dto.*;
+import com.magsav.service.data.UserDataService;
+import com.magsav.service.data.RequestDataService;
+import com.magsav.service.data.ClientDataService;
+import com.magsav.service.data.CompanyDataService;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -39,16 +43,24 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Orientation;
 
 
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class MainController {
+  // Services
+  private final UserDataService userDataService = new UserDataService();
+  private final RequestDataService requestDataService = new RequestDataService();
+  private final ClientDataService clientDataService = new ClientDataService();
+  private final CompanyDataService companyDataService = new CompanyDataService();
+  
   // Sidebar Navigation
   @FXML private Button dashboardBtn, gestionBtn, demandesBtn, interventionsBtn;
   @FXML private Button stockBtn, statistiquesBtn, exportBtn;
@@ -117,9 +129,6 @@ public class MainController {
 
   @FXML
   private void initialize() {
-    // Initialisation du ThemeManager
-    initializeThemeManager();
-    
     // Initialisation du logo de la société
     loadCompanyLogo();
     
@@ -141,11 +150,11 @@ public class MainController {
     // Charger les données
     onRefresh();
     
-    // Charger la section Dashboard par défaut
-    loadDashboardSection();
+    // Charger la section Gestion par défaut (sans Véhicules)
+    loadGestionSection();
     
     // Set default active navigation item
-    setActiveNavItem(dashboardItem);
+    setActiveNavItem(gestionItem);
   }
   
   // === SIDEBAR NAVIGATION METHODS ===
@@ -266,7 +275,7 @@ public class MainController {
   
   private VBox createProductDetailPanel() {
     VBox detailPanel = new VBox();
-    detailPanel.setSpacing(12);
+    detailPanel.setSpacing(0);
     detailPanel.setPrefWidth(300);
     detailPanel.getStyleClass().add("detail-panel");
     
@@ -276,7 +285,7 @@ public class MainController {
     
     // Zone d'image du produit
     VBox imageBox = new VBox();
-    imageBox.setSpacing(8);
+    imageBox.setSpacing(0);
     imageBox.setAlignment(javafx.geometry.Pos.CENTER);
     imageBox.setPrefHeight(200);
     imageBox.getStyleClass().add("product-image-box");
@@ -291,7 +300,7 @@ public class MainController {
     
     // Informations du produit
     VBox infoBox = new VBox();
-    infoBox.setSpacing(8);
+    infoBox.setSpacing(0);
     
     Label productNameLabel = new Label("Nom :");
     productNameLabel.getStyleClass().add("info-label");
@@ -414,18 +423,21 @@ public class MainController {
   
   // === MÉTHODES DE CONTENU POUR LES INTERVENTIONS ===
   
-  private VBox createInterventionsListContent() {
-    VBox content = new VBox();
-    content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+  private SplitPane createInterventionsListContent() {
+    // Créer le SplitPane principal
+    SplitPane splitPane = new SplitPane();
+    splitPane.setOrientation(Orientation.HORIZONTAL);
+    splitPane.getStyleClass().add("split-pane");
+    
+    // Partie gauche - Liste des interventions
+    VBox leftPane = new VBox();
+    leftPane.setSpacing(16);
+    leftPane.getStyleClass().add("main-content");
     
     // En-tête
     VBox headerBox = new VBox();
-    headerBox.setSpacing(8);
+    headerBox.setSpacing(0);
     headerBox.getStyleClass().add("content-header");
-    
-    Label title = new Label("Liste des interventions");
-    title.getStyleClass().add("content-title");
     
     HBox searchBox = new HBox();
     searchBox.setSpacing(16);
@@ -451,9 +463,9 @@ public class MainController {
     searchBtn.getStyleClass().add("dark-button-secondary");
     
     searchBox.getChildren().addAll(subtitle, spacer, statusFilter, searchField, searchBtn);
-    headerBox.getChildren().addAll(title, searchBox);
+    headerBox.getChildren().add(searchBox);
     
-    // Table des interventions (sera connectée au repository existant)
+    // Table des interventions
     TableView<InterventionRow> interventionTable = new TableView<>();
     interventionTable.getStyleClass().add("dark-table");
     
@@ -464,15 +476,28 @@ public class MainController {
     loadInterventionsData(interventionTable);
     
     VBox.setVgrow(interventionTable, javafx.scene.layout.Priority.ALWAYS);
-    content.getChildren().addAll(headerBox, interventionTable);
+    leftPane.getChildren().addAll(headerBox, interventionTable);
     
-    return content;
+    // Partie droite - Panneau de détails
+    VBox rightPane = createInterventionDetailPanel();
+    
+    splitPane.getItems().addAll(leftPane, rightPane);
+    splitPane.setDividerPositions(0.65);
+    
+    // Gestion de la sélection
+    interventionTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+      if (newSelection != null) {
+        updateInterventionDetailPanel(rightPane, newSelection);
+      }
+    });
+    
+    return splitPane;
   }
   
   private VBox createNewInterventionContent() {
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     Label title = new Label("Nouvelle intervention");
     title.getStyleClass().add("content-title");
@@ -492,7 +517,7 @@ public class MainController {
   private VBox createInterventionsEnCoursContent() {
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     Label title = new Label("Interventions en cours");
     title.getStyleClass().add("content-title");
@@ -516,7 +541,7 @@ public class MainController {
   private VBox createInterventionsTermineesContent() {
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     Label title = new Label("Interventions terminées");
     title.getStyleClass().add("content-title");
@@ -565,7 +590,7 @@ public class MainController {
     dateSortieCol.setPrefWidth(100);
     
     var columns = table.getColumns();
-    columns.addAll(idCol, produitCol, statutCol, panneCol, dateEntreeCol, dateSortieCol);
+    columns.addAll(Arrays.asList(idCol, produitCol, statutCol, panneCol, dateEntreeCol, dateSortieCol));
     
     // Configurer les double-clics pour ouvrir les détails de l'intervention
     table.setRowFactory(tv -> {
@@ -574,7 +599,7 @@ public class MainController {
         if (event.getClickCount() == 2 && !row.isEmpty()) {
           InterventionRow intervention = row.getItem();
           AppLogger.info("Double-clic sur intervention ID: " + intervention.id());
-          NavigationService.openInterventionDetail((long) intervention.id());
+          NavigationService.openInterventionDetail(intervention.id());
         }
       });
       return row;
@@ -640,16 +665,12 @@ public class MainController {
   
   private VBox createStockOverviewContent() {
     VBox content = new VBox();
-    content.setSpacing(20);
-    content.getStyleClass().add("main-content");
-    
-    // En-tête
-    Label title = new Label("Vue d'ensemble du stock");
-    title.getStyleClass().add("content-title");
+    content.setSpacing(0);
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     // Métriques du stock
     HBox metricsBox = new HBox();
-    metricsBox.setSpacing(20);
+    metricsBox.setSpacing(0);
     metricsBox.getStyleClass().add("metrics-container");
     
     VBox totalBox = createStockMetricBox("Total produits", "322", "#4a90e2");
@@ -700,18 +721,15 @@ public class MainController {
     
     actionsBox.getChildren().addAll(ajustementBtn, inventaireBtn, exportBtn);
     
-    content.getChildren().addAll(title, metricsBox, chartBox, actionsBox);
+    content.getChildren().addAll(metricsBox, chartBox, actionsBox);
     
     return content;
   }
   
   private VBox createVehiculesListContent() {
     VBox content = new VBox();
-    content.setSpacing(20);
-    content.getStyleClass().add("main-content");
-    
-    Label title = new Label("Gestion des véhicules");
-    title.getStyleClass().add("content-title");
+    content.setSpacing(0);
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     // Métriques des véhicules
     HBox metricsBox = new HBox();
@@ -727,11 +745,8 @@ public class MainController {
     
     // Table des véhicules
     VBox tableSection = new VBox();
-    tableSection.setSpacing(12);
+    tableSection.setSpacing(0);
     tableSection.getStyleClass().add("content-section");
-    
-    Label tableTitle = new Label("Liste des véhicules");
-    tableTitle.getStyleClass().add("section-title");
     
     // Créer la table des véhicules
     TableView<com.magsav.model.Vehicule> vehiculesTable = new TableView<>();
@@ -766,12 +781,26 @@ public class MainController {
     });
     colKilometrage.setPrefWidth(120);
     
-    vehiculesTable.getColumns().addAll(colImmatriculation, colType, colMarque, colModele, colStatut, colKilometrage);
+    vehiculesTable.getColumns().addAll(Arrays.asList(colImmatriculation, colType, colMarque, colModele, colStatut, colKilometrage));
+    
+    // Gestion du double-clic pour ouvrir les détails du véhicule
+    vehiculesTable.setRowFactory(tv -> {
+      TableRow<com.magsav.model.Vehicule> row = new TableRow<>();
+      row.setOnMouseClicked(event -> {
+        if (event.getClickCount() == 2 && !row.isEmpty()) {
+          com.magsav.model.Vehicule vehicule = row.getItem();
+          if (vehicule != null) {
+            NavigationService.openVehiculeDetail(vehicule.getId());
+          }
+        }
+      });
+      return row;
+    });
     
     // Charger les données des véhicules
     loadVehiculesData(vehiculesTable);
     
-    tableSection.getChildren().addAll(tableTitle, vehiculesTable);
+    tableSection.getChildren().add(vehiculesTable);
     
     // Actions
     HBox actionsBox = new HBox();
@@ -788,18 +817,47 @@ public class MainController {
     
     actionsBox.getChildren().addAll(addBtn, maintenanceBtn);
     
-    content.getChildren().addAll(title, metricsBox, tableSection, actionsBox);
+    // Créer le panneau de détails à droite pour les véhicules
+    VBox vehiculeDetailPanel = createVehiculeDetailPanel();
+    vehiculeDetailPanel.setVisible(false); // Masqué par défaut
+    
+    // Créer le SplitPane horizontal pour la table et les détails
+    javafx.scene.control.SplitPane tableSplitPane = new javafx.scene.control.SplitPane();
+    tableSplitPane.getStyleClass().add("split-pane");
+    tableSplitPane.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
+    
+    // Créer un VBox pour la section table sans le titre (qui reste dans content)
+    VBox tableWithoutTitle = new VBox();
+    tableWithoutTitle.setSpacing(12);
+    tableWithoutTitle.getChildren().add(vehiculesTable);
+    
+    // Ajouter la table et le panneau de détails au SplitPane
+    tableSplitPane.getItems().addAll(tableWithoutTitle, vehiculeDetailPanel);
+    tableSplitPane.setDividerPositions(0.65); // 65% pour la table, 35% pour les détails
+    
+    // Gestion de la sélection pour afficher les détails
+    vehiculesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+      if (newSel != null) {
+        updateVehiculeDetailPanel(vehiculeDetailPanel, newSel);
+        vehiculeDetailPanel.setVisible(true);
+      } else {
+        vehiculeDetailPanel.setVisible(false);
+      }
+    });
+    
+    // Modifier tableSection pour inclure le SplitPane
+    tableSection.getChildren().clear();
+    tableSection.getChildren().add(tableSplitPane);
+    
+    content.getChildren().addAll(metricsBox, tableSection, actionsBox);
     
     return content;
   }
   
   private VBox createVehiculesPlanningContent() {
     VBox content = new VBox();
-    content.setSpacing(20);
-    content.getStyleClass().add("main-content");
-    
-    Label title = new Label("Planning des véhicules");
-    title.getStyleClass().add("content-title");
+    content.setSpacing(0);
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     // Calendrier simple
     VBox calendarSection = new VBox();
@@ -826,7 +884,7 @@ public class MainController {
     calendarPlaceholder.getChildren().addAll(calendarIcon, calendarLabel, calendarSubtitle);
     calendarSection.getChildren().addAll(calendarTitle, calendarPlaceholder);
     
-    content.getChildren().addAll(title, calendarSection);
+    content.getChildren().add(calendarSection);
     
     return content;
   }
@@ -834,7 +892,7 @@ public class MainController {
   private VBox createStockMouvementsContent() {
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     // En-tête
     VBox headerBox = new VBox();
@@ -888,7 +946,7 @@ public class MainController {
     TableColumn<String, String> commentaireCol = new TableColumn<>("Commentaire");
     commentaireCol.setPrefWidth(200);
     
-    mouvementsTable.getColumns().addAll(dateCol, produitCol, typeCol, quantiteCol, utilisateurCol, commentaireCol);
+    mouvementsTable.getColumns().addAll(Arrays.asList(dateCol, produitCol, typeCol, quantiteCol, utilisateurCol, commentaireCol));
     
     // Placeholder pour les données
     Label placeholder = new Label("Aucun mouvement de stock récent");
@@ -904,7 +962,7 @@ public class MainController {
   private VBox createStockAlertesContent() {
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     Label title = new Label("Alertes de stock");
     title.getStyleClass().add("content-title");
@@ -943,7 +1001,7 @@ public class MainController {
   private VBox createStockRapportsContent() {
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     Label title = new Label("Rapports de stock");
     title.getStyleClass().add("content-title");
@@ -1298,7 +1356,7 @@ public class MainController {
     colProdSituation.setCellValueFactory(cd -> new javafx.beans.property.ReadOnlyStringWrapper(cd.getValue().situation()));
     
     // Ajouter les colonnes à la table
-    productTable.getColumns().addAll(colProdNom, colProdSN, colProdUID, colProdFabricant, colProdSituation);
+    productTable.getColumns().addAll(Arrays.asList(colProdNom, colProdSN, colProdUID, colProdFabricant, colProdSituation));
     
     // Configuration de la table
     productTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
@@ -1332,35 +1390,26 @@ public class MainController {
   
   // === THEME MANAGEMENT ===
   
-  private void initializeThemeManager() {
-    try {
-      // TODO: Réimplémenter avec util.ThemeManager
-      // ThemeManager themeManager = ThemeManager.getInstance();
-      // Récupérer la scène depuis n'importe quel contrôle FXML
-      if (mainTabPane != null && mainTabPane.getScene() != null) {
-        // themeManager.setScene(mainTabPane.getScene());
-        // Charger le thème sauvegardé
-        // themeManager.loadSavedTheme();
-      }
-    } catch (Exception e) {
-      AppLogger.error("Erreur lors de l'initialisation du ThemeManager: " + e.getMessage(), e);
-    }
-  }
+
   
   // === SECTION LOADING METHODS ===
   
   private void clearAndLoadTabs(Tab... tabs) {
-    // Supprimer tous les onglets existants
+    // Supprimer tous les onglets existants SAUF ceux créés dans le FXML
     mainTabPane.getTabs().clear();
     
     // Ajouter les nouveaux onglets
     for (Tab tab : tabs) {
       mainTabPane.getTabs().add(tab);
+      AppLogger.info("Onglet ajouté: " + tab.getText());
     }
+    
+    AppLogger.info("TabPane contient maintenant " + mainTabPane.getTabs().size() + " onglets");
     
     // Sélectionner le premier onglet par défaut
     if (tabs.length > 0) {
       mainTabPane.getSelectionModel().select(tabs[0]);
+      AppLogger.info("Onglet sélectionné: " + tabs[0].getText());
     }
   }
   
@@ -1379,23 +1428,27 @@ public class MainController {
     try {
       // Créer les onglets de gestion
       Tab produitsTab = createProduitsTab();
-      Tab categoriesTab = createCategoriesTab();
       Tab clientsTab = createClientsTab();
       Tab societesTab = createSocietesTab();
       
-      clearAndLoadTabs(produitsTab, categoriesTab, clientsTab, societesTab);
+      clearAndLoadTabs(produitsTab, clientsTab, societesTab);
     } catch (Exception e) {
       AppLogger.error("Erreur lors du chargement de la Gestion: " + e.getMessage(), e);
     }
   }
+  
+
+  
+
   
   private void loadDemandesSection() {
     try {
       // Créer les onglets de demandes
       Tab demandesEquipementTab = createDemandesEquipementTab();
       Tab demandesPiecesTab = createDemandesPiecesTab();
+      Tab demandesInterventionTab = createDemandesInterventionTab();
       
-      clearAndLoadTabs(demandesEquipementTab, demandesPiecesTab);
+      clearAndLoadTabs(demandesEquipementTab, demandesPiecesTab, demandesInterventionTab);
     } catch (Exception e) {
       AppLogger.error("Erreur lors du chargement des Demandes: " + e.getMessage(), e);
     }
@@ -1503,14 +1556,120 @@ public class MainController {
   
   private void loadPreferencesSection() {
     try {
-      Tab preferencesTab = new Tab("⚙️ Préférences");
-      preferencesTab.setClosable(false);
-      preferencesTab.setContent(createPreferencesContent());
+      // Créer les onglets de préférences
+      Tab generalTab = createPreferencesGeneralTab();
+      Tab systemTab = createPreferencesSystemTab();
+      Tab maintenanceTab = createPreferencesMaintenanceTab();
+      Tab scrapingTab = createPreferencesScrapingTab();
+      Tab categoriesTab = createPreferencesCategoriesTab();
+      Tab mediasTab = createPreferencesMediasTab();
+      Tab dataTab = createPreferencesDataTab();
       
-      clearAndLoadTabs(preferencesTab);
+      clearAndLoadTabs(generalTab, systemTab, maintenanceTab, scrapingTab, categoriesTab, mediasTab, dataTab);
     } catch (Exception e) {
       AppLogger.error("Erreur lors du chargement des Préférences: " + e.getMessage(), e);
     }
+  }
+  
+  private Tab createPreferencesGeneralTab() {
+    Tab tab = new Tab("⚙️ Général");
+    tab.setClosable(false);
+    tab.setContent(createPreferencesTabContent("general"));
+    return tab;
+  }
+  
+  private Tab createPreferencesSystemTab() {
+    Tab tab = new Tab("🖥️ Système");
+    tab.setClosable(false);
+    tab.setContent(createPreferencesTabContent("system"));
+    return tab;
+  }
+  
+  private Tab createPreferencesMaintenanceTab() {
+    Tab tab = new Tab("🧹 Maintenance");
+    tab.setClosable(false);
+    tab.setContent(createPreferencesTabContent("maintenance"));
+    return tab;
+  }
+  
+  private Tab createPreferencesScrapingTab() {
+    Tab tab = new Tab("🖼️ Scraping Images");
+    tab.setClosable(false);
+    tab.setContent(createPreferencesTabContent("scraping"));
+    return tab;
+  }
+  
+  private Tab createPreferencesCategoriesTab() {
+    Tab tab = new Tab("📁 Catégories");
+    tab.setClosable(false);
+    tab.setContent(createPreferencesTabContent("categories"));
+    return tab;
+  }
+  
+  private Tab createPreferencesMediasTab() {
+    Tab tab = new Tab("🖼️ Médias");
+    tab.setClosable(false);
+    tab.setContent(createPreferencesTabContent("medias"));
+    return tab;
+  }
+  
+  private Tab createPreferencesDataTab() {
+    Tab tab = new Tab("🗂️ Données");
+    tab.setClosable(false);
+    tab.setContent(createPreferencesTabContent("data"));
+    return tab;
+  }
+  
+  private VBox createPreferencesTabContent(String tabType) {
+    VBox content = new VBox();
+    content.setSpacing(20);
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
+    
+    try {
+      // Charger le fichier FXML complet des préférences
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/preferences.fxml"));
+      loader.load();
+      
+      // Obtenir le contrôleur des préférences
+      Object controller = loader.getController();
+      if (controller instanceof com.magsav.gui.PreferencesController preferencesController) {
+        // Extraire le contenu de l'onglet spécifique sans le TabPane
+        TabPane internalTabPane = preferencesController.getPreferencesTabPane();
+        if (internalTabPane != null && !internalTabPane.getTabs().isEmpty()) {
+          int tabIndex = switch (tabType) {
+            case "general" -> 0;
+            case "system" -> 1;
+            case "maintenance" -> 2;
+            case "scraping" -> 3;
+            case "categories" -> 4;
+            case "medias" -> 5;
+            case "data" -> 6;
+            default -> 0;
+          };
+          
+          if (tabIndex < internalTabPane.getTabs().size()) {
+            Tab selectedTab = internalTabPane.getTabs().get(tabIndex);
+            javafx.scene.Node tabContent = selectedTab.getContent();
+            
+            // Ajouter directement le contenu de l'onglet sans le TabPane
+            if (tabContent != null) {
+              content.getChildren().add(tabContent);
+            }
+          }
+        }
+        AppLogger.info("Préférences " + tabType + " chargées avec succès");
+      }
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors du chargement des préférences " + tabType + ": " + e.getMessage(), e);
+      
+      // Fallback en cas d'erreur
+      Label errorLabel = new Label("Erreur lors du chargement des préférences " + tabType);
+      errorLabel.getStyleClass().add("error-message");
+      content.getChildren().add(errorLabel);
+    }
+    
+    return content;
   }
   
   private void loadTechnicienUsersSection() {
@@ -1555,102 +1714,7 @@ public class MainController {
     return tab;
   }
   
-  private Tab createCategoriesTab() {
-    Tab tab = new Tab("📂 Catégories");
-    tab.setClosable(false);
-    
-    VBox content = new VBox();
-    content.setSpacing(16);
-    content.getStyleClass().add("main-content");
-    
-    // Titre
-    Label title = new Label("Gestion des catégories - Arborescence");
-    title.getStyleClass().add("content-title");
-    content.getChildren().add(title);
-    
-    // Barre d'outils
-    HBox toolbar = new HBox();
-    toolbar.setSpacing(12);
-    toolbar.getStyleClass().add("toolbar");
-    
-    Button nouvelleBtn = new Button("➕ Nouvelle catégorie racine");
-    nouvelleBtn.getStyleClass().addAll("button", "button-primary");
-    nouvelleBtn.setOnAction(e -> showAlert("Info", "Fonctionnalité de création de catégorie à implémenter"));
-    
-    Button ajouterSousBtn = new Button("📁 Ajouter sous-catégorie");
-    ajouterSousBtn.getStyleClass().addAll("button", "button-success");
-    ajouterSousBtn.setOnAction(e -> addSubcategory());
-    
-    Button modifierBtn = new Button("✏️ Modifier");
-    modifierBtn.getStyleClass().addAll("button", "button-secondary");
-    modifierBtn.setOnAction(e -> modifySelectedCategoryFromTree());
-    
-    Button supprimerBtn = new Button("🗑️ Supprimer");
-    supprimerBtn.getStyleClass().addAll("button", "button-danger");
-    supprimerBtn.setOnAction(e -> deleteSelectedCategoryFromTree());
-    
-    Button expandAllBtn = new Button("📂 Tout déplier");
-    expandAllBtn.getStyleClass().addAll("button", "button-info");
-    expandAllBtn.setOnAction(e -> expandAllCategories());
-    
-    Button collapseAllBtn = new Button("📁 Tout replier");
-    collapseAllBtn.getStyleClass().addAll("button", "button-info");
-    collapseAllBtn.setOnAction(e -> collapseAllCategories());
-    
-    toolbar.getChildren().addAll(nouvelleBtn, ajouterSousBtn, new javafx.scene.control.Separator(javafx.geometry.Orientation.VERTICAL),
-                                 modifierBtn, supprimerBtn, new javafx.scene.control.Separator(javafx.geometry.Orientation.VERTICAL),
-                                 expandAllBtn, collapseAllBtn);
-    content.getChildren().add(toolbar);
-    
-    // Arborescence des catégories
-    TreeView<CategoryTreeItem> treeView = new TreeView<>();
-    treeView.getStyleClass().add("tree-view");
-    treeView.setShowRoot(false);
-    
-    // Personnaliser l'affichage des cellules
-    treeView.setCellFactory(tv -> new TreeCell<CategoryTreeItem>() {
-        @Override
-        protected void updateItem(CategoryTreeItem item, boolean empty) {
-            super.updateItem(item, empty);
-            if (empty || item == null) {
-                setText(null);
-                setGraphic(null);
-            } else {
-                setText(item.getDisplayText());
-                // Icône selon le niveau
-                if (item.getParentId() == null) {
-                    setStyle("-fx-font-weight: bold; -fx-text-fill: #4a90e2;");
-                } else if (item.hasChildren()) {
-                    setStyle("-fx-text-fill: #7b68ee;");
-                } else {
-                    setStyle("-fx-text-fill: #888888;");
-                }
-            }
-        }
-    });
-    
-    // Double-clic pour modifier
-    treeView.setOnMouseClicked(event -> {
-        if (event.getClickCount() == 2) {
-            TreeItem<CategoryTreeItem> selectedItem = treeView.getSelectionModel().getSelectedItem();
-            if (selectedItem != null && selectedItem.getValue() != null) {
-                modifySelectedCategoryFromTree();
-            }
-        }
-    });
-    
-    // Charger l'arborescence des catégories
-    loadCategoriesTreeData(treeView);
-    
-    // Stocker la référence pour les actions
-    this.categoriesTreeView = treeView;
-    
-    VBox.setVgrow(treeView, javafx.scene.layout.Priority.ALWAYS);
-    content.getChildren().add(treeView);
-    
-    tab.setContent(content);
-    return tab;
-  }
+
   
   // Méthodes pour la gestion de l'arborescence des catégories
   
@@ -1726,144 +1790,9 @@ public class MainController {
     }
   }
   
-  private void addSubcategory() {
-    TreeItem<CategoryTreeItem> selectedItem = categoriesTreeView.getSelectionModel().getSelectedItem();
-    if (selectedItem == null || selectedItem.getValue() == null) {
-      com.magsav.util.DialogUtils.showInfoAlert("Sélection requise", "Veuillez sélectionner une catégorie parente.");
-      return;
-    }
-    
-    Long parentId = selectedItem.getValue().getId();
-    openCategoryFormWithParent(parentId);
-  }
+
   
-  private void modifySelectedCategoryFromTree() {
-    TreeItem<CategoryTreeItem> selectedItem = categoriesTreeView.getSelectionModel().getSelectedItem();
-    if (selectedItem == null || selectedItem.getValue() == null) {
-      com.magsav.util.DialogUtils.showInfoAlert("Sélection requise", "Veuillez sélectionner une catégorie à modifier.");
-      return;
-    }
-    
-    Long categoryId = selectedItem.getValue().getId();
-    openCategoryEditForm(categoryId);
-  }
-  
-  private void deleteSelectedCategoryFromTree() {
-    TreeItem<CategoryTreeItem> selectedItem = categoriesTreeView.getSelectionModel().getSelectedItem();
-    if (selectedItem == null || selectedItem.getValue() == null) {
-      com.magsav.util.DialogUtils.showInfoAlert("Sélection requise", "Veuillez sélectionner une catégorie à supprimer.");
-      return;
-    }
-    
-    CategoryTreeItem category = selectedItem.getValue();
-    
-    // Vérifier s'il y a des sous-catégories
-    if (category.hasChildren()) {
-      com.magsav.util.DialogUtils.showErrorAlert("Suppression impossible", "Cette catégorie contient des sous-catégories. Supprimez d'abord les sous-catégories.");
-      return;
-    }
-    
-    // Vérifier s'il y a des produits
-    if (category.getNbProduits() > 0) {
-      com.magsav.util.DialogUtils.showErrorAlert("Suppression impossible", "Cette catégorie contient " + category.getNbProduits() + " produits. Déplacez ou supprimez d'abord les produits.");
-      return;
-    }
-    
-    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-    alert.setTitle("Confirmer la suppression");
-    alert.setHeaderText("Supprimer la catégorie");
-    alert.setContentText("Êtes-vous sûr de vouloir supprimer la catégorie \"" + category.getNom() + "\" ?");
-    
-    alert.showAndWait().ifPresent(response -> {
-      if (response == ButtonType.OK) {
-        try {
-          categoryRepo.delete(category.getId());
-          DataChangeNotificationService.getInstance().notifyCategoryDeleted(category.getNom());
-          com.magsav.util.DialogUtils.showInfoAlert("Succès", "Catégorie supprimée avec succès.");
-        } catch (Exception e) {
-          com.magsav.util.DialogUtils.showErrorAlert("Erreur", "Erreur lors de la suppression: " + e.getMessage());
-        }
-      }
-    });
-  }
-  
-  private void expandAllCategories() {
-    expandTreeItems(categoriesTreeView.getRoot());
-  }
-  
-  private void collapseAllCategories() {
-    collapseTreeItems(categoriesTreeView.getRoot());
-  }
-  
-  private void expandTreeItems(TreeItem<CategoryTreeItem> item) {
-    if (item != null) {
-      item.setExpanded(true);
-      for (TreeItem<CategoryTreeItem> child : item.getChildren()) {
-        expandTreeItems(child);
-      }
-    }
-  }
-  
-  private void collapseTreeItems(TreeItem<CategoryTreeItem> item) {
-    if (item != null) {
-      item.setExpanded(false);
-      for (TreeItem<CategoryTreeItem> child : item.getChildren()) {
-        collapseTreeItems(child);
-      }
-    }
-  }
-  
-  // Méthodes supplémentaires pour la gestion des catégories
-  
-  private void openCategoryFormWithParent(Long parentId) {
-    try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/categories/category_form.fxml"));
-      Parent root = loader.load();
-      
-      Stage dialog = new Stage();
-      dialog.setTitle("Nouvelle sous-catégorie");
-      dialog.initModality(Modality.APPLICATION_MODAL);
-      dialog.initOwner(mainTabPane.getScene().getWindow());
-      
-      Scene scene = new Scene(root);
-      scene.getStylesheets().add(getClass().getResource("/css/simple-dark.css").toExternalForm());
-      dialog.setScene(scene);
-      
-      dialog.showAndWait();
-      
-      // Notifier le changement pour recharger automatiquement
-      DataChangeNotificationService.getInstance().notifyCategoryCreated("Nouvelle sous-catégorie");
-      
-    } catch (Exception e) {
-      AppLogger.error("Erreur lors de l'ouverture du formulaire de catégorie", e);
-      com.magsav.util.DialogUtils.showErrorAlert("Erreur", "Impossible d'ouvrir le formulaire: " + e.getMessage());
-    }
-  }
-  
-  private void openCategoryEditForm(Long categoryId) {
-    try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/categories/category_form.fxml"));
-      Parent root = loader.load();
-      
-      Stage dialog = new Stage();
-      dialog.setTitle("Modifier la catégorie");
-      dialog.initModality(Modality.APPLICATION_MODAL);
-      dialog.initOwner(mainTabPane.getScene().getWindow());
-      
-      Scene scene = new Scene(root);
-      scene.getStylesheets().add(getClass().getResource("/css/simple-dark.css").toExternalForm());
-      dialog.setScene(scene);
-      
-      dialog.showAndWait();
-      
-      // Notifier le changement pour recharger automatiquement
-      DataChangeNotificationService.getInstance().notifyCategoryUpdated("Catégorie modifiée");
-      
-    } catch (Exception e) {
-      AppLogger.error("Erreur lors de l'ouverture du formulaire de catégorie", e);
-      com.magsav.util.DialogUtils.showErrorAlert("Erreur", "Impossible d'ouvrir le formulaire: " + e.getMessage());
-    }
-  }
+
   
 
 
@@ -1873,15 +1802,12 @@ public class MainController {
     
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     // Titre et statistiques
     HBox headerBox = new HBox();
     headerBox.setSpacing(20);
     headerBox.getStyleClass().add("header-box");
-    
-    Label title = new Label("Gestion des clients");
-    title.getStyleClass().add("content-title");
     
     // Zone de statistiques
     HBox statsBox = new HBox();
@@ -1895,8 +1821,8 @@ public class MainController {
     
     statsBox.getChildren().addAll(totalClientsLabel, societesLabel, particuliersLabel);
     
-    headerBox.getChildren().addAll(title, new javafx.scene.layout.Region(), statsBox);
-    HBox.setHgrow(headerBox.getChildren().get(1), javafx.scene.layout.Priority.ALWAYS);
+    headerBox.getChildren().addAll(new javafx.scene.layout.Region(), statsBox);
+    HBox.setHgrow(headerBox.getChildren().get(0), javafx.scene.layout.Priority.ALWAYS);
     content.getChildren().add(headerBox);
     
     // Barre de filtres et actions
@@ -1976,14 +1902,7 @@ public class MainController {
     interventionsCol.setPrefWidth(120);
     
     var clientColumns = table.getColumns();
-    clientColumns.addAll(nomCol, typeCol, emailCol, telephoneCol, villeCol, interventionsCol);
-    
-    // Gestion de la sélection
-    table.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-      boolean hasSelection = newSel != null;
-      modifierBtn.setDisable(!hasSelection);
-      supprimerBtn.setDisable(!hasSelection);
-    });
+    clientColumns.addAll(Arrays.asList(nomCol, typeCol, emailCol, telephoneCol, villeCol, interventionsCol));
     
     // Configurer le double-clic pour ouvrir les détails du client
     table.setRowFactory(tv -> {
@@ -2013,11 +1932,378 @@ public class MainController {
     searchBtn.setOnAction(e -> loadClientsDataWithFilter(table, typeFilter.getValue(), searchField.getText(),
                                                         totalClientsLabel, societesLabel, particuliersLabel));
     
-    VBox.setVgrow(table, javafx.scene.layout.Priority.ALWAYS);
-    content.getChildren().add(table);
+    // Créer le panneau de détails à droite
+    VBox detailPanel = createClientDetailPanel();
+    detailPanel.setVisible(false); // Masqué par défaut
+    
+    // Créer le SplitPane horizontal
+    javafx.scene.control.SplitPane splitPane = new javafx.scene.control.SplitPane();
+    splitPane.getStyleClass().add("split-pane");
+    splitPane.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
+    
+    // Ajouter la table et le panneau de détails
+    splitPane.getItems().addAll(table, detailPanel);
+    splitPane.setDividerPositions(0.65); // 65% pour la table, 35% pour les détails
+    
+    // Modifier la gestion de la sélection pour afficher les détails
+    table.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+      boolean hasSelection = newSel != null;
+      modifierBtn.setDisable(!hasSelection);
+      supprimerBtn.setDisable(!hasSelection);
+      
+      if (hasSelection) {
+        updateClientDetailPanel(detailPanel, newSel);
+        detailPanel.setVisible(true);
+      } else {
+        detailPanel.setVisible(false);
+      }
+    });
+    
+    VBox.setVgrow(splitPane, javafx.scene.layout.Priority.ALWAYS);
+    content.getChildren().add(splitPane);
     
     tab.setContent(content);
     return tab;
+  }
+
+  private VBox createClientDetailPanel() {
+    VBox panel = new VBox();
+    panel.setSpacing(10);
+    panel.setPadding(new javafx.geometry.Insets(20));
+    panel.getStyleClass().add("detail-panel");
+    panel.setPrefWidth(300);
+    panel.setMinWidth(250);
+    
+    // Titre du panneau
+    Label titleLabel = new Label("Détails du client");
+    titleLabel.getStyleClass().add("detail-panel-title");
+    panel.getChildren().add(titleLabel);
+    
+    return panel;
+  }
+  
+  private void updateClientDetailPanel(VBox panel, ClientRow client) {
+    // Effacer le contenu existant sauf le titre
+    panel.getChildren().removeIf(node -> !(node instanceof Label && 
+      ((Label)node).getText().equals("Détails du client")));
+    
+    // Ajouter les informations du client
+    panel.getChildren().addAll(
+      new Label("Nom: " + client.getNom()),
+      new Label("Type: " + client.getTypeDisplay()),
+      new Label("Email: " + (client.getEmail() != null ? client.getEmail() : "N/A")),
+      new Label("Téléphone: " + (client.getTelephone() != null ? client.getTelephone() : "N/A")),
+      new Label("Ville: " + (client.getVille() != null ? client.getVille() : "N/A")),
+      new Label("Nb Interventions: " + client.getNbInterventions())
+    );
+    
+    // Espacement
+    javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+    VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+    panel.getChildren().add(spacer);
+    
+    // Boutons d'actions
+    Button detailBtn = new Button("Voir détail complet");
+    detailBtn.getStyleClass().addAll("button", "button-primary");
+    detailBtn.setOnAction(e -> NavigationService.openClientDetail(client.getId()));
+    
+    Button editBtn = new Button("Modifier");
+    editBtn.getStyleClass().addAll("button", "button-secondary");
+    editBtn.setOnAction(e -> openClientForm(client));
+    
+    panel.getChildren().addAll(detailBtn, editBtn);
+  }
+
+  private VBox createCompanyDetailPanel() {
+    VBox panel = new VBox();
+    panel.setSpacing(10);
+    panel.setPadding(new javafx.geometry.Insets(20));
+    panel.getStyleClass().add("detail-panel");
+    panel.setPrefWidth(300);
+    panel.setMinWidth(250);
+    
+    // Titre du panneau
+    Label titleLabel = new Label("Détails de la société");
+    titleLabel.getStyleClass().add("detail-panel-title");
+    panel.getChildren().add(titleLabel);
+    
+    return panel;
+  }
+  
+  private void updateCompanyDetailPanel(VBox panel, CompanyRow company) {
+    // Effacer le contenu existant sauf le titre
+    panel.getChildren().removeIf(node -> !(node instanceof Label && 
+      ((Label)node).getText().equals("Détails de la société")));
+    
+    // Ajouter les informations de la société
+    panel.getChildren().addAll(
+      new Label("Nom: " + company.getNom()),
+      new Label("Type: " + company.getType()),
+      new Label("Contact: " + (company.getContact() != null ? company.getContact() : "N/A")),
+      new Label("Ville: " + (company.getVille() != null ? company.getVille() : "N/A")),
+      new Label("Secteur: " + (company.getSecteur() != null ? company.getSecteur() : "N/A"))
+    );
+    
+    // Espacement
+    javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+    VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+    panel.getChildren().add(spacer);
+    
+    // Boutons d'actions
+    Button detailBtn = new Button("Voir détail complet");
+    detailBtn.getStyleClass().addAll("button", "button-primary");
+    detailBtn.setOnAction(e -> NavigationService.openCompanyDetail(company.getId()));
+    
+    Button editBtn = new Button("Modifier");
+    editBtn.getStyleClass().addAll("button", "button-secondary");
+    editBtn.setOnAction(e -> openCompanyForm(company));
+    
+    panel.getChildren().addAll(detailBtn, editBtn);
+  }
+
+  private VBox createVehiculeDetailPanel() {
+    VBox panel = new VBox();
+    panel.setSpacing(10);
+    panel.setPadding(new javafx.geometry.Insets(20));
+    panel.getStyleClass().add("detail-panel");
+    panel.setPrefWidth(300);
+    panel.setMinWidth(250);
+    
+    // Titre du panneau
+    Label titleLabel = new Label("Détails du véhicule");
+    titleLabel.getStyleClass().add("detail-panel-title");
+    panel.getChildren().add(titleLabel);
+    
+    return panel;
+  }
+  
+  private void updateVehiculeDetailPanel(VBox panel, com.magsav.model.Vehicule vehicule) {
+    // Effacer le contenu existant sauf le titre
+    panel.getChildren().removeIf(node -> !(node instanceof Label && 
+      ((Label)node).getText().equals("Détails du véhicule")));
+    
+    // Ajouter les informations du véhicule
+    panel.getChildren().addAll(
+      new Label("Immatriculation: " + vehicule.getImmatriculation()),
+      new Label("Type: " + vehicule.getTypeVehicule()),
+      new Label("Marque: " + vehicule.getMarque()),
+      new Label("Modèle: " + vehicule.getModele()),
+      new Label("Statut: " + vehicule.getStatut()),
+      new Label("Kilométrage: " + String.format("%,d km", vehicule.getKilometrage()))
+    );
+    
+    // Espacement
+    javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+    VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+    panel.getChildren().add(spacer);
+    
+    // Boutons d'actions
+    Button detailBtn = new Button("Voir détail complet");
+    detailBtn.getStyleClass().addAll("button", "button-primary");
+    detailBtn.setOnAction(e -> NavigationService.openVehiculeDetail(vehicule.getId()));
+    
+    Button maintenanceBtn = new Button("Planifier maintenance");
+    maintenanceBtn.getStyleClass().addAll("button", "button-secondary");
+    maintenanceBtn.setOnAction(e -> showAlert("Info", "Planification maintenance à implémenter"));
+    
+    panel.getChildren().addAll(detailBtn, maintenanceBtn);
+  }
+
+  private VBox createUserDetailPanel() {
+    VBox panel = new VBox();
+    panel.setSpacing(10);
+    panel.setPadding(new javafx.geometry.Insets(20));
+    panel.getStyleClass().add("detail-panel");
+    panel.setPrefWidth(300);
+    panel.setMinWidth(250);
+    
+    // Titre du panneau
+    Label titleLabel = new Label("Détails de l'utilisateur");
+    titleLabel.getStyleClass().add("detail-panel-title");
+    panel.getChildren().add(titleLabel);
+    
+    return panel;
+  }
+  
+  private void updateUserDetailPanel(VBox panel, UserRow user) {
+    // Effacer le contenu existant sauf le titre
+    panel.getChildren().removeIf(node -> !(node instanceof Label && 
+      ((Label)node).getText().equals("Détails de l'utilisateur")));
+    
+    // Ajouter les informations de l'utilisateur
+    panel.getChildren().addAll(
+      new Label("Nom: " + user.getNom()),
+      new Label("Prénom: " + user.getPrenom()),
+      new Label("Email: " + user.getEmail()),
+      new Label("Rôle: " + user.getRole()),
+      new Label("Statut: " + user.getStatut())
+    );
+    
+    // Espacement
+    javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+    VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+    panel.getChildren().add(spacer);
+    
+    // Boutons d'actions
+    Button detailBtn = new Button("Voir détail complet");
+    detailBtn.getStyleClass().addAll("button", "button-primary");
+    detailBtn.setOnAction(e -> showAlert("Info", "Détail complet de l'utilisateur: " + user.getNom()));
+    
+    Button editBtn = new Button("Modifier");
+    editBtn.getStyleClass().addAll("button", "button-secondary");
+    editBtn.setOnAction(e -> showAlert("Info", "Modification de l'utilisateur: " + user.getNom()));
+    
+    panel.getChildren().addAll(detailBtn, editBtn);
+  }
+  
+  private void loadUsersData(TableView<UserRow> table, Label totalLabel, Label activeLabel, Label inactiveLabel) {
+    try {
+      // Charger les utilisateurs depuis la base de données
+      java.util.List<UserRow> users = userDataService.loadUsersFromDatabase();
+      
+      table.getItems().clear();
+      table.getItems().addAll(users);
+      
+      // Mettre à jour les statistiques
+      long total = users.size();
+      long actifs = users.stream().filter(u -> "Actif".equals(u.getStatut())).count();
+      long inactifs = total - actifs;
+      
+      totalLabel.setText("Total: " + total);
+      activeLabel.setText("Actifs: " + actifs);
+      inactiveLabel.setText("Inactifs: " + inactifs);
+      
+    } catch (Exception e) {
+      AppLogger.error("Erreur lors du chargement des utilisateurs", e);
+      showAlert("Erreur", "Impossible de charger les utilisateurs: " + e.getMessage());
+    }
+  }
+  
+  private VBox createRequestDetailPanel() {
+    VBox detailPanel = new VBox();
+    detailPanel.setSpacing(15);
+    detailPanel.getStyleClass().add("detail-panel");
+    detailPanel.setPrefWidth(350);
+    
+    Label titleLabel = new Label("Détails de la demande");
+    titleLabel.getStyleClass().add("detail-panel-title");
+    
+    Label selectLabel = new Label("Sélectionnez une demande pour voir les détails");
+    selectLabel.getStyleClass().add("placeholder-text");
+    
+    detailPanel.getChildren().addAll(titleLabel, selectLabel);
+    return detailPanel;
+  }
+  
+  private void updateRequestDetailPanel(VBox detailPanel, RequestRow request) {
+    detailPanel.getChildren().clear();
+    
+    Label titleLabel = new Label("Détails de la demande");
+    titleLabel.getStyleClass().add("detail-panel-title");
+    
+    VBox content = new VBox();
+    content.setSpacing(10);
+    
+    // Informations de base
+    Label idLabel = new Label("ID: " + request.id());
+    Label typeLabel = new Label("Type: " + request.type());
+    Label statusLabel = new Label("Statut: " + request.status());
+    Label urgenceLabel = new Label("Urgence: " + (request.urgence() != null ? request.urgence() : "Normale"));
+    Label fournisseurLabel = new Label("Fournisseur: " + (request.fournisseurNom() != null ? request.fournisseurNom() : "Non spécifié"));
+    Label dateLabel = new Label("Date de création: " + request.createdAt());
+    
+    // Description
+    Label descriptionTitle = new Label("Description:");
+    descriptionTitle.getStyleClass().add("detail-label");
+    TextArea descriptionArea = new TextArea(request.description() != null ? request.description() : "Aucune description");
+    descriptionArea.setEditable(false);
+    descriptionArea.setPrefRowCount(3);
+    descriptionArea.setWrapText(true);
+    
+    // Commentaire
+    Label commentTitle = new Label("Commentaire:");
+    commentTitle.getStyleClass().add("detail-label");
+    TextArea commentArea = new TextArea(request.commentaire() != null ? request.commentaire() : "Aucun commentaire");
+    commentArea.setEditable(false);
+    commentArea.setPrefRowCount(2);
+    commentArea.setWrapText(true);
+    
+    content.getChildren().addAll(
+      idLabel, typeLabel, statusLabel, urgenceLabel, fournisseurLabel, dateLabel,
+      descriptionTitle, descriptionArea,
+      commentTitle, commentArea
+    );
+    
+    detailPanel.getChildren().addAll(titleLabel, content);
+  }
+  
+  private VBox createInterventionDetailPanel() {
+    VBox detailPanel = new VBox();
+    detailPanel.setSpacing(15);
+    detailPanel.getStyleClass().add("detail-panel");
+    detailPanel.setPrefWidth(350);
+    
+    Label titleLabel = new Label("Détails de l'intervention");
+    titleLabel.getStyleClass().add("detail-panel-title");
+    
+    Label selectLabel = new Label("Sélectionnez une intervention pour voir les détails");
+    selectLabel.getStyleClass().add("placeholder-text");
+    
+    detailPanel.getChildren().addAll(titleLabel, selectLabel);
+    return detailPanel;
+  }
+  
+  private void updateInterventionDetailPanel(VBox detailPanel, InterventionRow intervention) {
+    detailPanel.getChildren().clear();
+    
+    Label titleLabel = new Label("Détails de l'intervention");
+    titleLabel.getStyleClass().add("detail-panel-title");
+    
+    VBox content = new VBox();
+    content.setSpacing(10);
+    
+    // Informations de base
+    Label idLabel = new Label("ID: " + intervention.id());
+    Label produitLabel = new Label("Produit: " + (intervention.produitNom() != null ? intervention.produitNom() : "Non spécifié"));
+    Label statusLabel = new Label("Statut: " + (intervention.statut() != null ? intervention.statut() : "Non spécifié"));
+    Label panneLabel = new Label("Type de panne: " + (intervention.panne() != null ? intervention.panne() : "Non spécifié"));
+    Label dateEntreeLabel = new Label("Date d'entrée: " + (intervention.dateEntree() != null ? intervention.dateEntree() : "Non spécifiée"));
+    Label dateSortieLabel = new Label("Date de sortie: " + (intervention.dateSortie() != null ? intervention.dateSortie() : "Non spécifiée"));
+    
+    // Informations détaillées
+    Label detailsTitle = new Label("Informations détaillées:");
+    detailsTitle.getStyleClass().add("detail-label");
+    
+    VBox detailsBox = new VBox();
+    detailsBox.setSpacing(5);
+    
+    // Durée de l'intervention
+    String duree = "En cours";
+    if (intervention.dateEntree() != null && intervention.dateSortie() != null) {
+      duree = "Intervention terminée";
+    } else if (intervention.dateEntree() != null) {
+      duree = "En cours depuis le " + intervention.dateEntree();
+    }
+    Label dureeLabel = new Label("Durée: " + duree);
+    
+    // État de l'intervention
+    String etat = switch (intervention.statut() != null ? intervention.statut() : "") {
+      case "EN_COURS" -> "🔧 Intervention en cours";
+      case "TERMINEE" -> "✅ Intervention terminée";
+      case "ANNULEE" -> "❌ Intervention annulée";
+      case "PROGRAMMEE" -> "📅 Intervention programmée";
+      default -> "❓ Statut inconnu";
+    };
+    Label etatLabel = new Label("État: " + etat);
+    
+    detailsBox.getChildren().addAll(dureeLabel, etatLabel);
+    
+    content.getChildren().addAll(
+      idLabel, produitLabel, statusLabel, panneLabel, dateEntreeLabel, dateSortieLabel,
+      detailsTitle, detailsBox
+    );
+    
+    detailPanel.getChildren().addAll(titleLabel, content);
   }
 
   private Tab createSocietesTab() {
@@ -2026,15 +2312,12 @@ public class MainController {
     
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     // Titre et statistiques
     HBox headerBox = new HBox();
     headerBox.setSpacing(20);
     headerBox.getStyleClass().add("header-box");
-    
-    Label title = new Label("Gestion des sociétés");
-    title.getStyleClass().add("content-title");
     
     // Zone de statistiques
     HBox statsBox = new HBox();
@@ -2056,8 +2339,8 @@ public class MainController {
     
     statsBox.getChildren().addAll(totalLabel, clientsLabel, fabricantsLabel, collaborateursLabel, particuliersLabel, magSceneLabel, administrationLabel);
     
-    headerBox.getChildren().addAll(title, new javafx.scene.layout.Region(), statsBox);
-    HBox.setHgrow(headerBox.getChildren().get(1), javafx.scene.layout.Priority.ALWAYS);
+    headerBox.getChildren().addAll(new javafx.scene.layout.Region(), statsBox);
+    HBox.setHgrow(headerBox.getChildren().get(0), javafx.scene.layout.Priority.ALWAYS);
     content.getChildren().add(headerBox);
     
     // Barre de filtres et actions
@@ -2135,14 +2418,7 @@ public class MainController {
     secteurCol.setPrefWidth(150);
     
     var companyColumns = table.getColumns();
-    companyColumns.addAll(nomCol, typeCol, contactCol, villeCol, secteurCol);
-    
-    // Gestion de la sélection
-    table.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-      boolean hasSelection = newSel != null;
-      modifierBtn.setDisable(!hasSelection);
-      supprimerBtn.setDisable(!hasSelection);
-    });
+    companyColumns.addAll(Arrays.asList(nomCol, typeCol, contactCol, villeCol, secteurCol));
     
     // Configurer le double-clic pour ouvrir les détails de la société
     table.setRowFactory(tv -> {
@@ -2173,8 +2449,35 @@ public class MainController {
     searchBtn.setOnAction(e -> loadCompaniesDataWithFilter(table, typeFilter.getValue(), searchField.getText(),
                                                           totalLabel, clientsLabel, fabricantsLabel, collaborateursLabel, particuliersLabel, magSceneLabel, administrationLabel));
     
-    VBox.setVgrow(table, javafx.scene.layout.Priority.ALWAYS);
-    content.getChildren().add(table);
+    // Créer le panneau de détails à droite
+    VBox detailPanel = createCompanyDetailPanel();
+    detailPanel.setVisible(false); // Masqué par défaut
+    
+    // Créer le SplitPane horizontal
+    javafx.scene.control.SplitPane splitPane = new javafx.scene.control.SplitPane();
+    splitPane.getStyleClass().add("split-pane");
+    splitPane.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
+    
+    // Ajouter la table et le panneau de détails
+    splitPane.getItems().addAll(table, detailPanel);
+    splitPane.setDividerPositions(0.65); // 65% pour la table, 35% pour les détails
+    
+    // Modifier la gestion de la sélection pour afficher les détails
+    table.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+      boolean hasSelection = newSel != null;
+      modifierBtn.setDisable(!hasSelection);
+      supprimerBtn.setDisable(!hasSelection);
+      
+      if (hasSelection) {
+        updateCompanyDetailPanel(detailPanel, newSel);
+        detailPanel.setVisible(true);
+      } else {
+        detailPanel.setVisible(false);
+      }
+    });
+    
+    VBox.setVgrow(splitPane, javafx.scene.layout.Priority.ALWAYS);
+    content.getChildren().add(splitPane);
     
     tab.setContent(content);
     return tab;
@@ -2184,20 +2487,36 @@ public class MainController {
     Tab tab = new Tab("🔧 Équipement");
     tab.setClosable(false);
     
-    VBox content = new VBox();
-    content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    // Créer le SplitPane principal
+    SplitPane splitPane = new SplitPane();
+    splitPane.setOrientation(Orientation.HORIZONTAL);
+    splitPane.getStyleClass().add("split-pane");
     
-    Label title = new Label("Demandes d'équipement");
-    title.getStyleClass().add("content-title");
-    content.getChildren().add(title);
+    // Partie gauche - Liste des demandes
+    VBox leftPane = new VBox();
+    leftPane.setSpacing(0);
+    leftPane.getStyleClass().add("main-content");
     
     // Créer la table des demandes d'équipement
-    TableView<RequestRow> table = createRequestsTable();
+    TableView<RequestRow> table = createRequestsTable("MATERIEL");
     loadRequestsData(table, "MATERIEL");
-    content.getChildren().add(table);
     
-    tab.setContent(content);
+    leftPane.getChildren().add(table);
+    
+    // Partie droite - Panneau de détails
+    VBox rightPane = createRequestDetailPanel();
+    
+    splitPane.getItems().addAll(leftPane, rightPane);
+    splitPane.setDividerPositions(0.65);
+    
+    // Gestion de la sélection
+    table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+      if (newSelection != null) {
+        updateRequestDetailPanel(rightPane, newSelection);
+      }
+    });
+    
+    tab.setContent(splitPane);
     return tab;
   }
   
@@ -2205,24 +2524,77 @@ public class MainController {
     Tab tab = new Tab("⚙️ Pièces");
     tab.setClosable(false);
     
-    VBox content = new VBox();
-    content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    // Créer le SplitPane principal
+    SplitPane splitPane = new SplitPane();
+    splitPane.setOrientation(Orientation.HORIZONTAL);
+    splitPane.getStyleClass().add("split-pane");
     
-    Label title = new Label("Demandes de pièces");
-    title.getStyleClass().add("content-title");
-    content.getChildren().add(title);
+    // Partie gauche - Liste des demandes
+    VBox leftPane = new VBox();
+    leftPane.setSpacing(0);
+    leftPane.getStyleClass().add("main-content");
     
     // Créer la table des demandes de pièces
-    TableView<RequestRow> table = createRequestsTable();
+    TableView<RequestRow> table = createRequestsTable("PIECES");
     loadRequestsData(table, "PIECES");
-    content.getChildren().add(table);
     
-    tab.setContent(content);
+    leftPane.getChildren().add(table);
+    
+    // Partie droite - Panneau de détails
+    VBox rightPane = createRequestDetailPanel();
+    
+    splitPane.getItems().addAll(leftPane, rightPane);
+    splitPane.setDividerPositions(0.65);
+    
+    // Gestion de la sélection
+    table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+      if (newSelection != null) {
+        updateRequestDetailPanel(rightPane, newSelection);
+      }
+    });
+    
+    tab.setContent(splitPane);
     return tab;
   }
   
-  private TableView<RequestRow> createRequestsTable() {
+  private Tab createDemandesInterventionTab() {
+    Tab tab = new Tab("🔧 Intervention");
+    tab.setClosable(false);
+    
+    // Créer le SplitPane principal
+    SplitPane splitPane = new SplitPane();
+    splitPane.setOrientation(Orientation.HORIZONTAL);
+    splitPane.getStyleClass().add("split-pane");
+    
+    // Partie gauche - Liste des demandes
+    VBox leftPane = new VBox();
+    leftPane.setSpacing(0);
+    leftPane.getStyleClass().add("main-content");
+    
+    // Créer la table des demandes d'intervention
+    TableView<RequestRow> table = createRequestsTable("INTERVENTION");
+    loadRequestsData(table, "INTERVENTION");
+    
+    leftPane.getChildren().add(table);
+    
+    // Partie droite - Panneau de détails
+    VBox rightPane = createRequestDetailPanel();
+    
+    splitPane.getItems().addAll(leftPane, rightPane);
+    splitPane.setDividerPositions(0.65);
+    
+    // Gestion de la sélection
+    table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+      if (newSelection != null) {
+        updateRequestDetailPanel(rightPane, newSelection);
+      }
+    });
+    
+    tab.setContent(splitPane);
+    return tab;
+  }
+  
+  private TableView<RequestRow> createRequestsTable(String requestType) {
     TableView<RequestRow> table = new TableView<>();
     table.setPrefHeight(400);
     
@@ -2250,7 +2622,7 @@ public class MainController {
     
     TableColumn<RequestRow, String> dateColumn = new TableColumn<>("Date de création");
     dateColumn.setCellValueFactory(cellData -> 
-        new ReadOnlyStringWrapper(formatSqlDate(cellData.getValue().createdAt())));
+        new ReadOnlyStringWrapper(cellData.getValue().createdAt()));
     dateColumn.setPrefWidth(120);
     
     TableColumn<RequestRow, String> commentColumn = new TableColumn<>("Commentaire");
@@ -2259,34 +2631,37 @@ public class MainController {
             .orElse("")));
     commentColumn.setPrefWidth(200);
     
-    table.getColumns().addAll(idColumn, typeColumn, statusColumn, fournisseurColumn, dateColumn, commentColumn);
+    table.getColumns().addAll(Arrays.asList(idColumn, typeColumn, statusColumn, fournisseurColumn, dateColumn, commentColumn));
+    
+    // Ajouter le double-clic pour ouvrir la fiche détaillée
+    table.setRowFactory(tv -> {
+      TableRow<RequestRow> row = new TableRow<RequestRow>();
+      
+      row.setOnMouseClicked(event -> {
+        if (event.getClickCount() == 2 && !row.isEmpty()) {
+          RequestRow request = row.getItem();
+          AppLogger.info("Double-clic sur demande ID: " + request.id());
+          NavigationService.openRequestDetail(request.id());
+        }
+      });
+      return row;
+    });
+    
     return table;
   }
   
   private void loadRequestsData(TableView<RequestRow> table, String type) {
     try {
-      List<RequestRow> requests = requestRepo.list(type);
+      List<RequestRow> requests = requestDataService.loadRequestsFromDatabase(type);
       table.setItems(FXCollections.observableArrayList(requests));
-      AppLogger.info("Chargé " + requests.size() + " demandes de type " + type);
+      AppLogger.info("Chargé " + requests.size() + " demandes de type " + type + " depuis la base de données");
     } catch (Exception e) {
       AppLogger.error("Erreur lors du chargement des demandes " + type + ": " + e.getMessage(), e);
       table.setItems(FXCollections.observableArrayList());
     }
   }
   
-  private String formatSqlDate(String sqlDate) {
-    if (sqlDate == null) return "Non spécifié";
-    try {
-      // Format SQLite: 2024-10-13 14:19:38 -> 13/10/2024
-      String[] parts = sqlDate.split(" ")[0].split("-");
-      if (parts.length == 3) {
-        return parts[2] + "/" + parts[1] + "/" + parts[0];
-      }
-    } catch (Exception e) {
-      AppLogger.warn("Erreur formatage date: " + sqlDate);
-    }
-    return sqlDate;
-  }
+
 
 
 
@@ -2295,34 +2670,150 @@ public class MainController {
     Tab tab = new Tab("👤 Utilisateurs Techniciens");
     tab.setClosable(false);
     
-    try {
-      // Charger le contenu FXML
-      javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-        getClass().getResource("/fxml/technicien_users.fxml")
-      );
-      
-      javafx.scene.Node content = loader.load();
-      tab.setContent(content);
-      
-    } catch (Exception e) {
-      AppLogger.error("Erreur lors du chargement de l'onglet Utilisateurs Techniciens: " + e.getMessage(), e);
-      
-      // Fallback avec un contenu simple
-      VBox content = new VBox();
-      content.setSpacing(16);
-      content.getStyleClass().add("main-content");
-      
-      Label title = new Label("Gestion des Utilisateurs Techniciens");
-      title.getStyleClass().add("content-title");
-      content.getChildren().add(title);
-      
-      Label error = new Label("Erreur lors du chargement de l'interface");
-      error.getStyleClass().add("content-subtitle");
-      content.getChildren().add(error);
-      
-      tab.setContent(content);
-    }
+    VBox content = new VBox();
+    content.setSpacing(16);
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
+    // Titre et statistiques
+    HBox headerBox = new HBox();
+    headerBox.setSpacing(0);
+    headerBox.getStyleClass().add("header-box");
+    
+    // Zone de statistiques
+    HBox statsBox = new HBox();
+    statsBox.setSpacing(15);
+    Label totalUsersLabel = new Label("Total: 0");
+    totalUsersLabel.getStyleClass().add("stats-label");
+    Label activeUsersLabel = new Label("Actifs: 0");
+    activeUsersLabel.getStyleClass().add("stats-label");
+    Label inactiveUsersLabel = new Label("Inactifs: 0");
+    inactiveUsersLabel.getStyleClass().add("stats-label");
+    
+    statsBox.getChildren().addAll(totalUsersLabel, activeUsersLabel, inactiveUsersLabel);
+    
+    headerBox.getChildren().addAll(new javafx.scene.layout.Region(), statsBox);
+    HBox.setHgrow(headerBox.getChildren().get(0), javafx.scene.layout.Priority.ALWAYS);
+    content.getChildren().add(headerBox);
+    
+    // Barre de filtres et actions
+    HBox controlsBox = new HBox();
+    controlsBox.setSpacing(15);
+    controlsBox.getStyleClass().add("controls-box");
+    
+    // Filtre par statut
+    Label filterLabel = new Label("Filtre:");
+    filterLabel.getStyleClass().add("filter-label");
+    
+    ComboBox<String> statusFilter = new ComboBox<>();
+    statusFilter.getItems().addAll("Tous", "Actifs", "Inactifs");
+    statusFilter.setValue("Tous");
+    statusFilter.getStyleClass().add("filter-combo");
+    
+    // Barre de recherche
+    TextField searchField = new TextField();
+    searchField.setPromptText("Rechercher par nom...");
+    searchField.getStyleClass().add("search-field");
+    searchField.setPrefWidth(200);
+    
+    Button searchBtn = new Button("🔍");
+    searchBtn.getStyleClass().addAll("button", "button-icon");
+    
+    // Spacer
+    javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+    HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+    
+    // Boutons d'actions
+    Button nouveauBtn = new Button("Nouvel utilisateur");
+    nouveauBtn.getStyleClass().addAll("button", "button-primary");
+    nouveauBtn.setOnAction(e -> showAlert("Info", "Création d'utilisateur à implémenter"));
+    
+    Button modifierBtn = new Button("Modifier");
+    modifierBtn.getStyleClass().addAll("button", "button-secondary");
+    modifierBtn.setOnAction(e -> showAlert("Info", "Modification d'utilisateur à implémenter"));
+    modifierBtn.setDisable(true);
+    
+    Button supprimerBtn = new Button("Supprimer");
+    supprimerBtn.getStyleClass().addAll("button", "button-danger");
+    supprimerBtn.setOnAction(e -> showAlert("Info", "Suppression d'utilisateur à implémenter"));
+    supprimerBtn.setDisable(true);
+    
+    controlsBox.getChildren().addAll(filterLabel, statusFilter, searchField, searchBtn, spacer, nouveauBtn, modifierBtn, supprimerBtn);
+    content.getChildren().add(controlsBox);
+    
+    // Table des utilisateurs
+    TableView<UserRow> table = new TableView<>();
+    table.getStyleClass().add("table-view");
+    
+    TableColumn<UserRow, String> nomCol = new TableColumn<>("Nom");
+    nomCol.setCellValueFactory(new PropertyValueFactory<>("nom"));
+    nomCol.setPrefWidth(200);
+    
+    TableColumn<UserRow, String> prenomCol = new TableColumn<>("Prénom");
+    prenomCol.setCellValueFactory(new PropertyValueFactory<>("prenom"));
+    prenomCol.setPrefWidth(150);
+    
+    TableColumn<UserRow, String> emailCol = new TableColumn<>("Email");
+    emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
+    emailCol.setPrefWidth(200);
+    
+    TableColumn<UserRow, String> roleCol = new TableColumn<>("Rôle");
+    roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
+    roleCol.setPrefWidth(120);
+    
+    TableColumn<UserRow, String> statutCol = new TableColumn<>("Statut");
+    statutCol.setCellValueFactory(new PropertyValueFactory<>("statut"));
+    statutCol.setPrefWidth(100);
+    
+    var userColumns = table.getColumns();
+    userColumns.addAll(Arrays.asList(nomCol, prenomCol, emailCol, roleCol, statutCol));
+    
+    // Configurer le double-clic pour ouvrir les détails de l'utilisateur
+    table.setRowFactory(tv -> {
+      TableRow<UserRow> row = new TableRow<>();
+      row.setOnMouseClicked(event -> {
+        if (event.getClickCount() == 2 && !row.isEmpty()) {
+          UserRow user = row.getItem();
+          AppLogger.info("Double-clic sur utilisateur: " + user.getNom());
+          NavigationService.openUserDetail(Math.toIntExact(user.getId()));
+        }
+      });
+      return row;
+    });
+    
+    // Créer le panneau de détails à droite
+    VBox detailPanel = createUserDetailPanel();
+    detailPanel.setVisible(false); // Masqué par défaut
+    
+    // Créer le SplitPane horizontal
+    javafx.scene.control.SplitPane splitPane = new javafx.scene.control.SplitPane();
+    splitPane.getStyleClass().add("split-pane");
+    splitPane.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
+    
+    // Ajouter la table et le panneau de détails
+    splitPane.getItems().addAll(table, detailPanel);
+    splitPane.setDividerPositions(0.65); // 65% pour la table, 35% pour les détails
+    
+    // Gestion de la sélection pour afficher les détails
+    table.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+      boolean hasSelection = newSel != null;
+      modifierBtn.setDisable(!hasSelection);
+      supprimerBtn.setDisable(!hasSelection);
+      
+      if (hasSelection) {
+        updateUserDetailPanel(detailPanel, newSel);
+        detailPanel.setVisible(true);
+      } else {
+        detailPanel.setVisible(false);
+      }
+    });
+    
+    // Charger les données des utilisateurs (simulées pour l'instant)
+    loadUsersData(table, totalUsersLabel, activeUsersLabel, inactiveUsersLabel);
+    
+    VBox.setVgrow(splitPane, javafx.scene.layout.Priority.ALWAYS);
+    content.getChildren().add(splitPane);
+    
+    tab.setContent(content);
     return tab;
   }
   
@@ -2502,18 +2993,12 @@ public class MainController {
     
     // En-tête
     VBox headerBox = new VBox();
-    headerBox.setSpacing(8);
+    headerBox.setSpacing(0);
     headerBox.getStyleClass().add("content-header");
-    
-    Label title = new Label("Gestion des produits");
-    title.getStyleClass().add("content-title");
     
     HBox searchBox = new HBox();
     searchBox.setSpacing(16);
     searchBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-    
-    Label subtitle = new Label("Liste des produits en stock");
-    subtitle.getStyleClass().add("content-subtitle");
     
     Region spacer = new Region();
     HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
@@ -2526,8 +3011,8 @@ public class MainController {
     searchBtn.getStyleClass().add("dark-button-secondary");
     searchBtn.setOnAction(e -> onSearchProducts());
     
-    searchBox.getChildren().addAll(subtitle, spacer, addProductBtn, productSearchField, searchBtn);
-    headerBox.getChildren().addAll(title, searchBox);
+    searchBox.getChildren().addAll(spacer, addProductBtn, productSearchField, searchBtn);
+    headerBox.getChildren().add(searchBox);
     
     // SplitPane avec table des produits et volet de détail
     SplitPane splitPane = new SplitPane();
@@ -3185,7 +3670,7 @@ public class MainController {
   private VBox createStatistiquesOverviewContent() {
     VBox content = new VBox();
     content.setSpacing(20);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     Label title = new Label("Statistiques générales");
     title.getStyleClass().add("content-title");
@@ -3219,7 +3704,7 @@ public class MainController {
   private VBox createStatistiquesInterventionsContent() {
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     Label title = new Label("Statistiques des interventions");
     title.getStyleClass().add("content-title");
@@ -3236,7 +3721,7 @@ public class MainController {
   private VBox createStatistiquesStockContent() {
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     Label title = new Label("Statistiques de stock");
     title.getStyleClass().add("content-title");
@@ -3253,7 +3738,7 @@ public class MainController {
   private VBox createStatistiquesFinancierContent() {
     VBox content = new VBox();
     content.setSpacing(16);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     Label title = new Label("Statistiques financières");
     title.getStyleClass().add("content-title");
@@ -3282,7 +3767,7 @@ public class MainController {
   private VBox createExportContent() {
     VBox content = new VBox();
     content.setSpacing(20);
-    content.getStyleClass().add("main-content");
+    content.getStyleClass().addAll("main-content", "tab-content-margins");
     
     Label title = new Label("Export de données");
     title.getStyleClass().add("content-title");
@@ -3306,36 +3791,7 @@ public class MainController {
   
   // === MÉTHODES DE CONTENU POUR LES PRÉFÉRENCES ===
   
-  private VBox createPreferencesContent() {
-    VBox content = new VBox();
-    content.setSpacing(20);
-    content.getStyleClass().add("main-content");
-    
-    // Afficher directement les onglets de préférences sans titre redondant
-    try {
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/preferences.fxml"));
-      javafx.scene.Parent preferencesRoot = loader.load();
-      
-      // Obtenir le contrôleur des préférences
-      Object controller = loader.getController();
-      if (controller instanceof com.magsav.gui.PreferencesController) {
-        // Pas besoin de sélectionner un onglet spécifique, laisser l'utilisateur naviguer
-        AppLogger.info("Préférences chargées avec succès");
-      }
-      
-      content.getChildren().add(preferencesRoot);
-      
-    } catch (Exception e) {
-      AppLogger.error("Erreur lors du chargement des préférences: " + e.getMessage(), e);
-      
-      // Fallback en cas d'erreur
-      Label errorLabel = new Label("Erreur lors du chargement des préférences");
-      errorLabel.getStyleClass().add("error-message");
-      content.getChildren().add(errorLabel);
-    }
-    
-    return content;
-  }
+
   
   // === MÉTHODES UTILITAIRES ===
   
@@ -3418,62 +3874,34 @@ public class MainController {
   private void loadClientsDataWithFilter(TableView<ClientRow> table, String typeFilter, String searchText,
                                         Label totalLabel, Label societesLabel, Label particuliersLabel) {
     try {
-      SocieteRepository repo = new SocieteRepository();
-      var clients = repo.findByType("CLIENT");
-      var particuliers = repo.findByType("PARTICULIER");
+      List<ClientRow> allClients = clientDataService.loadClientsFromDatabase();
       
       // Compteurs pour les statistiques
       int totalCount = 0, societesCount = 0, particuliersCount = 0;
+      List<ClientRow> filteredRows = new ArrayList<>();
       
-      java.util.List<ClientRow> filteredRows = new java.util.ArrayList<>();
-      
-      // Traiter les clients (sociétés)
-      for (var client : clients) {
-        societesCount++;
-        totalCount++;
-        
-        // Appliquer les filtres
-        boolean matchesTypeFilter = typeFilter.equals("Tous") || typeFilter.equals("Sociétés");
-        boolean matchesSearchFilter = searchText == null || searchText.trim().isEmpty() ||
-                                     client.nom().toLowerCase().contains(searchText.toLowerCase());
-        
-        if (matchesTypeFilter && matchesSearchFilter) {
-          int nbInterventions = 0;
-          String city = client.adresse() != null ? extractCityFromAddress(client.adresse()) : "";
-          filteredRows.add(new ClientRow(
-            client.id(),
-            client.nom(),
-            client.type(),
-            client.email() != null ? client.email() : "",
-            client.phone() != null ? client.phone() : "",
-            city,
-            nbInterventions
-          ));
+      // Appliquer les filtres et compter
+      for (ClientRow client : allClients) {
+        // Compter selon le type
+        if (client.getType().equals("Société")) {
+          societesCount++;
+        } else {
+          particuliersCount++;
         }
-      }
-      
-      // Traiter les particuliers
-      for (var particulier : particuliers) {
-        particuliersCount++;
         totalCount++;
         
         // Appliquer les filtres
-        boolean matchesTypeFilter = typeFilter.equals("Tous") || typeFilter.equals("Particuliers");
+        boolean matchesTypeFilter = typeFilter.equals("Tous") || 
+                                   (typeFilter.equals("Sociétés") && client.getType().equals("Société")) ||
+                                   (typeFilter.equals("Particuliers") && client.getType().equals("Particulier"));
+        
         boolean matchesSearchFilter = searchText == null || searchText.trim().isEmpty() ||
-                                     particulier.nom().toLowerCase().contains(searchText.toLowerCase());
+                                     client.getNom().toLowerCase().contains(searchText.toLowerCase()) ||
+                                     client.getEmail().toLowerCase().contains(searchText.toLowerCase()) ||
+                                     client.getVille().toLowerCase().contains(searchText.toLowerCase());
         
         if (matchesTypeFilter && matchesSearchFilter) {
-          int nbInterventions = 0;
-          String city = particulier.adresse() != null ? extractCityFromAddress(particulier.adresse()) : "";
-          filteredRows.add(new ClientRow(
-            particulier.id(),
-            particulier.nom(),
-            particulier.type(),
-            particulier.email() != null ? particulier.email() : "",
-            particulier.phone() != null ? particulier.phone() : "",
-            city,
-            nbInterventions
-          ));
+          filteredRows.add(client);
         }
       }
       
@@ -3483,6 +3911,7 @@ public class MainController {
       if (particuliersLabel != null) particuliersLabel.setText("Particuliers: " + particuliersCount);
       
       table.setItems(FXCollections.observableArrayList(filteredRows));
+      AppLogger.info("Chargé " + filteredRows.size() + " clients sur " + totalCount + " depuis la base de données");
     } catch (Exception e) {
       AppLogger.error("Erreur lors du chargement des clients", e);
       com.magsav.util.DialogUtils.showErrorAlert("Erreur", "Impossible de charger les clients: " + e.getMessage());
@@ -3532,49 +3961,41 @@ public class MainController {
                                           Label totalLabel, Label clientsLabel, Label fabricantsLabel, 
                                           Label collaborateursLabel, Label particuliersLabel, Label magSceneLabel, Label administrationLabel) {
     try {
-      SocieteRepository repo = new SocieteRepository();
-      var companies = repo.findAll();
+      List<CompanyRow> allCompanies = companyDataService.loadCompaniesFromDatabase();
       
       // Compteurs pour les statistiques
       int totalCount = 0, clientsCount = 0, fabricantsCount = 0, collaborateursCount = 0, particuliersCount = 0, magSceneCount = 0, administrationCount = 0;
+      List<CompanyRow> filteredRows = new ArrayList<>();
       
-      java.util.List<CompanyRow> filteredRows = new java.util.ArrayList<>();
-      for (var company : companies) {
+      // Appliquer les filtres et compter
+      for (CompanyRow company : allCompanies) {
         // Compter tous les types pour les statistiques
-        switch (company.type()) {
-          case "CLIENT" -> clientsCount++;
-          case "MANUFACTURER" -> fabricantsCount++;
-          case "COLLABORATOR" -> collaborateursCount++;
-          case "PARTICULIER" -> particuliersCount++;
-          case "OWN_COMPANY" -> magSceneCount++;
-          case "ADMINISTRATION" -> administrationCount++;
+        switch (company.getType()) {
+          case "Client" -> clientsCount++;
+          case "Fabricant" -> fabricantsCount++;
+          case "Collaborateur" -> collaborateursCount++;
+          case "Particulier" -> particuliersCount++;
+          case "Mag Scène" -> magSceneCount++;
+          case "Administration" -> administrationCount++;
         }
         totalCount++;
         
         // Appliquer les filtres
         boolean matchesTypeFilter = typeFilter.equals("Tous") || 
-                                   (typeFilter.equals("Clients") && "CLIENT".equals(company.type())) ||
-                                   (typeFilter.equals("Fabricants") && "MANUFACTURER".equals(company.type())) ||
-                                   (typeFilter.equals("Collaborateurs") && "COLLABORATOR".equals(company.type())) ||
-                                   (typeFilter.equals("Particuliers") && "PARTICULIER".equals(company.type())) ||
-                                   (typeFilter.equals("Mag Scène") && "OWN_COMPANY".equals(company.type())) ||
-                                   (typeFilter.equals("Administration") && "ADMINISTRATION".equals(company.type()));
+                                   (typeFilter.equals("Clients") && "Client".equals(company.getType())) ||
+                                   (typeFilter.equals("Fabricants") && "Fabricant".equals(company.getType())) ||
+                                   (typeFilter.equals("Collaborateurs") && "Collaborateur".equals(company.getType())) ||
+                                   (typeFilter.equals("Particuliers") && "Particulier".equals(company.getType())) ||
+                                   (typeFilter.equals("Mag Scène") && "Mag Scène".equals(company.getType())) ||
+                                   (typeFilter.equals("Administration") && "Administration".equals(company.getType()));
         
         boolean matchesSearchFilter = searchText == null || searchText.trim().isEmpty() ||
-                                     company.nom().toLowerCase().contains(searchText.toLowerCase());
+                                     company.getNom().toLowerCase().contains(searchText.toLowerCase()) ||
+                                     company.getEmail().toLowerCase().contains(searchText.toLowerCase()) ||
+                                     company.getVille().toLowerCase().contains(searchText.toLowerCase());
         
         if (matchesTypeFilter && matchesSearchFilter) {
-          String city = extractCityFromAddress(company.adresse());
-          filteredRows.add(new CompanyRow(
-            company.id(),
-            company.nom(),
-            company.type(),
-            "", // Sector pas disponible dans Societe
-            city,
-            "", // Website pas disponible dans Societe
-            company.email() != null ? company.email() : "",
-            company.phone() != null ? company.phone() : ""
-          ));
+          filteredRows.add(company);
         }
       }
       
@@ -3588,6 +4009,7 @@ public class MainController {
       if (administrationLabel != null) administrationLabel.setText("Administration: " + administrationCount);
       
       table.setItems(FXCollections.observableArrayList(filteredRows));
+      AppLogger.info("Chargé " + filteredRows.size() + " sociétés sur " + totalCount + " depuis la base de données");
     } catch (Exception e) {
       AppLogger.error("Erreur lors du chargement des sociétés", e);
       com.magsav.util.DialogUtils.showErrorAlert("Erreur", "Impossible de charger les sociétés: " + e.getMessage());
@@ -3629,162 +4051,5 @@ public class MainController {
   
   private void refreshCompaniesTable() {
     // Méthode pour recharger la table des sociétés
-  }
-
-  // Classes internes pour les tables
-  public static class CategoryRow {
-    private final long id;
-    private final String nom;
-    private final String description;
-    private final int nbProduits;
-    private final String dateCreation;
-    
-    public CategoryRow(long id, String nom, String description, int nbProduits, String dateCreation) {
-      this.id = id;
-      this.nom = nom;
-      this.description = description;
-      this.nbProduits = nbProduits;
-      this.dateCreation = dateCreation;
-    }
-    
-    public long getId() { return id; }
-    public String getNom() { return nom; }
-    public String getDescription() { return description; }
-    public int getNbProduits() { return nbProduits; }
-    public String getDateCreation() { return dateCreation; }
-  }
-  
-
-  
-  public static class ClientRow {
-    private final long id;
-    private final String nom;
-    private final String type;
-    private final String email;
-    private final String telephone;
-    private final String ville;
-    private final int nbInterventions;
-    
-    public ClientRow(long id, String nom, String type, String email, String telephone, String ville, int nbInterventions) {
-      this.id = id;
-      this.nom = nom;
-      this.type = type;
-      this.email = email;
-      this.telephone = telephone;
-      this.ville = ville;
-      this.nbInterventions = nbInterventions;
-    }
-    
-    public long getId() { return id; }
-    public String getNom() { return nom; }
-    public String getType() { return type; }
-    public String getEmail() { return email; }
-    public String getTelephone() { return telephone; }
-    public String getVille() { return ville; }
-    public int getNbInterventions() { return nbInterventions; }
-    
-    public String getTypeDisplay() {
-      return "PARTICULIER".equals(type) ? "👤 Particulier" : "🏢 Société";
-    }
-  }
-  
-  public static class CompanyRow {
-    private final long id;
-    private final String nom;
-    private final String type;
-    private final String secteur;
-    private final String ville;
-    private final String siteweb;
-    private final String email;
-    private final String telephone;
-    
-    public CompanyRow(long id, String nom, String type, String secteur, String ville, String siteweb, String email, String telephone) {
-      this.id = id;
-      this.nom = nom;
-      this.type = type;
-      this.secteur = secteur;
-      this.ville = ville;
-      this.siteweb = siteweb;
-      this.email = email;
-      this.telephone = telephone;
-    }
-    
-    public long getId() { return id; }
-    public String getNom() { return nom; }
-    public String getType() { return type; }
-    public String getSecteur() { return secteur; }
-    public String getVille() { return ville; }
-    public String getSiteweb() { return siteweb; }
-    public String getEmail() { return email; }
-    public String getTelephone() { return telephone; }
-    
-    public String getContact() {
-      if (email != null && !email.isEmpty()) {
-        return email;
-      } else if (telephone != null && !telephone.isEmpty()) {
-        return telephone;
-      }
-      return "";
-    }
-  }
-  
-  // Classe pour représenter les éléments de l'arborescence des catégories
-  public static class CategoryTreeItem {
-    private final Long id;
-    private final String nom;
-    private final String description;
-    private final Long parentId;
-    private final int nbProduits;
-    private final String dateCreation;
-    private boolean hasChildren;
-    
-    public CategoryTreeItem(Long id, String nom, String description, Long parentId, int nbProduits, String dateCreation) {
-      this.id = id;
-      this.nom = nom;
-      this.description = description;
-      this.parentId = parentId;
-      this.nbProduits = nbProduits;
-      this.dateCreation = dateCreation;
-      this.hasChildren = false;
-    }
-    
-    public String getDisplayText() {
-      String products = nbProduits > 0 ? " (" + nbProduits + " produits)" : "";
-      return nom + products;
-    }
-    
-    // Getters
-    public Long getId() { return id; }
-    public String getNom() { return nom; }
-    public String getDescription() { return description; }
-    public Long getParentId() { return parentId; }
-    public int getNbProduits() { return nbProduits; }
-    public String getDateCreation() { return dateCreation; }
-    public boolean hasChildren() { return hasChildren; }
-    public void setHasChildren(boolean hasChildren) { this.hasChildren = hasChildren; }
-  }
-  
-  /**
-   * Extrait la ville d'une adresse complète (méthode simplifiée)
-   */
-  private String extractCityFromAddress(String address) {
-    if (address == null || address.trim().isEmpty()) {
-      return "";
-    }
-    
-    // Format attendu: "rue, code_postal ville" ou simplement "ville"
-    String[] parts = address.split(",");
-    if (parts.length > 1) {
-      // Prendre la dernière partie et extraire la ville après le code postal
-      String lastPart = parts[parts.length - 1].trim();
-      String[] cityParts = lastPart.split(" ");
-      if (cityParts.length > 1) {
-        // Prendre tout après le premier mot (supposé être le code postal)
-        return String.join(" ", java.util.Arrays.copyOfRange(cityParts, 1, cityParts.length));
-      }
-      return lastPart;
-    }
-    
-    return address;
   }
 }

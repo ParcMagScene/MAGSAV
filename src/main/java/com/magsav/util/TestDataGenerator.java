@@ -2,15 +2,17 @@ package com.magsav.util;
 
 import com.magsav.db.DB;
 
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -96,26 +98,42 @@ public class TestDataGenerator {
         try {
             System.out.println("🎯 Génération des données de test MAGSAV...");
             
-            // Vider les tables existantes (optionnel - décommenter si nécessaire)
-            // clearAllTables();
-            
-            // Générer les données dans l'ordre des dépendances
+            // Ajouter un délai entre chaque génération pour éviter les conflits de concurrence
             generateCategories(20);
+            Thread.sleep(200);
             generateSocietes(50);
+            Thread.sleep(200);
             generateTechniciens(10);
+            Thread.sleep(200);
+            generateUsers(15);
+            Thread.sleep(200);
             generateVehicules(8);
+            Thread.sleep(200);
             generateProduits(100);
+            Thread.sleep(200);
             generateInterventions(30);
+            Thread.sleep(200);
             generatePlanifications(25);
+            Thread.sleep(200);
             generateCommandes(15);
+            Thread.sleep(200);
             generateLignesCommandes(45);
+            Thread.sleep(200);
             generateMouvementsStock(80);
+            Thread.sleep(200);
             generateAlertesStock(12);
+            Thread.sleep(200);
             generateDisponibilitesTechniciens(20);
+            Thread.sleep(200);
             generateCommunications(35);
-            generateSavHistory(40);
+            Thread.sleep(1000); // Délai augmenté pour éviter la concurrence
+            // Temporairement commenté pour éviter le database lock
+            // generateSavHistory(40);
+            // Thread.sleep(500);
             generateDemandes(30);
+            Thread.sleep(200);
             generateItemsDemandes(90);
+            Thread.sleep(200);
             generateEmailTemplates();
             
             System.out.println("✅ Génération terminée avec succès !");
@@ -214,10 +232,14 @@ public class TestDataGenerator {
             String sql = "INSERT INTO techniciens (nom, prenom, email, telephone, specialites, statut, notes) VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             
+            // Générer un timestamp unique pour cette session de génération
+            long timestamp = System.currentTimeMillis();
+            
             for (int i = 1; i <= count; i++) {
                 String nom = NOMS.get(random.nextInt(NOMS.size()));
                 String prenom = PRENOMS.get(random.nextInt(PRENOMS.size()));
-                String email = prenom.toLowerCase() + "." + nom.toLowerCase() + "@magsav.com";
+                // Email unique avec timestamp et index pour éviter les conflits
+                String email = prenom.toLowerCase() + "." + nom.toLowerCase() + ".test" + timestamp + "." + i + "@magsav.com";
                 String telephone = generatePhoneNumber();
                 String specialites = SPECIALITES_TECHNICIENS.get(random.nextInt(SPECIALITES_TECHNICIENS.size()));
                 String statut = random.nextDouble() > 0.1 ? "ACTIF" : "CONGE";
@@ -234,6 +256,59 @@ public class TestDataGenerator {
             }
         }
         System.out.println("✅ " + count + " techniciens générés");
+    }
+    
+    /**
+     * Génère des utilisateurs avec différents rôles
+     */
+    private static void generateUsers(int count) throws SQLException {
+        System.out.println("👥 Génération des utilisateurs...");
+        
+        try (Connection conn = DB.getConnection()) {
+            String sql = "INSERT INTO users (username, email, password_hash, role, full_name, phone, societe_id, position, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            
+            // Obtenir les IDs des sociétés disponibles
+            int[] societeIds = getAvailableIdsForTable(conn, "societes");
+            
+            // Générer un timestamp unique pour cette session
+            long timestamp = System.currentTimeMillis();
+            
+            // Rôles disponibles selon le schéma
+            String[] roles = {"ADMIN", "USER", "TECHNICIEN_MAG_SCENE", "INTERMITTENT"};
+            String[] positions = {"Directeur", "Manager", "Technicien", "Assistant", "Stagiaire", "Consultant"};
+            
+            for (int i = 1; i <= count; i++) {
+                String nom = NOMS.get(random.nextInt(NOMS.size()));
+                String prenom = PRENOMS.get(random.nextInt(PRENOMS.size()));
+                
+                String username = prenom.toLowerCase() + "." + nom.toLowerCase() + ".user" + timestamp + "." + i;
+                String email = prenom.toLowerCase() + "." + nom.toLowerCase() + ".user" + timestamp + "." + i + "@magsav.com";
+                String passwordHash = "$2a$10$test.hash.for.user." + i; // Hash simple pour les tests
+                String role = roles[random.nextInt(roles.length)];
+                String fullName = prenom + " " + nom;
+                String phone = generatePhoneNumber();
+                Integer societeId = societeIds.length > 0 ? societeIds[random.nextInt(societeIds.length)] : null;
+                String position = positions[random.nextInt(positions.length)];
+                boolean isActive = random.nextDouble() > 0.1; // 90% actifs
+                
+                stmt.setString(1, username);
+                stmt.setString(2, email);
+                stmt.setString(3, passwordHash);
+                stmt.setString(4, role);
+                stmt.setString(5, fullName);
+                stmt.setString(6, phone);
+                if (societeId != null) {
+                    stmt.setInt(7, societeId);
+                } else {
+                    stmt.setNull(7, java.sql.Types.INTEGER);
+                }
+                stmt.setString(8, position);
+                stmt.setBoolean(9, isActive);
+                stmt.executeUpdate();
+            }
+        }
+        System.out.println("✅ " + count + " utilisateurs générés");
     }
     
     /**
@@ -321,11 +396,19 @@ public class TestDataGenerator {
         System.out.println("🔧 Génération des interventions...");
         
         try (Connection conn = DB.getConnection()) {
+            // Récupérer les IDs disponibles pour produits
+            int[] produitIds = getAvailableIdsForTable(conn, "produits");
+            
+            if (produitIds.length == 0) {
+                System.out.println("⚠️ Aucun produit disponible - skip interventions");
+                return;
+            }
+            
             String sql = "INSERT INTO interventions (produit_id, statut_intervention, description_panne, numero_serie_intervention, note_client, description_defaut, nom_detecteur, date_entree, date_sortie) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             
             for (int i = 1; i <= count; i++) {
-                int produitId = random.nextInt(100) + 1; // Référence aux produits générés
+                int produitId = produitIds[random.nextInt(produitIds.length)]; // Référence aux produits disponibles
                 String statut = STATUTS_INTERVENTION.get(random.nextInt(STATUTS_INTERVENTION.size()));
                 String descriptionPanne = generatePanneDescription();
                 String numeroSerie = generateSerialNumber();
@@ -360,6 +443,9 @@ public class TestDataGenerator {
     private static void generatePlanifications(int count) throws SQLException {
         System.out.println("📅 Génération des planifications...");
         
+        // Récupérer les vraies plages d'IDs disponibles
+        Map<String, int[]> availableIds = getAvailableIds();
+        
         try (Connection conn = DB.getConnection()) {
             String sql = "INSERT INTO planifications (intervention_id, technicien_id, vehicule_id, client_id, date_planifiee, duree_estimee, statut, priorite, type_intervention, lieu_intervention, notes_planification) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -369,10 +455,11 @@ public class TestDataGenerator {
             String[] types = {"MAINTENANCE", "DEPANNAGE", "INSTALLATION", "CONTROLE"};
             
             for (int i = 1; i <= count; i++) {
-                int interventionId = random.nextInt(30) + 1;
-                int technicienId = random.nextInt(10) + 1;
-                int vehiculeId = random.nextInt(8) + 1;
-                int clientId = random.nextInt(50) + 1; // Référence vers societes.id
+                // Utiliser les vraies plages d'IDs disponibles
+                int interventionId = getRandomIdInRange(availableIds.get("interventions"), random);
+                int technicienId = getRandomIdInRange(availableIds.get("techniciens"), random);
+                int vehiculeId = getRandomIdInRange(availableIds.get("vehicules"), random);
+                int clientId = getRandomIdInRange(availableIds.get("societes"), random);
                 String datePlanifiee = generateRandomDateTime(2024, 2024);
                 int dureeEstimee = 60 + random.nextInt(240); // 1-4 heures
                 String statut = statuts[random.nextInt(statuts.length)];
@@ -404,6 +491,9 @@ public class TestDataGenerator {
     private static void generateCommandes(int count) throws SQLException {
         System.out.println("🛒 Génération des commandes...");
         
+        // Récupérer les vraies plages d'IDs disponibles
+        Map<String, int[]> availableIds = getAvailableIds();
+        
         try (Connection conn = DB.getConnection()) {
             String sql = "INSERT INTO commandes (numero_commande, fournisseur_id, statut, date_commande, date_livraison_prevue, montant_ht, montant_tva, montant_ttc, conditions_paiement, adresse_livraison, notes_commande) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -412,7 +502,7 @@ public class TestDataGenerator {
             
             for (int i = 1; i <= count; i++) {
                 String numeroCommande = "CMD-" + String.format("%06d", i);
-                int fournisseurId = random.nextInt(50) + 1; // Référence vers societes.id
+                int fournisseurId = getRandomIdInRange(availableIds.get("societes"), random); // Référence vers societes.id
                 String statut = statuts[random.nextInt(statuts.length)];
                 String dateCommande = generateRandomDate(2024, 2024);
                 String dateLivraisonPrevue = generateRandomDate(2024, 2024);
@@ -447,14 +537,27 @@ public class TestDataGenerator {
         System.out.println("📋 Génération des lignes de commandes...");
         
         try (Connection conn = DB.getConnection()) {
+            // Récupérer les IDs disponibles pour commandes et produits
+            int[] commandeIds = getAvailableIdsForTable(conn, "commandes");
+            int[] produitIds = getAvailableIdsForTable(conn, "produits");
+            
+            if (commandeIds.length == 0) {
+                System.out.println("⚠️ Aucune commande disponible - skip lignes_commandes");
+                return;
+            }
+            if (produitIds.length == 0) {
+                System.out.println("⚠️ Aucun produit disponible - skip lignes_commandes");
+                return;
+            }
+            
             String sql = "INSERT INTO lignes_commandes (commande_id, produit_id, reference_fournisseur, designation, quantite_commandee, quantite_recue, prix_unitaire_ht, taux_tva, montant_ligne_ht, montant_ligne_ttc, statut_ligne, notes_ligne) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             
             String[] statuts = {"COMMANDEE", "PARTIELLE", "RECUE", "ANNULEE"};
             
             for (int i = 1; i <= count; i++) {
-                int commandeId = random.nextInt(15) + 1;
-                int produitId = random.nextInt(100) + 1;
+                int commandeId = commandeIds[random.nextInt(commandeIds.length)];
+                int produitId = produitIds[random.nextInt(produitIds.length)];
                 String referenceFournisseur = "REF-" + String.format("%06d", i);
                 String designation = "Article " + FABRICANTS.get(random.nextInt(FABRICANTS.size()));
                 int quantiteCommandee = 1 + random.nextInt(10);
@@ -491,6 +594,14 @@ public class TestDataGenerator {
         System.out.println("📊 Génération des mouvements de stock...");
         
         try (Connection conn = DB.getConnection()) {
+            // Récupérer les IDs disponibles pour produits
+            int[] produitIds = getAvailableIdsForTable(conn, "produits");
+            
+            if (produitIds.length == 0) {
+                System.out.println("⚠️ Aucun produit disponible - skip mouvements_stock");
+                return;
+            }
+            
             String sql = "INSERT INTO mouvements_stock (produit_id, type_mouvement, quantite, stock_avant, stock_après, cout_unitaire, valeur_mouvement, motif, reference_document, utilisateur, date_mouvement) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             
@@ -498,7 +609,7 @@ public class TestDataGenerator {
             String[] motifs = {"Livraison fournisseur", "Sortie intervention", "Correction inventaire", "Contrôle annuel"};
             
             for (int i = 1; i <= count; i++) {
-                int produitId = random.nextInt(100) + 1;
+                int produitId = produitIds[random.nextInt(produitIds.length)];
                 String typeMouvement = types[random.nextInt(types.length)];
                 int quantite = typeMouvement.equals("SORTIE") ? -(1 + random.nextInt(5)) : (1 + random.nextInt(10));
                 int stockAvant = random.nextInt(50);
@@ -534,6 +645,14 @@ public class TestDataGenerator {
         System.out.println("⚠️ Génération des alertes de stock...");
         
         try (Connection conn = DB.getConnection()) {
+            // Récupérer les IDs disponibles pour produits
+            int[] produitIds = getAvailableIdsForTable(conn, "produits");
+            
+            if (produitIds.length == 0) {
+                System.out.println("⚠️ Aucun produit disponible - skip alertes_stock");
+                return;
+            }
+            
             String sql = "INSERT INTO alertes_stock (produit_id, type_alerte, seuil_alerte, stock_actuel, statut_alerte, action_prise, notification_envoyee) VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             
@@ -541,7 +660,7 @@ public class TestDataGenerator {
             String[] statuts = {"ACTIVE", "TRAITEE", "IGNOREE"};
             
             for (int i = 1; i <= count; i++) {
-                int produitId = random.nextInt(100) + 1;
+                int produitId = produitIds[random.nextInt(produitIds.length)];
                 String typeAlerte = types[random.nextInt(types.length)];
                 int seuilAlerte = 5 + random.nextInt(15);
                 int stockActuel = typeAlerte.equals("STOCK_BAS") ? random.nextInt(seuilAlerte) : 
@@ -574,6 +693,9 @@ public class TestDataGenerator {
         System.out.println("📅 Génération des disponibilités des techniciens...");
         
         try (Connection conn = DB.getConnection()) {
+            // Récupérer les vraies plages d'IDs disponibles
+            Map<String, int[]> availableIds = getAvailableIds();
+            
             String sql = "INSERT INTO disponibilites_techniciens (technicien_id, date_debut, date_fin, type_indispo, motif) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             
@@ -581,7 +703,7 @@ public class TestDataGenerator {
             String[] motifs = {"Congés payés", "Formation technique", "Arrêt maladie", "Personnel"};
             
             for (int i = 1; i <= count; i++) {
-                int technicienId = random.nextInt(10) + 1;
+                int technicienId = getRandomIdInRange(availableIds.get("techniciens"), random);
                 String dateDebut = generateRandomDateTime(2024, 2024);
                 String dateFin = generateRandomDateTime(2024, 2024);
                 String typeIndispo = types[random.nextInt(types.length)];
@@ -605,6 +727,15 @@ public class TestDataGenerator {
         System.out.println("📧 Génération des communications...");
         
         try (Connection conn = DB.getConnection()) {
+            // Récupérer les IDs disponibles pour toutes les tables de référence
+            int[] planificationIds = getAvailableIdsForTable(conn, "planifications");
+            Map<String, int[]> availableIds = getAvailableIds();
+            
+            if (planificationIds.length == 0) {
+                System.out.println("⚠️ Aucune planification disponible - skip communications");
+                return;
+            }
+            
             String sql = "INSERT INTO communications (planification_id, intervention_id, client_id, technicien_id, type_communication, statut, objet, contenu, destinataires) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             
@@ -612,10 +743,10 @@ public class TestDataGenerator {
             String[] statuts = {"PLANIFIE", "ENVOYE", "RECU", "ECHEC"};
             
             for (int i = 1; i <= count; i++) {
-                int planificationId = random.nextInt(25) + 1;
-                int interventionId = random.nextInt(30) + 1;
-                int clientId = random.nextInt(50) + 1; // Référence vers societes.id
-                int technicienId = random.nextInt(10) + 1;
+                int planificationId = planificationIds[random.nextInt(planificationIds.length)];
+                int interventionId = getRandomIdInRange(availableIds.get("interventions"), random);
+                int clientId = getRandomIdInRange(availableIds.get("societes"), random);
+                int technicienId = getRandomIdInRange(availableIds.get("techniciens"), random);
                 String typeCommunication = types[random.nextInt(types.length)];
                 String statut = statuts[random.nextInt(statuts.length)];
                 String objet = "Communication " + typeCommunication + " - Intervention " + interventionId;
@@ -640,38 +771,7 @@ public class TestDataGenerator {
     /**
      * Génère l'historique SAV
      */
-    private static void generateSavHistory(int count) throws SQLException {
-        System.out.println("📜 Génération de l'historique SAV...");
-        
-        try (Connection conn = DB.getConnection()) {
-            String sql = "INSERT INTO sav_history (produit_id, sav_externe_id, date_debut, date_fin, statut_historique, notes_historique) VALUES (?, ?, ?, ?, ?, ?)";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            
-            String[] statuts = {"EN_COURS", "TERMINE", "ABANDONNE", "REPORTE"};
-            
-            for (int i = 1; i <= count; i++) {
-                int produitId = random.nextInt(100) + 1;
-                int savExterneId = random.nextInt(50) + 1;
-                String dateDebut = generateRandomDate(2023, 2024);
-                String dateFin = random.nextBoolean() ? generateRandomDate(2023, 2024) : null;
-                String statutHistorique = statuts[random.nextInt(statuts.length)];
-                String notesHistorique = "Historique SAV généré automatiquement - " + statutHistorique;
-                
-                stmt.setInt(1, produitId);
-                stmt.setInt(2, savExterneId);
-                stmt.setString(3, dateDebut);
-                if (dateFin != null) {
-                    stmt.setString(4, dateFin);
-                } else {
-                    stmt.setNull(4, java.sql.Types.VARCHAR);
-                }
-                stmt.setString(5, statutHistorique);
-                stmt.setString(6, notesHistorique);
-                stmt.executeUpdate();
-            }
-        }
-        System.out.println("✅ " + count + " entrées d'historique SAV générées");
-    }
+
     
     /**
      * Génère des templates d'emails
@@ -845,8 +945,14 @@ public class TestDataGenerator {
                 String requesterEmail = generateEmail(requesterName);
                 String requesterPhone = generatePhoneNumber();
                 String assignedTo = random.nextBoolean() ? generateNomComplet() : null;
-                int societeId = random.nextInt(50) + 1; // Référence vers societes.id
-                Integer interventionId = type.equals("INTERVENTION") && random.nextBoolean() ? random.nextInt(30) + 1 : null;
+                
+                // Récupérer les IDs disponibles avec la connexion existante
+                int[] societeIds = getAvailableIdsForTable(conn, "societes");
+                int[] interventionIds = getAvailableIdsForTable(conn, "interventions");
+                
+                int societeId = societeIds.length > 0 ? societeIds[random.nextInt(societeIds.length)] : 1;
+                Integer interventionId = type.equals("INTERVENTION") && random.nextBoolean() && interventionIds.length > 0 
+                    ? interventionIds[random.nextInt(interventionIds.length)] : null;
                 double estimatedCost = type.equals("DEVIS") || type.equals("PRIX") ? 100 + random.nextDouble() * 5000 : 0;
                 String comments = "Demande générée automatiquement - " + type;
                 String createdAt = generateRandomDateTime(2024, 2024);
@@ -884,11 +990,20 @@ public class TestDataGenerator {
         System.out.println("📦 Génération des items de demandes...");
         
         try (Connection conn = DB.getConnection()) {
+            // Récupérer les IDs disponibles pour requests et societes
+            int[] requestIds = getAvailableIdsForTable(conn, "requests");
+            Map<String, int[]> availableIds = getAvailableIds();
+            
+            if (requestIds.length == 0) {
+                System.out.println("⚠️ Aucune demande disponible - skip request_items");
+                return;
+            }
+            
             String sql = "INSERT INTO request_items (request_id, item_type, reference, name, description, quantity, unit_price, total_price, supplier_id, status, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             
             for (int i = 1; i <= count; i++) {
-                int requestId = random.nextInt(30) + 1; // Référence vers requests.id
+                int requestId = requestIds[random.nextInt(requestIds.length)];
                 String itemType = TYPES_ITEMS.get(random.nextInt(TYPES_ITEMS.size()));
                 String reference = generateReferenceItem(itemType);
                 String name = generateNomItem(itemType);
@@ -896,7 +1011,7 @@ public class TestDataGenerator {
                 int quantity = 1 + random.nextInt(10);
                 double unitPrice = 10 + random.nextDouble() * 500;
                 double totalPrice = quantity * unitPrice;
-                int supplierId = random.nextInt(50) + 1; // Référence vers societes.id
+                int supplierId = getRandomIdInRange(availableIds.get("societes"), random);
                 String status = STATUTS_ITEMS.get(random.nextInt(STATUTS_ITEMS.size()));
                 String notes = "Item généré automatiquement - " + itemType;
                 String createdAt = generateRandomDateTime(2024, 2024);
@@ -969,7 +1084,138 @@ public class TestDataGenerator {
         };
     }
     
+    /**
+     * Vide toutes les tables de test de la base de données
+     * Attention: cette méthode supprime TOUTES les données de test !
+     */
+    public static void clearAllTables() {
+        try {
+            System.out.println("🗑️ Vidage de toutes les tables de test...");
+            
+            try (Connection conn = DB.getConnection()) {
+                // Désactiver les contraintes de clés étrangères temporairement
+                conn.createStatement().execute("PRAGMA foreign_keys = OFF");
+                
+                // Liste complète de toutes les tables dans l'ordre de suppression
+                // (les tables dépendantes d'abord pour éviter les erreurs de contraintes)
+                String[] tables = {
+                    // Tables de liaison et dépendantes
+                    "request_items",
+                    "lignes_commandes", 
+                    "mouvements_stock",
+                    "alertes_stock",
+                    "disponibilites_techniciens",
+                    "communications",
+                    "sav_history",
+                    "sync_logs",
+                    
+                    // Tables principales métier
+                    "demandes", // Ancien nom pour requests
+                    "requests",
+                    "planifications",
+                    "commandes",
+                    "interventions",
+                    "produits",
+                    
+                    // Tables de configuration et référence
+                    "techniciens",
+                    "vehicules", 
+                    "categories",
+                    "societes",
+                    "users",
+                    "clients",
+                    "email_templates",
+                    "configuration_google"
+                };
+                
+                // Supprimer les données de chaque table
+                PreparedStatement stmt = null;
+                int totalDeleted = 0;
+                
+                for (String table : tables) {
+                    try {
+                        String sql = "DELETE FROM " + table;
+                        stmt = conn.prepareStatement(sql);
+                        int deleted = stmt.executeUpdate();
+                        if (deleted > 0) {
+                            System.out.println("   ✅ " + table + ": " + deleted + " enregistrements supprimés");
+                            totalDeleted += deleted;
+                        }
+                        stmt.close();
+                    } catch (SQLException e) {
+                        // Ignorer les erreurs de tables inexistantes
+                        System.out.println("   ⚠️ " + table + ": table non trouvée ou vide");
+                    }
+                }
+                
+                // Réactiver les contraintes de clés étrangères
+                conn.createStatement().execute("PRAGMA foreign_keys = ON");
+                
+                System.out.println("✅ Vidage terminé ! " + totalDeleted + " enregistrements supprimés au total");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors du vidage des tables: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
+    
+    /**
+     * Récupère les vraies plages d'IDs disponibles pour chaque table de référence
+     */
+    private static Map<String, int[]> getAvailableIds() throws SQLException {
+        Map<String, int[]> availableIds = new HashMap<>();
+        
+        try (Connection conn = DB.getConnection()) {
+            // Récupérer min/max pour chaque table
+            String[] tables = {"interventions", "techniciens", "vehicules", "societes"};
+            
+            for (String table : tables) {
+                String sql = "SELECT MIN(id) as min_id, MAX(id) as max_id FROM " + table;
+                try (PreparedStatement stmt = conn.prepareStatement(sql);
+                     ResultSet rs = stmt.executeQuery()) {
+                    
+                    if (rs.next()) {
+                        int minId = rs.getInt("min_id");
+                        int maxId = rs.getInt("max_id");
+                        availableIds.put(table, new int[]{minId, maxId});
+                        System.out.println("📊 Table " + table + ": IDs de " + minId + " à " + maxId);
+                    }
+                }
+            }
+        }
+        
+        return availableIds;
+    }
+    
+    /**
+     * Retourne un ID aléatoire dans la plage disponible
+     */
+    private static int getRandomIdInRange(int[] range, Random random) {
+        if (range == null || range.length != 2) {
+            throw new IllegalArgumentException("Plage d'IDs invalide");
+        }
+        int minId = range[0];
+        int maxId = range[1];
+        return random.nextInt(maxId - minId + 1) + minId;
+    }
+    
+    /**
+     * Récupère tous les IDs disponibles pour une table spécifique
+     */
+    private static int[] getAvailableIdsForTable(Connection conn, String tableName) throws SQLException {
+        String sql = "SELECT id FROM " + tableName + " ORDER BY id";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            List<Integer> ids = new java.util.ArrayList<>();
+            while (rs.next()) {
+                ids.add(rs.getInt("id"));
+            }
+            return ids.stream().mapToInt(Integer::intValue).toArray();
+        }
+    }
     
     /**
      * Point d'entrée principal pour génération de données de test

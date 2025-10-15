@@ -1,6 +1,7 @@
 package com.magsav.repo;
 
 import com.magsav.db.DB;
+import com.magsav.exception.DatabaseException;
 import com.magsav.model.DemandeIntervention;
 import com.magsav.model.DemandeIntervention.StatutDemande;
 import com.magsav.model.DemandeIntervention.TypeDemande;
@@ -65,7 +66,7 @@ public class DemandeInterventionRepository {
             }
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur création demande intervention", e);
+            throw new DatabaseException("Erreur création demande intervention", e);
         }
     }
     
@@ -89,7 +90,7 @@ public class DemandeInterventionRepository {
             }
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur récupération demandes par statut", e);
+            throw new DatabaseException("Erreur récupération demandes par statut", e);
         }
     }
     
@@ -109,7 +110,7 @@ public class DemandeInterventionRepository {
             }
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur récupération demande par ID", e);
+            throw new DatabaseException("Erreur récupération demande par ID", e);
         }
     }
     
@@ -138,7 +139,7 @@ public class DemandeInterventionRepository {
             return ps.executeUpdate() > 0;
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur validation demande", e);
+            throw new DatabaseException("Erreur validation demande", e);
         }
     }
     
@@ -165,7 +166,7 @@ public class DemandeInterventionRepository {
             return ps.executeUpdate() > 0;
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur rejet demande", e);
+            throw new DatabaseException("Erreur rejet demande", e);
         }
     }
     
@@ -194,7 +195,7 @@ public class DemandeInterventionRepository {
             }
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur vérification existence produit", e);
+            throw new DatabaseException("Erreur vérification existence produit", e);
         }
     }
     

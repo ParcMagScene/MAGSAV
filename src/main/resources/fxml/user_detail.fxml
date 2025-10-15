@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.UserDetailController">
+   <children>
+      <ScrollPane fitToWidth="true" styleClass="detail-scroll-pane">
+         <content>
+            <VBox styleClass="detail-content">
+               <children>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <Label styleClass="detail-panel-title" text="Détails de l'Utilisateur" />
+                     </children>
+                  </HBox>
+                  
+                  <GridPane hgap="10.0" vgap="10.0">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" minWidth="120.0" prefWidth="120.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label text="ID:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label fx:id="lblId" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        
+                        <Label text="Nom d'utilisateur:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <Label fx:id="lblUsername" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        
+                        <Label text="Nom complet:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <Label fx:id="lblFullName" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        
+                        <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <Label fx:id="lblEmail" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        
+                        <Label text="Téléphone:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                        <Label fx:id="lblPhone" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        
+                        <Label text="Position:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                        <Label fx:id="lblPosition" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        
+                        <Label text="Rôle:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                        <Label fx:id="lblRole" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        
+                        <Label text="Société:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                        <Label fx:id="lblSociete" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                        
+                        <Label text="Statut:" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                        <Label fx:id="lblStatus" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                        
+                        <Label text="Date création:" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                        <Label fx:id="lblCreatedAt" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                        
+                        <Label text="Dernière connexion:" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+                        <Label fx:id="lblLastLogin" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                     </children>
+                  </GridPane>
+                  
+                  <Label text="Permissions:" styleClass="detail-panel-title" />
+                  <TextArea fx:id="txtPermissions" prefRowCount="4" editable="false" />
+                  
+                  <Label text="Activité récente:" styleClass="detail-panel-title" />
+                  <TableView fx:id="tableActivity" prefHeight="200.0">
+                     <columns>
+                        <TableColumn fx:id="colActivityDate" prefWidth="120.0" text="Date" />
+                        <TableColumn fx:id="colActivityAction" prefWidth="150.0" text="Action" />
+                        <TableColumn fx:id="colActivityDetails" prefWidth="300.0" text="Détails" />
+                     </columns>
+                  </TableView>
+                  
+                  <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                     <children>
+                        <Button fx:id="btnEdit" text="Modifier" />
+                        <Button fx:id="btnResetPassword" text="Reset mot de passe" />
+                        <Button fx:id="btnDeactivate" text="Désactiver" />
+                        <Button fx:id="btnClose" text="Fermer" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </children>
+</VBox>

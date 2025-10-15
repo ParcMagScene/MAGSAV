@@ -738,6 +738,20 @@ public class ProductDetailController {
     return cleaned.isEmpty() ? null : cleaned;
   }
 
+  @FXML
+  private void saveProduct() {
+    // TODO: Implémenter la sauvegarde du produit
+    System.out.println("Sauvegarde produit: " + productId);
+  }
+  
+  @FXML
+  private void cancel() {
+    // Fermer la fenêtre
+    if (btnCancel != null && btnCancel.getScene() != null) {
+      btnCancel.getScene().getWindow().hide();
+    }
+  }
+
   private static String emptyToNull(String s) { return (s == null || s.isBlank()) ? null : s; }
   private static String nz(String s) { return s == null ? "" : s; }
 }

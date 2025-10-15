@@ -1,8 +1,10 @@
 package com.magsav.service;
 
+import com.magsav.util.TestDatabaseConfig;
 import com.magsav.db.DB;
 import com.magsav.repo.ProductRepository;
 import org.junit.jupiter.api.*;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,16 +13,14 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Tests d'intégration du système de scraping d'images")
 class ImageScrapingIntegrationTest {
 
+    private static Connection keeper;
     private ProductRepository productRepository;
     private ImageScrapingService scrapingService;
     private ScrapingConfigService configService;
 
     @BeforeAll
-    static void setupDatabase() {
-        // Utiliser une base de données en mémoire pour les tests
-        System.setProperty("magsav.db.url", "jdbc:sqlite::memory:");
-        DB.resetForTesting();
-        DB.init();
+    static void setupDatabase() throws Exception {
+        keeper = TestDatabaseConfig.setupSharedInMemoryDb("ImageScrapingIntegrationTest");
         
         // Créer le schéma nécessaire pour les tests
         try (var conn = DB.getConnection(); 
@@ -30,24 +30,22 @@ class ImageScrapingIntegrationTest {
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS produits (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    code TEXT,
-                    nom TEXT NOT NULL,
-                    sn TEXT,
-                    fabricant TEXT,
+                    code_produit TEXT,
+                    nom_produit TEXT NOT NULL,
+                    numero_serie TEXT,
+                    nom_fabricant TEXT,
                     fabricant_id INTEGER,
-                    uid TEXT UNIQUE,
-                    situation TEXT DEFAULT 'En stock',
-                    photo TEXT,
-                    category TEXT,
-                    subcategory TEXT,
-                    description TEXT,
+                    uid_unique TEXT UNIQUE,
+                    statut_produit TEXT DEFAULT 'En stock',
+                    photo_produit TEXT,
+                    categorie_principale TEXT,
+                    sous_categorie TEXT,
+                    description_produit TEXT,
                     date_achat TEXT,
-                    client TEXT,
-                    prix TEXT,
-                    garantie TEXT,
+                    nom_client TEXT,
+                    prix_achat TEXT,
+                    duree_garantie TEXT,
                     sav_externe_id INTEGER,
-                    categorieId INTEGER,
-                    sousCategorieId INTEGER,
                     scraped_images TEXT
                 )
             """);
@@ -59,12 +57,25 @@ class ImageScrapingIntegrationTest {
             throw new RuntimeException("Erreur initialisation DB test: " + e.getMessage(), e);
         }
     }
+    
+    @AfterAll
+    static void tearDown() throws Exception {
+        TestDatabaseConfig.cleanupKeeper(keeper);
+    }
 
     @BeforeEach
     void setUp() {
         this.productRepository = new ProductRepository();
         this.scrapingService = new ImageScrapingService();
         this.configService = ScrapingConfigService.getInstance();
+        
+        // Nettoyer la base de données avant chaque test
+        try (var conn = DB.getConnection(); 
+             var stmt = conn.createStatement()) {
+            stmt.execute("DELETE FROM produits");
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur nettoyage DB test: " + e.getMessage(), e);
+        }
     }
 
     @Test

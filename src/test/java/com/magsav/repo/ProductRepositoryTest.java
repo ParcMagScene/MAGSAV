@@ -1,10 +1,9 @@
 package com.magsav.repo;
 
-import com.magsav.db.DB;
+import com.magsav.util.TestDatabaseConfig;
 import org.junit.jupiter.api.*;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,15 +13,12 @@ public class ProductRepositoryTest {
 
   @BeforeAll
   static void keepMemoryDb() throws Exception {
-    System.setProperty("magsav.db.url", "jdbc:sqlite:file:prod_repo_test?mode=memory&cache=shared");
-    keeper = DriverManager.getConnection(System.getProperty("magsav.db.url"));
-    DB.resetForTesting();
-    DB.init();
+    keeper = TestDatabaseConfig.setupSharedInMemoryDb("ProductRepositoryTest");
   }
 
   @AfterAll
   static void closeKeeper() throws Exception {
-    if (keeper != null) keeper.close();
+    TestDatabaseConfig.cleanupKeeper(keeper);
   }
 
   @BeforeEach

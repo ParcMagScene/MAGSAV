@@ -1,95 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.magsav.gui.ProductDetailController" prefWidth="900" prefHeight="600">
-  <top>
-    <HBox spacing="12" style="-fx-padding:12;">
-      <children>
-        <VBox spacing="6" prefWidth="140">
-          <children>
-            <ImageView fx:id="imgPhoto" fitHeight="100" fitWidth="120" preserveRatio="true" smooth="true"/>
-            <Button fx:id="btnChoosePhoto" text="Choisir photo…" onAction="#onChoosePhoto" prefWidth="120" style="-fx-font-size: 10;"/>
-          </children>
-        </VBox>
-        <VBox spacing="6">
-          <children>
-            <Label fx:id="lblName" style="-fx-font-size:18px; -fx-font-weight:bold;"/>
-            <HBox spacing="8">
-              <children>
 
-                <Label text="SN:" style="-fx-padding: 0 0 0 16;"/>
-                <Label fx:id="lblSN"/>
-                <Label text="UID:" style="-fx-padding: 0 0 0 16;"/>
-                <Label fx:id="lblUID"/>
-              </children>
-            </HBox>
-            <HBox spacing="8">
-              <children>
-                <Label text="Fabricant:"/>
-                <ComboBox fx:id="cbManufacturer" onAction="#onChangeManufacturer" prefWidth="200"/>
-                <ImageView fx:id="imgLogo" fitHeight="24" preserveRatio="true" style="-fx-padding: 0 0 0 8;"/>
-                <Label text="Situation:" style="-fx-padding: 0 0 0 16;"/>
-                <Label fx:id="lblSituation"/>
-              </children>
-            </HBox>
-            <HBox spacing="8">
-              <children>
-                <Label text="Propriétaire:"/>
-                <Label fx:id="lblOwner"/>
-              </children>
-            </HBox>
-            <HBox spacing="8">
-              <children>
-                <Label text="Catégorie:"/>
-                <ComboBox fx:id="cbCategory" prefWidth="440" onAction="#onChangeCategory" editable="true"/>
-              </children>
-            </HBox>
-            <HBox spacing="8">
-              <children>
-                <Label text="Ajouter catégorie:"/>
-                <TextField fx:id="tfNewCategoryOrSubcategory" promptText="Nom de la nouvelle catégorie" prefWidth="300"/>
-                <Button fx:id="btnAddCategory" text="➕ Ajouter" onAction="#onAddCategoryOrSubcategory"/>
-              </children>
-            </HBox>
-          </children>
-        </VBox>
-        <Pane HBox.hgrow="ALWAYS"/>
-        <ImageView fx:id="imgQr" fitHeight="60" fitWidth="60" preserveRatio="true"/>
-      </children>
-    </HBox>
-  </top>
-
-  <center>
-    <TabPane styleClass="dark-tab-pane">
-      <tabs>
-        <Tab text="Historique" closable="false">
-          <content>
-            <TableView fx:id="historyTable">
-              <columns>
-                <TableColumn fx:id="colId" text="ID" prefWidth="90"/>
-                <TableColumn fx:id="colStatut" text="Statut" prefWidth="140"/>
-                <TableColumn fx:id="colPanne" text="Panne" prefWidth="260"/>
-                <TableColumn fx:id="colEntree" text="Entrée" prefWidth="120"/>
-                <TableColumn fx:id="colSortie" text="Sortie" prefWidth="120"/>
-              </columns>
-            </TableView>
-          </content>
-        </Tab>
-      </tabs>
-    </TabPane>
-  </center>
-
-  <bottom>
-    <HBox spacing="8" style="-fx-padding:12;" alignment="CENTER_RIGHT">
-      <children>
-        <Button text="Nouvelle intervention" onAction="#onCreateIntervention"/>
-        <Button text="Exporter PDF" onAction="#onExportPdf"/>
-        <Button fx:id="btnEdit" text="Modifier" onAction="#onToggleEdit" style="-fx-base: #4a90e2; -fx-text-fill: white;"/>
-        <Button fx:id="btnSave" text="Valider les changements" onAction="#onValidateChanges" visible="false"/>
-        <Button fx:id="btnCancel" text="Annuler" onAction="#onCancelEdit" visible="false" style="-fx-base: #e74c3c; -fx-text-fill: white;"/>
-      </children>
-    </HBox>
-  </bottom>
-</BorderPane>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.ProductDetailController">
+   <children>
+      <ScrollPane fitToWidth="true" styleClass="detail-scroll-pane">
+         <content>
+            <VBox styleClass="detail-content">
+               <children>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <Label styleClass="detail-panel-title" text="Détails du Produit" />
+                     </children>
+                  </HBox>
+                  
+                  <GridPane hgap="10.0" vgap="10.0">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" minWidth="120.0" prefWidth="120.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label text="ID:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label fx:id="lblId" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        
+                        <Label text="Nom:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <TextField fx:id="txtNom" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        
+                        <Label text="Référence:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <TextField fx:id="txtReference" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        
+                        <Label text="Catégorie:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <ComboBox fx:id="cbCategorie" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        
+                        <Label text="Prix:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                        <TextField fx:id="txtPrix" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        
+                        <Label text="Stock:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                        <TextField fx:id="txtStock" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        
+                        <Label text="Description:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                        <TextArea fx:id="txtDescription" prefRowCount="3" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                     </children>
+                  </GridPane>
+                  
+                  <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                     <children>
+                        <Button fx:id="btnEdit" text="Modifier" />
+                        <Button fx:id="btnSave" onAction="#saveProduct" text="Enregistrer" />
+                        <Button fx:id="btnCancel" onAction="#cancel" text="Annuler" />
+                        <Button fx:id="btnChoosePhoto" text="Choisir photo" />
+                        <Button fx:id="btnAddCategory" text="Ajouter catégorie" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </children>
+</VBox>

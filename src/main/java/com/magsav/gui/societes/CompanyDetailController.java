@@ -105,6 +105,20 @@ public class CompanyDetailController implements Initializable {
         }
     }
     
+    @FXML
+    private void saveCompany() {
+        // TODO: Implémenter la sauvegarde de la société
+        System.out.println("Sauvegarde société");
+    }
+    
+    @FXML
+    private void cancel() {
+        // Fermer la fenêtre
+        if (lblCompanyName != null && lblCompanyName.getScene() != null) {
+            lblCompanyName.getScene().getWindow().hide();
+        }
+    }
+
     /**
      * Ferme la fenêtre
      */

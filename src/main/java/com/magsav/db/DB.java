@@ -42,6 +42,13 @@ public final class DB {
   }
 
   public static synchronized void resetForTesting() {
+    // Arrêter le pool existant
+    if (connectionPool != null) {
+      connectionPool.shutdown();
+      connectionPool = null;
+    }
+    // Réinitialiser aussi le pool static
+    ConnectionPool.resetForTesting();
     URL = null;
   }
 
@@ -600,6 +607,14 @@ public final class DB {
    * Insère les templates d'emails par défaut
    */
   private static void insertDefaultEmailTemplates(Connection conn) throws SQLException {
+    // Vérifier d'abord que la table existe
+    try (Statement stmt = conn.createStatement()) {
+      stmt.executeQuery("SELECT COUNT(*) FROM email_templates LIMIT 1");
+    } catch (SQLException e) {
+      // Table n'existe pas, la passer
+      return;
+    }
+    
     String checkTemplate = "SELECT COUNT(*) FROM email_templates WHERE nom_template = ?";
     String insertTemplate = """
       INSERT INTO email_templates (nom_template, type_template, objet, contenu_html, contenu_text, variables_disponibles)

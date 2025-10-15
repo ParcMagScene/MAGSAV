@@ -1,6 +1,7 @@
 package com.magsav.repo;
 
 import com.magsav.db.DB;
+import com.magsav.exception.DatabaseException;
 import com.magsav.model.GoogleServicesConfig;
 import com.magsav.util.AppLogger;
 
@@ -56,7 +57,7 @@ public class GoogleServicesConfigRepository {
             
         } catch (SQLException e) {
             AppLogger.error("Erreur création table configuration_google: " + e.getMessage());
-            throw new RuntimeException(e);
+            throw new DatabaseException("Erreur lors de la récupération des configurations", e);
         }
     }
     

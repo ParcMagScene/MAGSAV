@@ -4,7 +4,7 @@ import com.magsav.db.DB;
 import com.magsav.service.DataCacheService;
 import com.magsav.util.DatabaseInitializer;
 import com.magsav.util.SimpleTestDataGenerator;
-import com.magsav.util.FxmlValidator;
+
 import com.magsav.util.MediaValidator;
 import com.magsav.util.MediaAudit;
 import com.magsav.util.ThemeManager;
@@ -33,7 +33,7 @@ public class App extends Application {
     System.out.println("Cache invalidé - rechargement depuis la base de données");
 
     MediaValidator.ensureDirs();
-    Parent root = FXMLLoader.load(getClass().getResource("/fxml/main.fxml"));
+    Parent root = FXMLLoader.load(getClass().getResource("/fxml/main_modern.fxml"));
     stage.setTitle("MAGSAV 1.2 - Mag Scène");
 
     // Préférences pour mémoriser/restaurer la taille de la fenêtre principale
@@ -52,7 +52,6 @@ public class App extends Application {
     });
 
     stage.show();
-    FxmlValidator.validateAll();
     MediaAudit.report();
   }
 

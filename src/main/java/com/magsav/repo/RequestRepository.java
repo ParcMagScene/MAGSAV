@@ -91,18 +91,20 @@ public class RequestRepository {
   public List<RequestItem> items(long requestId) {
     List<RequestItem> items = new ArrayList<>();
     try (Connection conn = DB.getConnection()) {
-      String sql = "SELECT id, request_id, ref, qty, description FROM request_items WHERE request_id = ? ORDER BY ref";
-      PreparedStatement stmt = conn.prepareStatement(sql);
-      stmt.setLong(1, requestId);
-      ResultSet rs = stmt.executeQuery();
-      while (rs.next()) {
-        items.add(new RequestItem(
-            rs.getLong("id"),
-            rs.getLong("request_id"),
-            rs.getString("ref"),
-            rs.getInt("qty"),
-            rs.getString("description")
-        ));
+      String sql = "SELECT id, request_id, reference, quantity, description FROM request_items WHERE request_id = ? ORDER BY reference";
+      try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setLong(1, requestId);
+        try (ResultSet rs = stmt.executeQuery()) {
+          while (rs.next()) {
+            items.add(new RequestItem(
+                rs.getLong("id"),
+                rs.getLong("request_id"),
+                rs.getString("reference"),
+                rs.getInt("quantity"),
+                rs.getString("description")
+            ));
+          }
+        }
       }
     } catch (SQLException e) {
       throw new DatabaseException("Erreur récupération items demande", e);
@@ -196,7 +198,7 @@ public class RequestRepository {
 
   public void addItem(long requestId, String ref, int qty, String description) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "INSERT INTO request_items (request_id, ref, qty, description) VALUES (?, ?, ?, ?)";
+      String sql = "INSERT INTO request_items (request_id, reference, quantity, description) VALUES (?, ?, ?, ?)";
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setLong(1, requestId);
       stmt.setString(2, ref);
@@ -210,7 +212,7 @@ public class RequestRepository {
 
   public void updateItem(RequestItem item) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "UPDATE request_items SET ref = ?, qty = ?, description = ? WHERE id = ?";
+      String sql = "UPDATE request_items SET reference = ?, quantity = ?, description = ? WHERE id = ?";
       PreparedStatement stmt = conn.prepareStatement(sql);
       stmt.setString(1, item.ref());
       stmt.setInt(2, item.qty());

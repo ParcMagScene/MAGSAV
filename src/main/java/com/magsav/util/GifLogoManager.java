@@ -24,13 +24,21 @@ public class GifLogoManager {
     public static boolean loadMagSceneAnimatedLogo(ImageView imageView) {
         try {
             File logoFile = new File(MAG_SCENE_LOGO_PATH);
-            if (!logoFile.exists()) {
-                AppLogger.warn("Logo GIF de Mag Scène non trouvé: " + MAG_SCENE_LOGO_PATH);
-                return false;
+            
+            // Vérifier si le fichier existe et n'est pas vide
+            if (!logoFile.exists() || logoFile.length() < 100) {
+                AppLogger.warn("Logo GIF de Mag Scène non trouvé ou trop petit: " + MAG_SCENE_LOGO_PATH);
+                // Essayer de charger le logo SVG de fallback
+                return loadFallbackLogo(imageView);
             }
             
             // Charger le GIF animé
             Image gifImage = new Image(logoFile.toURI().toString());
+            if (gifImage.isError()) {
+                AppLogger.warn("Erreur lors du chargement du GIF, utilisation du fallback");
+                return loadFallbackLogo(imageView);
+            }
+            
             imageView.setImage(gifImage);
             imageView.setPreserveRatio(true);
             
@@ -38,7 +46,77 @@ public class GifLogoManager {
             return true;
         } catch (Exception e) {
             AppLogger.error("Erreur lors du chargement du logo GIF animé de Mag Scène", e);
+            return loadFallbackLogo(imageView);
+        }
+    }
+    
+    /**
+     * Charge un logo de fallback (SVG créé dynamiquement)
+     */
+    private static boolean loadFallbackLogo(ImageView imageView) {
+        try {
+            // Utiliser le logo SVG créé précédemment
+            String logoSvgPath = "src/main/resources/images/logo-mag-scene.svg";
+            File svgFile = new File(logoSvgPath);
+            
+            if (svgFile.exists()) {
+                Image svgImage = new Image(svgFile.toURI().toString());
+                if (!svgImage.isError()) {
+                    imageView.setImage(svgImage);
+                    imageView.setPreserveRatio(true);
+                    AppLogger.info("Logo SVG de fallback chargé avec succès");
+                    return true;
+                }
+            }
+            
+            // Si le SVG n'est pas disponible, créer un logo dynamique
+            Image dynamicLogo = createDynamicLogo();
+            if (dynamicLogo != null) {
+                imageView.setImage(dynamicLogo);
+                imageView.setPreserveRatio(true);
+                AppLogger.info("Logo dynamique de fallback créé et chargé");
+                return true;
+            }
+            
             return false;
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors du chargement du logo de fallback", e);
+            return false;
+        }
+    }
+    
+    /**
+     * Crée un logo dynamique simple
+     */
+    private static Image createDynamicLogo() {
+        try {
+            javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas(120, 40);
+            javafx.scene.canvas.GraphicsContext gc = canvas.getGraphicsContext2D();
+            
+            // Gradient de fond
+            javafx.scene.paint.LinearGradient gradient = new javafx.scene.paint.LinearGradient(
+                0, 0, 1, 1, true, javafx.scene.paint.CycleMethod.NO_CYCLE,
+                new javafx.scene.paint.Stop(0.0, javafx.scene.paint.Color.web("#2E86AB")),
+                new javafx.scene.paint.Stop(1.0, javafx.scene.paint.Color.web("#A23B72"))
+            );
+            
+            // Fond arrondi
+            gc.setFill(gradient);
+            gc.fillRoundRect(0, 0, 120, 40, 8, 8);
+            
+            // Texte "Mag Scène"
+            gc.setFill(javafx.scene.paint.Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 10));
+            gc.fillText("Mag Scène", 15, 25);
+            
+            // Texte "SAV"
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 14));
+            gc.fillText("SAV", 85, 28);
+            
+            return canvas.snapshot(null, null);
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors de la création du logo dynamique", e);
+            return null;
         }
     }
     

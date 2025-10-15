@@ -13,8 +13,8 @@ public class ClientRepository {
         List<Client> clients = new ArrayList<>();
         try (Connection conn = DB.getConnection()) {
             String sql = "SELECT id, nom, email, telephone, adresse, created_at FROM clients ORDER BY nom";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery();
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                try (ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 clients.add(new Client(
                     rs.getLong("id"),
@@ -23,7 +23,9 @@ public class ClientRepository {
                     rs.getString("telephone"),
                     rs.getString("adresse"),
                     rs.getString("created_at")
-                ));
+                    ));
+                }
+            }
             }
         } catch (SQLException e) {
             // Si la table n'existe pas encore, retourner une liste vide
@@ -38,9 +40,9 @@ public class ClientRepository {
     public Client findById(long id) {
         try (Connection conn = DB.getConnection()) {
             String sql = "SELECT id, nom, email, telephone, adresse, created_at FROM clients WHERE id = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, id);
-            ResultSet rs = stmt.executeQuery();
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setLong(1, id);
+                try (ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 return new Client(
                     rs.getLong("id"),
@@ -49,7 +51,9 @@ public class ClientRepository {
                     rs.getString("telephone"),
                     rs.getString("adresse"),
                     rs.getString("created_at")
-                );
+                    );
+                }
+            }
             }
         } catch (SQLException e) {
             throw new DatabaseException("Erreur récupération client", e);

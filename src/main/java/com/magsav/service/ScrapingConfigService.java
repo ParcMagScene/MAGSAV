@@ -42,7 +42,7 @@ public class ScrapingConfigService {
             return Optional.empty();
         }
         
-        String normalizedName = cleanProductName(manufacturerName.toLowerCase());
+        String normalizedName = normalizeForSearch(manufacturerName);
         ManufacturerConfig config = manufacturers.get(normalizedName);
         
         // Si pas trouvé directement, chercher via le mapping
@@ -103,26 +103,43 @@ public class ScrapingConfigService {
     }
     
     /**
-     * Nettoie et normalise un nom de produit pour la recherche
+     * Nettoie et normalise un nom de produit en gardant les lettres et chiffres
      */
     public String cleanProductName(String productName) {
         if (productName == null) return "";
         
-        return productName.toLowerCase()
+        return productName
                 .trim()
-                .replaceAll("[^a-z0-9\\s-]", "")
+                // Supprimer les motifs courants indésirables
+                .replaceAll("\\(neuf\\)", "")
+                .replaceAll("\\(occasion\\)", "")
+                .replaceAll("Référence:\\s*", "")
+                .replaceAll("\\s*-\\s*neuf\\s*", "")
+                .replaceAll("\\s*-\\s*occasion\\s*", "")
+                // Nettoyer les espaces multiples
                 .replaceAll("\\s+", " ")
                 .trim();
     }
     
     /**
-     * Normalise un nom de produit pour la recherche web
+     * Normalise un nom de produit pour la recherche web (minuscules + accents)
      */
     public String normalizeForSearch(String productName) {
         if (productName == null) return "";
         
-        return cleanProductName(productName)
-                .replaceAll("\\s+", "+");
+        return productName.toLowerCase()
+                .trim()
+                // Supprimer les accents
+                .replaceAll("[àáâãäå]", "a")
+                .replaceAll("[èéêë]", "e")
+                .replaceAll("[ìíîï]", "i")
+                .replaceAll("[òóôõö]", "o")
+                .replaceAll("[ùúûü]", "u")
+                .replaceAll("[ç]", "c")
+                // Garder seulement lettres, chiffres, espaces et tirets
+                .replaceAll("[^a-z0-9\\s-]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
     
     /**

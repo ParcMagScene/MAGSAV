@@ -1,0 +1,436 @@
+/* Fichier CSS MAGSAV - Thème Dark SANS AUCUNE BORDURE */
+
+/* RÈGLES GLOBALES ABSOLUES - AUCUNE BORDURE AUTORISÉE */
+*, *:focused, *:selected, *:hover, .root, .root * {
+    -fx-border-color: transparent !important;
+    -fx-border-width: 0 !important;
+    border-color: transparent !important;
+    border-width: 0 !important;
+    -fx-border-insets: 0 !important;
+    -fx-background-insets: 0 !important;
+    -fx-table-cell-border-color: transparent !important;
+    -fx-background-radius: 0 !important;
+    -fx-border-radius: 0 !important;
+    border-radius: 0 !important;
+}
+
+/* RULES SPÉCIFIQUES JAVAFX - ÉLIMINATION FORCÉE */
+.tab-pane, .tab-pane *, 
+.table-view, .table-view *,
+.split-pane, .split-pane *,
+.scroll-pane, .scroll-pane *,
+.list-view, .list-view *,
+.tree-view, .tree-view *,
+.combo-box, .combo-box *,
+.text-field, .text-field *,
+.button, .button * {
+    -fx-border-color: transparent !important;
+    border-color: transparent !important;
+    -fx-border-width: 0 !important;
+    border-width: 0 !important;
+    -fx-table-cell-border-color: transparent !important;
+    -fx-cell-border-color: transparent !important;
+    -fx-focus-color: transparent !important;
+    -fx-faint-focus-color: transparent !important;
+}
+
+/* ROOT */
+.root {
+    -fx-base: #1e3a5f;
+    -fx-background: #1e3a5f;
+    background: #1e3a5f;
+    -fx-control-inner-background: #1e3a5f;
+    -fx-background-color: #1e3a5f;
+    background-color: #1e3a5f;
+}
+
+/* SIDEBAR */
+.sidebar {
+    -fx-background-color: #1e3a5f;
+    background-color: #1e3a5f;
+    -fx-padding: 0;
+    padding: 0;
+}
+
+.sidebar-header {
+    -fx-background-color: #2c5282;
+    background-color: #2c5282;
+    -fx-padding: 20;
+    padding: 20;
+    -fx-alignment: center;
+}
+
+.sidebar-logo {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 20;
+    font-size: 20;
+    -fx-font-weight: bold;
+    font-weight: bold;
+}
+
+/* NAVIGATION */
+.sidebar-nav {
+    -fx-background-color: transparent;
+    background-color: transparent;
+    -fx-padding: 0;
+    padding: 0;
+    -fx-spacing: 0;
+}
+
+.nav-item {
+    -fx-background-color: transparent;
+    background-color: transparent;
+    -fx-padding: 15 20;
+    padding: 15px 20px;
+    -fx-spacing: 15;
+    -fx-alignment: center-left;
+}
+
+.nav-item:hover {
+    -fx-background-color: #2c5282;
+    background-color: #2c5282;
+}
+
+.nav-item.active {
+    -fx-background-color: #4a90e2;
+    background-color: #4a90e2;
+}
+
+.nav-icon {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 16;
+    font-size: 16;
+    -fx-min-width: 20;
+    min-width: 20px;
+    -fx-alignment: center;
+}
+
+.nav-label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14;
+    font-size: 14;
+    -fx-font-weight: normal;
+    font-weight: normal;
+}
+
+/* TAB PANE - SANS BORDURES */
+.tab-pane {
+    -fx-background-color: #1e3a5f;
+    background-color: #1e3a5f;
+}
+
+.tab-pane .tab-header-area {
+    -fx-background-color: #1a1a1a !important;
+    background-color: #1a1a1a !important;
+    -fx-min-height: 40;
+    min-height: 40px;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #2a2a2a !important;
+    background-color: #2a2a2a !important;
+    -fx-text-fill: #ffffff !important;
+    -fx-background-radius: 0;
+    -fx-padding: 12 20;
+    padding: 12px 20px;
+    -fx-min-width: 120;
+    min-width: 120px;
+    -fx-pref-width: 150;
+    width: 150px;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #4a90e2;
+    background-color: #4a90e2;
+    -fx-text-fill: #ffffff;
+}
+
+.tab-pane .tab:hover {
+    -fx-background-color: #2a2a2a;
+    background-color: #2a2a2a;
+}
+
+.tab-pane .tab-content-area {
+    -fx-background-color: #1e3a5f;
+    background-color: #1e3a5f;
+    -fx-padding: 0;
+    padding: 0;
+}
+
+/* TABLES - SANS BORDURES */
+.table-view {
+    -fx-background-color: #1a1a1a;
+    background-color: #1a1a1a;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #2a2a2a;
+    background-color: #2a2a2a;
+}
+
+.table-view .column-header {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: transparent;
+    background-color: transparent;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: transparent;
+    background-color: transparent;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(74, 144, 226, 0.3);
+    background-color: rgba(74, 144, 226, 0.3);
+}
+
+/* BUTTONS */
+.button {
+    -fx-background-color: #4a90e2;
+    background-color: #4a90e2;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 8 16;
+    padding: 8px 16px;
+    -fx-background-radius: 4;
+}
+
+.button:hover {
+    -fx-background-color: #357abd;
+    background-color: #357abd;
+}
+
+.button-primary {
+    -fx-background-color: #4a90e2;
+    background-color: #4a90e2;
+}
+
+.button-secondary {
+    -fx-background-color: #6c757d;
+    background-color: #6c757d;
+}
+
+.button-danger {
+    -fx-background-color: #dc3545;
+    background-color: #dc3545;
+}
+
+/* TEXT FIELDS */
+.text-field {
+    -fx-background-color: #1a1a1a;
+    background-color: #1a1a1a;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 8;
+    padding: 8px;
+}
+
+.text-field:focused {
+    -fx-background-color: #2a2a2a;
+    background-color: #2a2a2a;
+}
+
+/* COMBO BOX */
+.combo-box {
+    -fx-background-color: #1a1a1a;
+    background-color: #1a1a1a;
+    -fx-text-fill: #ffffff;
+}
+
+.combo-box:hover {
+    -fx-background-color: #2a2a2a;
+    background-color: #2a2a2a;
+}
+
+/* LABELS */
+.label {
+    -fx-text-fill: #ffffff;
+}
+
+.content-title {
+    -fx-font-size: 24;
+    font-size: 24px;
+    -fx-font-weight: bold;
+    font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.stats-label {
+    -fx-font-size: 12;
+    font-size: 12px;
+    -fx-text-fill: #4a90e2;
+}
+
+.filter-label {
+    -fx-font-size: 14;
+    font-size: 14px;
+    -fx-text-fill: #ffffff;
+}
+
+/* CONTENEURS */
+.main-content {
+    -fx-background-color: #1e3a5f;
+    background-color: #1e3a5f;
+    -fx-padding: 0;
+    padding: 0;
+}
+
+.header-box {
+    -fx-background-color: transparent;
+    background-color: transparent;
+    -fx-padding: 0;
+    padding: 0;
+}
+
+.controls-box {
+    -fx-background-color: transparent;
+    background-color: transparent;
+    -fx-padding: 0;
+    padding: 0;
+}
+
+/* DASHBOARD */
+.dashboard-card {
+    -fx-background-color: #1a1a1a;
+    background-color: #1a1a1a;
+    -fx-background-radius: 8;
+    -fx-padding: 0;
+    padding: 0;
+}
+
+.dashboard-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 18;
+    font-size: 18px;
+    -fx-font-weight: bold;
+    font-weight: bold;
+}
+
+.dashboard-stat {
+    -fx-text-fill: #4a90e2;
+    -fx-font-size: 24;
+    font-size: 24px;
+    -fx-font-weight: bold;
+    font-weight: bold;
+}
+
+/* ÉLIMINATION ULTRA-AGRESSIVE DE TOUTES LES BORDURES POSSIBLES */
+.tab-pane > .tab-header-area > .headers-region > .tab,
+.tab-pane > .tab-header-area > .headers-region > .tab:selected,
+.tab-pane > .tab-header-area > .headers-region > .tab:hover,
+.tab-pane > .tab-header-area,
+.tab-pane > .tab-content-area,
+.table-view,
+.table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell,
+.table-view > .virtual-flow > .clipped-container > .sheet > .table-row-cell > .table-cell,
+.table-column-header,
+.table-column-header-background,
+.column-header-background,
+.column-header,
+.split-pane,
+.split-pane > .split-pane-divider,
+.scroll-pane,
+.scroll-pane > .viewport,
+.scroll-pane > .corner,
+.list-view,
+.tree-view,
+.tree-cell,
+.list-cell,
+.region,
+.pane,
+.titled-pane,
+.titled-pane > .title,
+.titled-pane > .content,
+.accordion,
+.menu-bar,
+.menu,
+.menu-item,
+.context-menu,
+.popup {
+    -fx-border-color: transparent !important;
+    -fx-border-width: 0 !important;
+    border-color: transparent !important;
+    border-width: 0 !important;
+    -fx-border-insets: 0 !important;
+    -fx-background-insets: 0 !important;
+    -fx-table-cell-border-color: transparent !important;
+    -fx-cell-border-color: transparent !important;
+    -fx-box-border: transparent !important;
+    -fx-focus-color: transparent !important;
+    -fx-faint-focus-color: transparent !important;
+}
+
+/* BORDURES D'ÉTAT - TOUTES TRANSPARENTES */
+*:focused, *:selected, *:hover, *:pressed, *:armed, *:visited {
+    -fx-border-color: transparent !important;
+    -fx-border-width: 0 !important;
+    border-color: transparent !important;
+    border-width: 0 !important;
+    -fx-focus-color: transparent !important;
+    -fx-faint-focus-color: transparent !important;
+}
+
+/* PANNEAUX DE DÉTAILS */
+.detail-panel {
+    -fx-background-color: #1a1a1a;
+    background-color: #1a1a1a;
+    -fx-padding: 0;
+    padding: 0;
+}
+
+.detail-panel-title {
+    -fx-font-size: 16px;
+    font-size: 16px;
+    -fx-font-weight: bold;
+    font-weight: bold;
+    -fx-text-fill: #4a90e2;
+    color: #4a90e2;
+    -fx-padding: 0;
+    padding: 0;
+}
+
+.detail-panel Label {
+    -fx-text-fill: #ffffff;
+    color: #ffffff;
+    -fx-padding: 0;
+    padding: 0;
+}
+
+/* SPLIT PANE */
+.split-pane {
+    -fx-background-color: #1e3a5f;
+    background-color: #1e3a5f;
+}
+
+.split-pane .split-pane-divider {
+    -fx-background-color: #333333;
+    background-color: #333333;
+    -fx-padding: 0;
+    padding: 0;
+}
+
+/* === MARGES POUR FICHES DETAIL ET TABPANE === */
+.detail-content {
+    -fx-padding: 0 15 0 15;
+    padding: 0 15 0 15;
+}
+
+.detail-margins {
+    -fx-padding: 0 15;
+    padding: 0 15;
+}
+
+.tab-content-margins {
+    -fx-padding: 10 15 10 15;
+    padding: 10 15 10 15;
+}
+
+.tab-pane-margins .tab-content-area {
+    -fx-padding: 0 15;
+    padding: 0 15;
+}
+
+.detail-scroll-pane {
+    -fx-padding: 0 15;
+    padding: 0 15;
+}

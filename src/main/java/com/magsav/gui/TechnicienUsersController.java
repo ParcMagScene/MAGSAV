@@ -3,7 +3,7 @@ package com.magsav.gui;
 import com.magsav.model.User;
 import com.magsav.model.TechnicianPermissions;
 import com.magsav.repo.UserRepository;
-
+import com.magsav.service.NavigationService;
 import com.magsav.service.AvatarService;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -135,18 +135,20 @@ public class TechnicienUsersController implements Initializable {
                 }
             });
             
-            // Style des lignes selon le statut 
+            // Gestion du double-clic
             tableUsers.setRowFactory(tv -> {
                 TableRow<User> row = new TableRow<>();
-                row.itemProperty().addListener((obs, oldUser, newUser) -> {
-                    if (newUser == null) {
-                        row.setStyle("");
-                    } else if (!newUser.isActive()) {
-                        row.setStyle("-fx-background-color: #ffebee;"); // Rouge clair pour inactif
-                    } else {
-                        row.setStyle(""); // Tous les utilisateurs actifs ont le même style
+                
+                // Gestion du double-clic pour ouvrir les détails de l'utilisateur
+                row.setOnMouseClicked(event -> {
+                    if (event.getClickCount() == 2 && !row.isEmpty()) {
+                        User user = row.getItem();
+                        if (user != null) {
+                            NavigationService.openUserDetail(user.id());
+                        }
                     }
                 });
+                
                 return row;
             });
         }

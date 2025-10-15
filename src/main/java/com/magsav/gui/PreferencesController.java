@@ -147,8 +147,13 @@ public class PreferencesController implements Initializable {
     @FXML private Button btnCancel;
     // @FXML private Button btnBackToMain; // SUPPRIMÉ - Bouton retiré de l'interface
     
+    // Getter public pour accéder au TabPane depuis l'extérieur
+    public TabPane getPreferencesTabPane() {
+        return preferencesTabPane;
+    }
+    
     // Section Apparence (maintenant dans Général)
-    @FXML private ComboBox<String> themeSelector;
+
     @FXML private ColorPicker sidebarColorPicker;
     @FXML private Label sidebarColorLabel;
     @FXML private ColorPicker backgroundColorPicker;
@@ -1307,14 +1312,6 @@ public class PreferencesController implements Initializable {
         AppLogger.info("Initialisation de la section Général...");
         
         try {
-            if (themeSelector != null) {
-                themeSelector.getItems().addAll("Clair", "Sombre", "Automatique", "Système");
-                themeSelector.setValue("Clair");
-                AppLogger.info("ThemeSelector initialisé");
-            } else {
-                AppLogger.warn("ThemeSelector est null - contrôle FXML manquant");
-            }
-            
             if (cbLanguage != null) {
                 cbLanguage.getItems().addAll("Français", "English", "Español", "Deutsch");
                 cbLanguage.setValue("Français");
@@ -1673,8 +1670,11 @@ public class PreferencesController implements Initializable {
             
             ButtonType result = confirmation.showAndWait().orElse(ButtonType.CANCEL);
             if (result == ButtonType.OK) {
-                // Utiliser la même logique que dans MainController
-                com.magsav.util.SimpleTestDataGenerator.generateTestData(true);
+                // Utiliser le générateur complet qui couvre toutes les tables
+                com.magsav.util.TestDataGenerator.generateCompleteTestData();
+                
+                // Déclencher le rafraîchissement automatique dans MainController
+                triggerDataRefresh();
                 
                 showAlert("Succès", "Les données de test ont été générées avec succès !");
                 AppLogger.info("Données de test générées depuis les préférences");
@@ -1697,13 +1697,37 @@ public class PreferencesController implements Initializable {
             
             ButtonType result = confirmation.showAndWait().orElse(ButtonType.CANCEL);
             if (result == ButtonType.OK) {
-                // TODO: Implémenter la suppression des données de test
-                showAlert("Info", "La fonction de suppression des données de test sera implémentée prochainement.");
-                AppLogger.info("Suppression des données de test demandée (non implémentée)");
+                // Vider toutes les tables de test
+                com.magsav.util.TestDataGenerator.clearAllTables();
+                
+                // Déclencher le rafraîchissement automatique dans MainController
+                triggerDataRefresh();
+                
+                showAlert("Succès", "Toutes les données de test ont été supprimées avec succès !");
+                AppLogger.info("Données de test supprimées depuis les préférences");
             }
         } catch (Exception e) {
             AppLogger.error("Erreur lors de la suppression des données de test", e);
             showAlert("Erreur", "Erreur lors de la suppression : " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Déclenche le rafraîchissement automatique des données dans MainController
+     */
+    private void triggerDataRefresh() {
+        try {
+            // Utiliser le service de notification pour déclencher le rafraîchissement
+            var notificationService = com.magsav.service.DataChangeNotificationService.getInstance();
+            notificationService.notifyDataChanged(
+                new com.magsav.service.DataChangeEvent(
+                    com.magsav.service.DataChangeEvent.Type.DATABASE_CLEANED, 
+                    "Données de test mises à jour depuis les préférences"
+                )
+            );
+            AppLogger.info("Notification de rafraîchissement envoyée");
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors du déclenchement du rafraîchissement", e);
         }
     }
     

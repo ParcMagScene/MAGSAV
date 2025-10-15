@@ -21,12 +21,15 @@ class DemandeElevationPrivilegeServiceTest {
     @DisplayName("Validation de la hiérarchie des rôles par priorité")
     void testHierarchieRoles() {
         assertEquals(1, Role.INTERMITTENT.getPriority());
-        assertEquals(2, Role.TECHNICIEN_MAG_SCENE.getPriority());
-        assertEquals(3, Role.ADMIN.getPriority());
+        assertEquals(2, Role.CHAUFFEUR_PL.getPriority());
+        assertEquals(2, Role.CHAUFFEUR_SPL.getPriority());
+        assertEquals(3, Role.TECHNICIEN_MAG_SCENE.getPriority());
+        assertEquals(4, Role.ADMIN.getPriority());
         
         // Les rôles avec une priorité plus élevée ont plus de privilèges
         assertTrue(Role.ADMIN.getPriority() > Role.TECHNICIEN_MAG_SCENE.getPriority());
-        assertTrue(Role.TECHNICIEN_MAG_SCENE.getPriority() > Role.INTERMITTENT.getPriority());
+        assertTrue(Role.TECHNICIEN_MAG_SCENE.getPriority() > Role.CHAUFFEUR_PL.getPriority());
+        assertTrue(Role.CHAUFFEUR_PL.getPriority() > Role.INTERMITTENT.getPriority());
     }
 
     @Test

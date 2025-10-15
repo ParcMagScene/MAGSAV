@@ -1,6 +1,7 @@
 package com.magsav.repo;
 
 import com.magsav.db.DB;
+import com.magsav.exception.DatabaseException;
 import com.magsav.model.Category;
 
 import java.sql.*;
@@ -24,7 +25,7 @@ public class CategoryRepository {
       List<Category> out = new ArrayList<>();
       while (rs.next()) out.add(map(rs));
       return out;
-    } catch (SQLException e) { throw new RuntimeException("findAll failed", e); }
+    } catch (SQLException e) { throw new DatabaseException("findAll failed", e); }
   }
 
   public Optional<Category> findById(Long id) {
@@ -33,7 +34,7 @@ public class CategoryRepository {
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setLong(1, id);
       try (ResultSet rs = ps.executeQuery()) { return rs.next() ? Optional.of(map(rs)) : Optional.empty(); }
-    } catch (SQLException e) { throw new RuntimeException("findById failed", e); }
+    } catch (SQLException e) { throw new DatabaseException("findById failed", e); }
   }
 
   public long insert(String nom, Long parentId) {
@@ -43,7 +44,7 @@ public class CategoryRepository {
       if (parentId == null) ps.setNull(2, Types.INTEGER); else ps.setLong(2, parentId);
       ps.executeUpdate();
       try (ResultSet k = ps.getGeneratedKeys()) { return k.next() ? k.getLong(1) : -1L; }
-    } catch (SQLException e) { throw new RuntimeException("insert failed", e); }
+    } catch (SQLException e) { throw new DatabaseException("insert failed", e); }
   }
 
   public boolean update(Category c) {
@@ -53,7 +54,7 @@ public class CategoryRepository {
       if (c.parentId() == null) ps.setNull(2, Types.INTEGER); else ps.setLong(2, c.parentId());
       ps.setLong(3, c.id());
       return ps.executeUpdate() > 0;
-    } catch (SQLException e) { throw new RuntimeException("update failed", e); }
+    } catch (SQLException e) { throw new DatabaseException("update failed", e); }
   }
 
   public boolean delete(long id) {
@@ -61,7 +62,7 @@ public class CategoryRepository {
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setLong(1, id);
       return ps.executeUpdate() > 0;
-    } catch (SQLException e) { throw new RuntimeException("delete failed", e); }
+    } catch (SQLException e) { throw new DatabaseException("delete failed", e); }
   }
 
   public List<Category> findSubcategories(long parentId) {
@@ -73,7 +74,7 @@ public class CategoryRepository {
         while (rs.next()) out.add(map(rs));
         return out;
       }
-    } catch (SQLException e) { throw new RuntimeException("findSubcategories failed", e); }
+    } catch (SQLException e) { throw new DatabaseException("findSubcategories failed", e); }
   }
 
   public long insertSubcategory(long parentId, String nom) {
@@ -95,20 +96,21 @@ public class CategoryRepository {
     try (Connection conn = DB.getConnection()) {
       while (currentId != null) {
         String sql = "SELECT nom_categorie, parent_id FROM categories WHERE id = ?";
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setLong(1, currentId);
-        ResultSet rs = stmt.executeQuery();
-        
-        if (rs.next()) {
-          hierarchy.add(0, rs.getString("nom_categorie")); // Ajouter au début
-          long parentIdValue = rs.getLong("parent_id");
-          currentId = rs.wasNull() ? null : parentIdValue;
-        } else {
-          break;
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+          stmt.setLong(1, currentId);
+          try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+              hierarchy.add(0, rs.getString("nom_categorie")); // Ajouter au début
+              long parentIdValue = rs.getLong("parent_id");
+              currentId = rs.wasNull() ? null : parentIdValue;
+            } else {
+              break;
+            }
+          }
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Erreur récupération hiérarchie catégorie", e);
+      throw new DatabaseException("Erreur récupération hiérarchie catégorie", e);
     }
     
     return String.join(" > ", hierarchy);
@@ -128,19 +130,20 @@ public class CategoryRepository {
         WHERE c2.parent_id = ?
         ORDER BY c3.nom_categorie
       """;
-      PreparedStatement stmt = conn.prepareStatement(sql);
-      stmt.setLong(1, parentId);
-      ResultSet rs = stmt.executeQuery();
-      
-      while (rs.next()) {
-        subSubcategories.add(new Category(
-            rs.getLong("id"),
-            rs.getString("nom_categorie"),
-            rs.getLong("parent_id")
-        ));
+      try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        stmt.setLong(1, parentId);
+        try (ResultSet rs = stmt.executeQuery()) {
+          while (rs.next()) {
+            subSubcategories.add(new Category(
+                rs.getLong("id"),
+                rs.getString("nom_categorie"),
+                rs.getLong("parent_id")
+            ));
+          }
+        }
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Erreur récupération sous-sous-catégories", e);
+      throw new DatabaseException("Erreur récupération sous-sous-catégories", e);
     }
     return subSubcategories;
   }
@@ -155,24 +158,25 @@ public class CategoryRepository {
     try (Connection conn = DB.getConnection()) {
       while (currentId != null) {
         String sql = "SELECT parent_id FROM categories WHERE id = ?";
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        stmt.setLong(1, currentId);
-        ResultSet rs = stmt.executeQuery();
-        
-        if (rs.next()) {
-          long parentIdValue = rs.getLong("parent_id");
-          if (rs.wasNull()) {
-            break; // Racine atteinte
-          } else {
-            level++;
-            currentId = parentIdValue;
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+          stmt.setLong(1, currentId);
+          try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+              long parentIdValue = rs.getLong("parent_id");
+              if (rs.wasNull()) {
+                break; // Racine atteinte
+              } else {
+                level++;
+                currentId = parentIdValue;
+              }
+            } else {
+              break;
+            }
           }
-        } else {
-          break;
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Erreur calcul niveau catégorie", e);
+      throw new DatabaseException("Erreur calcul niveau catégorie", e);
     }
     
     return level;
@@ -183,14 +187,14 @@ public class CategoryRepository {
    */
   public Optional<Category> findByName(String name) {
     if (name == null) return Optional.empty();
-    String sql = "SELECT id, nom, parent_id FROM categories WHERE nom = ?";
+    String sql = "SELECT id, nom_categorie, parent_id FROM categories WHERE nom_categorie = ?";
     try (Connection conn = DB.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
       stmt.setString(1, name);
       try (ResultSet rs = stmt.executeQuery()) {
         return rs.next() ? Optional.of(map(rs)) : Optional.empty();
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Erreur recherche catégorie par nom", e);
+      throw new DatabaseException("Erreur recherche catégorie par nom", e);
     }
   }
 
@@ -220,15 +224,15 @@ public class CategoryRepository {
       }
       
       if (category.isEmpty()) {
-        // Si pas trouvé, retourner le nom original comme sous-catégorie
-        return new CategoryHierarchy("", storedCategoryName, "");
+        // Si pas trouvé, retourner le nom nettoyé comme sous-catégorie
+        return new CategoryHierarchy("", cleanName, "");
       }
       
       return buildHierarchy(category.get());
       
     } catch (Exception e) {
-      // En cas d'erreur, retourner le nom original
-      return new CategoryHierarchy("", storedCategoryName, "");
+      // En cas d'erreur, retourner le nom nettoyé
+      return new CategoryHierarchy("", cleanCategoryName(storedCategoryName), "");
     }
   }
   

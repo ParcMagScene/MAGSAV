@@ -1,5 +1,6 @@
 package com.magsav.service;
 
+import com.magsav.util.TestDatabaseConfig;
 import com.magsav.db.DB;
 import com.magsav.exception.InvalidUidException;
 import com.magsav.repo.ProductRepository;
@@ -7,7 +8,6 @@ import com.magsav.repo.InterventionRepository;
 import org.junit.jupiter.api.*;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -23,15 +23,12 @@ public class ProductServiceStaticTest {
 
     @BeforeAll
     static void keepMemoryDb() throws Exception {
-        System.setProperty("magsav.db.url", "jdbc:sqlite:file:product_service_test?mode=memory&cache=shared");
-        keeper = DriverManager.getConnection(System.getProperty("magsav.db.url"));
-        DB.resetForTesting();
-        DB.init();
+        keeper = TestDatabaseConfig.setupSharedInMemoryDb("ProductServiceStaticTest");
     }
 
     @AfterAll
     static void closeKeeper() throws Exception {
-        if (keeper != null) keeper.close();
+        TestDatabaseConfig.cleanupKeeper(keeper);
     }
 
     @BeforeEach

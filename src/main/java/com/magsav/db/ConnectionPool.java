@@ -37,9 +37,13 @@ public class ConnectionPool {
     }
     
     public static ConnectionPool getInstance(String databaseUrl) {
-        if (instance == null) {
+        if (instance == null || !instance.databaseUrl.equals(databaseUrl)) {
             synchronized (ConnectionPool.class) {
-                if (instance == null) {
+                if (instance == null || !instance.databaseUrl.equals(databaseUrl)) {
+                    // Fermer l'ancien pool s'il existe
+                    if (instance != null) {
+                        instance.shutdown();
+                    }
                     instance = new ConnectionPool(databaseUrl, DEFAULT_POOL_SIZE);
                 }
             }
@@ -62,13 +66,22 @@ public class ConnectionPool {
     
     private Connection createNewConnection() throws SQLException {
         Connection conn = DriverManager.getConnection(databaseUrl);
-        // Optimisations SQLite
+        // Optimisations SQLite adaptées selon le type de base
         try (var stmt = conn.createStatement()) {
-            stmt.execute("PRAGMA journal_mode=WAL");
-            stmt.execute("PRAGMA synchronous=NORMAL");
+            if (databaseUrl.contains("memory")) {
+                // Pour les bases en mémoire (tests), utiliser des réglages compatibles
+                stmt.execute("PRAGMA journal_mode=MEMORY");
+                stmt.execute("PRAGMA synchronous=OFF");
+                stmt.execute("PRAGMA locking_mode=NORMAL");
+                stmt.execute("PRAGMA temp_store=MEMORY");
+            } else {
+                // Pour les bases sur disque (production), optimisations normales
+                stmt.execute("PRAGMA journal_mode=WAL");
+                stmt.execute("PRAGMA synchronous=NORMAL");
+                stmt.execute("PRAGMA mmap_size=268435456"); // 256MB
+            }
             stmt.execute("PRAGMA cache_size=10000");
             stmt.execute("PRAGMA temp_store=MEMORY");
-            stmt.execute("PRAGMA mmap_size=268435456"); // 256MB
         }
         return conn;
     }
@@ -148,6 +161,18 @@ public class ConnectionPool {
         }
         
         totalConnections.set(0);
+    }
+    
+    /**
+     * Réinitialise le pool pour les tests - force la création d'un nouveau pool
+     */
+    public static void resetForTesting() {
+        synchronized (ConnectionPool.class) {
+            if (instance != null) {
+                instance.shutdown();
+                instance = null;
+            }
+        }
     }
     
     public int getActiveConnections() {

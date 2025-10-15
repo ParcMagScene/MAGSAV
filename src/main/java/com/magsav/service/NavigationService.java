@@ -175,6 +175,21 @@ public final class NavigationService {
         AppLogger.warn("gui", "Navigation: Changements non sauvegardés ignorés temporairement");
         return true;
     }
+    
+    public static void openRequestDetail(long requestId) {
+        AppLogger.info("gui", "Navigation: Ouverture détail demande ID: " + requestId);
+        Views.openRequestDetail(requestId);
+    }
+
+    public static void openUserDetail(Integer userId) {
+        AppLogger.info("gui", "Navigation: Ouverture détail utilisateur ID: " + userId);
+        Views.openUserDetail(userId);
+    }
+
+    public static void openVehiculeDetail(int vehiculeId) {
+        AppLogger.info("gui", "Navigation: Ouverture détail véhicule ID: " + vehiculeId);
+        Views.openVehiculeDetail(vehiculeId);
+    }
 
     public static void openImageMaintenance() {
         AppLogger.info("gui", "Navigation: Ouverture fenêtre Gestion des Médias");

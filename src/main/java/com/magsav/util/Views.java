@@ -1,10 +1,14 @@
 package com.magsav.util;
 
 import com.magsav.gui.ProductDetailController;
+import com.magsav.gui.RequestDetailController;
+import com.magsav.gui.UserDetailController;
+import com.magsav.gui.VehiculeDetailController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.util.prefs.Preferences;
 
@@ -87,18 +91,14 @@ public final class Views {
 
   public static void openInterventionDetail(long interventionId, com.magsav.repo.ProductRepository.ProductRow product) {
     try {
-      FXMLLoader l = new FXMLLoader(Views.class.getResource("/fxml/interventions/intervention_detail.fxml"));
+      FXMLLoader l = new FXMLLoader(Views.class.getResource("/fxml/interventions/details/intervention_detail.fxml"));
       Parent root = l.load();
       var controller = l.getController();
       
-      // Si le contrôleur a une méthode load, l'appeler
-      if (controller instanceof com.magsav.gui.interventions.InterventionDetailController) {
-        var detailController = (com.magsav.gui.interventions.InterventionDetailController) controller;
-        detailController.load(interventionId);
-        // Si on a un produit, préremplir avec ses informations
-        if (product != null) {
-          detailController.loadProductInfo(product);
-        }
+      // Si le contrôleur a une méthode setInterventionId, l'appeler
+      if (controller instanceof com.magsav.gui.InterventionDetailController) {
+        var detailController = (com.magsav.gui.InterventionDetailController) controller;
+        detailController.setInterventionId(interventionId);
       }
       
       Stage st = new Stage();
@@ -192,23 +192,48 @@ public final class Views {
    */
   public static void openClientDetail(com.magsav.model.Company client) {
     try {
-      FXMLLoader l = new FXMLLoader(Views.class.getResource("/fxml/societes/details/client_detail.fxml"));
-      Parent root = l.load();
-      
-      // Configurer le contrôleur avec le client
-      com.magsav.gui.ClientDetailController controller = l.getController();
-      controller.setClient(client);
-      
+      // Créer une fenêtre de détail simple en Java pur
       Stage st = new Stage();
       st.setTitle("Client: " + client.getName());
       
+      // Créer le contenu de la fenêtre
+      javafx.scene.layout.VBox root = new javafx.scene.layout.VBox();
+      root.setSpacing(10);
+      root.setPadding(new javafx.geometry.Insets(20));
+      root.getStyleClass().add("main-content");
+      
+      // Titre
+      javafx.scene.control.Label titleLabel = new javafx.scene.control.Label("Détails du client");
+      titleLabel.getStyleClass().add("content-title");
+      root.getChildren().add(titleLabel);
+      
+      // Informations
+      root.getChildren().addAll(
+        new javafx.scene.control.Label("Nom: " + client.getName()),
+        new javafx.scene.control.Label("Type: " + client.getType()),
+        new javafx.scene.control.Label("Email: " + (client.getEmail() != null ? client.getEmail() : "N/A")),
+        new javafx.scene.control.Label("Téléphone: " + (client.getPhone() != null ? client.getPhone() : "N/A")),
+        new javafx.scene.control.Label("Adresse: " + (client.getAddress() != null ? client.getAddress() : "N/A")),
+        new javafx.scene.control.Label("Ville: " + (client.getCity() != null ? client.getCity() : "N/A"))
+      );
+      
+      // Bouton fermer
+      javafx.scene.control.Button closeBtn = new javafx.scene.control.Button("Fermer");
+      closeBtn.getStyleClass().addAll("button", "button-secondary");
+      closeBtn.setOnAction(e -> st.close());
+      
+      javafx.scene.layout.HBox buttonBox = new javafx.scene.layout.HBox();
+      buttonBox.getChildren().add(closeBtn);
+      buttonBox.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+      root.getChildren().add(buttonBox);
+      
       // Restaurer la taille précédente
       java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(Views.class);
-      double width = prefs.getDouble("clientDetail.width", 900);
-      double height = prefs.getDouble("clientDetail.height", 700);
+      double width = prefs.getDouble("clientDetail.width", 600);
+      double height = prefs.getDouble("clientDetail.height", 400);
       
-      Scene scene = new Scene(root, width, height);
-      ThemeManager.applyDarkTheme(scene);
+      javafx.scene.Scene scene = new javafx.scene.Scene(root, width, height);
+      com.magsav.util.ThemeManager.applyDarkTheme(scene);
       
       st.setScene(scene);
       st.setOnCloseRequest(e -> {
@@ -347,6 +372,111 @@ public final class Views {
       
     } catch (Exception e) {
       Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de l'ouverture de la fiche société: " + e.getMessage());
+      ThemeManager.applyDarkTheme(alert);
+      alert.showAndWait();
+      e.printStackTrace();
+    }
+  }
+  
+  public static void openRequestDetail(long requestId) {
+    try {
+      FXMLLoader loader = new FXMLLoader(Views.class.getResource("/fxml/requests/details/request_detail.fxml"));
+      Parent root = loader.load();
+      
+      RequestDetailController controller = loader.getController();
+      controller.loadRequest(requestId);
+      
+      Stage stage = new Stage();
+      stage.setTitle("Détails de la demande #" + requestId);
+      stage.setScene(new Scene(root));
+      stage.initModality(Modality.APPLICATION_MODAL);
+      
+      // Appliquer le thème
+      ThemeManager.applyDarkTheme(stage.getScene());
+      
+      // Taille et position de la fenêtre
+      stage.setWidth(800);
+      stage.setHeight(700);
+      stage.setMinWidth(600);
+      stage.setMinHeight(500);
+      
+      // Centrer la fenêtre
+      stage.centerOnScreen();
+      
+      stage.showAndWait();
+      
+    } catch (Exception e) {
+      Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de l'ouverture de la fiche demande: " + e.getMessage());
+      ThemeManager.applyDarkTheme(alert);
+      alert.showAndWait();
+      e.printStackTrace();
+    }
+  }
+  
+  public static void openUserDetail(Integer userId) {
+    try {
+      FXMLLoader loader = new FXMLLoader(Views.class.getResource("/fxml/user_detail.fxml"));
+      Parent root = loader.load();
+      
+      UserDetailController controller = loader.getController();
+      controller.loadUser(userId);
+      
+      Stage stage = new Stage();
+      stage.setTitle("Détails de l'utilisateur #" + userId);
+      stage.setScene(new Scene(root));
+      stage.initModality(Modality.APPLICATION_MODAL);
+      
+      // Appliquer le thème
+      ThemeManager.applyDarkTheme(stage.getScene());
+      
+      // Taille et position de la fenêtre
+      stage.setWidth(800);
+      stage.setHeight(700);
+      stage.setMinWidth(600);
+      stage.setMinHeight(500);
+      
+      // Centrer la fenêtre
+      stage.centerOnScreen();
+      
+      stage.showAndWait();
+      
+    } catch (Exception e) {
+      Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de l'ouverture de la fiche utilisateur: " + e.getMessage());
+      ThemeManager.applyDarkTheme(alert);
+      alert.showAndWait();
+      e.printStackTrace();
+    }
+  }
+  
+  public static void openVehiculeDetail(int vehiculeId) {
+    try {
+      FXMLLoader loader = new FXMLLoader(Views.class.getResource("/fxml/vehicules/details/vehicule_detail.fxml"));
+      Parent root = loader.load();
+      
+      VehiculeDetailController controller = loader.getController();
+      controller.loadVehicule(vehiculeId);
+      
+      Stage stage = new Stage();
+      stage.setTitle("Détails du véhicule #" + vehiculeId);
+      stage.setScene(new Scene(root));
+      stage.initModality(Modality.APPLICATION_MODAL);
+      
+      // Appliquer le thème
+      ThemeManager.applyDarkTheme(stage.getScene());
+      
+      // Taille et position de la fenêtre
+      stage.setWidth(800);
+      stage.setHeight(700);
+      stage.setMinWidth(600);
+      stage.setMinHeight(500);
+      
+      // Centrer la fenêtre
+      stage.centerOnScreen();
+      
+      stage.showAndWait();
+      
+    } catch (Exception e) {
+      Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de l'ouverture de la fiche véhicule: " + e.getMessage());
       ThemeManager.applyDarkTheme(alert);
       alert.showAndWait();
       e.printStackTrace();

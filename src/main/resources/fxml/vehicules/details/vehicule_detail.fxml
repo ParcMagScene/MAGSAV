@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.magsav.gui.VehiculeDetailController">
+   <children>
+      <ScrollPane fitToWidth="true" styleClass="detail-scroll-pane">
+         <content>
+            <VBox styleClass="detail-content">
+               <children>
+                  <HBox alignment="CENTER">
+                     <children>
+                        <Label fx:id="lblTitle" styleClass="detail-panel-title" text="Détails du Véhicule" />
+                     </children>
+                  </HBox>
+                  
+                  <GridPane hgap="10.0" vgap="10.0">
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" minWidth="120.0" prefWidth="120.0" />
+                        <ColumnConstraints hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <children>
+                        <Label text="ID:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label fx:id="lblId" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        
+                        <Label text="Statut:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <Label fx:id="lblStatut" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        
+                        <Label text="Immatriculation:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <Label fx:id="lblImmatriculation" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        
+                        <Label text="Type:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <Label fx:id="lblType" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        
+                        <Label text="Marque:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                        <Label fx:id="lblMarque" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        
+                        <Label text="Modèle:" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                        <Label fx:id="lblModele" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        
+                        <Label text="Année:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                        <Label fx:id="lblAnnee" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        
+                        <Label text="Kilométrage:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                        <Label fx:id="lblKilometrage" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                        
+                        <Label text="Carburant:" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                        <Label fx:id="lblCarburant" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                        
+                        <Label text="Puissance:" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                        <Label fx:id="lblPuissance" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                        
+                        <Label text="PTAC:" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+                        <Label fx:id="lblPtac" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+                        
+                        <Label text="Contrôle technique:" GridPane.columnIndex="0" GridPane.rowIndex="11" />
+                        <Label fx:id="lblControleTechnique" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+                        
+                        <Label text="Assurance:" GridPane.columnIndex="0" GridPane.rowIndex="12" />
+                        <Label fx:id="lblAssurance" GridPane.columnIndex="1" GridPane.rowIndex="12" />
+                        
+                        <Label text="Visite périodique:" GridPane.columnIndex="0" GridPane.rowIndex="13" />
+                        <Label fx:id="lblVisitePeriodique" GridPane.columnIndex="1" GridPane.rowIndex="13" />
+                        
+                        <Label text="Révision:" GridPane.columnIndex="0" GridPane.rowIndex="14" />
+                        <Label fx:id="lblRevision" GridPane.columnIndex="1" GridPane.rowIndex="14" />
+                     </children>
+                  </GridPane>
+                  
+                  <Label text="Notes:" GridPane.columnIndex="0" GridPane.rowIndex="15" />
+                  <TextArea fx:id="txtNotes" prefRowCount="3" GridPane.columnIndex="1" GridPane.rowIndex="15" />
+                  
+                  <Label text="Planning du véhicule:" styleClass="detail-panel-title" />
+                  <TableView fx:id="tablePlanifications" prefHeight="200.0">
+                     <columns>
+                        <TableColumn fx:id="colPlanifDate" prefWidth="120.0" text="Date" />
+                        <TableColumn fx:id="colPlanifTechnicien" prefWidth="120.0" text="Technicien" />
+                        <TableColumn fx:id="colPlanifIntervention" prefWidth="200.0" text="Intervention" />
+                        <TableColumn fx:id="colPlanifStatut" prefWidth="100.0" text="Statut" />
+                     </columns>
+                  </TableView>
+                  
+                  <HBox alignment="CENTER_RIGHT" spacing="10.0">
+                     <children>
+                        <Button fx:id="btnEdit" text="Modifier" />
+                        <Button fx:id="btnMaintenance" text="Maintenance" />
+                        <Button fx:id="btnPlanifier" text="Planifier" />
+                        <Button fx:id="btnClose" text="Fermer" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </content>
+      </ScrollPane>
+   </children>
+</VBox>

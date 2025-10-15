@@ -1,16 +1,16 @@
 package com.magsav.repo;
 
-import com.magsav.db.DB;
+import com.magsav.util.TestDatabaseConfig;
 import com.magsav.model.ProductSituation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 
 /**
  * Tests d'intégration pour la validation des situations dans ProductRepository
@@ -22,11 +22,12 @@ class ProductRepositoryValidationTest {
     
     @BeforeAll
     static void setUpClass() throws Exception {
-        // Configurer une base de données de test en mémoire
-        System.setProperty("magsav.db.url", "jdbc:sqlite:file:magsav_validation_test?mode=memory&cache=shared");
-        keeper = DriverManager.getConnection(System.getProperty("magsav.db.url"));
-        DB.resetForTesting();
-        DB.init();
+        keeper = TestDatabaseConfig.setupSharedInMemoryDb("ProductRepositoryValidationTest");
+    }
+    
+    @AfterAll
+    static void tearDownClass() throws Exception {
+        TestDatabaseConfig.cleanupKeeper(keeper);
     }
     
     @BeforeEach
@@ -45,11 +46,7 @@ class ProductRepositoryValidationTest {
         }
     }
     
-    @org.junit.jupiter.api.AfterAll
-    static void tearDownClass() throws Exception {
-        // Fermer la connexion de test pour éviter les fuites mémoire
-        if (keeper != null) keeper.close();
-    }
+
     
     @Test
     @DisplayName("Doit accepter toutes les situations valides lors de l'insertion")

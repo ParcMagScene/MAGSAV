@@ -528,7 +528,7 @@ public class ProductRepository {
    * Récupère les URLs d'images scrapées pour un produit par UID
    */
   public List<String> getScrapedImagesByUid(String productUid) {
-    String sql = "SELECT scraped_images FROM produits WHERE uid = ?";
+    String sql = "SELECT scraped_images FROM produits WHERE uid_unique = ?";
     
     try (Connection c = DB.getConnection(); 
          PreparedStatement ps = c.prepareStatement(sql)) {
@@ -551,8 +551,8 @@ public class ProductRepository {
    * Trouve tous les produits sans images scrapées
    */
   public List<ProductRowDetailed> findProductsWithoutScrapedImages() {
-    String sql = "SELECT id, nom, sn, fabricant, uid, situation, photo, category, subcategory, " +
-                "prix, date_achat, client, description, garantie " +
+    String sql = "SELECT id, nom_produit, numero_serie, nom_fabricant, uid_unique, statut_produit, photo_produit, " +
+                "categorie_principale, sous_categorie, prix_achat, date_achat, nom_client, description_produit, duree_garantie " +
                 "FROM produits WHERE scraped_images IS NULL OR scraped_images = ''";
     
     List<ProductRowDetailed> products = new ArrayList<>();

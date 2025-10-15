@@ -1,6 +1,7 @@
 package com.magsav.repo;
 
 import com.magsav.db.DB;
+import com.magsav.exception.DatabaseException;
 import com.magsav.model.DemandeCreationProprietaire;
 import com.magsav.model.DemandeCreationProprietaire.TypeProprietaire;
 import com.magsav.model.DemandeCreationProprietaire.StatutDemandeProprietaire;
@@ -41,19 +42,19 @@ public class DemandeCreationProprietaireRepository {
             
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
-                throw new RuntimeException("Échec de l'insertion de la demande de création de propriétaire");
+                throw new DatabaseException("Échec de l'insertion de la demande de création de propriétaire");
             }
             
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return generatedKeys.getLong(1);
                 } else {
-                    throw new RuntimeException("Impossible de récupérer l'ID de la demande insérée");
+                    throw new DatabaseException("Impossible de récupérer l'ID de la demande insérée");
                 }
             }
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de l'insertion de la demande de création de propriétaire", e);
+            throw new DatabaseException("Erreur lors de l'insertion de la demande de création de propriétaire", e);
         }
     }
     
@@ -83,7 +84,7 @@ public class DemandeCreationProprietaireRepository {
             }
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la récupération des demandes de création de propriétaire", e);
+            throw new DatabaseException("Erreur lors de la récupération des demandes de création de propriétaire", e);
         }
         
         return demandes;
@@ -112,7 +113,7 @@ public class DemandeCreationProprietaireRepository {
             }
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la récupération de la demande de création de propriétaire", e);
+            throw new DatabaseException("Erreur lors de la récupération de la demande de création de propriétaire", e);
         }
         
         return Optional.empty();
@@ -138,11 +139,11 @@ public class DemandeCreationProprietaireRepository {
             
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
-                throw new RuntimeException("Aucune demande trouvée avec l'ID: " + id);
+                throw new DatabaseException("Aucune demande trouvée avec l'ID: " + id);
             }
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la mise à jour du statut de la demande", e);
+            throw new DatabaseException("Erreur lors de la mise à jour du statut de la demande", e);
         }
     }
     
@@ -172,7 +173,7 @@ public class DemandeCreationProprietaireRepository {
             }
             
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la récupération des demandes de l'utilisateur", e);
+            throw new DatabaseException("Erreur lors de la récupération des demandes de l'utilisateur", e);
         }
         
         return demandes;

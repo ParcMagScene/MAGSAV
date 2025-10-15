@@ -29,9 +29,9 @@ public class SavHistoryRepository {
                 ORDER BY h.date_debut DESC
             """;
             
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, savExterneId);
-            ResultSet rs = stmt.executeQuery();
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setLong(1, savExterneId);
+                try (ResultSet rs = stmt.executeQuery()) {
             
             while (rs.next()) {
                 entries.add(new SavHistoryEntry(
@@ -44,7 +44,9 @@ public class SavHistoryRepository {
                     rs.getString("date_fin"),
                     rs.getString("statut"),
                     rs.getString("notes")
-                ));
+                    ));
+                }
+            }
             }
             
         } catch (SQLException e) {
@@ -69,9 +71,9 @@ public class SavHistoryRepository {
                 ORDER BY h.date_debut DESC
             """;
             
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setLong(1, productId);
-            ResultSet rs = stmt.executeQuery();
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setLong(1, productId);
+                try (ResultSet rs = stmt.executeQuery()) {
             
             while (rs.next()) {
                 entries.add(new SavHistoryEntry(
@@ -84,7 +86,9 @@ public class SavHistoryRepository {
                     rs.getString("date_fin"),
                     rs.getString("statut"),
                     rs.getString("notes")
-                ));
+                    ));
+                }
+            }
             }
             
         } catch (SQLException e) {
@@ -103,19 +107,21 @@ public class SavHistoryRepository {
                 VALUES (?, ?, ?, 'En cours', ?)
             """;
             
-            PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            stmt.setLong(1, productId);
-            stmt.setLong(2, savExterneId);
-            stmt.setString(3, LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-            stmt.setString(4, notes);
-            
-            stmt.executeUpdate();
-            
-            ResultSet generatedKeys = stmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                return generatedKeys.getLong(1);
+            try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                stmt.setLong(1, productId);
+                stmt.setLong(2, savExterneId);
+                stmt.setString(3, LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+                stmt.setString(4, notes);
+                
+                stmt.executeUpdate();
+                
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getLong(1);
+                    }
+                }
+                throw new DatabaseException("Impossible de récupérer l'ID généré");
             }
-            throw new DatabaseException("Impossible de récupérer l'ID généré");
             
         } catch (SQLException e) {
             throw new DatabaseException("Erreur création entrée historique SAV", e);
@@ -133,13 +139,14 @@ public class SavHistoryRepository {
                 WHERE id = ?
             """;
             
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-            stmt.setString(2, statut);
-            stmt.setString(3, notes);
-            stmt.setLong(4, historyId);
-            
-            stmt.executeUpdate();
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+                stmt.setString(2, statut);
+                stmt.setString(3, notes);
+                stmt.setLong(4, historyId);
+                
+                stmt.executeUpdate();
+            }
             
         } catch (SQLException e) {
             throw new DatabaseException("Erreur finalisation entrée historique SAV", e);
@@ -153,11 +160,12 @@ public class SavHistoryRepository {
         try (Connection conn = DB.getConnection()) {
             String sql = "UPDATE sav_history SET notes = ? WHERE id = ?";
             
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, notes);
-            stmt.setLong(2, historyId);
-            
-            stmt.executeUpdate();
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, notes);
+                stmt.setLong(2, historyId);
+                
+                stmt.executeUpdate();
+            }
             
         } catch (SQLException e) {
             throw new DatabaseException("Erreur mise à jour notes historique SAV", e);

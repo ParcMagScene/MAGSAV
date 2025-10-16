@@ -150,7 +150,7 @@ public class ConfigurationViewController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Sélectionner la base de données");
         fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Base de données SQLite", "*.db", "*.sqlite")
+            new FileChooser.ExtensionFilter("Base de données H2", "*.mv.db", "*.h2.db")
         );
         
         // Définir le répertoire initial

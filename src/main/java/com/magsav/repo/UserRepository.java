@@ -19,18 +19,18 @@ public class UserRepository {
     
     private static final CacheManager cache = CacheManager.getInstance();
     
-    // Formateur pour les dates SQLite (format: 2025-10-13 16:03:18)
-    private static final DateTimeFormatter SQLITE_DATETIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    // Formateur pour les dates (format: 2025-10-13 16:03:18)
+    private static final DateTimeFormatter DATETIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     
     /**
-     * Parse une date SQLite vers LocalDateTime
+     * Parse une date vers LocalDateTime
      */
-    private static LocalDateTime parseSQLiteDateTime(String dateStr) {
+    private static LocalDateTime parseDateTime(String dateStr) {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             return null;
         }
         try {
-            return LocalDateTime.parse(dateStr, SQLITE_DATETIME_FORMAT);
+            return LocalDateTime.parse(dateStr, DATETIME_FORMAT);
         } catch (Exception e) {
             // Fallback: essayer le format ISO par défaut
             try {
@@ -58,9 +58,9 @@ public class UserRepository {
         ensureUserTableUpdated(); // S'assurer que les nouvelles colonnes existent
         
         String sql = """
-            INSERT INTO users (username, email, password_hash, role, full_name, phone, 
+            INSERT INTO users (username, email, password_hash, role, nom, prenom, phone, 
                              societe_id, position, avatar_path, is_active, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
         
         try (Connection conn = DB.getConnection();
@@ -70,19 +70,24 @@ public class UserRepository {
             stmt.setString(2, user.email());
             stmt.setString(3, user.passwordHash());
             stmt.setString(4, user.role().name());
-            stmt.setString(5, user.fullName());
-            stmt.setString(6, user.phone());
+            
+            // Séparer fullName en nom et prenom
+            String[] nameParts = user.fullName() != null ? user.fullName().split(" ", 2) : new String[]{"", ""};
+            stmt.setString(5, nameParts.length > 0 ? nameParts[0] : ""); // nom
+            stmt.setString(6, nameParts.length > 1 ? nameParts[1] : ""); // prenom
+            
+            stmt.setString(7, user.phone());
             
             if (user.societeId() != null) {
-                stmt.setLong(7, user.societeId());
+                stmt.setLong(8, user.societeId());
             } else {
-                stmt.setNull(7, Types.BIGINT);
+                stmt.setNull(8, Types.BIGINT);
             }
             
-            stmt.setString(8, user.position());
-            stmt.setString(9, user.avatarPath());
-            stmt.setBoolean(10, user.isActive());
-            stmt.setString(11, user.createdAt().toString());
+            stmt.setString(9, user.position());
+            stmt.setString(10, user.avatarPath());
+            stmt.setBoolean(11, user.isActive());
+            stmt.setString(12, user.createdAt().toString());
             
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
@@ -118,7 +123,7 @@ public class UserRepository {
     public Optional<User> findByUsername(String username) {
         return cache.get("user:username:" + username, () -> {
             String sql = """
-                SELECT id, username, email, password_hash, role, full_name, phone, 
+                SELECT id, username, email, password_hash, role, nom, prenom, phone, 
                        societe_id, position, avatar_path, is_active, created_at, last_login, reset_token, reset_token_expires
                 FROM users WHERE username = ?
             """;
@@ -148,7 +153,7 @@ public class UserRepository {
     public Optional<User> findByEmail(String email) {
         return cache.get("user:email:" + email, () -> {
             String sql = """
-                SELECT id, username, email, password_hash, role, full_name, phone, 
+                SELECT id, username, email, password_hash, role, nom, prenom, phone, 
                        societe_id, position, avatar_path, is_active, created_at, last_login, reset_token, reset_token_expires
                 FROM users WHERE email = ?
             """;
@@ -177,7 +182,7 @@ public class UserRepository {
      */
     public Optional<User> findById(long id) {
         String sql = """
-            SELECT id, username, email, password_hash, role, full_name, phone, 
+            SELECT id, username, email, password_hash, role, nom, prenom, phone, 
                    societe_id, position, avatar_path, is_active, created_at, 
                    last_login, reset_token, reset_token_expires
             FROM users WHERE id = ?
@@ -206,7 +211,7 @@ public class UserRepository {
      */
     public List<User> findByRole(Role role) {
         String sql = """
-            SELECT id, username, email, password_hash, role, full_name, phone, 
+            SELECT id, username, email, password_hash, role, nom, prenom, phone, 
                    societe_id, position, avatar_path, is_active, created_at, 
                    last_login, reset_token, reset_token_expires
             FROM users WHERE role = ?
@@ -239,7 +244,7 @@ public class UserRepository {
     public List<User> findAll() {
         return cache.get("users:all", () -> {
             String sql = """
-                SELECT id, username, email, password_hash, role, full_name, phone, 
+                SELECT id, username, email, password_hash, role, nom, prenom, phone, 
                        societe_id, position, avatar_path, is_active, created_at, 
                        last_login, reset_token, reset_token_expires
                 FROM users 
@@ -445,22 +450,35 @@ public class UserRepository {
             societeId = societeIdValue;
         }
         
+        // Reconstruire fullName à partir de nom et prenom
+        String nom = rs.getString("nom");
+        String prenom = rs.getString("prenom");
+        String fullName = "";
+        if (nom != null && !nom.trim().isEmpty()) {
+            fullName = nom;
+            if (prenom != null && !prenom.trim().isEmpty()) {
+                fullName += " " + prenom;
+            }
+        } else if (prenom != null && !prenom.trim().isEmpty()) {
+            fullName = prenom;
+        }
+        
         return new User(
             rs.getInt("id"),
             rs.getString("username"),
             rs.getString("email"),
             rs.getString("password_hash"),
             Role.fromString(rs.getString("role")),
-            rs.getString("full_name"),
+            fullName,
             rs.getString("phone"),
             societeId,
             rs.getString("position"),
             rs.getString("avatar_path"),
             rs.getBoolean("is_active"),
-            parseSQLiteDateTime(rs.getString("created_at")),
-            parseSQLiteDateTime(rs.getString("last_login")),
+            parseDateTime(rs.getString("created_at")),
+            parseDateTime(rs.getString("last_login")),
             rs.getString("reset_token"),
-            parseSQLiteDateTime(rs.getString("reset_token_expires"))
+            parseDateTime(rs.getString("reset_token_expires"))
         );
     }
     
@@ -469,9 +487,9 @@ public class UserRepository {
      */
     public List<User> findBySocieteId(Long societeId) {
         String sql = """
-            SELECT id, username, email, password_hash, role, full_name, phone, 
+            SELECT id, username, email, password_hash, role, nom, prenom, phone, 
                    societe_id, position, avatar_path, is_active, created_at, last_login, reset_token, reset_token_expires
-            FROM users WHERE societe_id = ? ORDER BY full_name
+            FROM users WHERE societe_id = ? ORDER BY nom, prenom
         """;
         
         List<User> users = new ArrayList<>();

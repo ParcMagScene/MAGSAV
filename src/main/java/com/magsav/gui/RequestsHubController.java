@@ -509,7 +509,7 @@ public class RequestsHubController implements Initializable {
     
     private String formatDate(String sqlDate) {
         if (sqlDate == null) return "Non spécifié";
-        // Format SQLite: 2024-10-13 14:19:38
+        // Format base: 2024-10-13 14:19:38
         // Format souhaité: 13/10/2024
         try {
             String[] parts = sqlDate.split(" ")[0].split("-");

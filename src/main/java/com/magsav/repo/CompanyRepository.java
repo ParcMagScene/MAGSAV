@@ -5,6 +5,7 @@ import com.magsav.util.AppLogger;
 import com.magsav.util.CompanyProtectionManager;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -299,14 +300,32 @@ public class CompanyRepository {
         
         String createdAtStr = rs.getString("date_creation");
         if (createdAtStr != null) {
-            // Parse SQLite datetime format (yyyy-MM-dd HH:mm:ss)
-            company.setCreatedAt(LocalDateTime.parse(createdAtStr.replace(" ", "T")));
+            try {
+                // Essaie d'abord le format datetime complet (yyyy-MM-dd HH:mm:ss)
+                if (createdAtStr.contains(" ")) {
+                    company.setCreatedAt(LocalDateTime.parse(createdAtStr.replace(" ", "T")));
+                } else {
+                    // Si c'est seulement une date (yyyy-MM-dd), ajoute le temps
+                    company.setCreatedAt(LocalDate.parse(createdAtStr).atStartOfDay());
+                }
+            } catch (Exception e) {
+                AppLogger.warn("Impossible de parser la date de création: {}", createdAtStr);
+            }
         }
         
         String updatedAtStr = rs.getString("date_modification");
         if (updatedAtStr != null) {
-            // Parse SQLite datetime format (yyyy-MM-dd HH:mm:ss)
-            company.setUpdatedAt(LocalDateTime.parse(updatedAtStr.replace(" ", "T")));
+            try {
+                // Essaie d'abord le format datetime complet (yyyy-MM-dd HH:mm:ss)
+                if (updatedAtStr.contains(" ")) {
+                    company.setUpdatedAt(LocalDateTime.parse(updatedAtStr.replace(" ", "T")));
+                } else {
+                    // Si c'est seulement une date (yyyy-MM-dd), ajoute le temps
+                    company.setUpdatedAt(LocalDate.parse(updatedAtStr).atStartOfDay());
+                }
+            } catch (Exception e) {
+                AppLogger.warn("Impossible de parser la date de modification: {}", updatedAtStr);
+            }
         }
         
         return company;

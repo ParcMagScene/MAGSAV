@@ -250,8 +250,8 @@ public class PlanificationRepositorySimple {
             LEFT JOIN societes s ON p.client_id = s.id  
             LEFT JOIN interventions i ON p.intervention_id = i.id
             LEFT JOIN vehicules v ON p.vehicule_id = v.id
-            WHERE p.date_planifiee >= date('now') 
-              AND p.date_planifiee <= date('now', '+' || ? || ' days')
+            WHERE p.date_planifiee >= CURRENT_DATE 
+              AND p.date_planifiee <= DATEADD('DAY', ?, CURRENT_DATE)
               AND p.statut IN ('PLANIFIE', 'CONFIRME')
             ORDER BY p.date_planifiee ASC, technicien_nom
             """;

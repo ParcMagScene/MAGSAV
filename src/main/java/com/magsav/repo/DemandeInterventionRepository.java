@@ -71,6 +71,28 @@ public class DemandeInterventionRepository {
     }
     
     /**
+     * Récupère toutes les demandes
+     */
+    public List<DemandeIntervention> findAll() {
+        String sql = "SELECT * FROM demandes_intervention ORDER BY date_demande DESC";
+        
+        try (Connection c = DB.getConnection(); 
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                List<DemandeIntervention> demandes = new ArrayList<>();
+                while (rs.next()) {
+                    demandes.add(mapDemande(rs));
+                }
+                return demandes;
+            }
+            
+        } catch (SQLException e) {
+            throw new DatabaseException("Erreur récupération toutes demandes", e);
+        }
+    }
+
+    /**
      * Récupère toutes les demandes avec un statut donné
      */
     public List<DemandeIntervention> findByStatut(StatutDemande statut) {
@@ -121,7 +143,7 @@ public class DemandeInterventionRepository {
         String sql = """
             UPDATE demandes_intervention 
             SET statut = 'validee', 
-                date_validation = datetime('now'),
+                date_validation = CURRENT_TIMESTAMP,
                 validateur_nom = ?,
                 notes_validation = ?,
                 intervention_id = ?
@@ -150,7 +172,7 @@ public class DemandeInterventionRepository {
         String sql = """
             UPDATE demandes_intervention 
             SET statut = 'rejetee', 
-                date_validation = datetime('now'),
+                date_validation = CURRENT_TIMESTAMP,
                 validateur_nom = ?,
                 notes_validation = ?
             WHERE id = ?

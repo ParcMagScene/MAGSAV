@@ -63,7 +63,7 @@ public class ClientRepository {
 
     public long insert(String nom, String email, String telephone, String adresse) {
         try (Connection conn = DB.getConnection()) {
-            String sql = "INSERT INTO clients (nom, email, telephone, adresse, created_at) VALUES (?, ?, ?, ?, datetime('now'))";
+            String sql = "INSERT INTO clients (nom, email, telephone, adresse, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
             try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, nom);
                 stmt.setString(2, email);

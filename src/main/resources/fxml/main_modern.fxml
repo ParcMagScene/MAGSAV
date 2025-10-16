@@ -56,6 +56,16 @@
           <Label styleClass="nav-label" text="Utilisateurs"/>
         </HBox>
         
+        <HBox fx:id="statistiquesItem" styleClass="nav-item" onMouseClicked="#onShowStatistiques">
+          <Label styleClass="nav-icon" text="📈"/>
+          <Label styleClass="nav-label" text="Statistiques"/>
+        </HBox>
+        
+        <HBox fx:id="exportItem" styleClass="nav-item" onMouseClicked="#onShowExport">
+          <Label styleClass="nav-icon" text="📤"/>
+          <Label styleClass="nav-label" text="Export"/>
+        </HBox>
+        
         <HBox fx:id="preferencesItem" styleClass="nav-item" onMouseClicked="#onShowPreferences">
           <Label styleClass="nav-icon" text="⚙️"/>
           <Label styleClass="nav-label" text="Préférences"/>

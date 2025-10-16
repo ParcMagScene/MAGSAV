@@ -1,0 +1,14 @@
+/* MAGSAV - Variables CSS et Thèmes */
+
+.root {
+    -fx-background-color: #1e3a5f;
+    -fx-text-fill: #ffffff;
+}
+
+.theme-dark {
+    -fx-base: #1e3a5f;
+    -fx-background: #1e3a5f;
+    -fx-control-inner-background: #1a1a1a;
+    -fx-text-base-color: #ffffff;
+    -fx-accent: #4a90e2;
+}

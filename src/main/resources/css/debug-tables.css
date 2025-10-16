@@ -1,0 +1,41 @@
+/* CSS de diagnostic pour rendre les tables visibles */
+
+.table-view {
+    -fx-background-color: #000000 !important;
+    background-color: #000000 !important;
+    -fx-border-color: #ff0000 !important;
+    -fx-border-width: 2px !important;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #00ff00 !important; /* Vert très visible */
+    -fx-background-color: #444444 !important;
+    background-color: #444444 !important;
+    -fx-font-size: 14px !important;
+    -fx-font-weight: bold !important;
+}
+
+.table-view .column-header {
+    -fx-text-fill: #ffff00 !important; /* Jaune pour les en-têtes */
+    -fx-background-color: #666666 !important;
+    background-color: #666666 !important;
+    -fx-font-size: 12px !important;
+    -fx-font-weight: bold !important;
+}
+
+.table-row-cell {
+    -fx-background-color: #333333 !important;
+    background-color: #333333 !important;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #0066cc !important;
+    background-color: #0066cc !important;
+}
+
+/* Au cas où il y aurait des problèmes de hauteur */
+.table-row-cell {
+    -fx-cell-size: 30px !important;
+    -fx-pref-height: 30px !important;
+    -fx-min-height: 30px !important;
+}

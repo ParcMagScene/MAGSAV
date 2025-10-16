@@ -21,11 +21,13 @@ public class CategoryRepository {
 
   public List<Category> findAll() {
     String sql = "SELECT id, nom_categorie, parent_id FROM categories ORDER BY nom_categorie";
-    try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-      List<Category> out = new ArrayList<>();
-      while (rs.next()) out.add(map(rs));
-      return out;
-    } catch (SQLException e) { throw new DatabaseException("findAll failed", e); }
+    try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+      return com.magsav.util.RepositoryUtils.findAll(ps, rs -> {
+        try { return map(rs); } catch (SQLException e) { throw new RuntimeException(e); }
+      }, "findAll");
+    } catch (SQLException e) { 
+      throw new DatabaseException("findAll failed", e); 
+    }
   }
 
   public Optional<Category> findById(Long id) {
@@ -33,7 +35,9 @@ public class CategoryRepository {
     String sql = "SELECT id, nom_categorie, parent_id FROM categories WHERE id=?";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
       ps.setLong(1, id);
-      try (ResultSet rs = ps.executeQuery()) { return rs.next() ? Optional.of(map(rs)) : Optional.empty(); }
+      return com.magsav.util.RepositoryUtils.findOne(ps, rs -> {
+        try { return map(rs); } catch (SQLException e) { throw new RuntimeException(e); }
+      }, "findById");
     } catch (SQLException e) { throw new DatabaseException("findById failed", e); }
   }
 
@@ -41,7 +45,7 @@ public class CategoryRepository {
     String sql = "INSERT INTO categories(nom_categorie, parent_id) VALUES(?, ?)";
     try (Connection c = DB.getConnection(); PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       ps.setString(1, nom);
-      if (parentId == null) ps.setNull(2, Types.INTEGER); else ps.setLong(2, parentId);
+      com.magsav.util.RepositoryUtils.setLongOrNull(ps, 2, parentId);
       ps.executeUpdate();
       try (ResultSet k = ps.getGeneratedKeys()) { return k.next() ? k.getLong(1) : -1L; }
     } catch (SQLException e) { throw new DatabaseException("insert failed", e); }
@@ -51,7 +55,7 @@ public class CategoryRepository {
     String sql = "UPDATE categories SET nom_categorie=?, parent_id=? WHERE id=?";
     try (Connection cx = DB.getConnection(); PreparedStatement ps = cx.prepareStatement(sql)) {
       ps.setString(1, c.nom());
-      if (c.parentId() == null) ps.setNull(2, Types.INTEGER); else ps.setLong(2, c.parentId());
+      com.magsav.util.RepositoryUtils.setLongOrNull(ps, 2, c.parentId());
       ps.setLong(3, c.id());
       return ps.executeUpdate() > 0;
     } catch (SQLException e) { throw new DatabaseException("update failed", e); }

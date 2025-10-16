@@ -12,7 +12,7 @@ public class RequestRepository {
 
   public long insert(String type, String title, String description, String status) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "INSERT INTO requests (type, title, description, status, created_at) VALUES (?, ?, ?, ?, datetime('now'))";
+      String sql = "INSERT INTO requests (type, title, description, status, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
       try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
         stmt.setString(1, type);
         stmt.setString(2, title);
@@ -114,7 +114,7 @@ public class RequestRepository {
 
   public long create(String type, String title, String description, Long societeId) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "INSERT INTO requests (type, title, description, societe_id, status, created_at) VALUES (?, ?, ?, ?, 'EN_ATTENTE', datetime('now'))";
+      String sql = "INSERT INTO requests (type, title, description, societe_id, status, created_at) VALUES (?, ?, ?, ?, 'EN_ATTENTE', CURRENT_TIMESTAMP)";
       PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       stmt.setString(1, type);
       stmt.setString(2, title);

@@ -14,8 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Repository pour la gestion des véhicules en base de données
- * Compatible avec la base SQLite existante de MAGSAV
+ * Repository pour la gestion des véhicules en base de données H2
+ * Gestion complète des véhicules MAGSAV
  */
 public class VehiculeRepository {
     

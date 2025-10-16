@@ -10,7 +10,7 @@ class OptimizationValidationTest {
 
     @BeforeAll
     static void setup() {
-        System.setProperty("magsav.db.url", "jdbc:sqlite:file:optimization_test?mode=memory&cache=shared");
+        System.setProperty("magsav.db.url", "jdbc:h2:mem:optimization_test;DB_CLOSE_DELAY=-1");
         DB.resetForTesting();
         DB.init();
     }

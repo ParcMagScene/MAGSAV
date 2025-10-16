@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Pool de connexions SQLite optimisé pour MAGSAV
+ * Pool de connexions H2 optimisé pour MAGSAV
  * Améliore les performances en réutilisant les connexions
  */
 public class ConnectionPool {
@@ -66,7 +66,7 @@ public class ConnectionPool {
     
     private Connection createNewConnection() throws SQLException {
         Connection conn = DriverManager.getConnection(databaseUrl);
-        // Optimisations SQLite adaptées selon le type de base
+        // Optimisations H2 pour améliorer les performances
         try (var stmt = conn.createStatement()) {
             if (databaseUrl.contains("memory")) {
                 // Pour les bases en mémoire (tests), utiliser des réglages compatibles

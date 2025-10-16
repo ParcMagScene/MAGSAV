@@ -26,10 +26,10 @@ class ImageScrapingIntegrationTest {
         try (var conn = DB.getConnection(); 
              var stmt = conn.createStatement()) {
             
-            // Créer la table produits avec la colonne scraped_images
+            // Créer la table produits avec la colonne scraped_images (syntaxe H2)
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS produits (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id INTEGER AUTO_INCREMENT,
                     code_produit TEXT,
                     nom_produit TEXT NOT NULL,
                     numero_serie TEXT,
@@ -46,7 +46,8 @@ class ImageScrapingIntegrationTest {
                     prix_achat TEXT,
                     duree_garantie TEXT,
                     sav_externe_id INTEGER,
-                    scraped_images TEXT
+                    scraped_images TEXT,
+                    PRIMARY KEY (id)
                 )
             """);
             

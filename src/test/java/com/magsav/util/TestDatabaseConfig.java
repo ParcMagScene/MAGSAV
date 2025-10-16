@@ -19,8 +19,8 @@ public class TestDatabaseConfig {
      * @return connexion keeper pour maintenir la base en mémoire
      */
     public static Connection setupIsolatedInMemoryDb(String testName) throws SQLException {
-        // Utiliser une base en mémoire simple - plus fiable que les bases nommées
-        String testDbUrl = "jdbc:sqlite::memory:";
+        // Utiliser H2 en mémoire pour les tests
+        String testDbUrl = "jdbc:h2:mem:" + testName + ";DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE";
         
         // Nettoyer l'état précédent
         System.clearProperty("magsav.db.url");
@@ -80,7 +80,7 @@ public class TestDatabaseConfig {
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     produit_id INTEGER,
                     numero_serie TEXT,
-                    date_creation TEXT DEFAULT (datetime('now')),
+                    date_creation TEXT DEFAULT CURRENT_TIMESTAMP,
                     description TEXT,
                     statut TEXT DEFAULT 'En cours',
                     FOREIGN KEY (produit_id) REFERENCES produits(id)
@@ -98,8 +98,8 @@ public class TestDatabaseConfig {
                     contenu_text TEXT,
                     variables_disponibles TEXT,
                     actif BOOLEAN DEFAULT TRUE,
-                    date_creation TEXT NOT NULL DEFAULT (datetime('now')),
-                    date_modification TEXT NOT NULL DEFAULT (datetime('now'))
+                    date_creation TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    date_modification TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                 )
             """);
         }
@@ -109,8 +109,8 @@ public class TestDatabaseConfig {
      * Version simplifiée pour les tests qui n'ont pas besoin d'isolation complète
      */
     public static Connection setupSharedInMemoryDb(String testName) throws SQLException {
-        // Utiliser une base partagée mais avec des réglages optimisés
-        String testDbUrl = "jdbc:sqlite:file:shared_test_db?mode=memory&cache=shared";
+        // Utiliser H2 en mémoire partagée pour les tests
+        String testDbUrl = "jdbc:h2:mem:shared_test_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE";
         
         System.clearProperty("magsav.db.url");
         DB.resetForTesting();

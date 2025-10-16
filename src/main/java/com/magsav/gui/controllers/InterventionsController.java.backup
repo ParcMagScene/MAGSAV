@@ -1,0 +1,437 @@
+package com.magsav.gui.controllers;
+
+import com.magsav.gui.components.DetailLayoutHelper;
+import com.magsav.gui.components.DetailPaneFactory.DetailPane;
+import com.magsav.gui.components.DetailPaneFactory.EntityInfo;
+import com.magsav.gui.utils.TabBuilderUtils;
+import com.magsav.model.InterventionRow;
+import com.magsav.repo.InterventionRepository;
+import com.magsav.service.NavigationService;
+import com.magsav.service.Refreshable;
+import com.magsav.util.AppLogger;
+
+import javafx.scene.control.*;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.geometry.Orientation;
+import javafx.collections.FXCollections;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Contrôleur dédié à la section Interventions
+ * Gère les onglets Liste, Nouvelle, En cours, Terminées
+ */
+public class InterventionsController implements Refreshable { 
+                .status("-")
+                .description("Sélectionnez une intervention pour voir ses détails");
+        
+        currentDetailPane.updateInfo(defaultInfo);
+        
+        return currentDetailPane;
+    }onRow;
+import com.magsav.repo.InterventionRepository;
+import com.magsav.service.NavigationService;
+import com.magsav.service.Refreshable;
+import com.magsav.util.AppLogger;
+
+import javafx.scene.control.*;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.geometry.Orientation;
+import javafx.collections.FXCollections;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Contrôleur dédié à la section Interventions
+ * Gère les onglets Liste, Nouvelle, En cours, Terminées
+ */
+public class InterventionsController implements Refreshable {
+    
+    private final InterventionRepository interventionRepo = new InterventionRepository();
+    
+    // Références aux tables pour permettre le rafraîchissement
+    private TableView<InterventionRow> listeTable;
+    private TableView<InterventionRow> enCoursTable;
+    
+    // Volet de détail unifié
+    private DetailPane currentDetailPane;
+    private TableView<InterventionRow> termineesTable;
+    
+    /**
+     * Crée l'onglet Liste des interventions avec SplitPane
+     */
+    public Tab createInterventionsListTab() {
+        Tab tab = TabBuilderUtils.createBasicTab("📋 Liste");
+        VBox content = TabBuilderUtils.createTabContent();
+        
+        // Créer le SplitPane principal
+        SplitPane splitPane = new SplitPane();
+        splitPane.setOrientation(Orientation.HORIZONTAL);
+        splitPane.getStyleClass().add("split-pane");
+        
+        // Partie gauche - Liste des interventions
+        VBox leftPane = new VBox();
+        leftPane.setSpacing(16);
+        leftPane.getStyleClass().add("main-content");
+        
+        Label title = new Label("Toutes les interventions");
+        title.getStyleClass().add("content-title");
+        
+        // Contrôles de filtrage
+        HBox controlsBox = new HBox();
+        controlsBox.setSpacing(10);
+        
+        ComboBox<String> statusFilter = new ComboBox<>();
+        statusFilter.getItems().addAll("Tous", "En attente", "En cours", "Terminée", "Annulée");
+        statusFilter.setValue("Tous");
+        statusFilter.getStyleClass().add("dark-combo-box");
+        
+        TextField searchField = new TextField();
+        searchField.setPromptText("Rechercher...");
+        searchField.getStyleClass().add("dark-text-field");
+        
+        Button searchBtn = new Button("🔍");
+        searchBtn.getStyleClass().add("icon-button");
+        
+        controlsBox.getChildren().addAll(statusFilter, searchField, searchBtn);
+        
+        // Table des interventions
+        listeTable = new TableView<>();
+        listeTable.getStyleClass().add("dark-table-view");
+        setupInterventionTableColumns(listeTable);
+        
+        // Charger les données
+        loadInterventionsData(listeTable);
+        
+        VBox.setVgrow(listeTable, Priority.ALWAYS);
+        leftPane.getChildren().addAll(title, controlsBox, listeTable);
+        
+        // Partie droite - Détails de l'intervention avec système unifié
+        DetailPane detailPane = createInterventionDetailPane();
+        detailPane.setMinWidth(300);
+        
+        // Liaison avec la sélection de la table
+        listeTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null && currentDetailPane != null) {
+                EntityInfo entityInfo = DetailLayoutHelper.createEntityInfoFromIntervention(newSelection);
+                currentDetailPane.updateInfo(entityInfo);
+            }
+        });
+        
+        splitPane.getItems().addAll(leftPane, detailPane);
+        splitPane.setDividerPositions(0.7);
+        
+        content.getChildren().add(splitPane);
+        VBox.setVgrow(splitPane, Priority.ALWAYS);
+        
+        tab.setContent(content);
+        return tab;
+    }
+    
+    /**
+     * Crée l'onglet Nouvelle intervention
+     */
+    public Tab createNewInterventionTab() {
+        Tab tab = TabBuilderUtils.createBasicTab("✚ Nouvelle");
+        VBox content = TabBuilderUtils.createTabContent();
+        
+        Label title = new Label("Nouvelle demande d'intervention");
+        title.getStyleClass().add("content-title");
+        
+        // Formulaire de création (placeholder)
+        VBox formBox = new VBox();
+        formBox.setSpacing(12);
+        formBox.getStyleClass().add("form-container");
+        
+        Label infoLabel = new Label("Formulaire de création d'intervention");
+        infoLabel.getStyleClass().add("info-text");
+        
+        Button createBtn = new Button("Créer l'intervention");
+        createBtn.getStyleClass().add("primary-button");
+        
+        formBox.getChildren().addAll(infoLabel, createBtn);
+        
+        content.getChildren().addAll(title, formBox);
+        
+        tab.setContent(content);
+        return tab;
+    }
+    
+    /**
+     * Crée l'onglet Interventions en cours
+     */
+    public Tab createInterventionsEnCoursTab() {
+        Tab tab = TabBuilderUtils.createBasicTab("⏳ En cours");
+        VBox content = TabBuilderUtils.createTabContent();
+        
+        Label title = new Label("Interventions en cours");
+        title.getStyleClass().add("content-title");
+        
+        // Table filtrée sur les interventions en cours
+        enCoursTable = new TableView<>();
+        enCoursTable.getStyleClass().add("dark-table-view");
+        
+        // Réutiliser les mêmes colonnes que la liste principale
+        setupInterventionTableColumns(enCoursTable);
+        
+        // Charger seulement les interventions en cours
+        loadInterventionsEnCoursData(enCoursTable);
+        
+        VBox.setVgrow(enCoursTable, Priority.ALWAYS);
+        content.getChildren().addAll(title, enCoursTable);
+        
+        tab.setContent(content);
+        return tab;
+    }
+    
+    /**
+     * Crée l'onglet Interventions terminées
+     */
+    public Tab createInterventionsTermineesTab() {
+        Tab tab = TabBuilderUtils.createBasicTab("✅ Terminées");
+        VBox content = TabBuilderUtils.createTabContent();
+        
+        Label title = new Label("Interventions terminées");
+        title.getStyleClass().add("content-title");
+        
+        // Table filtrée sur les interventions terminées
+        termineesTable = new TableView<>();
+        termineesTable.getStyleClass().add("dark-table-view");
+        
+        setupInterventionTableColumns(termineesTable);
+        loadInterventionsTermineesData(termineesTable);
+        
+        VBox.setVgrow(termineesTable, Priority.ALWAYS);
+        content.getChildren().addAll(title, termineesTable);
+        
+        tab.setContent(content);
+        return tab;
+    }
+    
+    // === MÉTHODES PRIVÉES ===
+    
+    private void setupInterventionTableColumns(TableView<InterventionRow> table) {
+        TableColumn<InterventionRow, String> idCol = new TableColumn<>("ID");
+        idCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(String.valueOf(data.getValue().id())));
+        idCol.setPrefWidth(60);
+        
+        TableColumn<InterventionRow, String> produitCol = new TableColumn<>("Produit");
+        produitCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().produitNom()));
+        produitCol.setPrefWidth(150);
+        
+        TableColumn<InterventionRow, String> statutCol = new TableColumn<>("Statut");
+        statutCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().statut()));
+        statutCol.setPrefWidth(100);
+        
+        TableColumn<InterventionRow, String> panneCol = new TableColumn<>("Panne");
+        panneCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().panne()));
+        panneCol.setPrefWidth(200);
+        
+        TableColumn<InterventionRow, String> entreeCol = new TableColumn<>("Date d'entrée");
+        entreeCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().dateEntree()));
+        entreeCol.setPrefWidth(120);
+        
+        TableColumn<InterventionRow, String> sortieCol = new TableColumn<>("Date de sortie");
+        sortieCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(
+            Optional.ofNullable(data.getValue().dateSortie()).orElse("-")));
+        sortieCol.setPrefWidth(120);
+        
+        table.getColumns().addAll(Arrays.asList(idCol, produitCol, statutCol, panneCol, entreeCol, sortieCol));
+        
+        // Double-clic pour ouvrir les détails
+        table.setRowFactory(tv -> {
+            TableRow<InterventionRow> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    InterventionRow intervention = row.getItem();
+                    AppLogger.info("Double-clic sur intervention ID: " + intervention.id());
+                    NavigationService.openInterventionDetail(intervention.id());
+                }
+            });
+            return row;
+        });
+    }
+    
+    private void loadInterventionsData(TableView<InterventionRow> table) {
+        try {
+            AppLogger.info("🔍 DEBUG InterventionsController - Chargement de toutes les interventions");
+            List<InterventionRow> interventions = interventionRepo.findAllWithProductName();
+            AppLogger.info("🔍 DEBUG InterventionsController - " + interventions.size() + " interventions trouvées");
+            for (InterventionRow intervention : interventions) {
+                AppLogger.info("🔍 DEBUG - Intervention trouvée: ID=" + intervention.id() + 
+                    ", Produit=" + intervention.produitNom() + 
+                    ", Statut=" + intervention.statut());
+            }
+            table.setItems(FXCollections.observableArrayList(interventions));
+            AppLogger.info("✅ DEBUG InterventionsController - Items ajoutés à la table: " + interventions.size());
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors du chargement des interventions: " + e.getMessage(), e);
+        }
+    }
+    
+    private void loadInterventionsEnCoursData(TableView<InterventionRow> table) {
+        try {
+            List<InterventionRow> interventions = interventionRepo.findAllWithProductName();
+            List<InterventionRow> enCours = interventions.stream()
+                .filter(i -> i.dateSortie() == null || i.dateSortie().trim().isEmpty())
+                .toList();
+            table.setItems(FXCollections.observableArrayList(enCours));
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors du chargement des interventions en cours: " + e.getMessage(), e);
+        }
+    }
+    
+    private void loadInterventionsTermineesData(TableView<InterventionRow> table) {
+        try {
+            List<InterventionRow> interventions = interventionRepo.findAllWithProductName();
+            List<InterventionRow> terminees = interventions.stream()
+                .filter(i -> i.dateSortie() != null && !i.dateSortie().trim().isEmpty())
+                .toList();
+            table.setItems(FXCollections.observableArrayList(terminees));
+        } catch (Exception e) {
+            AppLogger.error("Erreur lors du chargement des interventions terminées: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Crée le volet de détail pour l'affichage des informations d'une intervention
+     */
+    private VBox createInterventionDetailPane() {
+        VBox detailPane = new VBox();
+        detailPane.getStyleClass().add("detail-panel");
+        detailPane.setSpacing(10);
+        
+        Label detailTitle = new Label("📋 Détails de l'intervention");
+        detailTitle.getStyleClass().add("detail-title");
+        
+        Label noSelectionLabel = new Label("Sélectionnez une intervention pour voir les détails");
+        noSelectionLabel.getStyleClass().add("no-selection-label");
+        noSelectionLabel.setStyle("-fx-text-fill: #888; -fx-font-style: italic;");
+        
+        detailPane.getChildren().addAll(detailTitle, noSelectionLabel);
+        
+        return detailPane;
+    }
+
+    /**
+     * Met à jour le volet de détail avec les informations de l'intervention sélectionnée
+     */
+    private void updateInterventionDetailPane(VBox detailPane, InterventionRow intervention) {
+        // Effacer le contenu existant sauf le titre
+        detailPane.getChildren().clear();
+        
+        Label detailTitle = new Label("📋 Détails de l'intervention");
+        detailTitle.getStyleClass().add("detail-title");
+        detailPane.getChildren().add(detailTitle);
+        
+        if (intervention == null) {
+            Label noSelectionLabel = new Label("Sélectionnez une intervention pour voir les détails");
+            noSelectionLabel.getStyleClass().add("no-selection-label");
+            noSelectionLabel.setStyle("-fx-text-fill: #888; -fx-font-style: italic;");
+            detailPane.getChildren().add(noSelectionLabel);
+            return;
+        }
+        
+        // Créer les labels d'information
+        VBox infoBox = new VBox();
+        infoBox.setSpacing(8);
+        infoBox.setStyle("-fx-background-color: #f8f9fa; -fx-padding: 10; -fx-border-radius: 5; -fx-background-radius: 5;");
+        
+        // ID et référence
+        Label idLabel = new Label("ID: " + intervention.id());
+        idLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        
+        // Produit
+        Label produitLabel = new Label("Produit: " + (intervention.produitNom() != null ? intervention.produitNom() : "N/A"));
+        produitLabel.setStyle("-fx-font-size: 12px;");
+        produitLabel.setWrapText(true);
+        
+        // Statut
+        Label statutLabel = new Label("Statut: " + (intervention.statut() != null ? intervention.statut() : "N/A"));
+        statutLabel.setStyle("-fx-font-size: 12px; -fx-padding: 4 8; -fx-background-radius: 12; -fx-background-color: #007bff40;");
+        
+        // Panne déclarée
+        Label panneLabel = new Label("Panne: " + (intervention.panne() != null ? intervention.panne() : "N/A"));
+        panneLabel.setStyle("-fx-font-size: 12px;");
+        panneLabel.setWrapText(true);
+        panneLabel.setMaxWidth(280);
+        
+        // Dates
+        Label dateEntreeLabel = new Label("Date d'entrée: " + (intervention.dateEntree() != null ? intervention.dateEntree() : "N/A"));
+        dateEntreeLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #28a745;");
+        
+        Label dateSortieLabel = new Label("Date de sortie: " + (intervention.dateSortie() != null && !intervention.dateSortie().trim().isEmpty() ? intervention.dateSortie() : "En cours"));
+        dateSortieLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " + (intervention.dateSortie() != null && !intervention.dateSortie().trim().isEmpty() ? "#dc3545" : "#ffc107") + ";");
+        
+        infoBox.getChildren().addAll(idLabel, produitLabel, statutLabel, panneLabel, dateEntreeLabel, dateSortieLabel);
+        
+        // Boutons d'action
+        VBox actionsBox = new VBox();
+        actionsBox.setSpacing(5);
+        actionsBox.setStyle("-fx-background-color: white; -fx-padding: 10; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);");
+        
+        Label actionsTitle = new Label("⚡ Actions");
+        actionsTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+        
+        Button detailBtn = new Button("🔍 Voir détails");
+        detailBtn.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; -fx-cursor: hand;");
+        detailBtn.setPrefWidth(120);
+        detailBtn.setOnAction(e -> {
+            AppLogger.info("Ouverture des détails pour intervention ID: " + intervention.id());
+            NavigationService.openInterventionDetail(intervention.id());
+        });
+        
+        Button editBtn = new Button("✏️ Modifier");
+        editBtn.setStyle("-fx-background-color: #ffc107; -fx-text-fill: black; -fx-cursor: hand;");
+        editBtn.setPrefWidth(120);
+        editBtn.setOnAction(e -> {
+            AppLogger.info("Modification de l'intervention ID: " + intervention.id());
+            // TODO: Ouvrir le formulaire de modification
+        });
+        
+        actionsBox.getChildren().addAll(actionsTitle, detailBtn, editBtn);
+        
+        detailPane.getChildren().addAll(infoBox, actionsBox);
+    }
+    
+    @Override
+    public void refreshAllTables() {
+        AppLogger.info("🔄 DEBUG InterventionsController - Rafraîchissement de toutes les tables demandé");
+        
+        if (listeTable != null) {
+            AppLogger.info("🔄 DEBUG InterventionsController - Chargement des données de la liste");
+            loadInterventionsData(listeTable);
+        }
+        if (enCoursTable != null) {
+            AppLogger.info("🔄 DEBUG InterventionsController - Chargement des données en cours");
+            loadInterventionsEnCoursData(enCoursTable);
+        }
+        if (termineesTable != null) {
+            AppLogger.info("🔄 DEBUG InterventionsController - Chargement des données terminées");
+            loadInterventionsTermineesData(termineesTable);
+        }
+        
+        AppLogger.info("✅ DEBUG InterventionsController - Toutes les tables rafraîchies");
+    }
+    
+    @Override
+    public String getComponentName() {
+        return "InterventionsController";
+    }
+    
+    @Override
+    public boolean isReadyForRefresh() {
+        // Considéré prêt si au moins une table est initialisée
+        return listeTable != null || enCoursTable != null || termineesTable != null;
+    }
+}

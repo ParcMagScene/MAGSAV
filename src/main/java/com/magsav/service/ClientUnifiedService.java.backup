@@ -1,0 +1,898 @@
+package com.magsav.service;package com.magsav.service;package com.magsav.service;package com.magsav.service;package com.magsav.service;
+
+
+
+import com.magsav.model.ClientType;
+
+import com.magsav.model.ClientUnifie;
+
+import com.magsav.model.Societe;import com.magsav.model.ClientType;
+
+import com.magsav.repo.SocieteRepository;
+
+import com.magsav.util.AppLogger;import com.magsav.model.ClientUnifie;
+
+
+
+import java.util.List;import com.magsav.model.Societe;import com.magsav.model.ClientType;
+
+import java.util.stream.Collectors;
+
+import com.magsav.repo.SocieteRepository;
+
+/**
+
+ * Service pour gérer les clients unifiés (particuliers et sociétés)import com.magsav.util.AppLogger;import com.magsav.model.ClientUnifie;
+
+ */
+
+public class ClientUnifiedService {
+
+
+
+    private final SocieteRepository societeRepository = new SocieteRepository();import java.util.List;import com.magsav.model.Societe;import com.magsav.model.ClientType;import com.magsav.model.ClientType;
+
+
+
+    /**import java.util.stream.Collectors;
+
+     * Récupère tous les clients (particuliers et sociétés)
+
+     */import com.magsav.repo.SocieteRepository;
+
+    public List<ClientUnifie> getAllClients() {
+
+        try {/**
+
+            List<Societe> societes = societeRepository.findAll();
+
+            return societes.stream() * Service pour gérer les clients unifiés (particuliers et sociétés)import com.magsav.util.AppLogger;import com.magsav.model.ClientUnifie;import com.magsav.model.ClientUnifie;
+
+                .map(this::convertToClientUnifie)
+
+                .collect(Collectors.toList()); */
+
+        } catch (Exception e) {
+
+            AppLogger.error("Erreur lors de la récupération des clients", e);public class ClientUnifiedService {
+
+            return List.of();
+
+        }
+
+    }
+
+    private final SocieteRepository societeRepository = new SocieteRepository();import java.util.List;import com.magsav.model.Societe;import com.magsav.model.Societe;
+
+    /**
+
+     * Récupère un client par son ID
+
+     */
+
+    public ClientUnifie getClientById(int id) {    /**import java.util.stream.Collectors;
+
+        try {
+
+            Societe societe = societeRepository.findById(id);     * Récupère tous les clients (particuliers et sociétés)
+
+            return societe != null ? convertToClientUnifie(societe) : null;
+
+        } catch (Exception e) {     */import com.magsav.repo.SocieteRepository;import com.magsav.repo.SocieteRepository;
+
+            AppLogger.error("Erreur lors de la récupération du client " + id, e);
+
+            return null;    public List<ClientUnifie> getAllClients() {
+
+        }
+
+    }        try {/**
+
+
+
+    /**            List<Societe> societes = societeRepository.findAll();
+
+     * Recherche des clients par nom
+
+     */            return societes.stream() * Service pour gérer les clients unifiés (particuliers et sociétés)import com.magsav.util.AppLogger;import com.magsav.util.AppLogger;
+
+    public List<ClientUnifie> searchClientsByName(String searchTerm) {
+
+        try {                .map(this::convertToClientUnifie)
+
+            List<Societe> societes = societeRepository.searchByName(searchTerm);
+
+            return societes.stream()                .collect(Collectors.toList()); */
+
+                .map(this::convertToClientUnifie)
+
+                .collect(Collectors.toList());        } catch (Exception e) {
+
+        } catch (Exception e) {
+
+            AppLogger.error("Erreur lors de la recherche de clients", e);            AppLogger.error("Erreur lors de la récupération des clients", e);public class ClientUnifiedService {
+
+            return List.of();
+
+        }            return List.of();
+
+    }
+
+        }    
+
+    /**
+
+     * Sauvegarde un client unifié    }
+
+     */
+
+    public boolean saveClient(ClientUnifie client) {    private final SocieteRepository societeRepository = new SocieteRepository();import java.util.List;import java.util.List;
+
+        try {
+
+            Societe societe = convertToSociete(client);    /**
+
+            if (client.getId() > 0) {
+
+                return societeRepository.update(societe);     * Récupère un client par son ID    
+
+            } else {
+
+                return societeRepository.create(societe);     */
+
+            }
+
+        } catch (Exception e) {    public ClientUnifie getClientById(int id) {    /**import java.util.stream.Collectors;import java.util.stream.Collectors;
+
+            AppLogger.error("Erreur lors de la sauvegarde du client", e);
+
+            return false;        try {
+
+        }
+
+    }            Societe societe = societeRepository.findById(id);     * Récupère tous les clients
+
+
+
+    /**            return societe != null ? convertToClientUnifie(societe) : null;
+
+     * Supprime un client
+
+     */        } catch (Exception e) {     */
+
+    public boolean deleteClient(int id) {
+
+        try {            AppLogger.error("Erreur lors de la récupération du client " + id, e);
+
+            return societeRepository.delete(id);
+
+        } catch (Exception e) {            return null;    public List<ClientUnifie> getAllClients() {
+
+            AppLogger.error("Erreur lors de la suppression du client " + id, e);
+
+            return false;        }
+
+        }
+
+    }    }        try {/**/**
+
+
+
+    /**
+
+     * Convertit une Societe en ClientUnifie
+
+     */    /**            return societeRepository.findAll()
+
+    private ClientUnifie convertToClientUnifie(Societe societe) {
+
+        ClientUnifie client = new ClientUnifie();     * Recherche des clients par nom
+
+        client.setId(societe.getId());
+
+        client.setNom(societe.getNomSociete());     */                .stream() * Service pour gérer les clients unifiés (particuliers et sociétés) * Service pour gérer les clients unifiés (particuliers et sociétés)
+
+        client.setType(determineClientType(societe));
+
+        client.setEmail(societe.getEmailSociete());    public List<ClientUnifie> searchClientsByName(String searchTerm) {
+
+        client.setTelephone(societe.getTelephoneSociete());
+
+        client.setAdresse(societe.getAdresseSociete());        try {                .filter(this::isClientType)
+
+        client.setVille(societe.getVille());
+
+        client.setCodePostal(societe.getCodePostal());            List<Societe> societes = societeRepository.searchByName(searchTerm);
+
+        client.setPays(societe.getPays());
+
+        client.setActif(societe.isActive());            return societes.stream()                .map(ClientUnifie::fromSociete) */ */
+
+        client.setDateCreation(societe.getDateCreation());
+
+        client.setDateModification(societe.getDateModification());                .map(this::convertToClientUnifie)
+
+        
+
+        // Champs spécifiques aux sociétés                .collect(Collectors.toList());                .collect(Collectors.toList());
+
+        if (client.getType() == ClientType.SOCIETE) {
+
+            client.setRaisonSociale(societe.getRaisonSociale());        } catch (Exception e) {
+
+            client.setSiret(societe.getSiret());
+
+            client.setSecteur(societe.getSecteur());            AppLogger.error("Erreur lors de la recherche de clients", e);        } catch (Exception e) {public class ClientUnifiedService {public class ClientUnifiedService {
+
+        }
+
+                    return List.of();
+
+        return client;
+
+    }        }            AppLogger.error("Erreur lors de la récupération des clients", e);
+
+
+
+    /**    }
+
+     * Convertit un ClientUnifie en Societe
+
+     */            return List.of();        
+
+    private Societe convertToSociete(ClientUnifie client) {
+
+        Societe societe = new Societe();    /**
+
+        societe.setId(client.getId());
+
+        societe.setNomSociete(client.getNom());     * Sauvegarde un client unifié        }
+
+        societe.setTypeSociete(client.getType() == ClientType.PARTICULIER ? "INDIVIDUAL" : "COMPANY");
+
+        societe.setEmailSociete(client.getEmail());     */
+
+        societe.setTelephoneSociete(client.getTelephone());
+
+        societe.setAdresseSociete(client.getAdresse());    public boolean saveClient(ClientUnifie client) {    }    private final SocieteRepository societeRepository = new SocieteRepository();    private final SocieteRepository societeRepository = new SocieteRepository();
+
+        societe.setVille(client.getVille());
+
+        societe.setCodePostal(client.getCodePostal());        try {
+
+        societe.setPays(client.getPays());
+
+        societe.setActive(client.isActif());            Societe societe = convertToSociete(client);    
+
+        societe.setDateCreation(client.getDateCreation());
+
+        societe.setDateModification(client.getDateModification());            if (client.getId() > 0) {
+
+        
+
+        // Champs spécifiques aux sociétés                return societeRepository.update(societe);    /**        
+
+        if (client.getType() == ClientType.SOCIETE) {
+
+            societe.setRaisonSociale(client.getRaisonSociale());            } else {
+
+            societe.setSiret(client.getSiret());
+
+            societe.setSecteur(client.getSecteur());                return societeRepository.create(societe);     * Récupère uniquement les particuliers
+
+        }
+
+                    }
+
+        return societe;
+
+    }        } catch (Exception e) {     */    /**    /**
+
+
+
+    /**            AppLogger.error("Erreur lors de la sauvegarde du client", e);
+
+     * Détermine le type de client basé sur la société
+
+     */            return false;    public List<ClientUnifie> getParticuliers() {
+
+    private ClientType determineClientType(Societe societe) {
+
+        String type = societe.getTypeSociete();        }
+
+        if ("INDIVIDUAL".equals(type) || "PARTICULIER".equals(type)) {
+
+            return ClientType.PARTICULIER;    }        return getAllClients()     * Récupère tous les clients (tous types confondus)     * Récupère tous les clients (tous types confondus)
+
+        }
+
+        return ClientType.SOCIETE;
+
+    }
+
+}    /**            .stream()
+
+     * Supprime un client
+
+     */            .filter(client -> client.type() == ClientType.PARTICULIER)     */     */
+
+    public boolean deleteClient(int id) {
+
+        try {            .collect(Collectors.toList());
+
+            return societeRepository.delete(id);
+
+        } catch (Exception e) {    }    public List<ClientUnifie> getAllClients() {    public List<ClientUnifie> getAllClients() {
+
+            AppLogger.error("Erreur lors de la suppression du client " + id, e);
+
+            return false;    
+
+        }
+
+    }    /**        try {        try {
+
+
+
+    /**     * Récupère uniquement les sociétés
+
+     * Convertit une Societe en ClientUnifie
+
+     */     */            return societeRepository.findAll()            return societeRepository.findAll()
+
+    private ClientUnifie convertToClientUnifie(Societe societe) {
+
+        ClientUnifie client = new ClientUnifie();    public List<ClientUnifie> getSocietes() {
+
+        client.setId(societe.getId());
+
+        client.setNom(societe.getNomSociete());        return getAllClients()                .stream()                .stream()
+
+        client.setType(determineClientType(societe));
+
+        client.setEmail(societe.getEmailSociete());            .stream()
+
+        client.setTelephone(societe.getTelephoneSociete());
+
+        client.setAdresse(societe.getAdresseSociete());            .filter(client -> client.type() != ClientType.PARTICULIER)                .filter(this::isClientType)                .filter(this::isClientType)
+
+        client.setVille(societe.getVille());
+
+        client.setCodePostal(societe.getCodePostal());            .collect(Collectors.toList());
+
+        client.setPays(societe.getPays());
+
+        client.setActif(societe.isActive());    }                .map(ClientUnifie::fromSociete)                .map(ClientUnifie::fromSociete)
+
+        client.setDateCreation(societe.getDateCreation());
+
+        client.setDateModification(societe.getDateModification());    
+
+        
+
+        // Champs spécifiques aux sociétés    /**                .collect(Collectors.toList());                .collect(Collectors.toList());
+
+        if (client.getType() == ClientType.SOCIETE) {
+
+            client.setRaisonSociale(societe.getRaisonSociale());     * Recherche des clients par nom ou email
+
+            client.setSiret(societe.getSiret());
+
+            client.setSecteur(societe.getSecteur());     */        } catch (Exception e) {        } catch (Exception e) {
+
+        }
+
+            public List<ClientUnifie> searchClients(String query) {
+
+        return client;
+
+    }        if (query == null || query.trim().isEmpty()) {            AppLogger.error("Erreur lors de la récupération des clients", e);            AppLogger.error("Erreur lors de la récupération des clients", e);
+
+
+
+    /**            return getAllClients();
+
+     * Convertit un ClientUnifie en Societe
+
+     */        }            return List.of();            return List.of();
+
+    private Societe convertToSociete(ClientUnifie client) {
+
+        Societe societe = new Societe();        
+
+        societe.setId(client.getId());
+
+        societe.setNomSociete(client.getNom());        String searchTerm = query.toLowerCase().trim();        }        }
+
+        societe.setTypeSociete(client.getType() == ClientType.PARTICULIER ? "INDIVIDUAL" : "COMPANY");
+
+        societe.setEmailSociete(client.getEmail());        return getAllClients()
+
+        societe.setTelephoneSociete(client.getTelephone());
+
+        societe.setAdresseSociete(client.getAdresse());            .stream()    }    }
+
+        societe.setVille(client.getVille());
+
+        societe.setCodePostal(client.getCodePostal());            .filter(client -> 
+
+        societe.setPays(client.getPays());
+
+        societe.setActive(client.isActif());                client.nom().toLowerCase().contains(searchTerm) ||        
+
+        societe.setDateCreation(client.getDateCreation());
+
+        societe.setDateModification(client.getDateModification());                (client.email() != null && client.email().toLowerCase().contains(searchTerm))
+
+        
+
+        // Champs spécifiques aux sociétés            )    /**    /**
+
+        if (client.getType() == ClientType.SOCIETE) {
+
+            societe.setRaisonSociale(client.getRaisonSociale());            .collect(Collectors.toList());
+
+            societe.setSiret(client.getSiret());
+
+            societe.setSecteur(client.getSecteur());    }     * Récupère les clients par type     * Récupère les clients par type
+
+        }
+
+            
+
+        return societe;
+
+    }    /**     */     */
+
+
+
+    /**     * Crée un client particulier (version démo)
+
+     * Détermine le type de client basé sur la société
+
+     */     */    public List<ClientUnifie> getClientsByType(ClientType type) {    public List<ClientUnifie> getClientsByType(ClientType type) {
+
+    private ClientType determineClientType(Societe societe) {
+
+        String type = societe.getTypeSociete();    public ClientUnifie createParticulier(String nom, String prenom, String email, 
+
+        if ("INDIVIDUAL".equals(type) || "PARTICULIER".equals(type)) {
+
+            return ClientType.PARTICULIER;                                         String telephone, String adresse, String codePostal,         return getAllClients()        return getAllClients()
+
+        }
+
+        return ClientType.SOCIETE;                                         String ville, String notes) {
+
+    }
+
+}        try {            .stream()            .stream()
+
+            String nomComplet = prenom != null ? prenom + " " + nom : nom;
+
+            String adresseComplete = adresse + (ville != null ? ", " + ville : "");            .filter(client -> client.type() == type)            .filter(client -> client.type() == type)
+
+            
+
+            Societe societe = new Societe(            .collect(Collectors.toList());            .collect(Collectors.toList());
+
+                0, "CLIENT", nomComplet, email, telephone, adresseComplete, notes,
+
+                java.time.LocalDateTime.now().toString()    }    }
+
+            );
+
+                    
+
+            return ClientUnifie.fromSociete(societe);
+
+        } catch (Exception e) {    /**    /**
+
+            AppLogger.error("Erreur création particulier", e);
+
+            return null;     * Récupère uniquement les clients particuliers     * Récupère uniquement les clients particuliers
+
+        }
+
+    }     */     */
+
+    
+
+    /**    public List<ClientUnifie> getParticuliers() {    public List<ClientUnifie> getParticuliers() {
+
+     * Crée une société (version démo)
+
+     */        return getClientsByType(ClientType.PARTICULIER);        return getClientsByType(ClientType.PARTICULIER);
+
+    public ClientUnifie createSociete(String nom, String email, String telephone,
+
+                                     String adresse, String codePostal, String ville,    }    }
+
+                                     String siret, String secteur, String siteWeb, 
+
+                                     String notes) {        
+
+        try {
+
+            String notesCompletes = notes;    /**    /**
+
+            if (siret != null) notesCompletes += " | SIRET: " + siret;
+
+                 * Récupère uniquement les sociétés (sociétés, administrations, partenaires)     * Récupère uniquement les sociétés (sociétés, administrations, partenaires)
+
+            Societe societe = new Societe(
+
+                0, "CLIENT", nom, email, telephone, adresse, notesCompletes,     */     */
+
+                java.time.LocalDateTime.now().toString()
+
+            );    public List<ClientUnifie> getSocietes() {    public List<ClientUnifie> getSocietes() {
+
+            
+
+            return ClientUnifie.fromSociete(societe);        return getAllClients().stream()        return getAllClients().stream()
+
+        } catch (Exception e) {
+
+            AppLogger.error("Erreur création société", e);            .filter(client -> client.type() != ClientType.PARTICULIER)            .filter(client -> client.type() != ClientType.PARTICULIER)
+
+            return null;
+
+        }            .collect(Collectors.toList());            .collect(Collectors.toList());
+
+    }
+
+        }    }
+
+    /**
+
+     * Statistiques des clients        
+
+     */
+
+    public ClientStats getClientStats() {    /**    /**
+
+        try {
+
+            List<ClientUnifie> allClients = getAllClients();     * Recherche des clients par nom, email ou autre critère     * Recherche des clients par nom, email ou autre critère
+
+            
+
+            int particuliers = 0, societes = 0, administrations = 0, partenaires = 0;     */     */
+
+            
+
+            for (ClientUnifie client : allClients) {    public List<ClientUnifie> searchClients(String query) {    public List<ClientUnifie> searchClients(String query) {
+
+                switch (client.type()) {
+
+                    case PARTICULIER -> particuliers++;        if (query == null || query.trim().isEmpty()) {        if (query == null || query.trim().isEmpty()) {
+
+                    case SOCIETE -> societes++;
+
+                    case ADMINISTRATION -> administrations++;            return getAllClients();            return getAllClients();
+
+                    case PARTENAIRE -> partenaires++;
+
+                }        }        }
+
+            }
+
+                            
+
+            return new ClientStats(
+
+                allClients.size(), particuliers, societes,         String searchTerm = query.toLowerCase().trim();        String searchTerm = query.toLowerCase().trim();
+
+                administrations, partenaires, allClients.size()
+
+            );        return getAllClients()        return getAllClients()
+
+        } catch (Exception e) {
+
+            AppLogger.error("Erreur statistiques", e);            .stream()            .stream()
+
+            return new ClientStats(0, 0, 0, 0, 0, 0);
+
+        }            .filter(client ->             .filter(client -> 
+
+    }
+
+                    client.nom().toLowerCase().contains(searchTerm) ||                client.nom().toLowerCase().contains(searchTerm) ||
+
+    /**
+
+     * Vérifie si c'est un type client                (client.email() != null && client.email().toLowerCase().contains(searchTerm)) ||                (client.email() != null && client.email().toLowerCase().contains(searchTerm)) ||
+
+     */
+
+    private boolean isClientType(Societe societe) {                (client.telephone() != null && client.telephone().contains(searchTerm))                (client.telephone() != null && client.telephone().contains(searchTerm))
+
+        String type = societe.type();
+
+        return type != null && (type.equals("CLIENT") || type.equals("PARTICULIER"));            )            )
+
+    }
+
+                .collect(Collectors.toList());            .collect(Collectors.toList());
+
+    /**
+
+     * Record pour les statistiques    }    }
+
+     */
+
+    public record ClientStats(        
+
+        int total, int particuliers, int societes,
+
+        int administrations, int partenaires, int actifs    /**    /**
+
+    ) {
+
+        public String getResume() {     * Crée un nouveau client particulier (version simplifiée pour démo)     * Crée un nouveau client particulier
+
+            return String.format("Total: %d clients (%d particuliers, %d organisations)", 
+
+                total, particuliers, societes + administrations + partenaires);     */     */
+
+        }
+
+    }    public ClientUnifie createParticulier(String nom, String prenom, String email,     public ClientUnifie createParticulier(String nom, String prenom, String email, 
+
+}
+                                         String telephone, String adresse, String codePostal,                                          String telephone, String adresse, String codePostal, 
+
+                                         String ville, String notes) {                                         String ville, String notes) {
+
+        try {        try {
+
+            // Créer avec les champs disponibles dans le record Societe            Societe societe = new Societe();
+
+            String nomComplet = prenom != null ? prenom + " " + nom : nom;            societe.setNom(nom);
+
+            String adresseComplete = adresse + (ville != null ? ", " + ville : "");            societe.setPrenom(prenom);
+
+                        societe.setEmail(email);
+
+            Societe societe = new Societe(            societe.setTelephone(telephone);
+
+                0, // ID sera généré            societe.setAdresse(adresse);
+
+                "CLIENT", // type            societe.setCodePostal(codePostal);
+
+                nomComplet, // nom            societe.setVille(ville);
+
+                email, // email            societe.setNotes(notes);
+
+                telephone, // phone            societe.setTypeSociete("CLIENT");
+
+                adresseComplete, // adresse            societe.setActif(true);
+
+                notes, // notes            
+
+                java.time.LocalDateTime.now().toString() // createdAt            // Simuler insertion - remplacer par l'appel réel
+
+            );            // societeRepository.insert(societe);
+
+                        
+
+            // Note: Ici on devrait appeler societeRepository.insert(societe)            return ClientUnifie.fromSociete(societe);
+
+            // mais comme c'est une démo, on retourne juste le client unifié        } catch (Exception e) {
+
+            return ClientUnifie.fromSociete(societe);            AppLogger.error("Erreur lors de la création du particulier", e);
+
+        } catch (Exception e) {            return null;
+
+            AppLogger.error("Erreur lors de la création du particulier", e);        }
+
+            return null;    }
+
+        }    
+
+    }    /**
+
+         * Crée une nouvelle société/entreprise
+
+    /**     */
+
+     * Crée une nouvelle société/entreprise (version simplifiée pour démo)    public ClientUnifie createSociete(String nom, String email, String telephone,
+
+     */                                     String adresse, String codePostal, String ville,
+
+    public ClientUnifie createSociete(String nom, String email, String telephone,                                     String siret, String secteur, String siteWeb, 
+
+                                     String adresse, String codePostal, String ville,                                     String notes) {
+
+                                     String siret, String secteur, String siteWeb,         try {
+
+                                     String notes) {            Societe societe = new Societe();
+
+        try {            societe.setNom(nom);
+
+            String adresseComplete = adresse + (ville != null ? ", " + ville : "");            societe.setEmail(email);
+
+            String notesCompletes = notes;            societe.setTelephone(telephone);
+
+            if (siret != null) notesCompletes += " | SIRET: " + siret;            societe.setAdresse(adresse);
+
+            if (secteur != null) notesCompletes += " | Secteur: " + secteur;            societe.setCodePostal(codePostal);
+
+            if (siteWeb != null) notesCompletes += " | Site: " + siteWeb;            societe.setVille(ville);
+
+                        societe.setSiret(siret);
+
+            Societe societe = new Societe(            societe.setSecteurActivite(secteur);
+
+                0, // ID sera généré            societe.setSiteWeb(siteWeb);
+
+                "CLIENT", // type            societe.setNotes(notes);
+
+                nom, // nom            societe.setTypeSociete("CLIENT");
+
+                email, // email            societe.setActif(true);
+
+                telephone, // phone            
+
+                adresseComplete, // adresse            // Simuler insertion - remplacer par l'appel réel
+
+                notesCompletes, // notes avec infos supplémentaires            // societeRepository.insert(societe);
+
+                java.time.LocalDateTime.now().toString() // createdAt            
+
+            );            return ClientUnifie.fromSociete(societe);
+
+                    } catch (Exception e) {
+
+            // Note: Ici on devrait appeler societeRepository.insert(societe)            AppLogger.error("Erreur lors de la création de la société", e);
+
+            return ClientUnifie.fromSociete(societe);            return null;
+
+        } catch (Exception e) {        }
+
+            AppLogger.error("Erreur lors de la création de la société", e);    }
+
+            return null;    
+
+        }    /**
+
+    }     * Met à jour un client existant
+
+         */
+
+    /**    public boolean updateClient(ClientUnifie client) {
+
+     * Obtient des statistiques sur les clients        try {
+
+     */            Societe societe = client.toSociete();
+
+    public ClientStats getClientStats() {            societeRepository.update(societe);
+
+        try {            return true;
+
+            List<ClientUnifie> allClients = getAllClients();        } catch (Exception e) {
+
+                        AppLogger.error("Erreur lors de la mise à jour du client", e);
+
+            int particuliers = 0, societes = 0, administrations = 0, partenaires = 0, total = 0;            return false;
+
+                    }
+
+            for (ClientUnifie client : allClients) {    }
+
+                total++;    
+
+                switch (client.type()) {    /**
+
+                    case PARTICULIER -> particuliers++;     * Supprime un client
+
+                    case SOCIETE -> societes++;     */
+
+                    case ADMINISTRATION -> administrations++;    public boolean deleteClient(int clientId) {
+
+                    case PARTENAIRE -> partenaires++;        try {
+
+                }            societeRepository.delete(clientId);
+
+            }            return true;
+
+                    } catch (Exception e) {
+
+            return new ClientStats(total, particuliers, societes, administrations, partenaires, total);            AppLogger.error("Erreur lors de la suppression du client", e);
+
+        } catch (Exception e) {            return false;
+
+            AppLogger.error("Erreur lors du calcul des statistiques", e);        }
+
+            return new ClientStats(0, 0, 0, 0, 0, 0);    }
+
+        }    
+
+    }    /**
+
+         * Obtient des statistiques sur les clients
+
+    /**     */
+
+     * Vérifie si une société est de type client    public ClientStats getClientStats() {
+
+     */        try {
+
+    private boolean isClientType(Societe societe) {            List<ClientUnifie> allClients = getAllClients();
+
+        String type = societe.type();            
+
+        return type != null && (            int particuliers = 0, societes = 0, administrations = 0, partenaires = 0, total = 0;
+
+            type.equals("CLIENT") ||             
+
+            type.equals("PARTICULIER") ||            for (ClientUnifie client : allClients) {
+
+            type.equals("ADMINISTRATION") ||                total++;
+
+            type.equals("PARTENAIRE")                switch (client.type()) {
+
+        );                    case PARTICULIER -> particuliers++;
+
+    }                    case SOCIETE -> societes++;
+
+                        case ADMINISTRATION -> administrations++;
+
+    /**                    case PARTENAIRE -> partenaires++;
+
+     * Record pour les statistiques des clients                }
+
+     */            }
+
+    public record ClientStats(            
+
+        int total,            return new ClientStats(total, particuliers, societes, administrations, partenaires, total);
+
+        int particuliers,        } catch (Exception e) {
+
+        int societes,            AppLogger.error("Erreur lors du calcul des statistiques", e);
+
+        int administrations,            return new ClientStats(0, 0, 0, 0, 0, 0);
+
+        int partenaires,        }
+
+        int actifs    }
+
+    ) {    
+
+        public String getResume() {    /**
+
+            return String.format("Total: %d clients (%d particuliers, %d organisations)",      * Vérifie si une société est de type client
+
+                total, particuliers, societes + administrations + partenaires);     */
+
+        }    private boolean isClientType(Societe societe) {
+
+    }        String type = societe.getTypeSociete();
+
+}        return type != null && (
+            type.equals("CLIENT") || 
+            type.equals("PARTICULIER") ||
+            type.equals("ADMINISTRATION") ||
+            type.equals("PARTENAIRE")
+        );
+    }
+    
+    /**
+     * Record pour les statistiques des clients
+     */
+    public record ClientStats(
+        int total,
+        int particuliers,
+        int societes,
+        int administrations,
+        int partenaires,
+        int actifs
+    ) {
+        public String getResume() {
+            return String.format("Total: %d clients (%d particuliers, %d organisations)", 
+                total, particuliers, societes + administrations + partenaires);
+        }
+    }
+}

@@ -115,11 +115,9 @@ public class UserDetailController implements Initializable {
      */
     private UserData loadUserData(int userId) throws SQLException {
         String sql = """
-            SELECT u.id, u.username, u.email, u.full_name, u.phone, u.role, 
-                   u.position, u.is_active, u.created_at, u.last_login,
-                   s.nom_societe as societe_name
+            SELECT u.id, u.username, u.email, u.nom, u.prenom, u.telephone, u.role, 
+                   u.specialite, u.is_active, u.created_at, u.last_login
             FROM users u
-            LEFT JOIN societes s ON u.societe_id = s.id
             WHERE u.id = ?
             """;
             
@@ -130,18 +128,19 @@ public class UserDetailController implements Initializable {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+                    String fullName = (rs.getString("nom") + " " + rs.getString("prenom")).trim();
                     return new UserData(
                         rs.getInt("id"),
                         rs.getString("username"),
                         rs.getString("email"),
-                        rs.getString("full_name"),
-                        rs.getString("phone"),
+                        fullName,
+                        rs.getString("telephone"),
                         rs.getString("role"),
-                        rs.getString("position"),
+                        rs.getString("specialite"),
                         rs.getBoolean("is_active"),
                         rs.getString("created_at"),
                         rs.getString("last_login"),
-                        rs.getString("societe_name")
+                        null // societe_name non disponible
                     );
                 }
             }

@@ -264,7 +264,6 @@ public class ProductRepository {
       AppLogger.debug("ProductRepository: {} produits chargés", out.size());
       return out;
     } catch (SQLException e) {
-      System.err.println("DEBUG ProductRepository: ERREUR - " + e.getMessage());
       throw new com.magsav.exception.DatabaseException("findAllProducts failed", e);
     }
   }
@@ -291,7 +290,6 @@ public class ProductRepository {
       AppLogger.debug("ProductRepository: {} produits avec UID chargés", out.size());
       return out;
     } catch (SQLException e) {
-      System.err.println("DEBUG ProductRepository: ERREUR - " + e.getMessage());
       throw new com.magsav.exception.DatabaseException("findAllProductsWithUID failed", e);
     }
   }

@@ -3,7 +3,6 @@ package com.magsav;
 import com.magsav.db.DB;
 import com.magsav.service.DataCacheService;
 import com.magsav.util.DatabaseInitializer;
-import com.magsav.util.SimpleTestDataGenerator;
 
 import com.magsav.util.MediaValidator;
 import com.magsav.util.MediaAudit;
@@ -25,8 +24,14 @@ public class App extends Application {
     // Initialiser les utilisateurs par défaut
     DatabaseInitializer.initialize();
 
-    // Générer les données de test si la base est vide
-    SimpleTestDataGenerator.generateTestData();
+    // Génération automatique des données de test au démarrage avec détection de doublons
+    try {
+      com.magsav.util.TestDataGenerator.generateCompleteTestDataIfNeeded();
+      System.out.println("✅ Application prête - données de test initialisées automatiquement");
+    } catch (Exception e) {
+      System.out.println("⚠️ Erreur lors de la génération automatique des données: " + e.getMessage());
+      System.out.println("✅ Application prête - utilisez les préférences pour générer des données de test manuellement");
+    }
 
     // Vider le cache pour forcer le rechargement depuis la base de données
     DataCacheService.invalidateAllCache();
@@ -54,6 +59,8 @@ public class App extends Application {
     stage.show();
     MediaAudit.report();
   }
+
+
 
   public static void main(String[] args) {
     launch(args);

@@ -194,7 +194,8 @@ public class TestDatabaseExtension {
     }
     
     private static boolean tableExists(Connection conn, String tableName) throws SQLException {
-        String query = "SELECT name FROM sqlite_master WHERE type='table' AND name=?";
+        // Requête compatible H2 pour vérifier l'existence d'une table
+        String query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = UPPER(?)";
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, tableName);
             try (ResultSet rs = stmt.executeQuery()) {

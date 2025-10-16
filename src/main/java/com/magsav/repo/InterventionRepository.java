@@ -13,7 +13,7 @@ public class InterventionRepository {
                    "COALESCE(i.description_panne, i.description_defaut, '') as panne, " +
                    "i.date_entree, i.date_sortie " +
                    "FROM interventions i " +
-                   "JOIN produits p ON i.produit_id = p.id " +
+                   "LEFT JOIN produits p ON i.produit_id = p.id " +
                    "WHERE i.id = ?";
       try (PreparedStatement stmt = conn.prepareStatement(sql)) {
         stmt.setLong(1, id);
@@ -38,7 +38,7 @@ public class InterventionRepository {
 
   public long insert(long productId, String serialNumber, String clientNote, String defectDescription) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "INSERT INTO interventions (produit_id, numero_serie_intervention, note_client, description_panne, date_entree) VALUES (?, ?, ?, ?, datetime('now'))";
+      String sql = "INSERT INTO interventions (produit_id, numero_serie_intervention, note_client, description_panne, date_entree) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
       try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
         stmt.setLong(1, productId);
         stmt.setString(2, serialNumber);
@@ -64,7 +64,7 @@ public class InterventionRepository {
                    "COALESCE(i.description_panne, '') as panne, " +
                    "i.date_entree, i.date_sortie " +
                    "FROM interventions i " +
-                   "JOIN produits p ON i.produit_id = p.id " +
+                   "LEFT JOIN produits p ON i.produit_id = p.id " +
                    "WHERE i.produit_id = ? " +
                    "ORDER BY i.date_entree DESC";
       try (PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -91,11 +91,13 @@ public class InterventionRepository {
   public List<InterventionRow> findAllWithProductName() {
     List<InterventionRow> interventions = new ArrayList<>();
     try (Connection conn = DB.getConnection()) {
+      // Utilisons LEFT JOIN pour récupérer les interventions même sans produit associé
+      // et la bonne colonne description_panne au lieu de panne
       String sql = "SELECT i.id, p.nom_produit as produit_nom, i.statut_intervention, " +
                    "COALESCE(i.description_panne, '') as panne, " +
                    "i.date_entree, i.date_sortie " +
                    "FROM interventions i " +
-                   "JOIN produits p ON i.produit_id = p.id " +
+                   "LEFT JOIN produits p ON i.produit_id = p.id " +
                    "ORDER BY i.date_entree DESC";
       try (PreparedStatement stmt = conn.prepareStatement(sql)) {
         try (ResultSet rs = stmt.executeQuery()) {
@@ -119,7 +121,7 @@ public class InterventionRepository {
 
   public boolean close(long interventionId) {
     try (Connection conn = DB.getConnection()) {
-      String sql = "UPDATE interventions SET statut_intervention = 'Terminée', date_sortie = datetime('now') WHERE id = ?";
+      String sql = "UPDATE interventions SET statut_intervention = 'Terminée', date_sortie = CURRENT_TIMESTAMP WHERE id = ?";
       try (PreparedStatement stmt = conn.prepareStatement(sql)) {
         stmt.setLong(1, interventionId);
         int rowsAffected = stmt.executeUpdate();
@@ -174,11 +176,11 @@ public class InterventionRepository {
     List<InterventionRow> interventions = new ArrayList<>();
     try (Connection conn = DB.getConnection()) {
       String sql = "SELECT i.id, p.nom_produit as produit_nom, i.statut_intervention, " +
-                   "COALESCE(i.panne, i.defect_description, '') as panne, " +
+                   "COALESCE(i.description_panne, i.description_defaut, '') as panne, " +
                    "i.date_entree, i.date_sortie " +
                    "FROM interventions i " +
                    "LEFT JOIN produits p ON i.produit_id = p.id " +
-                   "WHERE i.owner_societe_id = ? " +
+                   "WHERE i.proprietaire_societe_id = ? " +
                    "ORDER BY i.date_entree DESC";
       
       try (PreparedStatement stmt = conn.prepareStatement(sql)) {

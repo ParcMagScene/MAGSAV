@@ -783,12 +783,10 @@ public class PreferencesController implements Initializable {
         stage.close();
     }
     
+    // Méthode dépréciée - utiliser AlertUtils à la place
+    @Deprecated
     private void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        com.magsav.util.AlertUtils.showAlert(type, title, message);
     }
     
     // ==================== ACTIONS ONGLET MAINTENANCE MÉDIAS ====================
@@ -854,13 +852,13 @@ public class PreferencesController implements Initializable {
     @FXML
     private void onAddCategoryInTab() {
         AppLogger.info("preferences", "Ajout d'une catégorie depuis l'onglet");
-        showAlert(Alert.AlertType.INFORMATION, "Non implémenté", "L'ajout de catégorie sera implémenté prochainement.");
+        com.magsav.util.ErrorHandler.handleNotImplemented("ajout de catégorie");
     }
     
     @FXML
     private void onAddSubcategoryInTab() {
         AppLogger.info("preferences", "Ajout d'une sous-catégorie depuis l'onglet");
-        showAlert(Alert.AlertType.INFORMATION, "Non implémenté", "L'ajout de sous-catégorie sera implémenté prochainement.");
+        com.magsav.util.ErrorHandler.handleNotImplemented("ajout de sous-catégorie");
     }
     
     @FXML
@@ -868,7 +866,7 @@ public class PreferencesController implements Initializable {
         CategoryRow selected = tableCategoriesInTab.getSelectionModel().getSelectedItem();
         if (selected != null) {
             AppLogger.info("preferences", "Modification de la catégorie: " + selected.name());
-            showAlert(Alert.AlertType.INFORMATION, "Non implémenté", "La modification de catégorie sera implémentée prochainement.");
+            com.magsav.util.ErrorHandler.handleNotImplemented("modification de catégorie");
         }
     }
     
@@ -1426,7 +1424,7 @@ public class PreferencesController implements Initializable {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Sélectionner le fichier de base de données");
         fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Fichiers SQLite", "*.db", "*.sqlite", "*.sqlite3")
+            new FileChooser.ExtensionFilter("Fichiers H2", "*.mv.db", "*.h2.db")
         );
         
         File selectedFile = fileChooser.showOpenDialog(txtDatabasePath.getScene().getWindow());
@@ -1645,14 +1643,12 @@ public class PreferencesController implements Initializable {
     
     /**
      * Affiche une alerte à l'utilisateur
+     * @deprecated Utiliser AlertUtils à la place
      */
+    @Deprecated
     private void showAlert(String title, String message) {
         Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle(title);
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            alert.showAndWait();
+            com.magsav.util.AlertUtils.showInfo(title, message);
         });
     }
     

@@ -9,7 +9,7 @@
 
   
   <center>
-    <TabPane fx:id="preferencesTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane" style="-fx-padding: 10;">
+    <TabPane fx:id="preferencesTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="dark-tab-pane tab-pane-margins" style="-fx-padding: 10;">
       
       <!-- Section GÉNÉRAL -->
       <Tab text="⚙️ Général" closable="false">
@@ -62,90 +62,6 @@
                   <Spinner fx:id="spinnerNotificationDuration" min="1" max="30" initialValue="5" prefWidth="100"/>
                   <Label text="secondes"/>
                 </HBox>
-              </VBox>
-            </VBox>
-            
-          </VBox>
-        </ScrollPane>
-      </Tab>
-      
-      <!-- Section APPARENCE -->
-      <Tab text="🎨 Apparence" closable="false">
-        <ScrollPane fitToWidth="true" styleClass="dark-scroll-pane" style="-fx-background-color: transparent;">
-          <VBox spacing="25" styleClass="dark-content-container" style="-fx-padding: 20;">
-            
-            <!-- Section Apparence et Thèmes -->
-            <VBox spacing="15" styleClass="dark-section-card" style="-fx-padding: 20;">
-              <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="🎨" style="-fx-font-size: 16;"/>
-                <Label text="Apparence et Thèmes" styleClass="dark-section-title" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
-              </HBox>
-              
-              <Label text="Personnalisez l'interface de l'application selon vos préférences." 
-                     style="-fx-text-fill: #666; -fx-font-size: 12;" wrapText="true"/>
-              
-              <!-- Thème général -->
-              <HBox spacing="15" alignment="CENTER_LEFT">
-                <Label text="Thème actuel :" minWidth="120"/>
-                <ComboBox fx:id="themeSelector" prefWidth="200"/>
-              </HBox>
-              
-              <!-- Couleurs personnalisées -->
-              <VBox spacing="10">
-                <Label text="Couleurs personnalisées" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
-                
-                <GridPane hgap="15" vgap="10">
-                  <columnConstraints>
-                    <ColumnConstraints minWidth="120"/>
-                    <ColumnConstraints prefWidth="100"/>
-                    <ColumnConstraints hgrow="ALWAYS"/>
-                  </columnConstraints>
-                  
-                  <Label text="Couleur sidebar :" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                  <ColorPicker fx:id="sidebarColorPicker" prefWidth="100" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                  <Label fx:id="sidebarColorLabel" text="#1e3a5f" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
-                  
-                  <Label text="Fond principal :" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                  <ColorPicker fx:id="backgroundColorPicker" prefWidth="100" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                  <Label fx:id="backgroundColorLabel" text="#000000" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
-                  
-                  <Label text="Couleur onglets :" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                  <ColorPicker fx:id="tabColorPicker" prefWidth="100" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-                  <Label fx:id="tabColorLabel" text="#1a1a1a" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
-                  
-                  <Label text="Couleur accent :" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                  <ColorPicker fx:id="accentColorPicker" prefWidth="100" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-                  <Label fx:id="accentColorLabel" text="#4a90e2" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
-                  
-                  <Label text="Couleur texte :" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                  <ColorPicker fx:id="textColorPicker" prefWidth="100" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-                  <Label fx:id="textColorLabel" text="#ffffff" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
-                </GridPane>
-                
-                <!-- Boutons d'action apparence -->
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                  <Button fx:id="applyAppearanceButton" text="🎨 Appliquer" 
-                          style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
-                  <Button fx:id="resetAppearanceButton" text="🔄 Restaurer défaut" 
-                          style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
-                </HBox>
-              </VBox>
-              
-              <!-- Prévisualisation -->
-              <VBox spacing="10">
-                <Label text="Prévisualisation" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
-                <VBox fx:id="previewPane" spacing="10" maxWidth="400" style="-fx-border-color: #ccc; -fx-border-radius: 5; -fx-padding: 10;">
-                  <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: #1e3a5f; -fx-padding: 8; -fx-text-fill: white;">
-                    <Label text="🏠" style="-fx-text-fill: white;"/>
-                    <Label text="Dashboard" style="-fx-text-fill: white;"/>
-                  </HBox>
-                  <HBox spacing="10">
-                    <VBox spacing="5" HBox.hgrow="ALWAYS" style="-fx-background-color: #f5f5f5; -fx-padding: 8;">
-                      <Label text="Contenu principal" style="-fx-font-weight: bold;"/>
-                      <Label text="Texte d'exemple"/>
-                    </VBox>
-                  </HBox>
-                </VBox>
               </VBox>
             </VBox>
             

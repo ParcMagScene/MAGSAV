@@ -1,0 +1,311 @@
+/* =========================================
+   MAGSAV - CSS Unifié
+   Fichier unique regroupant tous les styles
+   ========================================= */
+
+/* === VARIABLES ET BASE === */
+.root {
+    -fx-base: #1e3a5f;
+    background: #1e3a5f;
+    -fx-background: #1e3a5f;
+    -fx-control-inner-background: #1a1a1a;
+    -fx-text-base-color: #ffffff;
+    -fx-text-fill: #ffffff;
+    -fx-accent: #4a90e2;
+    -fx-focus-color: transparent !important;
+    -fx-faint-focus-color: transparent !important;
+    -fx-selection-bar: #4a90e2;
+}
+
+.theme-dark {
+    -fx-base: #1e3a5f;
+    -fx-background: #1e3a5f;
+    -fx-control-inner-background: #1a1a1a;
+    -fx-text-base-color: #ffffff;
+    -fx-accent: #4a90e2;
+}
+
+/* === SUPPRESSION GLOBALE DES BORDURES === */
+*, .root, .content, .table-view, .tab-pane, .tab, .sidebar, .dashboard-card, .config-section, .theme-preview {
+    -fx-border-color: transparent !important;
+    -fx-border-width: 0 !important;
+    border-color: transparent !important;
+    border-width: 0 !important;
+    -fx-border-insets: 0 !important;
+    -fx-background-insets: 0 !important;
+    -fx-table-cell-border-color: transparent !important;
+    -fx-background-radius: 0 !important;
+    -fx-border-radius: 0 !important;
+    border-radius: 0 !important;
+}
+
+/* === SIDEBAR === */
+.sidebar {
+    background-color: #1e3a5f;
+    -fx-background-color: #1e3a5f;
+    padding: 0;
+    -fx-padding: 0;
+    -fx-spacing: 0;
+    min-width: 260px;
+    -fx-min-width: 260;
+}
+
+.sidebar-header {
+    background-color: #2c5282;
+    -fx-background-color: #2c5282;
+    padding: 20;
+    -fx-padding: 20;
+}
+
+.sidebar-nav {
+    -fx-background-color: #1e3a5f;
+    -fx-padding: 0;
+}
+
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 15 20;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+
+.nav-item:hover {
+    -fx-background-color: #2c5282;
+}
+
+.nav-item.active {
+    -fx-background-color: #4a90e2;
+    -fx-font-weight: bold;
+}
+
+/* === ONGLETS === */
+.tab-pane {
+    -fx-background-color: #1e3a5f;
+}
+
+.tab-pane .tab-header-area {
+    -fx-background-color: #1e3a5f;
+    -fx-padding: 0;
+    border-color: #333333;
+    -fx-border-color: #333333;
+    border-width: 0 0 1 0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tab-pane .tab {
+    background-color: #1e3a5f;
+    -fx-background-color: #1e3a5f;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 0;
+    border-color: #333333;
+    -fx-border-color: #333333;
+    border-width: 0 1 0 0;
+    -fx-border-width: 0 1 0 0;
+    padding: 12px 20px;
+    -fx-padding: 12 20;
+}
+
+.tab-pane .tab:selected {
+    background-color: #666666;
+    -fx-background-color: #666666;
+    -fx-text-fill: #ffffff;
+}
+
+.tab-pane .tab:hover {
+    background-color: #2c5282;
+    -fx-background-color: #2c5282;
+}
+
+.tab-pane .tab-content-area {
+    background-color: #1e3a5f;
+    -fx-background-color: #1e3a5f;
+    padding: 20;
+    -fx-padding: 20;
+}
+
+/* === COMPOSANTS RÉUTILISABLES === */
+.title-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.subtitle-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.status-success {
+    -fx-text-fill: #4CAF50;
+}
+
+.status-error {
+    -fx-text-fill: #dc3545;
+}
+
+.btn-primary {
+    -fx-background-color: #4a90e2;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-padding: 8 16;
+}
+
+.btn-secondary {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-padding: 8 16;
+}
+
+.btn-danger {
+    -fx-background-color: #dc3545;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-padding: 8 16;
+}
+
+/* === TABLEAUX === */
+.table-view {
+    -fx-background-color: #1a1a1a;
+    -fx-control-inner-background: #1a1a1a;
+    -fx-table-cell-border-color: transparent;
+}
+
+.table-view .column-header {
+    -fx-background-color: #2c5282;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: #1e3a5f;
+    -fx-text-fill: #ffffff;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #4a90e2;
+}
+
+.table-view .table-row-cell:hover {
+    -fx-background-color: #2c5282;
+}
+
+/* === PRÉFÉRENCES === */
+.preferences-container {
+    -fx-padding: 20;
+    -fx-background-color: #1a1a1a;
+}
+
+.preferences-section {
+    -fx-padding: 15;
+    -fx-background-color: #1e3a5f;
+    -fx-background-radius: 8px;
+    -fx-spacing: 10;
+}
+
+.config-section {
+    -fx-padding: 20;
+    -fx-background-color: #1e3a5f;
+    -fx-spacing: 15;
+}
+
+/* === CARTES DASHBOARD === */
+.dashboard-card {
+    -fx-background-color: #2c5282;
+    -fx-background-radius: 8px;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+
+.dashboard-card .title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.dashboard-card .content {
+    -fx-font-size: 14px;
+    -fx-text-fill: #ffffff;
+}
+
+/* === APERÇUS DE THÈME === */
+.theme-preview {
+    -fx-background-color: #1e3a5f;
+    -fx-background-radius: 5px;
+    -fx-padding: 10;
+    -fx-spacing: 5;
+    -fx-alignment: center;
+    -fx-cursor: hand;
+}
+
+.theme-preview:hover {
+    -fx-background-color: #2c5282;
+}
+
+.theme-preview.selected {
+    -fx-background-color: #4a90e2;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 2px;
+}
+
+/* === CHAMPS DE FORMULAIRE === */
+.text-field, .text-area, .combo-box {
+    -fx-background-color: #1a1a1a;
+    -fx-text-fill: #ffffff;
+    -fx-prompt-text-fill: #888888;
+}
+
+.text-field:focused, .text-area:focused, .combo-box:focused {
+    -fx-border-color: #4a90e2;
+    -fx-border-width: 1px;
+}
+
+/* === SCROLLBARS === */
+.scroll-bar {
+    -fx-background-color: #1a1a1a;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #4a90e2;
+    -fx-background-radius: 5px;
+}
+
+.scroll-bar .track {
+    -fx-background-color: #1a1a1a;
+}
+
+/* === MENUS CONTEXTUELS === */
+.context-menu {
+    -fx-background-color: #1e3a5f;
+    -fx-border-color: #333333;
+    -fx-border-width: 1px;
+}
+
+.menu-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+}
+
+.menu-item:focused {
+    -fx-background-color: #4a90e2;
+}
+
+/* === STYLES SPÉCIALISÉS === */
+.logo-container {
+    -fx-alignment: center;
+    -fx-padding: 10;
+}
+
+.company-name {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.status-bar {
+    -fx-background-color: #1a1a1a;
+    -fx-padding: 5 10;
+    -fx-text-fill: #ffffff;
+}

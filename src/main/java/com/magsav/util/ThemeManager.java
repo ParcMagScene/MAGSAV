@@ -8,7 +8,7 @@ import javafx.scene.control.Alert;
  */
 public final class ThemeManager {
     
-    private static final String DARK_THEME_CSS = "/css/borderless-dark.css";
+    private static final String DARK_THEME_CSS = "/css/simple-dark.css";
     
     private ThemeManager() {}
     

@@ -5,7 +5,41 @@ plugins {
 }
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
-application { mainClass = "com.magsav.App" }
+application {
+    mainClass = 'com.magsav.App'
+}
+
+// Tâche pour exécuter le debugger de base de données
+task runDatabaseDebugger(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.magsav.debug.DatabaseDebugger'
+}
+
+// Tâche pour diagnostiquer les interventions - résout les problèmes de classpath
+task diagnosticInterventions(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.magsav.debug.InterventionTableDiagnostic'
+    jvmArgs = ['-Djava.awt.headless=true']
+}
+
+// Tâche pour diagnostiquer les rôles utilisateurs
+task diagnosticUserRoles(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.magsav.debug.UserRoleDiagnostic'
+    jvmArgs = ['-Djava.awt.headless=true']
+}
+
+// Tâche pour tester le contrôleur des demandes
+task testDemandesController(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.magsav.debug.DemandesControllerTest'
+}
+
+// Tâche pour débugger toutes les données
+task debugAllData(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.magsav.debug.AllDataDebugger'
+}
 
 // Tâche pour lancer l'API
 task runApi(type: JavaExec) {
@@ -15,7 +49,7 @@ task runApi(type: JavaExec) {
 
 // Tâche pour générer les données de test complètes
 task generateTestData(type: JavaExec) {
-    mainClass = 'com.magsav.util.ComprehensiveTestDataGenerator'
+    mainClass = 'com.magsav.util.TestDataGenerator'
     classpath = sourceSets.main.runtimeClasspath
 }
 
@@ -25,10 +59,75 @@ task generateFreshData(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
+// Tâche pour générer uniquement les requests de manière isolée
+task generateRequestsOnly(type: JavaExec) {
+    mainClass = 'com.magsav.util.RequestsOnlyGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    description = 'Génère uniquement les demandes/requests de manière isolée pour éviter les conflits de base de données'
+    group = 'data'
+}
+
+// Tâche pour générer uniquement les affaires de manière isolée
+task generateAffairesOnly(type: JavaExec) {
+    mainClass = 'com.magsav.util.AffairesOnlyGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    description = 'Génère uniquement les affaires de manière isolée pour éviter les conflits de base de données'
+    group = 'data'
+}
+
+// Tâche pour importer les données CSV dans H2
+task importCSV(type: JavaExec) {
+    mainClass = 'com.magsav.utils.CSVImporter'
+    classpath = sourceSets.main.runtimeClasspath
+    description = 'Importe les données CSV dans H2'
+    group = 'data'
+}
+
+// Tâche pour vérifier le schéma H2 complet
+task verifySchema(type: JavaExec) {
+    mainClass = 'com.magsav.utils.SchemaVerifier'
+    classpath = sourceSets.main.runtimeClasspath
+    description = 'Vérifie la création du schéma H2 complet'
+    group = 'verification'
+}
+
+// Tâche pour vérification simple du schéma H2
+task checkSchema(type: JavaExec) {
+    mainClass = 'com.magsav.utils.SimpleSchemaChecker'
+    classpath = sourceSets.main.runtimeClasspath
+    description = 'Vérification simple du schéma H2'
+    group = 'verification'
+}
+
+// Tâche pour générer des données de test H2
+task generateH2TestData(type: JavaExec) {
+    mainClass = 'com.magsav.util.H2TestDataGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    description = 'Génère des données de test pour H2'
+    group = 'data'
+}
+
+// Tâche pour générer des données de test spécifiques aux affaires
+task generateAffairesTestData(type: JavaExec) {
+    mainClass = 'com.magsav.util.AffairesTestDataGenerator'
+    classpath = sourceSets.main.runtimeClasspath
+    description = 'Génère des données de test pour les affaires'
+    group = 'data'
+}
+
+// Tâche pour nettoyer et régénérer les données d'affaires
+task resetAffairesData(type: JavaExec) {
+    mainClass = 'com.magsav.util.ResetAffairesData'
+    classpath = sourceSets.main.runtimeClasspath
+    description = 'Nettoie et régénère les données d\'affaires'
+    group = 'data'
+}
+
 repositories { mavenCentral() }
 
 dependencies {
-  implementation "org.xerial:sqlite-jdbc:3.47.1.0"
+  // H2 Database - Base de données performante, 100% Java
+  implementation "com.h2database:h2:2.2.224"
   implementation "com.zaxxer:HikariCP:5.1.0"
   implementation "org.slf4j:slf4j-api:2.0.13"
   runtimeOnly "ch.qos.logback:logback-classic:1.5.8"

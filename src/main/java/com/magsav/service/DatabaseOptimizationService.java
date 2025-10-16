@@ -82,7 +82,7 @@ public final class DatabaseOptimizationService {
      * Vérifie si un index existe déjà
      */
     private static boolean indexExists(Connection conn, String indexName) throws SQLException {
-        String sql = "SELECT name FROM sqlite_master WHERE type='index' AND name=?";
+        String sql = "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.INDEXES WHERE INDEX_NAME=?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, indexName);
             try (ResultSet rs = ps.executeQuery()) {

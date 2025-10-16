@@ -101,4 +101,22 @@ public class DialogUtils {
     public static void showInfo(String title, String message) {
         showInfoAlert(title, message);
     }
+    
+    /**
+     * Affiche une boîte de dialogue d'information avec titre et message
+     */
+    public static void showInformation(String title, String message) {
+        showInfoAlert(title, message);
+    }
+    
+    /**
+     * Affiche une boîte de dialogue d'erreur avec titre, en-tête et message
+     */
+    public static void showError(String title, String header, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 }

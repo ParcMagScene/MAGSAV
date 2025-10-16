@@ -113,6 +113,8 @@ public class TestDataGenerator {
             Thread.sleep(200);
             generateInterventions(30);
             Thread.sleep(200);
+            generateDemandesIntervention(10);
+            Thread.sleep(200);
             generatePlanifications(25);
             Thread.sleep(200);
             generateCommandes(15);
@@ -134,6 +136,8 @@ public class TestDataGenerator {
             Thread.sleep(200);
             generateItemsDemandes(90);
             Thread.sleep(200);
+            generateAffaires(25);
+            Thread.sleep(200);
             generateEmailTemplates();
             
             System.out.println("✅ Génération terminée avec succès !");
@@ -141,6 +145,58 @@ public class TestDataGenerator {
         } catch (Exception e) {
             System.err.println("❌ Erreur lors de la génération des données de test: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Génère les données de test seulement si nécessaire (tables vides ou incomplètes)
+     */
+    public static void generateCompleteTestDataIfNeeded() {
+        try {
+            System.out.println("🔍 Vérification de l'état des données de test...");
+            
+            // Vérifier si les tables principales ont des données
+            boolean needsGeneration = false;
+            
+            try (Connection conn = DB.getConnection()) {
+                // Vérifier quelques tables critiques
+                String[] criticalTables = {"produits", "categories", "users", "demandes_intervention"};
+                
+                for (String table : criticalTables) {
+                    try {
+                        String sql = "SELECT COUNT(*) FROM " + table;
+                        PreparedStatement stmt = conn.prepareStatement(sql);
+                        ResultSet rs = stmt.executeQuery();
+                        
+                        if (rs.next()) {
+                            int count = rs.getInt(1);
+                            System.out.println("📊 Table " + table + ": " + count + " enregistrements");
+                            if (count == 0) {
+                                needsGeneration = true;
+                                System.out.println("⚠️ Table " + table + " vide - génération nécessaire");
+                            }
+                        }
+                    } catch (SQLException e) {
+                        System.out.println("⚠️ Table " + table + " n'existe pas - génération nécessaire");
+                        needsGeneration = true;
+                    }
+                }
+                
+                // Force toujours la génération pour corriger les schémas
+                System.out.println("🔄 Force la génération des données de test pour corriger les schémas...");
+                generateCompleteTestData();
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la vérification des données: " + e.getMessage());
+            // En cas d'erreur, générer quand même pour assurer la cohérence
+            try {
+                System.out.println("🔄 Génération forcée en cas d'erreur...");
+                generateCompleteTestData();
+            } catch (Exception e2) {
+                System.err.println("❌ Erreur critique lors de la génération forcée: " + e2.getMessage());
+                throw e2;
+            }
         }
     }
     
@@ -265,18 +321,14 @@ public class TestDataGenerator {
         System.out.println("👥 Génération des utilisateurs...");
         
         try (Connection conn = DB.getConnection()) {
-            String sql = "INSERT INTO users (username, email, password_hash, role, full_name, phone, societe_id, position, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO users (username, email, password_hash, role, nom, prenom, telephone, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
-            
-            // Obtenir les IDs des sociétés disponibles
-            int[] societeIds = getAvailableIdsForTable(conn, "societes");
             
             // Générer un timestamp unique pour cette session
             long timestamp = System.currentTimeMillis();
             
             // Rôles disponibles selon le schéma
-            String[] roles = {"ADMIN", "USER", "TECHNICIEN_MAG_SCENE", "INTERMITTENT"};
-            String[] positions = {"Directeur", "Manager", "Technicien", "Assistant", "Stagiaire", "Consultant"};
+            String[] roles = {"Administrateur", "Collaborateur", "Technicien Mag Scène", "Intermittent"};
             
             for (int i = 1; i <= count; i++) {
                 String nom = NOMS.get(random.nextInt(NOMS.size()));
@@ -285,26 +337,25 @@ public class TestDataGenerator {
                 String username = prenom.toLowerCase() + "." + nom.toLowerCase() + ".user" + timestamp + "." + i;
                 String email = prenom.toLowerCase() + "." + nom.toLowerCase() + ".user" + timestamp + "." + i + "@magsav.com";
                 String passwordHash = "$2a$10$test.hash.for.user." + i; // Hash simple pour les tests
-                String role = roles[random.nextInt(roles.length)];
-                String fullName = prenom + " " + nom;
+                // Forcer la diversité des rôles pour avoir au moins un de chaque
+                String role;
+                if (i <= roles.length) {
+                    role = roles[i - 1]; // Assure au moins un de chaque rôle
+                } else {
+                    role = roles[random.nextInt(roles.length)]; // Puis aléatoire
+                }
+
                 String phone = generatePhoneNumber();
-                Integer societeId = societeIds.length > 0 ? societeIds[random.nextInt(societeIds.length)] : null;
-                String position = positions[random.nextInt(positions.length)];
                 boolean isActive = random.nextDouble() > 0.1; // 90% actifs
                 
                 stmt.setString(1, username);
                 stmt.setString(2, email);
                 stmt.setString(3, passwordHash);
                 stmt.setString(4, role);
-                stmt.setString(5, fullName);
-                stmt.setString(6, phone);
-                if (societeId != null) {
-                    stmt.setInt(7, societeId);
-                } else {
-                    stmt.setNull(7, java.sql.Types.INTEGER);
-                }
-                stmt.setString(8, position);
-                stmt.setBoolean(9, isActive);
+                stmt.setString(5, nom);
+                stmt.setString(6, prenom);
+                stmt.setString(7, phone);
+                stmt.setBoolean(8, isActive);
                 stmt.executeUpdate();
             }
         }
@@ -435,6 +486,119 @@ public class TestDataGenerator {
             }
         }
         System.out.println("✅ " + count + " interventions générées");
+    }
+    
+    /**
+     * Génère des demandes d'intervention
+     */
+    private static void generateDemandesIntervention(int count) throws SQLException {
+        System.out.println("📝 Génération des demandes d'intervention...");
+        
+        try (Connection conn = DB.getConnection()) {
+            // Forcer la recréation de la table pour corriger le schéma
+            String dropTableSQL = "DROP TABLE IF EXISTS demandes_intervention";
+            conn.createStatement().executeUpdate(dropTableSQL);
+            
+            String createTableSQL = """
+                CREATE TABLE demandes_intervention (
+                    id INTEGER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+                    statut VARCHAR(50) DEFAULT 'EN_ATTENTE',
+                    type_demande VARCHAR(50) NOT NULL DEFAULT 'INTERVENTIONS',
+                    product_id BIGINT,
+                    produit_nom VARCHAR(255),
+                    produit_sn VARCHAR(100),
+                    produit_uid VARCHAR(100),
+                    produit_fabricant VARCHAR(255),
+                    produit_category VARCHAR(100),
+                    produit_subcategory VARCHAR(100),
+                    produit_description TEXT,
+                    type_proprietaire VARCHAR(50),
+                    proprietaire_id BIGINT,
+                    demande_creation_proprietaire_id BIGINT,
+                    proprietaire_nom_temp VARCHAR(255),
+                    proprietaire_details_temp TEXT,
+                    panne_description TEXT,
+                    client_note TEXT,
+                    detecteur VARCHAR(255),
+                    detector_societe_id BIGINT,
+                    demandeur_nom VARCHAR(255),
+                    date_demande TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    date_validation TIMESTAMP,
+                    validateur_nom VARCHAR(255),
+                    notes_validation TEXT,
+                    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    date_modification TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    intervention_id BIGINT
+                )
+                """;
+            
+            conn.createStatement().executeUpdate(createTableSQL);
+            
+            // Récupérer les produits et sociétés disponibles
+            int[] produitIds = getAvailableIdsForTable(conn, "produits");
+            int[] societeIds = getAvailableIdsForTable(conn, "societes");
+            
+            if (produitIds.length == 0) {
+                System.out.println("⚠️ Aucun produit disponible - skip demandes intervention");
+                return;
+            }
+            
+            String sql = """
+                INSERT INTO demandes_intervention (
+                    statut, type_demande, produit_nom, produit_sn, produit_uid,
+                    panne_description, client_note, demandeur_nom, detector_societe_id,
+                    date_demande, date_validation, validateur_nom, notes_validation
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+            
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            
+            String[] statuts = {"EN_ATTENTE", "EN_COURS", "VALIDEE", "REFUSEE"};
+            String[] produitNoms = {
+                "Console Audio YAMAHA M7CL", "Projecteur LED ARRI L7-C", "Amplificateur CROWN XTI6002",
+                "Micro HF SHURE QLXD24", "Enceinte MEYER UPA-1P", "Régie VIDEO BLACKMAGIC ATEM"
+            };
+            
+            for (int i = 1; i <= count; i++) {
+                String statut = statuts[random.nextInt(statuts.length)];
+                String produitNom = produitNoms[random.nextInt(produitNoms.length)];
+                String produitSn = generateSerialNumber();
+                String produitUid = "UID-" + System.currentTimeMillis() + "-" + i;
+                String panneDescription = generatePanneDescription();
+                String clientNote = "Demande urgente " + i + " - " + panneDescription;
+                String demandeurNom = PRENOMS.get(random.nextInt(PRENOMS.size())) + " " + NOMS.get(random.nextInt(NOMS.size()));
+                int societeId = societeIds.length > 0 ? societeIds[random.nextInt(societeIds.length)] : 1;
+                String dateRandom = generateRandomDateTime(2023, 2024);
+                
+                // Générer date de validation et validateur selon le statut
+                String dateValidation = null;
+                String validateurNom = null;
+                String notesValidation = null;
+                
+                if ("VALIDEE".equals(statut) || "REFUSEE".equals(statut)) {
+                    dateValidation = generateRandomDateTime(2024, 2024);
+                    validateurNom = PRENOMS.get(random.nextInt(PRENOMS.size())) + " " + NOMS.get(random.nextInt(NOMS.size()));
+                    notesValidation = "VALIDEE".equals(statut) ? "Demande approuvée" : "Demande refusée - " + panneDescription;
+                }
+                
+                stmt.setString(1, statut);
+                stmt.setString(2, "INTERVENTIONS");
+                stmt.setString(3, produitNom);
+                stmt.setString(4, produitSn);
+                stmt.setString(5, produitUid);
+                stmt.setString(6, panneDescription);
+                stmt.setString(7, clientNote);
+                stmt.setString(8, demandeurNom);
+                stmt.setInt(9, societeId);
+                stmt.setString(10, dateRandom);
+                stmt.setString(11, dateValidation);
+                stmt.setString(12, validateurNom);
+                stmt.setString(13, notesValidation);
+                
+                stmt.executeUpdate();
+            }
+        }
+        System.out.println("✅ " + count + " demandes d'intervention générées");
     }
     
     /**
@@ -780,7 +944,7 @@ public class TestDataGenerator {
         System.out.println("📧 Génération des templates d'emails...");
         
         try (Connection conn = DB.getConnection()) {
-            String sql = "INSERT OR REPLACE INTO email_templates (nom_template, type_template, objet, contenu_html, contenu_text, variables_disponibles, actif) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String sql = "MERGE INTO email_templates (nom_template, type_template, objet, contenu_html, contenu_text, variables_disponibles, actif) KEY(nom_template) VALUES (?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             
             // Template intervention planifiée
@@ -931,7 +1095,16 @@ public class TestDataGenerator {
     private static void generateDemandes(int count) throws SQLException {
         System.out.println("📋 Génération des demandes...");
         
+        // Attendre un peu pour éviter les conflits de concurrence
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
         try (Connection conn = DB.getConnection()) {
+            // Génération des demandes de test
+            
             String sql = "INSERT INTO requests (type, title, description, status, priority, requester_name, requester_email, requester_phone, assigned_to, societe_id, intervention_id, estimated_cost, comments, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(sql);
             
@@ -946,13 +1119,10 @@ public class TestDataGenerator {
                 String requesterPhone = generatePhoneNumber();
                 String assignedTo = random.nextBoolean() ? generateNomComplet() : null;
                 
-                // Récupérer les IDs disponibles avec la connexion existante
-                int[] societeIds = getAvailableIdsForTable(conn, "societes");
-                int[] interventionIds = getAvailableIdsForTable(conn, "interventions");
-                
-                int societeId = societeIds.length > 0 ? societeIds[random.nextInt(societeIds.length)] : 1;
-                Integer interventionId = type.equals("INTERVENTION") && random.nextBoolean() && interventionIds.length > 0 
-                    ? interventionIds[random.nextInt(interventionIds.length)] : null;
+                // Utiliser des IDs fixes pour éviter les requêtes supplémentaires qui causent les locks
+                int societeId = 1 + random.nextInt(50); // IDs de sociétés probables de 1 à 50
+                Integer interventionId = type.equals("INTERVENTION") && random.nextBoolean() 
+                    ? 1 + random.nextInt(30) : null; // IDs d'interventions probables de 1 à 30
                 double estimatedCost = type.equals("DEVIS") || type.equals("PRIX") ? 100 + random.nextDouble() * 5000 : 0;
                 String comments = "Demande générée automatiquement - " + type;
                 String createdAt = generateRandomDateTime(2024, 2024);
@@ -977,7 +1147,28 @@ public class TestDataGenerator {
                 stmt.setString(13, comments);
                 stmt.setString(14, createdAt);
                 stmt.setString(15, updatedAt);
-                stmt.executeUpdate();
+                
+                // Retry logic pour gérer les database locks
+                int retryCount = 0;
+                while (retryCount < 3) {
+                    try {
+                        stmt.executeUpdate();
+                        break; // Succès, sortir de la boucle retry
+                    } catch (SQLException e) {
+                        if (e.getMessage().contains("database is locked") && retryCount < 2) {
+                            retryCount++;
+                            System.out.println("⚠️ Database locked, retry " + retryCount + "/3...");
+                            try {
+                                Thread.sleep(500 * retryCount); // Attente progressive
+                            } catch (InterruptedException ie) {
+                                Thread.currentThread().interrupt();
+                                throw new SQLException("Interrupted during retry", ie);
+                            }
+                        } else {
+                            throw e; // Re-lancer l'exception si tous les retry ont échoué
+                        }
+                    }
+                }
             }
         }
         System.out.println("✅ " + count + " demandes générées");
@@ -1217,6 +1408,71 @@ public class TestDataGenerator {
         }
     }
     
+    /**
+     * Génère des affaires commerciales avec format AF*****
+     */
+    private static void generateAffaires(int count) throws SQLException {
+        System.out.println("💼 Génération des affaires...");
+        
+        try (Connection conn = DB.getConnection()) {
+            String sql = """
+                INSERT INTO affaires (reference, nom, description, client_id, client_nom, statut, type, priorite,
+                                     montant_estime, date_creation, date_echeance, commercial_responsable, technicien_responsable, chef_projet, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            
+            String[] statuts = {"PROSPECTION", "QUALIFIEE", "EN_COURS", "NEGOCIE", "GAGNEE", "PERDUE", "ANNULEE"};
+            String[] types = {"LOCATION", "VENTE", "SAV", "MAINTENANCE", "INSTALLATION"};
+            String[] priorites = {"BASSE", "NORMALE", "HAUTE", "URGENTE"};
+            String[] projets = {"Festival d'été", "Spectacle de danse", "Conférence d'entreprise", "Concert acoustique", 
+                              "Événement sportif", "Mariage", "Soirée d'entreprise", "Théâtre", "Concert rock", "Exposition"};
+            
+            // Obtenir des IDs de sociétés existantes
+            int[] societeIds = getAvailableIdsForTable(conn, "societes");
+            
+            for (int i = 0; i < count; i++) {
+                // Générer référence au format AF + 5 chiffres
+                String reference = String.format("AF%05d", random.nextInt(100000));
+                
+                // Vérifier unicité de la référence
+                String checkSql = "SELECT COUNT(*) FROM affaires WHERE reference = ?";
+                try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                    checkStmt.setString(1, reference);
+                    ResultSet rs = checkStmt.executeQuery();
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        // Référence existe, regénérer
+                        reference = String.format("AF%05d", random.nextInt(100000));
+                    }
+                }
+                
+                int clientId = societeIds.length > 0 ? societeIds[random.nextInt(societeIds.length)] : 1;
+                String nomProjet = projets[random.nextInt(projets.length)] + " " + (2024 + random.nextInt(2));
+                String description = "Affaire commerciale pour " + nomProjet.toLowerCase() + 
+                                  ". Prestation complète audiovisuelle avec équipement et techniciens.";
+                
+                stmt.setString(1, reference);
+                stmt.setString(2, nomProjet);
+                stmt.setString(3, description);
+                stmt.setInt(4, clientId);
+                stmt.setString(5, "Client Société " + clientId);
+                stmt.setString(6, statuts[random.nextInt(statuts.length)]);
+                stmt.setString(7, types[random.nextInt(types.length)]);
+                stmt.setString(8, priorites[random.nextInt(priorites.length)]);
+                stmt.setDouble(9, 1500 + random.nextDouble() * 25000); // Montant entre 1500 et 26500€
+                stmt.setString(10, LocalDate.now().minusDays(random.nextInt(365)).format(DATE_FORMATTER));
+                stmt.setString(11, LocalDate.now().plusDays(random.nextInt(180)).format(DATE_FORMATTER));
+                stmt.setString(12, PRENOMS.get(random.nextInt(PRENOMS.size())) + " " + NOMS.get(random.nextInt(NOMS.size())));
+                stmt.setString(13, PRENOMS.get(random.nextInt(PRENOMS.size())) + " " + NOMS.get(random.nextInt(NOMS.size())));
+                stmt.setString(14, PRENOMS.get(random.nextInt(PRENOMS.size())) + " " + NOMS.get(random.nextInt(NOMS.size())));
+                stmt.setString(15, "Notes automatiques pour l'affaire " + reference);
+                
+                stmt.executeUpdate();
+            }
+        }
+        System.out.println("✅ " + count + " affaires générées avec format AF*****");
+    }
+
     /**
      * Point d'entrée principal pour génération de données de test
      */

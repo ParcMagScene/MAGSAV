@@ -1,0 +1,76 @@
+plugins {
+    id 'com.github.node-gradle.node'
+    id 'base' // Plugin de base pour éviter les conflits
+}
+
+// Configuration Node.js pour le frontend React
+node {
+    version = '18.17.0'
+    npmVersion = '9.6.7'
+    download = true
+    workDir = file("${project.projectDir}/.gradle/nodejs")
+    npmWorkDir = file("${project.projectDir}/.gradle/npm")
+}
+
+// Task personnalisée pour build React
+tasks.register('reactBuild', NpmTask) {
+    dependsOn npmInstall
+    npmCommand = ['run', 'build']
+    inputs.files(fileTree("src"))
+    inputs.file("package.json")
+    inputs.file("tsconfig.json")
+    outputs.dir("build")
+    
+    doFirst {
+        println "🌐 Construction de l'interface React..."
+    }
+}
+
+// Task personnalisée pour démarrer le serveur de développement
+tasks.register('reactStart', NpmTask) {
+    dependsOn npmInstall
+    npmCommand = ['start']
+    
+    doFirst {
+        println "🚀 Démarrage du serveur React sur http://localhost:3000"
+    }
+}
+
+// Task personnalisée pour les tests React
+tasks.register('reactTest', NpmTask) {
+    dependsOn npmInstall
+    npmCommand = ['test', '--', '--coverage', '--watchAll=false']
+    
+    doFirst {
+        println "🧪 Exécution des tests React..."
+    }
+}
+
+// Task TypeScript type checking
+tasks.register('typeCheck', NpmTask) {
+    dependsOn npmInstall
+    npmCommand = ['run', 'type-check']
+    
+    doFirst {
+        println "📝 Vérification des types TypeScript..."
+    }
+}
+
+// Redéfinition des tasks Gradle standard
+assemble {
+    dependsOn reactBuild
+}
+
+check {
+    dependsOn reactTest, typeCheck
+}
+
+clean {
+    doFirst {
+        println "🧹 Nettoyage du frontend React..."
+    }
+    delete "build"
+    delete "dist" 
+    delete ".gradle/nodejs"
+    delete ".gradle/npm"
+}

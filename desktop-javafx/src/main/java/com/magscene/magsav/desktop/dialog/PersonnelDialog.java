@@ -1,0 +1,361 @@
+package com.magscene.magsav.desktop.dialog;
+
+import com.magscene.magsav.desktop.service.ApiService;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.time.format.DateTimeFormatter;
+
+/**
+ * Dialogue pour la crÃƒÂ©ation et modification du personnel
+ */
+public class PersonnelDialog extends Dialog<Map<String, Object>> {
+    
+    private final ApiService apiService;
+    private final Map<String, Object> existingPersonnel;
+    private final boolean isEditMode;
+    
+    // Champs du formulaire
+    private TextField firstNameField;
+    private TextField lastNameField;
+    private TextField emailField;
+    private TextField phoneField;
+    private ComboBox<PersonnelType> typeCombo;
+    private ComboBox<PersonnelStatus> statusCombo;
+    private TextField jobTitleField;
+    private TextField departmentField;
+    private DatePicker hireDatePicker;
+    private TextArea notesArea;
+    
+    // Ãƒâ€°numÃƒÂ©rations locales pour l'interface
+    private enum PersonnelType {
+        EMPLOYEE("EmployÃƒÂ©"),
+        FREELANCE("Freelance"),
+        INTERN("Stagiaire"),
+        TEMPORARY("IntÃƒÂ©rimaire");
+        
+        private final String displayName;
+        
+        PersonnelType(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() { return displayName; }
+        
+        @Override
+        public String toString() { return displayName; }
+    }
+    
+    private enum PersonnelStatus {
+        ACTIVE("Actif"),
+        INACTIVE("Inactif"),
+        ON_LEAVE("En congÃƒÂ©"),
+        TERMINATED("TerminÃƒÂ©");
+        
+        private final String displayName;
+        
+        PersonnelStatus(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() { return displayName; }
+        
+        @Override
+        public String toString() { return displayName; }
+    }
+    
+    public PersonnelDialog(Map<String, Object> existingPersonnel, ApiService apiService) {
+        this.apiService = apiService;
+        this.existingPersonnel = existingPersonnel;
+        this.isEditMode = (existingPersonnel != null);
+        
+        setTitle(isEditMode ? "Modifier le personnel" : "Nouveau personnel");
+        setHeaderText(isEditMode ? "Modification d'un membre du personnel" : "CrÃƒÂ©ation d'un nouveau membre du personnel");
+        
+        // Configuration des boutons
+        ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
+        getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        
+        // CrÃƒÂ©ation du contenu
+        createContent();
+        
+        // Validation et conversion du rÃƒÂ©sultat
+        Button saveButton = (Button) getDialogPane().lookupButton(saveButtonType);
+        saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            if (!validateForm()) {
+                event.consume(); // EmpÃƒÂªche la fermeture si validation ÃƒÂ©choue
+            }
+        });
+        
+        setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                return createPersonnelFromFields();
+            }
+            return null;
+        });
+        
+        // Chargement des donnÃƒÂ©es existantes
+        if (isEditMode) {
+            loadExistingData();
+        }
+        
+        // Focus initial
+        Platform.runLater(() -> firstNameField.requestFocus());
+    }
+    
+    private void createContent() {
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        
+        // Informations personnelles
+        VBox personalInfo = createPersonalInfoSection();
+        
+        // Informations professionnelles
+        VBox professionalInfo = createProfessionalInfoSection();
+        
+        // Notes
+        VBox notesSection = createNotesSection();
+        
+        content.getChildren().addAll(personalInfo, professionalInfo, notesSection);
+        
+        ScrollPane scrollPane = new ScrollPane(content);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefSize(500, 600);
+        
+        getDialogPane().setContent(scrollPane);
+    }
+    
+    private VBox createPersonalInfoSection() {
+        VBox section = new VBox(10);
+        
+        Label sectionTitle = new Label("Ã°Å¸â€˜Â¤ Informations Personnelles");
+        sectionTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2196F3;");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(10));
+        
+        // PrÃƒÂ©nom
+        grid.add(new Label("PrÃƒÂ©nom *:"), 0, 0);
+        firstNameField = new TextField();
+        firstNameField.setPromptText("PrÃƒÂ©nom");
+        grid.add(firstNameField, 1, 0);
+        
+        // Nom
+        grid.add(new Label("Nom *:"), 0, 1);
+        lastNameField = new TextField();
+        lastNameField.setPromptText("Nom de famille");
+        grid.add(lastNameField, 1, 1);
+        
+        // Email
+        grid.add(new Label("Email:"), 0, 2);
+        emailField = new TextField();
+        emailField.setPromptText("email@example.com");
+        grid.add(emailField, 1, 2);
+        
+        // TÃƒÂ©lÃƒÂ©phone
+        grid.add(new Label("TÃƒÂ©lÃƒÂ©phone:"), 0, 3);
+        phoneField = new TextField();
+        phoneField.setPromptText("+33 1 23 45 67 89");
+        grid.add(phoneField, 1, 3);
+        
+        section.getChildren().addAll(sectionTitle, grid);
+        return section;
+    }
+    
+    private VBox createProfessionalInfoSection() {
+        VBox section = new VBox(10);
+        
+        Label sectionTitle = new Label("Ã°Å¸â€™Â¼ Informations Professionnelles");
+        sectionTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #4CAF50;");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(10));
+        
+        // Type
+        grid.add(new Label("Type *:"), 0, 0);
+        typeCombo = new ComboBox<>();
+        typeCombo.setItems(FXCollections.observableArrayList(PersonnelType.values()));
+        typeCombo.setValue(PersonnelType.EMPLOYEE);
+        grid.add(typeCombo, 1, 0);
+        
+        // Statut
+        grid.add(new Label("Statut *:"), 0, 1);
+        statusCombo = new ComboBox<>();
+        statusCombo.setItems(FXCollections.observableArrayList(PersonnelStatus.values()));
+        statusCombo.setValue(PersonnelStatus.ACTIVE);
+        grid.add(statusCombo, 1, 1);
+        
+        // Poste
+        grid.add(new Label("Poste:"), 0, 2);
+        jobTitleField = new TextField();
+        jobTitleField.setPromptText("IntitulÃƒÂ© du poste");
+        grid.add(jobTitleField, 1, 2);
+        
+        // DÃƒÂ©partement
+        grid.add(new Label("DÃƒÂ©partement:"), 0, 3);
+        departmentField = new TextField();
+        departmentField.setPromptText("Nom du dÃƒÂ©partement");
+        grid.add(departmentField, 1, 3);
+        
+        // Date d'embauche
+        grid.add(new Label("Date d'embauche:"), 0, 4);
+        hireDatePicker = new DatePicker();
+        hireDatePicker.setConverter(new StringConverter<LocalDate>() {
+            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            
+            @Override
+            public String toString(LocalDate date) {
+                return date != null ? date.format(formatter) : "";
+            }
+            
+            @Override
+            public LocalDate fromString(String string) {
+                return string != null && !string.trim().isEmpty() ? 
+                    LocalDate.parse(string, formatter) : null;
+            }
+        });
+        grid.add(hireDatePicker, 1, 4);
+        
+        section.getChildren().addAll(sectionTitle, grid);
+        return section;
+    }
+    
+    private VBox createNotesSection() {
+        VBox section = new VBox(10);
+        
+        Label sectionTitle = new Label("Ã°Å¸â€œÂ Notes");
+        sectionTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #FF9800;");
+        
+        notesArea = new TextArea();
+        notesArea.setPromptText("Notes additionnelles...");
+        notesArea.setPrefRowCount(4);
+        notesArea.setWrapText(true);
+        
+        section.getChildren().addAll(sectionTitle, notesArea);
+        return section;
+    }
+    
+    private void loadExistingData() {
+        if (existingPersonnel == null) return;
+        
+        firstNameField.setText(getStringValue("firstName"));
+        lastNameField.setText(getStringValue("lastName"));
+        emailField.setText(getStringValue("email"));
+        phoneField.setText(getStringValue("phone"));
+        jobTitleField.setText(getStringValue("jobTitle"));
+        departmentField.setText(getStringValue("department"));
+        notesArea.setText(getStringValue("notes"));
+        
+        // Type
+        String type = getStringValue("type");
+        if (type != null) {
+            try {
+                PersonnelType personnelType = PersonnelType.valueOf(type.toUpperCase());
+                typeCombo.setValue(personnelType);
+            } catch (IllegalArgumentException e) {
+                // Type non reconnu, garder la valeur par dÃƒÂ©faut
+            }
+        }
+        
+        // Statut
+        String status = getStringValue("status");
+        if (status != null) {
+            try {
+                PersonnelStatus personnelStatus = PersonnelStatus.valueOf(status.toUpperCase());
+                statusCombo.setValue(personnelStatus);
+            } catch (IllegalArgumentException e) {
+                // Statut non reconnu, garder la valeur par dÃƒÂ©faut
+            }
+        }
+        
+        // Date d'embauche
+        String hireDate = getStringValue("hireDate");
+        if (hireDate != null && !hireDate.trim().isEmpty()) {
+            try {
+                LocalDate date = LocalDate.parse(hireDate);
+                hireDatePicker.setValue(date);
+            } catch (Exception e) {
+                // Date non valide, ignorer
+            }
+        }
+    }
+    
+    private String getStringValue(String key) {
+        Object value = existingPersonnel.get(key);
+        return value != null ? value.toString() : "";
+    }
+    
+    private boolean validateForm() {
+        StringBuilder errors = new StringBuilder();
+        
+        if (firstNameField.getText().trim().isEmpty()) {
+            errors.append("- Le prÃƒÂ©nom est obligatoire\n");
+        }
+        
+        if (lastNameField.getText().trim().isEmpty()) {
+            errors.append("- Le nom est obligatoire\n");
+        }
+        
+        String email = emailField.getText().trim();
+        if (!email.isEmpty() && !isValidEmail(email)) {
+            errors.append("- Format d'email invalide\n");
+        }
+        
+        if (typeCombo.getValue() == null) {
+            errors.append("- Le type est obligatoire\n");
+        }
+        
+        if (statusCombo.getValue() == null) {
+            errors.append("- Le statut est obligatoire\n");
+        }
+        
+        if (errors.length() > 0) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreurs de validation");
+            alert.setHeaderText("Veuillez corriger les erreurs suivantes :");
+            alert.setContentText(errors.toString());
+            alert.showAndWait();
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private boolean isValidEmail(String email) {
+        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    }
+    
+    private Map<String, Object> createPersonnelFromFields() {
+        Map<String, Object> personnelData = new HashMap<>();
+        
+        personnelData.put("firstName", firstNameField.getText().trim());
+        personnelData.put("lastName", lastNameField.getText().trim());
+        personnelData.put("email", emailField.getText().trim());
+        personnelData.put("phone", phoneField.getText().trim());
+        personnelData.put("type", typeCombo.getValue().name());
+        personnelData.put("status", statusCombo.getValue().name());
+        personnelData.put("jobTitle", jobTitleField.getText().trim());
+        personnelData.put("department", departmentField.getText().trim());
+        personnelData.put("notes", notesArea.getText().trim());
+        
+        // Date d'embauche
+        if (hireDatePicker.getValue() != null) {
+            personnelData.put("hireDate", hireDatePicker.getValue().toString());
+        }
+        
+        return personnelData;
+    }
+}
+

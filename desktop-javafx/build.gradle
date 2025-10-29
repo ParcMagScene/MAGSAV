@@ -1,0 +1,39 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+mainClassName = 'com.magscene.magsav.desktop.MagsavDesktopApplication'
+
+javafx {
+    version = '21'
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.web']
+}
+
+dependencies {
+    // JavaFX extras
+    implementation 'org.controlsfx:controlsfx:11.1.2'
+    implementation 'com.dlsc.formsfx:formsfx-core:11.6.0'
+    implementation 'org.kordamp.bootstrapfx:bootstrapfx-core:0.4.0'
+    
+    // HTTP Client pour API REST
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.2.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    
+    // QR Code scanning
+    implementation 'com.google.zxing:core:3.5.2'
+    implementation 'com.google.zxing:javase:3.5.2'
+    
+    // Logging
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
+    
+    // Testing
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'org.testfx:testfx-core:4.0.16-alpha'
+    testImplementation 'org.testfx:testfx-junit5:4.0.16-alpha'
+}
+
+run {
+    jvmArgs = ['--add-exports', 'javafx.base/com.sun.javafx.runtime=ALL-UNNAMED']
+}

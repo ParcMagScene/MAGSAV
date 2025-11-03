@@ -16,13 +16,13 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Vérifier si des données existent déjà
+        // Verifier si des donnees existent deja
         if (equipmentRepository.count() > 0) {
-            System.out.println("🔄 Données déjà présentes, pas de réinitialisation");
+            System.out.println("\uD83D\uDD04 Donnees deja presentes, pas de reinitialisation");
             return;
         }
 
-        System.out.println("🎯 Initialisation des données de démonstration MAGSAV-3.0...");
+        System.out.println("\uD83C\uDFAF Initialisation des donnees de demonstration MAGSAV-3.0...");
 
         // Équipements Audio
         createEquipment("Console Yamaha M32", "Console de mixage numérique 32 canaux", "Audio", 
@@ -81,8 +81,8 @@ public class DataInitializer implements CommandLineRunner {
         createEquipment("Rack 19\" 12U mobile", "Rack de transport avec roulettes", "Transport", 
                        Equipment.Status.AVAILABLE, "QR017", "Thomann", "Rack Case 12U", "SN-RACK-017", 180.00);
 
-        System.out.println("✅ " + equipmentRepository.count() + " équipements de démonstration créés !");
-        System.out.println("📊 Répartition par statut :");
+        System.out.println("\u2705 " + equipmentRepository.count() + " equipements de demonstration crees !");
+        System.out.println("\uD83D\uDCC9 Repartition par statut :");
         System.out.println("   - Disponible: " + equipmentRepository.countByStatus(Equipment.Status.AVAILABLE));
         System.out.println("   - En cours d'utilisation: " + equipmentRepository.countByStatus(Equipment.Status.IN_USE));
         System.out.println("   - En maintenance: " + equipmentRepository.countByStatus(Equipment.Status.MAINTENANCE));

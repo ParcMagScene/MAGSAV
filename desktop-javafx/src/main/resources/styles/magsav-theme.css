@@ -11,6 +11,61 @@
     -fx-faint-focus-color: #007bff22;
 }
 
+/* ===== SAV MODULE STYLES ===== */
+.sav-manager-view {
+    -fx-background-color: #ffffff;
+}
+
+.sav-tab-pane {
+    -fx-background-color: #ffffff;
+}
+
+.sav-tab {
+    -fx-background-color: #f8f9fa;
+    -fx-text-base-color: #495057;
+}
+
+.sav-tab:selected {
+    -fx-background-color: #007bff;
+    -fx-text-base-color: white;
+}
+
+.action-button-primary {
+    -fx-background-color: #007bff;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 6;
+}
+
+.action-button-primary:hover {
+    -fx-background-color: #0056b3;
+}
+
+.action-button-emergency {
+    -fx-background-color: #dc3545;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 6;
+}
+
+.action-button-emergency:hover {
+    -fx-background-color: #c82333;
+}
+
+.action-button-secondary {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 6;
+}
+
+.action-button-secondary:hover {
+    -fx-background-color: #5a6268;
+}
+
 /* ===== HEADER ===== */
 .header {
     -fx-background-color: linear-gradient(to bottom, #343a40, #495057); background-color: linear-gradient(to bottom, #343a40, #495057);
@@ -166,6 +221,58 @@
 /* ===== LABELS ===== */
 .label {
     -fx-text-fill: #495057;
+}
+
+/* ===== PROJECT DIALOG STYLES ===== */
+.project-dialog {
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0, 0, 3);
+}
+
+.project-save-button {
+    -fx-background-color: #28a745;
+    background-color: #28a745;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    font-weight: bold;
+    -fx-padding: 10 20 10 20;
+    padding: 10 20 10 20;
+    -fx-background-radius: 6;
+}
+
+.project-save-button:hover {
+    -fx-background-color: #218838;
+    background-color: #218838;
+}
+
+.error-field {
+    -fx-border-color: #dc3545;
+    border-color: #dc3545;
+    -fx-border-width: 2;
+    border-width: 2;
+    -fx-background-color: #fff5f5;
+    background-color: #fff5f5;
+}
+
+.warning-field {
+    -fx-border-color: #ffc107;
+    border-color: #ffc107;
+    -fx-border-width: 1;
+    border-width: 1;
+    -fx-background-color: #fffbf0;
+    background-color: #fffbf0;
+}
+
+.positive-amount {
+    -fx-text-fill: #28a745;
+    -fx-font-weight: bold;
+    font-weight: bold;
+}
+
+.negative-amount {
+    -fx-text-fill: #dc3545;
+    -fx-font-weight: bold;
+    font-weight: bold;
 }
 
 /* ===== ANIMATIONS ===== */

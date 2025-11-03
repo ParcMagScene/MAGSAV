@@ -1,357 +1,548 @@
 package com.magscene.magsav.desktop.dialog;
 
-import java.util.Map;
-import java.util.HashMap;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import java.util.Optional;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Dialog pour création/modification d'un véhicule
+ */
 public class VehicleDialog extends Dialog<Map<String, Object>> {
     
-    // Champs obligatoires
-    private final TextField nameField = new TextField();
-    private final TextField brandField = new TextField();
-    private final TextField modelField = new TextField();
-    private final TextField licensePlateField = new TextField();
-    private final ComboBox<String> typeComboBox = new ComboBox<>();
-    private final ComboBox<String> statusComboBox = new ComboBox<>();
-    private final ComboBox<String> fuelTypeComboBox = new ComboBox<>();
+    // Champs du formulaire
+    private TextField nameField;
+    private TextField brandField;
+    private TextField modelField;
+    private TextField licensePlateField;
+    private TextField vinField;
+    private ComboBox<VehicleType> typeCombo;
+    private ComboBox<VehicleStatus> statusCombo;
+    private ComboBox<FuelType> fuelTypeCombo;
     
-    // Champs optionnels
-    private final TextField vinField = new TextField();
-    private final TextField yearManufacturedField = new TextField();
-    private final TextField mileageField = new TextField();
-    private final TextField maxPayloadField = new TextField();
-    private final TextField dimensionsField = new TextField();
-    private final TextField currentLocationField = new TextField();
-    private final TextField assignedDriverField = new TextField();
-    private final TextArea notesField = new TextArea();
+    private TextField yearField;
+    private TextField mileageField;
+    private TextField maxPayloadField;
+    private TextField dimensionsField;
     
-    private final Map<String, Object> vehicleData;
-    private final boolean isEdit;
-
-    public VehicleDialog(Map<String, Object> vehicleData, Stage owner) {
-        this.vehicleData = vehicleData;
-        this.isEdit = vehicleData != null;
+    private TextField insuranceNumberField;
+    private DatePicker insuranceExpirationPicker;
+    private DatePicker technicalControlExpirationPicker;
+    
+    private DatePicker lastMaintenancePicker;
+    private DatePicker nextMaintenancePicker;
+    private TextField maintenanceIntervalField;
+    
+    private DatePicker purchaseDatePicker;
+    private TextField purchasePriceField;
+    private TextField dailyRentalRateField;
+    
+    private TextField currentLocationField;
+    private TextField assignedDriverField;
+    private TextArea notesArea;
+    
+    // Énumérations pour les ComboBox
+    public enum VehicleType {
+        VAN("Fourgon"),
+        TRUCK("Camion"),
+        TRAILER("Remorque"),
+        CAR("Voiture"),
+        MOTORCYCLE("Moto"),
+        OTHER("Autre");
         
-        initOwner(owner);
-        initModality(Modality.APPLICATION_MODAL);
-        setTitle(isEdit ? "Modifier le véhicule" : "Nouveau véhicule");
-        setHeaderText(isEdit ? "Modification des informations du véhicule" : "Création d'un nouveau véhicule");
+        private final String displayName;
+        VehicleType(String displayName) { this.displayName = displayName; }
+        public String getDisplayName() { return displayName; }
+        @Override public String toString() { return displayName; }
+    }
+    
+    public enum VehicleStatus {
+        AVAILABLE("Disponible"),
+        IN_USE("En utilisation"),
+        MAINTENANCE("En maintenance"),
+        OUT_OF_ORDER("Hors service"),
+        RENTED_OUT("Loué externe"),
+        RESERVED("Réservé");
+        
+        private final String displayName;
+        VehicleStatus(String displayName) { this.displayName = displayName; }
+        public String getDisplayName() { return displayName; }
+        @Override public String toString() { return displayName; }
+    }
+    
+    public enum FuelType {
+        GASOLINE("Essence"),
+        DIESEL("Diesel"),
+        ELECTRIC("Électrique"),
+        HYBRID("Hybride"),
+        GPL("GPL"),
+        OTHER("Autre");
+        
+        private final String displayName;
+        FuelType(String displayName) { this.displayName = displayName; }
+        public String getDisplayName() { return displayName; }
+        @Override public String toString() { return displayName; }
+    }
+    
+    public VehicleDialog(Map<String, Object> vehicleData) {
+        boolean isEdit = vehicleData != null;
+        
+        setTitle(isEdit ? "Modifier le vehicule" : "Nouveau vehicule");
+        setHeaderText(isEdit ? "Modification d'un vehicule existant" : "Creation d'un nouveau vehicule");
         
         // Boutons
         ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
         getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
         
-        // Configuration des ComboBox
-        setupComboBoxes();
+        // Interface
+        VBox content = createFormContent();
+        getDialogPane().setContent(content);
         
-        // Interface utilisateur
-        getDialogPane().setContent(createContent());
-        
-        // Chargement des données si édition
+        // Remplir les champs si modification
         if (isEdit) {
-            loadVehicleData();
-        } else {
-            // Valeurs par défaut pour nouveau véhicule
-            statusComboBox.setValue("AVAILABLE");
+            populateFields(vehicleData);
         }
         
-        // Configuration des validateurs
+        // Validation et conversion résultat
+        setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                return collectFormData();
+            }
+            return null;
+        });
+        
+        // Validation en temps réel
         setupValidation();
         
-        // Résultat
-        setResultConverter(this::convertResult);
+        // Focus initial
+        nameField.requestFocus();
     }
-
-    private void setupComboBoxes() {
-        // Types de véhicules
-        typeComboBox.getItems().addAll("VAN", "TRUCK", "TRAILER", "CAR", "MOTORCYCLE");
-        
-        // Statuts des véhicules
-        statusComboBox.getItems().addAll("AVAILABLE", "IN_USE", "MAINTENANCE", "RENTED_OUT", "OUT_OF_SERVICE");
-        
-        // Types de carburant
-        fuelTypeComboBox.getItems().addAll("DIESEL", "GASOLINE", "ELECTRIC", "HYBRID", "OTHER");
-    }
-
-    private VBox createContent() {
-        VBox content = new VBox(10);
+    
+    private VBox createFormContent() {
+        VBox content = new VBox(15);
         content.setPadding(new Insets(20));
+        content.setPrefWidth(600);
         
-        // Onglets pour organiser les champs
-        TabPane tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        // Section Informations générales
+        content.getChildren().add(createGeneralInfoSection());
         
-        // Onglet Informations Générales
-        Tab generalTab = new Tab("Général");
-        generalTab.setContent(createGeneralTab());
+        // Section Caractéristiques techniques
+        content.getChildren().add(createTechnicalSection());
         
-        // Onglet Caractéristiques
-        Tab specsTab = new Tab("Caractéristiques");
-        specsTab.setContent(createSpecsTab());
+        // Section Documents et maintenance
+        content.getChildren().add(createMaintenanceSection());
         
-        // Onglet Utilisation
-        Tab usageTab = new Tab("Utilisation");
-        usageTab.setContent(createUsageTab());
+        // Section Financier et localisation
+        content.getChildren().add(createFinancialSection());
         
-        tabPane.getTabs().addAll(generalTab, specsTab, usageTab);
-        
-        content.getChildren().add(tabPane);
+        // Section Notes
+        content.getChildren().add(createNotesSection());
         
         return content;
     }
-
-    private GridPane createGeneralTab() {
+    
+    private VBox createGeneralInfoSection() {
+        VBox section = new VBox(10);
+        
+        Label titleLabel = new Label("Informations generales");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(20));
         
-        // Informations de base
-        grid.add(new Label("*Nom :"), 0, 0);
-        nameField.setPrefWidth(250);
+        // Ligne 1
+        nameField = new TextField();
+        nameField.setPromptText("Nom du vehicule");
+        grid.add(new Label("Nom *:"), 0, 0);
         grid.add(nameField, 1, 0);
         
-        grid.add(new Label("*Marque :"), 0, 1);
-        brandField.setPrefWidth(250);
-        grid.add(brandField, 1, 1);
+        brandField = new TextField();
+        brandField.setPromptText("Marque");
+        grid.add(new Label("Marque:"), 2, 0);
+        grid.add(brandField, 3, 0);
         
-        grid.add(new Label("*Modèle :"), 0, 2);
-        modelField.setPrefWidth(250);
-        grid.add(modelField, 1, 2);
+        // Ligne 2
+        modelField = new TextField();
+        modelField.setPromptText("Modele");
+        grid.add(new Label("Modele:"), 0, 1);
+        grid.add(modelField, 1, 1);
         
-        grid.add(new Label("*Plaque d'immatriculation :"), 0, 3);
-        licensePlateField.setPrefWidth(250);
-        grid.add(licensePlateField, 1, 3);
+        licensePlateField = new TextField();
+        licensePlateField.setPromptText("AB-123-CD");
+        grid.add(new Label("Plaque:"), 2, 1);
+        grid.add(licensePlateField, 3, 1);
         
-        grid.add(new Label("Numéro VIN :"), 0, 4);
-        vinField.setPrefWidth(250);
-        grid.add(vinField, 1, 4);
+        // Ligne 3
+        vinField = new TextField();
+        vinField.setPromptText("Numéro VIN");
+        grid.add(new Label("VIN:"), 0, 2);
+        grid.add(vinField, 1, 2);
         
-        grid.add(new Label("*Type :"), 0, 5);
-        typeComboBox.setPrefWidth(250);
-        grid.add(typeComboBox, 1, 5);
+        yearField = new TextField();
+        yearField.setPromptText("2020");
+        grid.add(new Label("Année:"), 2, 2);
+        grid.add(yearField, 3, 2);
         
-        grid.add(new Label("*Statut :"), 0, 6);
-        statusComboBox.setPrefWidth(250);
-        grid.add(statusComboBox, 1, 6);
+        // Ligne 4 - ComboBox
+        typeCombo = new ComboBox<>(FXCollections.observableArrayList(VehicleType.values()));
+        typeCombo.setValue(VehicleType.VAN);
+        grid.add(new Label("Type *:"), 0, 3);
+        grid.add(typeCombo, 1, 3);
         
-        grid.add(new Label("*Type de carburant :"), 0, 7);
-        fuelTypeComboBox.setPrefWidth(250);
-        grid.add(fuelTypeComboBox, 1, 7);
+        statusCombo = new ComboBox<>(FXCollections.observableArrayList(VehicleStatus.values()));
+        statusCombo.setValue(VehicleStatus.AVAILABLE);
+        grid.add(new Label("Statut *:"), 2, 3);
+        grid.add(statusCombo, 3, 3);
         
-        return grid;
+        // Ligne 5
+        fuelTypeCombo = new ComboBox<>(FXCollections.observableArrayList(FuelType.values()));
+        fuelTypeCombo.setValue(FuelType.DIESEL);
+        grid.add(new Label("Carburant:"), 0, 4);
+        grid.add(fuelTypeCombo, 1, 4);
+        
+        section.getChildren().addAll(titleLabel, grid);
+        return section;
     }
-
-    private GridPane createSpecsTab() {
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20));
+    
+    private VBox createTechnicalSection() {
+        VBox section = new VBox(10);
         
-        grid.add(new Label("Année de fabrication :"), 0, 0);
-        yearManufacturedField.setPrefWidth(250);
-        grid.add(yearManufacturedField, 1, 0);
-        
-        grid.add(new Label("Kilométrage :"), 0, 1);
-        mileageField.setPrefWidth(250);
-        grid.add(mileageField, 1, 1);
-        
-        grid.add(new Label("Charge utile max (kg) :"), 0, 2);
-        maxPayloadField.setPrefWidth(250);
-        grid.add(maxPayloadField, 1, 2);
-        
-        grid.add(new Label("Dimensions (L x l x h) :"), 0, 3);
-        dimensionsField.setPrefWidth(250);
-        grid.add(dimensionsField, 1, 3);
-        
-        return grid;
-    }
-
-    private VBox createUsageTab() {
-        VBox vbox = new VBox(10);
-        vbox.setPadding(new Insets(20));
+        Label titleLabel = new Label("Caractéristiques techniques");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         
-        grid.add(new Label("Localisation actuelle :"), 0, 0);
-        currentLocationField.setPrefWidth(250);
-        grid.add(currentLocationField, 1, 0);
+        mileageField = new TextField();
+        mileageField.setPromptText("150000");
+        grid.add(new Label("Kilométrage:"), 0, 0);
+        grid.add(mileageField, 1, 0);
         
-        grid.add(new Label("Conducteur assigné :"), 0, 1);
-        assignedDriverField.setPrefWidth(250);
-        grid.add(assignedDriverField, 1, 1);
+        maxPayloadField = new TextField();
+        maxPayloadField.setPromptText("1500.50");
+        grid.add(new Label("Charge utile (kg):"), 2, 0);
+        grid.add(maxPayloadField, 3, 0);
         
-        vbox.getChildren().add(grid);
+        dimensionsField = new TextField();
+        dimensionsField.setPromptText("L x l x h (m)");
+        grid.add(new Label("Dimensions:"), 0, 1);
+        grid.add(dimensionsField, 1, 1, 3, 1); // Span 3 colonnes
         
-        // Notes
-        Label notesLabel = new Label("Notes :");
-        notesField.setPrefRowCount(4);
-        notesField.setWrapText(true);
-        
-        vbox.getChildren().addAll(notesLabel, notesField);
-        
-        return vbox;
+        section.getChildren().addAll(titleLabel, grid);
+        return section;
     }
-
-    private void loadVehicleData() {
-        if (vehicleData != null) {
-            nameField.setText(getStringValue("name"));
-            brandField.setText(getStringValue("brand"));
-            modelField.setText(getStringValue("model"));
-            licensePlateField.setText(getStringValue("licensePlate"));
-            vinField.setText(getStringValue("vin"));
-            
-            // Sélection des ComboBox
-            if (vehicleData.containsKey("type")) {
-                typeComboBox.setValue(getStringValue("type"));
-            }
-            if (vehicleData.containsKey("status")) {
-                statusComboBox.setValue(getStringValue("status"));
-            }
-            if (vehicleData.containsKey("fuelType")) {
-                fuelTypeComboBox.setValue(getStringValue("fuelType"));
-            }
-            
-            // Champs numériques
-            if (vehicleData.containsKey("yearManufactured") && vehicleData.get("yearManufactured") != null) {
-                yearManufacturedField.setText(vehicleData.get("yearManufactured").toString());
-            }
-            if (vehicleData.containsKey("mileage") && vehicleData.get("mileage") != null) {
-                mileageField.setText(vehicleData.get("mileage").toString());
-            }
-            if (vehicleData.containsKey("maxPayload") && vehicleData.get("maxPayload") != null) {
-                maxPayloadField.setText(vehicleData.get("maxPayload").toString());
-            }
-            
-            dimensionsField.setText(getStringValue("dimensions"));
-            currentLocationField.setText(getStringValue("currentLocation"));
-            assignedDriverField.setText(getStringValue("assignedDriver"));
-            notesField.setText(getStringValue("notes"));
-        }
+    
+    private VBox createMaintenanceSection() {
+        VBox section = new VBox(10);
+        
+        Label titleLabel = new Label("Documents et maintenance");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        
+        // Assurance
+        insuranceNumberField = new TextField();
+        insuranceNumberField.setPromptText("Numéro d'assurance");
+        grid.add(new Label("N° Assurance:"), 0, 0);
+        grid.add(insuranceNumberField, 1, 0);
+        
+        insuranceExpirationPicker = new DatePicker();
+        grid.add(new Label("Expiration assurance:"), 2, 0);
+        grid.add(insuranceExpirationPicker, 3, 0);
+        
+        // Contrôle technique
+        technicalControlExpirationPicker = new DatePicker();
+        grid.add(new Label("Contrôle technique:"), 0, 1);
+        grid.add(technicalControlExpirationPicker, 1, 1);
+        
+        // Maintenance
+        lastMaintenancePicker = new DatePicker();
+        grid.add(new Label("Dernière maintenance:"), 0, 2);
+        grid.add(lastMaintenancePicker, 1, 2);
+        
+        nextMaintenancePicker = new DatePicker();
+        grid.add(new Label("Prochaine maintenance:"), 2, 2);
+        grid.add(nextMaintenancePicker, 3, 2);
+        
+        maintenanceIntervalField = new TextField();
+        maintenanceIntervalField.setPromptText("15000");
+        grid.add(new Label("Intervalle maintenance (km):"), 0, 3);
+        grid.add(maintenanceIntervalField, 1, 3);
+        
+        section.getChildren().addAll(titleLabel, grid);
+        return section;
     }
-
-    private String getStringValue(String key) {
-        Object value = vehicleData.get(key);
-        return value != null ? value.toString() : "";
+    
+    private VBox createFinancialSection() {
+        VBox section = new VBox(10);
+        
+        Label titleLabel = new Label("Informations financières et localisation");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        
+        // Achat
+        purchaseDatePicker = new DatePicker();
+        grid.add(new Label("Date d'achat:"), 0, 0);
+        grid.add(purchaseDatePicker, 1, 0);
+        
+        purchasePriceField = new TextField();
+        purchasePriceField.setPromptText("45000.00");
+        grid.add(new Label("Prix d'achat (€):"), 2, 0);
+        grid.add(purchasePriceField, 3, 0);
+        
+        // Location
+        dailyRentalRateField = new TextField();
+        dailyRentalRateField.setPromptText("150.00");
+        grid.add(new Label("Tarif location/jour (€):"), 0, 1);
+        grid.add(dailyRentalRateField, 1, 1);
+        
+        // Localisation et conducteur
+        currentLocationField = new TextField();
+        currentLocationField.setPromptText("Entrepôt Principal");
+        grid.add(new Label("Localisation actuelle:"), 0, 2);
+        grid.add(currentLocationField, 1, 2);
+        
+        assignedDriverField = new TextField();
+        assignedDriverField.setPromptText("Nom du conducteur assigné");
+        grid.add(new Label("Conducteur assigné:"), 2, 2);
+        grid.add(assignedDriverField, 3, 2);
+        
+        section.getChildren().addAll(titleLabel, grid);
+        return section;
     }
-
-    private void setupValidation() {
-        // Récupérer le bouton de sauvegarde (premier bouton qui est notre saveButtonType)
-        Button saveButton = (Button) getDialogPane().lookupButton(getDialogPane().getButtonTypes().get(0));
+    
+    private VBox createNotesSection() {
+        VBox section = new VBox(10);
         
-        // Validation en temps réel
-        Runnable validator = () -> {
-            boolean valid = !nameField.getText().trim().isEmpty() &&
-                           !brandField.getText().trim().isEmpty() &&
-                           !modelField.getText().trim().isEmpty() &&
-                           !licensePlateField.getText().trim().isEmpty() &&
-                           typeComboBox.getValue() != null &&
-                           statusComboBox.getValue() != null &&
-                           fuelTypeComboBox.getValue() != null;
-            
-            saveButton.setDisable(!valid);
-        };
+        Label titleLabel = new Label("Notes et observations");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         
-        // Attachement des listeners
-        nameField.textProperty().addListener((obs, old, val) -> validator.run());
-        brandField.textProperty().addListener((obs, old, val) -> validator.run());
-        modelField.textProperty().addListener((obs, old, val) -> validator.run());
-        licensePlateField.textProperty().addListener((obs, old, val) -> validator.run());
-        typeComboBox.valueProperty().addListener((obs, old, val) -> validator.run());
-        statusComboBox.valueProperty().addListener((obs, old, val) -> validator.run());
-        fuelTypeComboBox.valueProperty().addListener((obs, old, val) -> validator.run());
+        notesArea = new TextArea();
+        notesArea.setPromptText("Notes, observations, particularités du véhicule...");
+        notesArea.setPrefRowCount(3);
+        notesArea.setWrapText(true);
         
-        // Validation initiale
-        validator.run();
+        section.getChildren().addAll(titleLabel, notesArea);
+        return section;
     }
-
-    private Map<String, Object> convertResult(ButtonType buttonType) {
-        if (buttonType == ButtonType.OK) {
-            return createVehicleFromFields();
-        }
-        return null;
-    }
-
-    private Map<String, Object> createVehicleFromFields() {
-        Map<String, Object> result = new HashMap<>();
+    
+    private void populateFields(Map<String, Object> data) {
+        nameField.setText(getStringValue(data, "name"));
+        brandField.setText(getStringValue(data, "brand"));
+        modelField.setText(getStringValue(data, "model"));
+        licensePlateField.setText(getStringValue(data, "licensePlate"));
+        vinField.setText(getStringValue(data, "vin"));
         
-        // ID si édition
-        if (isEdit && vehicleData.containsKey("id")) {
-            result.put("id", vehicleData.get("id"));
-        }
-        
-        // Champs obligatoires
-        result.put("name", nameField.getText().trim());
-        result.put("brand", brandField.getText().trim());
-        result.put("model", modelField.getText().trim());
-        result.put("licensePlate", licensePlateField.getText().trim());
-        result.put("type", typeComboBox.getValue());
-        result.put("status", statusComboBox.getValue());
-        result.put("fuelType", fuelTypeComboBox.getValue());
-        
-        // Champs optionnels
-        String vin = vinField.getText().trim();
-        if (!vin.isEmpty()) {
-            result.put("vin", vin);
+        // Types énumérés
+        String type = getStringValue(data, "type");
+        if (type != null) {
+            try {
+                typeCombo.setValue(VehicleType.valueOf(type));
+            } catch (IllegalArgumentException ignored) {}
         }
         
-        // Champs numériques avec gestion des erreurs
-        try {
-            String yearText = yearManufacturedField.getText().trim();
-            if (!yearText.isEmpty()) {
-                result.put("yearManufactured", Integer.parseInt(yearText));
-            }
-        } catch (NumberFormatException e) {
-            // Ignore si format incorrect
+        String status = getStringValue(data, "status");
+        if (status != null) {
+            try {
+                statusCombo.setValue(VehicleStatus.valueOf(status));
+            } catch (IllegalArgumentException ignored) {}
         }
         
-        try {
-            String mileageText = mileageField.getText().trim();
-            if (!mileageText.isEmpty()) {
-                result.put("mileage", Integer.parseInt(mileageText));
-            }
-        } catch (NumberFormatException e) {
-            // Ignore si format incorrect
+        String fuelType = getStringValue(data, "fuelType");
+        if (fuelType != null) {
+            try {
+                fuelTypeCombo.setValue(FuelType.valueOf(fuelType));
+            } catch (IllegalArgumentException ignored) {}
         }
         
-        try {
-            String payloadText = maxPayloadField.getText().trim();
-            if (!payloadText.isEmpty()) {
-                result.put("maxPayload", Double.parseDouble(payloadText));
-            }
-        } catch (NumberFormatException e) {
-            // Ignore si format incorrect
-        }
+        // Champs numériques
+        setIntegerField(yearField, data, "yearManufactured");
+        setIntegerField(mileageField, data, "mileage");
+        setIntegerField(maintenanceIntervalField, data, "maintenanceIntervalKm");
+        
+        // Champs décimaux
+        setBigDecimalField(maxPayloadField, data, "maxPayload");
+        setBigDecimalField(purchasePriceField, data, "purchasePrice");
+        setBigDecimalField(dailyRentalRateField, data, "dailyRentalRate");
         
         // Autres champs texte
-        String dimensions = dimensionsField.getText().trim();
-        if (!dimensions.isEmpty()) {
-            result.put("dimensions", dimensions);
+        dimensionsField.setText(getStringValue(data, "dimensions"));
+        insuranceNumberField.setText(getStringValue(data, "insuranceNumber"));
+        currentLocationField.setText(getStringValue(data, "currentLocation"));
+        assignedDriverField.setText(getStringValue(data, "assignedDriver"));
+        notesArea.setText(getStringValue(data, "notes"));
+        
+        // Dates
+        setDateField(insuranceExpirationPicker, data, "insuranceExpiration");
+        setDateField(technicalControlExpirationPicker, data, "technicalControlExpiration");
+        setDateField(lastMaintenancePicker, data, "lastMaintenanceDate");
+        setDateField(nextMaintenancePicker, data, "nextMaintenanceDate");
+        setDateField(purchaseDatePicker, data, "purchaseDate");
+    }
+    
+    private Map<String, Object> collectFormData() {
+        Map<String, Object> data = new HashMap<>();
+        
+        data.put("name", nameField.getText().trim());
+        data.put("brand", brandField.getText().trim());
+        data.put("model", modelField.getText().trim());
+        data.put("licensePlate", licensePlateField.getText().trim());
+        data.put("vin", vinField.getText().trim());
+        
+        if (typeCombo.getValue() != null) {
+            data.put("type", typeCombo.getValue().name());
+        }
+        if (statusCombo.getValue() != null) {
+            data.put("status", statusCombo.getValue().name());
+        }
+        if (fuelTypeCombo.getValue() != null) {
+            data.put("fuelType", fuelTypeCombo.getValue().name());
         }
         
-        String location = currentLocationField.getText().trim();
-        if (!location.isEmpty()) {
-            result.put("currentLocation", location);
+        // Champs numériques
+        putIntegerField(data, "yearManufactured", yearField);
+        putIntegerField(data, "mileage", mileageField);
+        putIntegerField(data, "maintenanceIntervalKm", maintenanceIntervalField);
+        
+        putBigDecimalField(data, "maxPayload", maxPayloadField);
+        putBigDecimalField(data, "purchasePrice", purchasePriceField);
+        putBigDecimalField(data, "dailyRentalRate", dailyRentalRateField);
+        
+        data.put("dimensions", dimensionsField.getText().trim());
+        data.put("insuranceNumber", insuranceNumberField.getText().trim());
+        data.put("currentLocation", currentLocationField.getText().trim());
+        data.put("assignedDriver", assignedDriverField.getText().trim());
+        data.put("notes", notesArea.getText().trim());
+        
+        // Dates
+        if (insuranceExpirationPicker.getValue() != null) {
+            data.put("insuranceExpiration", insuranceExpirationPicker.getValue().toString());
+        }
+        if (technicalControlExpirationPicker.getValue() != null) {
+            data.put("technicalControlExpiration", technicalControlExpirationPicker.getValue().toString());
+        }
+        if (lastMaintenancePicker.getValue() != null) {
+            data.put("lastMaintenanceDate", lastMaintenancePicker.getValue().toString());
+        }
+        if (nextMaintenancePicker.getValue() != null) {
+            data.put("nextMaintenanceDate", nextMaintenancePicker.getValue().toString());
+        }
+        if (purchaseDatePicker.getValue() != null) {
+            data.put("purchaseDate", purchaseDatePicker.getValue().toString());
         }
         
-        String driver = assignedDriverField.getText().trim();
-        if (!driver.isEmpty()) {
-            result.put("assignedDriver", driver);
-        }
+        return data;
+    }
+    
+    private void setupValidation() {
+        // Validation du nom obligatoire
+        nameField.textProperty().addListener((obs, oldVal, newVal) -> 
+            validateRequiredField());
         
-        String notes = notesField.getText().trim();
-        if (!notes.isEmpty()) {
-            result.put("notes", notes);
+        // Validation des champs numériques
+        setupNumericValidation(yearField, "Année");
+        setupNumericValidation(mileageField, "Kilométrage");
+        setupNumericValidation(maintenanceIntervalField, "Intervalle maintenance");
+        setupDecimalValidation(maxPayloadField, "Charge utile");
+        setupDecimalValidation(purchasePriceField, "Prix d'achat");
+        setupDecimalValidation(dailyRentalRateField, "Tarif location");
+    }
+    
+    private void validateRequiredField() {
+        Button saveButton = (Button) getDialogPane().lookupButton(getDialogPane().getButtonTypes().get(0));
+        boolean valid = nameField.getText() != null && !nameField.getText().trim().isEmpty();
+        saveButton.setDisable(!valid);
+    }
+    
+    private void setupNumericValidation(TextField field, String fieldName) {
+        field.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.trim().isEmpty()) {
+                try {
+                    Integer.parseInt(newVal.trim());
+                    field.setStyle("");
+                } catch (NumberFormatException e) {
+                    field.setStyle("-fx-border-color: red;");
+                }
+            } else {
+                field.setStyle("");
+            }
+        });
+    }
+    
+    private void setupDecimalValidation(TextField field, String fieldName) {
+        field.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.trim().isEmpty()) {
+                try {
+                    new BigDecimal(newVal.trim());
+                    field.setStyle("");
+                } catch (NumberFormatException e) {
+                    field.setStyle("-fx-border-color: red;");
+                }
+            } else {
+                field.setStyle("");
+            }
+        });
+    }
+    
+    // Méthodes utilitaires
+    private String getStringValue(Map<String, Object> data, String key) {
+        Object value = data.get(key);
+        return value != null ? value.toString() : "";
+    }
+    
+    private void setIntegerField(TextField field, Map<String, Object> data, String key) {
+        Object value = data.get(key);
+        if (value instanceof Number) {
+            field.setText(((Number) value).toString());
         }
-        
-        return result;
+    }
+    
+    private void setBigDecimalField(TextField field, Map<String, Object> data, String key) {
+        Object value = data.get(key);
+        if (value instanceof Number) {
+            field.setText(((Number) value).toString());
+        }
+    }
+    
+    private void setDateField(DatePicker picker, Map<String, Object> data, String key) {
+        Object value = data.get(key);
+        if (value != null) {
+            try {
+                picker.setValue(LocalDate.parse(value.toString()));
+            } catch (Exception ignored) {}
+        }
+    }
+    
+    private void putIntegerField(Map<String, Object> data, String key, TextField field) {
+        String text = field.getText().trim();
+        if (!text.isEmpty()) {
+            try {
+                data.put(key, Integer.parseInt(text));
+            } catch (NumberFormatException ignored) {}
+        }
+    }
+    
+    private void putBigDecimalField(Map<String, Object> data, String key, TextField field) {
+        String text = field.getText().trim();
+        if (!text.isEmpty()) {
+            try {
+                data.put(key, new BigDecimal(text));
+            } catch (NumberFormatException ignored) {}
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.magscene.magsav.desktop.view;
 
+import com.magscene.magsav.desktop.dialog.EquipmentDialog;
 import com.magscene.magsav.desktop.service.ApiService;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -363,8 +364,10 @@ public class EquipmentManagerView extends VBox {
             Map<String, Object> equipmentData = result.get();
             apiService.createEquipment(equipmentData).thenAccept(response -> {
                 Platform.runLater(() -> {
-                    if (response.containsKey("error")) {
-                        showError("Erreur", "Impossible de créer l'équipement: " + response.get("error"));
+                    if (response instanceof Map && ((Map<?, ?>) response).containsKey("error")) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> responseMap = (Map<String, Object>) response;
+                        showError("Erreur", "Impossible de créer l'équipement: " + responseMap.get("error"));
                     } else {
                         showInfo("Succès", "Équipement créé avec succès !");
                         refreshData();
@@ -396,8 +399,10 @@ public class EquipmentManagerView extends VBox {
             
             apiService.updateEquipment(equipmentId, updatedData).thenAccept(response -> {
                 Platform.runLater(() -> {
-                    if (response.containsKey("error")) {
-                        showError("Erreur", "Impossible de modifier l'équipement: " + response.get("error"));
+                    if (response instanceof Map && ((Map<?, ?>) response).containsKey("error")) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> responseMap = (Map<String, Object>) response;
+                        showError("Erreur", "Impossible de modifier l'équipement: " + responseMap.get("error"));
                     } else {
                         showInfo("Succès", "Équipement modifié avec succès !");
                         refreshData();

@@ -25,7 +25,7 @@ public class ProjectManagerView extends BorderPane {
     private ObservableList<Map<String, Object>> projectData;
     private ApiService apiService;
     
-    // ContrÃƒÂ´les de filtrage
+    // Controles de filtrage
     private ComboBox<String> statusFilter;
     private ComboBox<String> typeFilter;
     private TextField searchField;
@@ -55,7 +55,7 @@ public class ProjectManagerView extends BorderPane {
         });
         idCol.setPrefWidth(60);
         
-        TableColumn<Map<String, Object>, String> numberCol = new TableColumn<>("NÃ‚Â° Projet");
+        TableColumn<Map<String, Object>, String> numberCol = new TableColumn<>("N° Projet");
         numberCol.setCellValueFactory(cellData -> {
             Object value = cellData.getValue().get("projectNumber");
             return new javafx.beans.property.SimpleStringProperty(value != null ? value.toString() : "");
@@ -90,7 +90,7 @@ public class ProjectManagerView extends BorderPane {
         });
         clientCol.setPrefWidth(150);
         
-        TableColumn<Map<String, Object>, String> startDateCol = new TableColumn<>("Date dÃƒÂ©but");
+        TableColumn<Map<String, Object>, String> startDateCol = new TableColumn<>("Date debut");
         startDateCol.setCellValueFactory(cellData -> {
             Object value = cellData.getValue().get("startDate");
             return new javafx.beans.property.SimpleStringProperty(value != null ? value.toString() : "");
@@ -104,17 +104,17 @@ public class ProjectManagerView extends BorderPane {
         });
         endDateCol.setPrefWidth(100);
         
-        TableColumn<Map<String, Object>, String> amountCol = new TableColumn<>("Montant estimÃƒÂ©");
+        TableColumn<Map<String, Object>, String> amountCol = new TableColumn<>("Montant estime");
         amountCol.setCellValueFactory(cellData -> {
             Object value = cellData.getValue().get("estimatedAmount");
-            return new javafx.beans.property.SimpleStringProperty(value != null ? value.toString() + " Ã¢â€šÂ¬" : "");
+            return new javafx.beans.property.SimpleStringProperty(value != null ? value.toString() + " €" : "");
         });
         amountCol.setPrefWidth(120);
         
         projectTable.getColumns().addAll(idCol, numberCol, nameCol, typeCol, statusCol, 
                                        clientCol, startDateCol, endDateCol, amountCol);
         
-        // ContrÃƒÂ´les de filtrage
+        // Controles de filtrage
         statusFilter = new ComboBox<>();
         statusFilter.getItems().addAll("Tous", "DRAFT", "QUOTED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED", "ON_HOLD");
         statusFilter.setValue("Tous");
@@ -128,7 +128,7 @@ public class ProjectManagerView extends BorderPane {
         searchField.setPrefWidth(200);
         
         startDatePicker = new DatePicker();
-        startDatePicker.setPromptText("Date dÃƒÂ©but");
+        startDatePicker.setPromptText("Date debut");
         
         endDatePicker = new DatePicker();
         endDatePicker.setPromptText("Date fin");
@@ -159,7 +159,7 @@ public class ProjectManagerView extends BorderPane {
         Label statusLabel = new Label("Statut:");
         Label typeLabel = new Label("Type:");
         Label searchLabel = new Label("Recherche:");
-        Label dateLabel = new Label("PÃƒÂ©riode:");
+        Label dateLabel = new Label("Periode:");
         
         Button filterButton = new Button("Filtrer");
         Button clearButton = new Button("Effacer");
@@ -200,7 +200,7 @@ public class ProjectManagerView extends BorderPane {
                     loadProjects();
                     break;
                 default:
-                    // Autres touches non gÃƒÂ©rÃƒÂ©es
+                    // Autres touches non gerees
                     break;
             }
         });
@@ -227,20 +227,20 @@ public class ProjectManagerView extends BorderPane {
                 // Effacer tous les filtres pour s'assurer que le nouveau projet est visible
                 clearFilters();
                 
-                // Recharger la liste complÃƒÂ¨te des projets
+                // Recharger la liste complete des projets
                 loadProjects();
                 
-                // SÃƒÂ©lectionner le projet crÃƒÂ©ÃƒÂ© dans la table aprÃƒÂ¨s un court dÃƒÂ©lai
+                // Selectionner le projet cree dans la table apres un court delai
                 if (createdProject != null && createdProject.containsKey("id")) {
                     javafx.application.Platform.runLater(() -> {
                         selectProjectById(createdProject.get("id"));
                     });
                 }
                 
-                AlertUtil.showInfo("SuccÃƒÂ¨s", "Projet crÃƒÂ©ÃƒÂ© avec succÃƒÂ¨s !\nNom: " + projectData.get("name") + 
+                AlertUtil.showInfo("Succes", "Projet cree avec succes !\nNom: " + projectData.get("name") + 
                                  "\nClient: " + projectData.get("clientName"));
             } catch (Exception e) {
-                AlertUtil.showError("Erreur", "Impossible de crÃƒÂ©er le projet: " + e.getMessage());
+                AlertUtil.showError("Erreur", "Impossible de creer le projet: " + e.getMessage());
             }
         });
     }
@@ -248,7 +248,7 @@ public class ProjectManagerView extends BorderPane {
     private void editProject() {
         Map<String, Object> selectedProject = projectTable.getSelectionModel().getSelectedItem();
         if (selectedProject == null) {
-            AlertUtil.showWarning("Aucune sÃƒÂ©lection", "Veuillez sÃƒÂ©lectionner un projet ÃƒÂ  modifier");
+            AlertUtil.showWarning("Aucune selection", "Veuillez selectionner un projet a modifier");
             return;
         }
         
@@ -260,7 +260,7 @@ public class ProjectManagerView extends BorderPane {
                 Long id = Long.valueOf(selectedProject.get("id").toString());
                 apiService.update("projects", id, projectData);
                 loadProjects();
-                AlertUtil.showInfo("SuccÃƒÂ¨s", "Projet modifiÃƒÂ© avec succÃƒÂ¨s");
+                AlertUtil.showInfo("Succes", "Projet modifie avec succes");
             } catch (Exception e) {
                 AlertUtil.showError("Erreur", "Impossible de modifier le projet: " + e.getMessage());
             }
@@ -270,21 +270,21 @@ public class ProjectManagerView extends BorderPane {
     private void deleteProject() {
         Map<String, Object> selectedProject = projectTable.getSelectionModel().getSelectedItem();
         if (selectedProject == null) {
-            AlertUtil.showWarning("Aucune sÃƒÂ©lection", "Veuillez sÃƒÂ©lectionner un projet ÃƒÂ  supprimer");
+            AlertUtil.showWarning("Aucune selection", "Veuillez selectionner un projet a supprimer");
             return;
         }
         
         boolean confirmed = AlertUtil.showConfirmation("Confirmation", 
-            "ÃƒÅ tes-vous sÃƒÂ»r de vouloir supprimer ce projet ?\n\n" + 
+            "Etes-vous sur de vouloir supprimer ce projet ?\n\n" +
             "Nom: " + selectedProject.get("name") + "\n" +
-            "NÃ‚Â°: " + selectedProject.get("projectNumber"));
+            "N°: " + selectedProject.get("projectNumber"));
             
         if (confirmed) {
             try {
                 Long id = Long.valueOf(selectedProject.get("id").toString());
                 apiService.delete("projects", id);
                 loadProjects();
-                AlertUtil.showInfo("SuccÃƒÂ¨s", "Projet supprimÃƒÂ© avec succÃƒÂ¨s");
+                AlertUtil.showInfo("Succes", "Projet supprime avec succes");
             } catch (Exception e) {
                 AlertUtil.showError("Erreur", "Impossible de supprimer le projet: " + e.getMessage());
             }
@@ -321,7 +321,7 @@ public class ProjectManagerView extends BorderPane {
                 return;
             }
             
-            // Filtrage par pÃƒÂ©riode d'installation
+            // Filtrage par periode d'installation
             LocalDate startDate = startDatePicker.getValue();
             LocalDate endDate = endDatePicker.getValue();
             if (startDate != null && endDate != null) {

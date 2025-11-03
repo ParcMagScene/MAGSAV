@@ -24,8 +24,8 @@ import java.util.Optional;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 /**
- * Interface JavaFX complÃƒÂ¨te pour la gestion du personnel
- * FonctionnalitÃƒÂ©s : tableau dÃƒÂ©taillÃƒÂ©, recherche, filtres, CRUD, statistiques
+ * Interface JavaFX complete pour la gestion du personnel
+ * Fonctionnalites : tableau detaille, recherche, filtres, CRUD, statistiques
  */
 public class PersonnelManagerView extends VBox {
     
@@ -70,7 +70,7 @@ public class PersonnelManagerView extends VBox {
         header.setPadding(new Insets(0, 0, 10, 0));
         
         // Titre principal
-        Label titleLabel = new Label("Ã°Å¸â€œâ€¹ Gestion du Personnel");
+        Label titleLabel = new Label("Gestion du Personnel");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         titleLabel.setTextFill(Color.DARKBLUE);
         
@@ -89,33 +89,33 @@ public class PersonnelManagerView extends VBox {
         toolbar.setPadding(new Insets(10, 0, 10, 0));
         
         // Champ de recherche
-        Label searchLabel = new Label("Ã°Å¸â€Â Recherche:");
+        Label searchLabel = new Label("Recherche:");
         searchField = new TextField();
-        searchField.setPromptText("Nom, prÃƒÂ©nom, email...");
+        searchField.setPromptText("Nom, prenom, email...");
         searchField.setPrefWidth(250);
         searchField.textProperty().addListener((obs, oldText, newText) -> filterPersonnelData());
         
         // Filtres
         Label typeLabel = new Label("Type:");
         typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous", "EmployÃƒÂ©", "Freelance", "Stagiaire", "IntÃƒÂ©rimaire");
+        typeFilter.getItems().addAll("Tous", "Employe", "Freelance", "Stagiaire", "Interimaire");
         typeFilter.setValue("Tous");
         typeFilter.setOnAction(e -> filterPersonnelData());
         
         Label statusLabel = new Label("Statut:");
         statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "En congÃƒÂ©", "TerminÃƒÂ©");
+        statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "En conge", "Termine");
         statusFilter.setValue("Tous");
         statusFilter.setOnAction(e -> filterPersonnelData());
         
-        Label deptLabel = new Label("DÃƒÂ©partement:");
+        Label deptLabel = new Label("Departement:");
         departmentFilter = new ComboBox<>();
         departmentFilter.getItems().add("Tous");
         departmentFilter.setValue("Tous");
         departmentFilter.setOnAction(e -> filterPersonnelData());
         
-        // Bouton rafraÃƒÂ®chir
-        Button refreshButton = new Button("Ã°Å¸â€â€ž Actualiser");
+        // Bouton rafraichir
+        Button refreshButton = new Button("Actualiser");
         refreshButton.setOnAction(e -> loadPersonnelData());
         
         toolbar.getChildren().addAll(
@@ -178,8 +178,8 @@ public class PersonnelManagerView extends VBox {
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         emailCol.setPrefWidth(200);
         
-        // Colonne TÃƒÂ©lÃƒÂ©phone
-        TableColumn<PersonnelItem, String> phoneCol = new TableColumn<>("TÃƒÂ©lÃƒÂ©phone");
+        // Colonne Telephone
+        TableColumn<PersonnelItem, String> phoneCol = new TableColumn<>("Telephone");
         phoneCol.setCellValueFactory(new PropertyValueFactory<>("phone"));
         phoneCol.setPrefWidth(130);
         
@@ -198,7 +198,7 @@ public class PersonnelManagerView extends VBox {
                     setText(type);
                     // Couleurs selon le type
                     switch (type) {
-                        case "EmployÃƒÂ©":
+                        case "Employe":
                             setStyle("-fx-background-color: #e8f5e8; -fx-text-fill: #2e7d32;");
                             break;
                         case "Freelance":
@@ -207,7 +207,7 @@ public class PersonnelManagerView extends VBox {
                         case "Stagiaire":
                             setStyle("-fx-background-color: #fff3e0; -fx-text-fill: #ef6c00;");
                             break;
-                        case "IntÃƒÂ©rimaire":
+                        case "Interimaire":
                             setStyle("-fx-background-color: #fce4ec; -fx-text-fill: #ad1457;");
                             break;
                     }
@@ -236,10 +236,10 @@ public class PersonnelManagerView extends VBox {
                         case "Inactif":
                             setStyle("-fx-background-color: #ffebee; -fx-text-fill: #c62828;");
                             break;
-                        case "En congÃƒÂ©":
+                        case "En conge":
                             setStyle("-fx-background-color: #fff3e0; -fx-text-fill: #ef6c00;");
                             break;
-                        case "TerminÃƒÂ©":
+                        case "Termine":
                             setStyle("-fx-background-color: #f3e5f5; -fx-text-fill: #7b1fa2;");
                             break;
                     }
@@ -252,8 +252,8 @@ public class PersonnelManagerView extends VBox {
         jobCol.setCellValueFactory(new PropertyValueFactory<>("jobTitle"));
         jobCol.setPrefWidth(150);
         
-        // Colonne DÃƒÂ©partement
-        TableColumn<PersonnelItem, String> deptCol = new TableColumn<>("DÃƒÂ©partement");
+        // Colonne Departement
+        TableColumn<PersonnelItem, String> deptCol = new TableColumn<>("Departement");
         deptCol.setCellValueFactory(new PropertyValueFactory<>("department"));
         deptCol.setPrefWidth(120);
         
@@ -273,12 +273,12 @@ public class PersonnelManagerView extends VBox {
         footer.setAlignment(Pos.CENTER_LEFT);
         footer.setPadding(new Insets(15, 0, 0, 0));
         
-        Button addButton = new Button("Ã¢Å¾â€¢ Nouveau Personnel");
+        Button addButton = new Button("➕ Nouveau Personnel");
         addButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
         addButton.setPrefWidth(150);
         addButton.setOnAction(e -> createNewPersonnel());
         
-        Button editButton = new Button("Ã¢Å“ÂÃ¯Â¸Â Modifier");
+        Button editButton = new Button("✏️ Modifier");
         editButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;");
         editButton.setPrefWidth(120);
         editButton.setOnAction(e -> {
@@ -286,11 +286,11 @@ public class PersonnelManagerView extends VBox {
             if (selected != null) {
                 editPersonnel(selected);
             } else {
-                showAlert("SÃƒÂ©lection requise", "Veuillez sÃƒÂ©lectionner un membre du personnel ÃƒÂ  modifier.");
+                showAlert("Selection requise", "Veuillez selectionner un membre du personnel a modifier.");
             }
         });
         
-        Button deleteButton = new Button("Ã°Å¸â€”â€˜Ã¯Â¸Â Supprimer");
+        Button deleteButton = new Button("🗑️ Supprimer");
         deleteButton.setStyle("-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-weight: bold;");
         deleteButton.setPrefWidth(120);
         deleteButton.setOnAction(e -> {
@@ -298,7 +298,7 @@ public class PersonnelManagerView extends VBox {
             if (selected != null) {
                 deletePersonnel(selected);
             } else {
-                showAlert("SÃƒÂ©lection requise", "Veuillez sÃƒÂ©lectionner un membre du personnel ÃƒÂ  supprimer.");
+                showAlert("Selection requise", "Veuillez selectionner un membre du personnel a supprimer.");
             }
         });
         
@@ -334,7 +334,7 @@ public class PersonnelManagerView extends VBox {
                 loadingIndicator.setVisible(false);
                 personnelTable.setDisable(false);
                 showAlert("Erreur de chargement", 
-                    "Impossible de charger les donnÃƒÂ©es du personnel : " + throwable.getMessage());
+                    "Impossible de charger les donnees du personnel : " + throwable.getMessage());
             });
             return null;
         });
@@ -350,7 +350,7 @@ public class PersonnelManagerView extends VBox {
         item.setEmail(getStringValue(personnelMap, "email"));
         item.setPhone(getStringValue(personnelMap, "phone"));
         
-        // Gestion des ÃƒÂ©numÃƒÂ©rations
+        // Gestion des enumerations
         String type = getStringValue(personnelMap, "type");
         item.setType(convertTypeToDisplay(type));
         
@@ -368,7 +368,7 @@ public class PersonnelManagerView extends VBox {
         
         item.setNotes(getStringValue(personnelMap, "notes"));
         
-        // Stockage de la map originale pour les opÃƒÂ©rations
+        // Stockage de la map originale pour les operations
         item.setOriginalData(personnelMap);
         
         return item;
@@ -382,10 +382,10 @@ public class PersonnelManagerView extends VBox {
     private String convertTypeToDisplay(String type) {
         if (type == null) return "";
         switch (type.toUpperCase()) {
-            case "EMPLOYEE": return "EmployÃƒÂ©";
+            case "EMPLOYEE": return "Employe";
             case "FREELANCE": return "Freelance";
             case "INTERN": return "Stagiaire";
-            case "TEMPORARY": return "IntÃƒÂ©rimaire";
+            case "TEMPORARY": return "Interimaire";
             default: return type;
         }
     }
@@ -395,14 +395,14 @@ public class PersonnelManagerView extends VBox {
         switch (status.toUpperCase()) {
             case "ACTIVE": return "Actif";
             case "INACTIVE": return "Inactif";
-            case "ON_LEAVE": return "En congÃƒÂ©";
-            case "TERMINATED": return "TerminÃƒÂ©";
+            case "ON_LEAVE": return "En conge";
+            case "TERMINATED": return "Termine";
             default: return status;
         }
     }
     
     private void updateDepartmentFilter() {
-        // RÃƒÂ©cupÃƒÂ©rer la liste des dÃƒÂ©partements uniques
+        // Recuperer la liste des departements uniques
         departmentFilter.getItems().clear();
         departmentFilter.getItems().add("Tous");
         
@@ -421,19 +421,19 @@ public class PersonnelManagerView extends VBox {
     private void updateStatistics() {
         long total = personnelData.size();
         long actif = personnelData.stream().filter(p -> "Actif".equals(p.getStatus())).count();
-        long employes = personnelData.stream().filter(p -> "EmployÃƒÂ©".equals(p.getType())).count();
+        long employes = personnelData.stream().filter(p -> "Employe".equals(p.getType())).count();
         long freelances = personnelData.stream().filter(p -> "Freelance".equals(p.getType())).count();
         
         String stats = String.format(
-            "Ã°Å¸â€œÅ  Total: %d Ã¢â‚¬Â¢ Actifs: %d Ã¢â‚¬Â¢ EmployÃƒÂ©s: %d Ã¢â‚¬Â¢ Freelances: %d",
+            "👥 Total: %d • Actifs: %d • Employes: %d • Freelances: %d",
             total, actif, employes, freelances
         );
         statsLabel.setText(stats);
     }
     
     private void filterPersonnelData() {
-        // TODO: ImplÃƒÂ©menter le filtrage
-        // Pour l'instant, on affiche toutes les donnÃƒÂ©es
+        // TODO: Implementer le filtrage
+        // Pour l'instant, on affiche toutes les donnees
     }
     
     private void createNewPersonnel() {
@@ -441,7 +441,7 @@ public class PersonnelManagerView extends VBox {
         Optional<Map<String, Object>> result = dialog.showAndWait();
         
         result.ifPresent(personnelData -> {
-            // Rechargement des donnÃƒÂ©es aprÃƒÂ¨s crÃƒÂ©ation
+            // Rechargement des donnees apres creation
             loadPersonnelData();
         });
     }
@@ -451,7 +451,7 @@ public class PersonnelManagerView extends VBox {
         Optional<Map<String, Object>> result = dialog.showAndWait();
         
         result.ifPresent(personnelData -> {
-            // Rechargement des donnÃƒÂ©es aprÃƒÂ¨s modification
+            // Rechargement des donnees apres modification
             loadPersonnelData();
         });
     }
@@ -460,7 +460,7 @@ public class PersonnelManagerView extends VBox {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmer la suppression");
         alert.setHeaderText("Supprimer le membre du personnel");
-        alert.setContentText("ÃƒÅ tes-vous sÃƒÂ»r de vouloir supprimer " + personnel.getFullName() + " ?");
+        alert.setContentText("Etes-vous sur de vouloir supprimer " + personnel.getFullName() + " ?");
         
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -468,7 +468,7 @@ public class PersonnelManagerView extends VBox {
             
             CompletableFuture<Void> future = apiService.deletePersonnel(personnelId);
             future.thenRun(() -> Platform.runLater(() -> {
-                showAlert("SuccÃƒÂ¨s", "Membre du personnel supprimÃƒÂ© avec succÃƒÂ¨s.");
+                showAlert("Succes", "Membre du personnel supprime avec succes.");
                 loadPersonnelData();
             })).exceptionally(throwable -> {
                 Platform.runLater(() -> 
@@ -485,7 +485,7 @@ public class PersonnelManagerView extends VBox {
         alert.showAndWait();
     }
     
-    // Classe interne pour reprÃƒÂ©senter un ÃƒÂ©lÃƒÂ©ment du personnel dans le tableau
+    // Classe interne pour representer un element du personnel dans le tableau
     public static class PersonnelItem {
         private SimpleStringProperty id = new SimpleStringProperty();
         private SimpleStringProperty firstName = new SimpleStringProperty();

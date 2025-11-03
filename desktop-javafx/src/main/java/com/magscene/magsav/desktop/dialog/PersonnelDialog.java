@@ -15,7 +15,7 @@ import java.util.Map;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Dialogue pour la crÃƒÂ©ation et modification du personnel
+ * Dialogue pour la creation et modification du personnel
  */
 public class PersonnelDialog extends Dialog<Map<String, Object>> {
     
@@ -35,12 +35,12 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
     private DatePicker hireDatePicker;
     private TextArea notesArea;
     
-    // Ãƒâ€°numÃƒÂ©rations locales pour l'interface
+    // Enumerations locales pour l'interface
     private enum PersonnelType {
-        EMPLOYEE("EmployÃƒÂ©"),
+        EMPLOYEE("Employe"),
         FREELANCE("Freelance"),
         INTERN("Stagiaire"),
-        TEMPORARY("IntÃƒÂ©rimaire");
+        TEMPORARY("Interimaire");
         
         private final String displayName;
         
@@ -57,8 +57,8 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
     private enum PersonnelStatus {
         ACTIVE("Actif"),
         INACTIVE("Inactif"),
-        ON_LEAVE("En congÃƒÂ©"),
-        TERMINATED("TerminÃƒÂ©");
+        ON_LEAVE("En conge"),
+        TERMINATED("Termine");
         
         private final String displayName;
         
@@ -78,20 +78,20 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         this.isEditMode = (existingPersonnel != null);
         
         setTitle(isEditMode ? "Modifier le personnel" : "Nouveau personnel");
-        setHeaderText(isEditMode ? "Modification d'un membre du personnel" : "CrÃƒÂ©ation d'un nouveau membre du personnel");
+        setHeaderText(isEditMode ? "Modification d'un membre du personnel" : "Creation d'un nouveau membre du personnel");
         
         // Configuration des boutons
         ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
         getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
         
-        // CrÃƒÂ©ation du contenu
+        // Creation du contenu
         createContent();
         
-        // Validation et conversion du rÃƒÂ©sultat
+        // Validation et conversion du resultat
         Button saveButton = (Button) getDialogPane().lookupButton(saveButtonType);
         saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             if (!validateForm()) {
-                event.consume(); // EmpÃƒÂªche la fermeture si validation ÃƒÂ©choue
+                event.consume(); // Empeche la fermeture si validation echoue
             }
         });
         
@@ -102,7 +102,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
             return null;
         });
         
-        // Chargement des donnÃƒÂ©es existantes
+        // Chargement des donnees existantes
         if (isEditMode) {
             loadExistingData();
         }
@@ -136,7 +136,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
     private VBox createPersonalInfoSection() {
         VBox section = new VBox(10);
         
-        Label sectionTitle = new Label("Ã°Å¸â€˜Â¤ Informations Personnelles");
+        Label sectionTitle = new Label("👤 Informations Personnelles");
         sectionTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2196F3;");
         
         GridPane grid = new GridPane();
@@ -144,10 +144,10 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         grid.setVgap(10);
         grid.setPadding(new Insets(10));
         
-        // PrÃƒÂ©nom
-        grid.add(new Label("PrÃƒÂ©nom *:"), 0, 0);
+        // Prenom
+        grid.add(new Label("Prenom *:"), 0, 0);
         firstNameField = new TextField();
-        firstNameField.setPromptText("PrÃƒÂ©nom");
+        firstNameField.setPromptText("Prenom");
         grid.add(firstNameField, 1, 0);
         
         // Nom
@@ -162,8 +162,8 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         emailField.setPromptText("email@example.com");
         grid.add(emailField, 1, 2);
         
-        // TÃƒÂ©lÃƒÂ©phone
-        grid.add(new Label("TÃƒÂ©lÃƒÂ©phone:"), 0, 3);
+        // Telephone
+        grid.add(new Label("Telephone:"), 0, 3);
         phoneField = new TextField();
         phoneField.setPromptText("+33 1 23 45 67 89");
         grid.add(phoneField, 1, 3);
@@ -175,7 +175,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
     private VBox createProfessionalInfoSection() {
         VBox section = new VBox(10);
         
-        Label sectionTitle = new Label("Ã°Å¸â€™Â¼ Informations Professionnelles");
+        Label sectionTitle = new Label("💼 Informations Professionnelles");
         sectionTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #4CAF50;");
         
         GridPane grid = new GridPane();
@@ -200,13 +200,13 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         // Poste
         grid.add(new Label("Poste:"), 0, 2);
         jobTitleField = new TextField();
-        jobTitleField.setPromptText("IntitulÃƒÂ© du poste");
+        jobTitleField.setPromptText("Intitule du poste");
         grid.add(jobTitleField, 1, 2);
         
-        // DÃƒÂ©partement
-        grid.add(new Label("DÃƒÂ©partement:"), 0, 3);
+        // Departement
+        grid.add(new Label("Departement:"), 0, 3);
         departmentField = new TextField();
-        departmentField.setPromptText("Nom du dÃƒÂ©partement");
+        departmentField.setPromptText("Nom du departement");
         grid.add(departmentField, 1, 3);
         
         // Date d'embauche
@@ -235,7 +235,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
     private VBox createNotesSection() {
         VBox section = new VBox(10);
         
-        Label sectionTitle = new Label("Ã°Å¸â€œÂ Notes");
+        Label sectionTitle = new Label("📝 Notes");
         sectionTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #FF9800;");
         
         notesArea = new TextArea();
@@ -265,7 +265,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
                 PersonnelType personnelType = PersonnelType.valueOf(type.toUpperCase());
                 typeCombo.setValue(personnelType);
             } catch (IllegalArgumentException e) {
-                // Type non reconnu, garder la valeur par dÃƒÂ©faut
+                // Type non reconnu, garder la valeur par defaut
             }
         }
         
@@ -276,7 +276,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
                 PersonnelStatus personnelStatus = PersonnelStatus.valueOf(status.toUpperCase());
                 statusCombo.setValue(personnelStatus);
             } catch (IllegalArgumentException e) {
-                // Statut non reconnu, garder la valeur par dÃƒÂ©faut
+                // Statut non reconnu, garder la valeur par defaut
             }
         }
         
@@ -301,7 +301,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         StringBuilder errors = new StringBuilder();
         
         if (firstNameField.getText().trim().isEmpty()) {
-            errors.append("- Le prÃƒÂ©nom est obligatoire\n");
+            errors.append("- Le prenom est obligatoire\n");
         }
         
         if (lastNameField.getText().trim().isEmpty()) {

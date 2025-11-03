@@ -1,10 +1,12 @@
 package com.magscene.magsav.desktop;
 
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.utils.MemoryProfiler;
+import com.magscene.magsav.desktop.utils.ResourceCleanupManager;
 import com.magscene.magsav.desktop.view.ClientManagerView;
 import com.magscene.magsav.desktop.view.ContractManagerView;
 import com.magscene.magsav.desktop.view.EquipmentManagerView;
-import com.magscene.magsav.desktop.view.ServiceRequestManagerView;
+import com.magscene.magsav.desktop.view.SAVManagerView;
 import com.magscene.magsav.desktop.view.PersonnelManagerView;
 import com.magscene.magsav.desktop.view.VehicleManagerView;
 import com.magscene.magsav.desktop.view.salesinstallation.ProjectManagerView;
@@ -27,11 +29,33 @@ public class MagsavDesktopApplication extends Application {
     private ApiService apiService;
     private StackPane mainContent;
     private Label statusLabel;
+    
+    // Cache des vues pour optimisation performance
+    private EquipmentManagerView cachedEquipmentView;
+    private SAVManagerView cachedSAVView;
+    private ClientManagerView cachedClientView;
+    private ContractManagerView cachedContractView;
+    private ProjectManagerView cachedSalesView;
+    private VehicleManagerView cachedVehicleView;
+    private PersonnelManagerView cachedPersonnelView;
+    
+    /**
+     * Initialise l'ApiService de manière différée pour optimiser les performances de démarrage
+     */
+    private ApiService getApiService() {
+        if (apiService == null) {
+            apiService = new ApiService();
+            System.out.println("✓ ApiService initialisé avec succès (lazy loading)");
+        }
+        return apiService;
+    }
 
     @Override
     public void start(Stage primaryStage) {
-        // Initialisation des services
-        apiService = new ApiService();
+        // Note: ApiService sera initialisé en lazy loading pour optimiser le démarrage
+        
+        // Profiling mémoire au démarrage
+        MemoryProfiler.logMemoryUsage("Application Start");
         
         primaryStage.setTitle("MAGSAV-3.0 - Système SAV & Parc Matériel");
 
@@ -65,10 +89,22 @@ public class MagsavDesktopApplication extends Application {
 
         // Test de connectivité au démarrage
         testBackendConnection();
+        
+        // Démarrage du monitoring mémoire (debug)
+        MemoryProfiler.startContinuousMonitoring("MAGSAV-Desktop", 60000); // Toutes les minutes
 
-        // Fermeture propre
+        // Fermeture propre avec nettoyage des ressources
         primaryStage.setOnCloseRequest(e -> {
-            apiService.close();
+            System.out.println("🛑 Fermeture de l'application...");
+            
+            if (apiService != null) {
+                apiService.close();
+            }
+            
+            // Nettoyage final des ressources
+            ResourceCleanupManager.getInstance().shutdown();
+            MemoryProfiler.logMemoryUsage("Application Shutdown");
+            
             Platform.exit();
         });
     }
@@ -197,7 +233,7 @@ public class MagsavDesktopApplication extends Application {
         Task<Boolean> connectionTask = new Task<>() {
             @Override
             protected Boolean call() throws Exception {
-                return apiService.testConnection().get();
+                return getApiService().testConnection().get();
             }
         };
 
@@ -230,59 +266,88 @@ public class MagsavDesktopApplication extends Application {
     }
 
     private void showEquipmentModule() {
-        // Afficher l'interface complète de gestion du parc matériel
-        EquipmentManagerView equipmentView = new EquipmentManagerView(apiService);
+        // Lazy loading avec cache pour optimisation performance
+        if (cachedEquipmentView == null) {
+            System.out.println("✓ Chargement initial du gestionnaire d'équipement...");
+            cachedEquipmentView = new EquipmentManagerView(getApiService());
+            MemoryProfiler.logMemoryUsage("Equipment View Created");
+        } else {
+            System.out.println("⚡ Réutilisation cache Equipment View");
+        }
         
         mainContent.getChildren().clear();
-        mainContent.getChildren().add(equipmentView);
+        mainContent.getChildren().add(cachedEquipmentView);
+        statusLabel.setText("📦 Module Parc Matériel actif");
     }
 
     private void showSAVModule() {
-        // Chargement de la vue SAV complète
-        ServiceRequestManagerView savView = new ServiceRequestManagerView(apiService);
+        // Lazy loading avec cache pour optimisation performance
+        if (cachedSAVView == null) {
+            System.out.println("✓ Chargement initial du gestionnaire SAV...");
+            cachedSAVView = new SAVManagerView(getApiService());
+            MemoryProfiler.logMemoryUsage("SAV View Created");
+        } else {
+            System.out.println("⚡ Réutilisation cache SAV View");
+        }
         
         mainContent.getChildren().clear();
-        mainContent.getChildren().add(savView);
+        mainContent.getChildren().add(cachedSAVView);
+        statusLabel.setText("🔧 Module SAV actif");
     }
 
     private void showClientModule() {
-        // Chargement de la vue Clients complète
-        ClientManagerView clientView = new ClientManagerView(apiService);
+        // Lazy loading avec cache pour optimisation performance
+        if (cachedClientView == null) {
+            cachedClientView = new ClientManagerView(getApiService());
+        }
         
         mainContent.getChildren().clear();
-        mainContent.getChildren().add(clientView);
+        mainContent.getChildren().add(cachedClientView);
+        statusLabel.setText("👥 Module Clients actif");
     }
 
     private void showContractModule() {
-        // Chargement de la vue Contrats complète
-        ContractManagerView contractView = new ContractManagerView(apiService);
+        // Lazy loading avec cache pour optimisation performance
+        if (cachedContractView == null) {
+            cachedContractView = new ContractManagerView(getApiService());
+        }
         
         mainContent.getChildren().clear();
-        mainContent.getChildren().add(contractView);
+        mainContent.getChildren().add(cachedContractView);
+        statusLabel.setText("📋 Module Contrats actif");
     }
 
     private void showPersonnelModule() {
-        // Chargement de la vue Personnel complète
-        PersonnelManagerView personnelView = new PersonnelManagerView(apiService);
+        // Lazy loading avec cache pour optimisation performance
+        if (cachedPersonnelView == null) {
+            cachedPersonnelView = new PersonnelManagerView(getApiService());
+        }
         
         mainContent.getChildren().clear();
-        mainContent.getChildren().add(personnelView);
+        mainContent.getChildren().add(cachedPersonnelView);
+        statusLabel.setText("👤 Module Personnel actif");
     }
 
     private void showVehicleModule() {
-        // Chargement de la vue Véhicules complète
-        VehicleManagerView vehicleView = new VehicleManagerView(apiService);
+        // Lazy loading avec cache pour optimisation performance
+        if (cachedVehicleView == null) {
+            cachedVehicleView = new VehicleManagerView(getApiService());
+        }
         
         mainContent.getChildren().clear();
-        mainContent.getChildren().add(vehicleView);
+        mainContent.getChildren().add(cachedVehicleView);
+        statusLabel.setText("🚐 Module Véhicules actif");
     }
 
     private void showSalesModule() {
-        // Chargement de la vue Ventes & Installations
-        ProjectManagerView salesView = new ProjectManagerView(apiService);
+        // Lazy loading avec cache pour optimisation performance
+        if (cachedSalesView == null) {
+            cachedSalesView = new ProjectManagerView(getApiService());
+        }
         
         mainContent.getChildren().clear();
-        mainContent.getChildren().add(salesView);
+        mainContent.getChildren().add(cachedSalesView);
+        statusLabel.setText("💼 Module Ventes & Installations actif");
     }
 
 
@@ -326,7 +391,7 @@ public class MagsavDesktopApplication extends Application {
     }
 
     public static void main(String[] args) {
-        System.out.println("🚀 Démarrage MAGSAV-3.0 Desktop avec Java " + System.getProperty("java.version"));
+        System.out.println("\uD83D\uDE80 Demarrage MAGSAV-3.0 Desktop avec Java " + System.getProperty("java.version"));
         launch(args);
     }
 }

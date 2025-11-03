@@ -56,26 +56,26 @@ public class ServiceRequestDialog {
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setResizable(false);
         
-        // CrÃƒÂ©ation des champs
+        // Creation des champs
         titleField = new TextField();
         descriptionArea = new TextArea();
         descriptionArea.setPrefRowCount(3);
         descriptionArea.setWrapText(true);
         
-        // ComboBoxes avec les valeurs d'ÃƒÂ©numÃƒÂ©ration
+        // ComboBoxes avec les valeurs d'enumeration
         typeCombo = new ComboBox<>(FXCollections.observableArrayList(
-            "RÃƒÂ©paration", "Maintenance", "Installation", "Formation", "RMA", "Garantie"
+            "Reparation", "Maintenance", "Installation", "Formation", "RMA", "Garantie"
         ));
         
         statusCombo = new ComboBox<>(FXCollections.observableArrayList(
-            "Ouverte", "En cours", "En attente de piÃƒÂ¨ces", "RÃƒÂ©solue", "FermÃƒÂ©e", "AnnulÃƒÂ©e"
+            "Ouverte", "En cours", "En attente de pieces", "Resolue", "Fermee", "Annulee"
         ));
         
         priorityCombo = new ComboBox<>(FXCollections.observableArrayList(
-            "Faible", "Moyenne", "Ãƒâ€°levÃƒÂ©e", "Urgente"
+            "Faible", "Moyenne", "Elevee", "Urgente"
         ));
         
-        // ComboBoxes pour la sÃƒÂ©lection depuis la DB
+        // ComboBoxes pour la selection depuis la DB
         requesterCombo = new ComboBox<>();
         requesterCombo.setPrefWidth(350);
         requesterCombo.setButtonCell(createPersonnelListCell());
@@ -100,24 +100,24 @@ public class ServiceRequestDialog {
         contactInfoField = new TextField();
         costField = new TextField();
         
-        // Chargement des donnÃƒÂ©es depuis la DB
+        // Chargement des donnees depuis la DB
         loadPersonnelData();
         loadEquipmentData();
         
-        // PrÃƒÂ©-remplir les champs si c'est une ÃƒÂ©dition
+        // Pre-remplir les champs si c'est une edition
         if (isEdit) {
             populateFields(serviceRequest);
         } else {
-            // Valeurs par dÃƒÂ©faut pour une nouvelle demande
+            // Valeurs par defaut pour une nouvelle demande
             statusCombo.setValue("Ouverte");
             priorityCombo.setValue("Moyenne");
             scheduledDatePicker.setValue(LocalDate.now());
         }
         
-        // CrÃƒÂ©ation du layout
+        // Creation du layout
         VBox mainLayout = createLayout();
         
-        // Configuration de la scÃƒÂ¨ne
+        // Configuration de la scene
         Scene scene = new Scene(mainLayout, 650, 750);
         dialog.setScene(scene);
     }
@@ -145,7 +145,7 @@ public class ServiceRequestDialog {
         mainGrid.add(new Label("Statut *:"), 0, row);
         mainGrid.add(statusCombo, 1, row++);
         
-        mainGrid.add(new Label("PrioritÃƒÂ© *:"), 0, row);
+        mainGrid.add(new Label("Priorite *:"), 0, row);
         mainGrid.add(priorityCombo, 1, row++);
         
         mainGrid.add(new Label("Demandeur *:"), 0, row);
@@ -154,10 +154,10 @@ public class ServiceRequestDialog {
         mainGrid.add(new Label("Technicien:"), 0, row);
         mainGrid.add(technicianCombo, 1, row++);
         
-        mainGrid.add(new Label("Date prÃƒÂ©vue:"), 0, row);
+        mainGrid.add(new Label("Date prevue:"), 0, row);
         mainGrid.add(scheduledDatePicker, 1, row++);
         
-        mainGrid.add(new Label("Ãƒâ€°quipement:"), 0, row);
+        mainGrid.add(new Label("Equipement:"), 0, row);
         mainGrid.add(equipmentCombo, 1, row++);
         
         mainGrid.add(new Label("Lieu:"), 0, row);
@@ -166,7 +166,7 @@ public class ServiceRequestDialog {
         mainGrid.add(new Label("Contact:"), 0, row);
         mainGrid.add(contactInfoField, 1, row++);
         
-        mainGrid.add(new Label("CoÃƒÂ»t estimÃƒÂ©:"), 0, row);
+        mainGrid.add(new Label("Cout estime:"), 0, row);
         mainGrid.add(costField, 1, row++);
         
         // Configuration des colonnes
@@ -204,7 +204,7 @@ public class ServiceRequestDialog {
             dialog.close();
         });
         
-        Button saveButton = new Button(isEdit ? "Modifier" : "CrÃƒÂ©er");
+        Button saveButton = new Button(isEdit ? "Modifier" : "Creer");
         saveButton.setDefaultButton(true);
         saveButton.setOnAction(e -> {
             if (validateFields()) {
@@ -226,21 +226,21 @@ public class ServiceRequestDialog {
         titleField.setText(serviceRequest.getTitle());
         descriptionArea.setText(serviceRequest.getDescription() != null ? serviceRequest.getDescription() : "");
         
-        // Mapping des ÃƒÂ©numÃƒÂ©rations vers les valeurs d'affichage
+        // Mapping des enumerations vers les valeurs d'affichage
         typeCombo.setValue(mapTypeEnumToDisplay(serviceRequest.getType()));
         statusCombo.setValue(mapStatusEnumToDisplay(serviceRequest.getStatus()));
         priorityCombo.setValue(mapPriorityEnumToDisplay(serviceRequest.getPriority()));
         
-        // TODO: SÃƒÂ©lectionner le demandeur dans la ComboBox basÃƒÂ© sur le nom
-        // TODO: SÃƒÂ©lectionner le technicien dans la ComboBox basÃƒÂ© sur le nom
+        // TODO: Selectionner le demandeur dans la ComboBox base sur le nom
+        // TODO: Selectionner le technicien dans la ComboBox base sur le nom
         
-        // Le ServiceRequest n'a pas de scheduledDate, on utilise la date de crÃƒÂ©ation par dÃƒÂ©faut
+        // Le ServiceRequest n'a pas de scheduledDate, on utilise la date de creation par defaut
         scheduledDatePicker.setValue(LocalDate.now());
         
         notesArea.setText(serviceRequest.getResolutionNotes() != null ? serviceRequest.getResolutionNotes() : "");
         
-        // Ces champs ne sont pas dans le modÃƒÂ¨le actuel, on les laisse vides
-        // TODO: SÃƒÂ©lectionner l'ÃƒÂ©quipement dans la ComboBox
+        // Ces champs ne sont pas dans le modele actuel, on les laisse vides
+        // TODO: Selectionner l'equipement dans la ComboBox
         locationField.setText("");
         contactInfoField.setText(serviceRequest.getRequesterEmail() != null ? serviceRequest.getRequesterEmail() : "");
         
@@ -252,42 +252,89 @@ public class ServiceRequestDialog {
     private boolean validateFields() {
         StringBuilder errors = new StringBuilder();
         
+        // Reset des styles d'erreur précédents
+        titleField.setStyle("");
+        typeCombo.setStyle("");
+        statusCombo.setStyle("");
+        priorityCombo.setStyle("");
+        requesterCombo.setStyle("");
+        descriptionArea.setStyle("");
+        costField.setStyle("");
+        scheduledDatePicker.setStyle("");
+        
+        // Validation titre
         if (getStringOrNull(titleField.getText()) == null) {
-            errors.append("- Le titre est obligatoire\n");
+            errors.append("• Le titre est obligatoire\n");
+            titleField.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
         }
         
+        // Validation type
         if (typeCombo.getValue() == null) {
-            errors.append("- Le type est obligatoire\n");
+            errors.append("• Le type d'intervention est obligatoire\n");
+            typeCombo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
         }
         
+        // Validation statut
         if (statusCombo.getValue() == null) {
-            errors.append("- Le statut est obligatoire\n");
+            errors.append("• Le statut est obligatoire\n");
+            statusCombo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
         }
         
+        // Validation priorité
         if (priorityCombo.getValue() == null) {
-            errors.append("- La prioritÃƒÂ© est obligatoire\n");
+            errors.append("• La priorité est obligatoire\n");
+            priorityCombo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
         }
         
+        // Validation demandeur
         if (requesterCombo.getValue() == null) {
-            errors.append("- Le demandeur est obligatoire\n");
+            errors.append("• Le demandeur est obligatoire\n");
+            requesterCombo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
         }
         
-        // Validation du coÃƒÂ»t si renseignÃƒÂ©
+        // Validation description (recommandée pour SAV)
+        if (getStringOrNull(descriptionArea.getText()) == null || 
+            descriptionArea.getText().trim().length() < 10) {
+            errors.append("• Une description détaillée (min. 10 caractères) est recommandée pour le SAV\n");
+            descriptionArea.setStyle("-fx-border-color: #ff9800; -fx-border-width: 2px;");
+        }
+        
+        // Validation coût si renseigné
         if (!costField.getText().trim().isEmpty()) {
             try {
-                Double.parseDouble(costField.getText().trim());
+                double cost = Double.parseDouble(costField.getText().trim());
+                if (cost < 0) {
+                    errors.append("• Le coût estimé ne peut pas être négatif\n");
+                    costField.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
+                }
             } catch (NumberFormatException e) {
-                errors.append("- Le coÃƒÂ»t doit ÃƒÂªtre un nombre valide\n");
+                errors.append("• Le coût doit être un nombre valide (ex: 125.50)\n");
+                costField.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
             }
         }
         
+        // Validation date
+        if (scheduledDatePicker.getValue() != null && 
+            scheduledDatePicker.getValue().isBefore(LocalDate.now())) {
+            errors.append("• La date d'intervention ne peut pas être dans le passé\n");
+            scheduledDatePicker.setStyle("-fx-border-color: #ff9800; -fx-border-width: 2px;");
+        }
+        
         if (errors.length() > 0) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur de validation");
-            alert.setHeaderText("Veuillez corriger les erreurs suivantes:");
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("🔍 Validation des données SAV");
+            alert.setHeaderText("Veuillez vérifier les informations saisies :");
             alert.setContentText(errors.toString());
-            alert.showAndWait();
-            return false;
+            alert.getDialogPane().setPrefWidth(500);
+            alert.getDialogPane().setStyle("-fx-font-family: 'Segoe UI'; -fx-font-size: 12px;");
+            
+            // Ajouter un bouton pour continuer malgré les avertissements
+            ButtonType continueBtn = new ButtonType("Continuer malgré tout", ButtonBar.ButtonData.OK_DONE);
+            ButtonType fixBtn = new ButtonType("Corriger", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.getButtonTypes().setAll(continueBtn, fixBtn);
+            
+            Optional<ButtonType> result = alert.showAndWait();
+            return result.isPresent() && result.get() == continueBtn;
         }
         
         return true;
@@ -301,7 +348,7 @@ public class ServiceRequestDialog {
         request.setType(mapDisplayTypeToEnum(typeCombo.getValue()));
         request.setStatus(mapDisplayStatusToEnum(statusCombo.getValue()));
         request.setPriority(mapDisplayPriorityToEnum(priorityCombo.getValue()));
-        // RÃƒÂ©cupÃƒÂ©ration du demandeur sÃƒÂ©lectionnÃƒÂ©
+        // Recuperation du demandeur selectionne
         if (requesterCombo.getValue() != null) {
             Map<String, Object> selectedRequester = requesterCombo.getValue();
             String firstName = (String) selectedRequester.get("firstName");
@@ -310,7 +357,7 @@ public class ServiceRequestDialog {
             request.setRequesterEmail((String) selectedRequester.get("email"));
         }
         
-        // RÃƒÂ©cupÃƒÂ©ration du technicien sÃƒÂ©lectionnÃƒÂ©
+        // Recuperation du technicien selectionne
         if (technicianCombo.getValue() != null) {
             Map<String, Object> selectedTechnician = technicianCombo.getValue();
             String firstName = (String) selectedTechnician.get("firstName");
@@ -318,10 +365,10 @@ public class ServiceRequestDialog {
             request.setAssignedTechnician(firstName + " " + lastName);
         }
         
-        // RÃƒÂ©cupÃƒÂ©ration de l'ÃƒÂ©quipement sÃƒÂ©lectionnÃƒÂ©
+        // Recuperation de l'equipement selectionne
         if (equipmentCombo.getValue() != null) {
             Map<String, Object> selectedEquipment = equipmentCombo.getValue();
-            // CrÃƒÂ©er un objet Equipment avec juste l'ID pour la relation @ManyToOne
+            // Creer un objet Equipment avec juste l'ID pour la relation @ManyToOne
             Equipment equipment = new Equipment();
             equipment.setId(((Number) selectedEquipment.get("id")).longValue());
             request.setEquipment(equipment);
@@ -335,11 +382,11 @@ public class ServiceRequestDialog {
             try {
                 request.setEstimatedCost(Double.parseDouble(costField.getText().trim()));
             } catch (NumberFormatException e) {
-                // IgnorÃƒÂ©, dÃƒÂ©jÃƒÂ  validÃƒÂ©
+                // Ignore, deja valide
             }
         }
         
-        // Si c'est une nouvelle demande, dÃƒÂ©finir les dates de crÃƒÂ©ation
+        // Si c'est une nouvelle demande, definir les dates de creation
         if (!isEdit) {
             LocalDateTime now = LocalDateTime.now();
             request.setCreatedAt(now);
@@ -349,11 +396,11 @@ public class ServiceRequestDialog {
         return request;
     }
     
-    // MÃƒÂ©thodes utilitaires pour le mapping des ÃƒÂ©numÃƒÂ©rations
+    // Methodes utilitaires pour le mapping des enumerations
     private String mapTypeEnumToDisplay(ServiceRequestType type) {
         if (type == null) return null;
         return switch (type) {
-            case REPAIR -> "RÃƒÂ©paration";
+            case REPAIR -> "Reparation";
             case MAINTENANCE -> "Maintenance";
             case INSTALLATION -> "Installation";
             case TRAINING -> "Formation";
@@ -365,7 +412,7 @@ public class ServiceRequestDialog {
     private ServiceRequestType mapDisplayTypeToEnum(String display) {
         if (display == null) return null;
         return switch (display) {
-            case "RÃƒÂ©paration" -> ServiceRequestType.REPAIR;
+            case "Reparation" -> ServiceRequestType.REPAIR;
             case "Maintenance" -> ServiceRequestType.MAINTENANCE;
             case "Installation" -> ServiceRequestType.INSTALLATION;
             case "Formation" -> ServiceRequestType.TRAINING;
@@ -380,10 +427,10 @@ public class ServiceRequestDialog {
         return switch (status) {
             case OPEN -> "Ouverte";
             case IN_PROGRESS -> "En cours";
-            case WAITING_PARTS -> "En attente de piÃƒÂ¨ces";
-            case RESOLVED -> "RÃƒÂ©solue";
-            case CLOSED -> "FermÃƒÂ©e";
-            case CANCELLED -> "AnnulÃƒÂ©e";
+            case WAITING_PARTS -> "En attente de pieces";
+            case RESOLVED -> "Resolue";
+            case CLOSED -> "Fermee";
+            case CANCELLED -> "Annulee";
         };
     }
     
@@ -392,10 +439,10 @@ public class ServiceRequestDialog {
         return switch (display) {
             case "Ouverte" -> ServiceRequestStatus.OPEN;
             case "En cours" -> ServiceRequestStatus.IN_PROGRESS;
-            case "En attente de piÃƒÂ¨ces" -> ServiceRequestStatus.WAITING_PARTS;
-            case "RÃƒÂ©solue" -> ServiceRequestStatus.RESOLVED;
-            case "FermÃƒÂ©e" -> ServiceRequestStatus.CLOSED;
-            case "AnnulÃƒÂ©e" -> ServiceRequestStatus.CANCELLED;
+            case "En attente de pieces" -> ServiceRequestStatus.WAITING_PARTS;
+            case "Resolue" -> ServiceRequestStatus.RESOLVED;
+            case "Fermee" -> ServiceRequestStatus.CLOSED;
+            case "Annulee" -> ServiceRequestStatus.CANCELLED;
             default -> null;
         };
     }
@@ -405,7 +452,7 @@ public class ServiceRequestDialog {
         return switch (priority) {
             case LOW -> "Faible";
             case MEDIUM -> "Moyenne";
-            case HIGH -> "Ãƒâ€°levÃƒÂ©e";
+            case HIGH -> "Elevee";
             case URGENT -> "Urgente";
         };
     }
@@ -415,7 +462,7 @@ public class ServiceRequestDialog {
         return switch (display) {
             case "Faible" -> ServiceRequest.Priority.LOW;
             case "Moyenne" -> ServiceRequest.Priority.MEDIUM;
-            case "Ãƒâ€°levÃƒÂ©e" -> ServiceRequest.Priority.HIGH;
+            case "Elevee" -> ServiceRequest.Priority.HIGH;
             case "Urgente" -> ServiceRequest.Priority.URGENT;
             default -> null;
         };
@@ -534,7 +581,7 @@ public class ServiceRequestDialog {
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Erreur de chargement");
-                alert.setHeaderText("Impossible de charger les ÃƒÂ©quipements");
+                alert.setHeaderText("Impossible de charger les equipements");
                 alert.setContentText("Erreur: " + throwable.getMessage());
                 alert.showAndWait();
             });

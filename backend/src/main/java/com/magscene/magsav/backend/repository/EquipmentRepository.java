@@ -10,8 +10,8 @@ import java.util.Optional;
 import java.util.List;
 
 /**
- * Repository pour l'entitÃƒÂ© Equipment avec Spring Data JPA
- * Utilise les nouvelles fonctionnalitÃƒÂ©s Java 21 pour les requÃƒÂªtes
+ * Repository pour l'entité Equipment avec Spring Data JPA
+ * Utilise les nouvelles fonctionnalités Java 21 pour les requêtes
  */
 @Repository
 public interface EquipmentRepository extends JpaRepository<Equipment, Long> {

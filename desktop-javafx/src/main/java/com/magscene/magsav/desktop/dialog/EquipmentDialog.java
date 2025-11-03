@@ -1,4 +1,4 @@
-package com.magscene.magsav.desktop.view;
+package com.magscene.magsav.desktop.dialog;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Dialogue pour ajouter/modifier un Ã©quipement
+ * Dialogue pour ajouter/modifier un equipement
  * Interface professionnelle avec validation des champs
  */
 public class EquipmentDialog extends Dialog<Map<String, Object>> {
@@ -67,8 +67,8 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     }
     
     private void setupDialog() {
-        setTitle(isEditMode ? "Modifier l'Ã©quipement" : "Ajouter un Ã©quipement");
-        setHeaderText(isEditMode ? "Modification des informations de l'Ã©quipement" : "Saisie d'un nouvel Ã©quipement");
+        setTitle(isEditMode ? "Modifier l'equipement" : "Ajouter un equipement");
+        setHeaderText(isEditMode ? "Modification des informations de l'equipement" : "Saisie d'un nouvel equipement");
         
         // Boutons
         ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
@@ -84,11 +84,11 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         TabPane tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         
-        // Onglet 1: Informations gÃ©nÃ©rales
-        Tab generalTab = new Tab("GÃ©nÃ©ral");
+        // Onglet 1: Informations generales
+        Tab generalTab = new Tab("General");
         generalTab.setContent(createGeneralForm());
         
-        // Onglet 2: DÃ©tails techniques
+        // Onglet 2: Details techniques
         Tab technicalTab = new Tab("Technique");
         technicalTab.setContent(createTechnicalForm());
         
@@ -116,7 +116,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         int row = 0;
         
         // Nom (obligatoire)
-        Label nameLabel = new Label("Nom de l'Ã©quipement *");
+        Label nameLabel = new Label("Nom de l'equipement *");
         nameLabel.getStyleClass().add("form-label");
         nameField = new TextField();
         nameField.setPromptText("Ex: Console Yamaha M32");
@@ -127,16 +127,16 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         Label descLabel = new Label("Description");
         descLabel.getStyleClass().add("form-label");
         descriptionField = new TextArea();
-        descriptionField.setPromptText("Description dÃ©taillÃ©e de l'Ã©quipement...");
+        descriptionField.setPromptText("Description detaillee de l'equipement...");
         descriptionField.setPrefRowCount(3);
         grid.add(descLabel, 0, row);
         grid.add(descriptionField, 1, row++);
         
-        // CatÃ©gorie (obligatoire)
-        Label catLabel = new Label("CatÃ©gorie *");
+        // Categorie (obligatoire)
+        Label catLabel = new Label("Categorie *");
         catLabel.getStyleClass().add("form-label");
         categoryCombo = new ComboBox<>();
-        categoryCombo.setPromptText("SÃ©lectionnez une catÃ©gorie");
+        categoryCombo.setPromptText("Selectionnez une categorie");
         categoryCombo.setPrefWidth(200);
         loadCategories();
         grid.add(catLabel, 0, row);
@@ -159,7 +159,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         qrLabel.getStyleClass().add("form-label");
         qrCodeField = new TextField();
         qrCodeField.setPromptText("Ex: QR001");
-        Button generateQRButton = new Button("GÃ©nÃ©rer");
+        Button generateQRButton = new Button("Generer");
         generateQRButton.setOnAction(e -> generateQRCode());
         HBox qrBox = new HBox(10, qrCodeField, generateQRButton);
         grid.add(qrLabel, 0, row);
@@ -169,12 +169,12 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         Label locationLabel = new Label("Localisation");
         locationLabel.getStyleClass().add("form-label");
         locationField = new TextField();
-        locationField.setPromptText("Ex: EntrepÃ´t A - Rack 3");
+        locationField.setPromptText("Ex: Entrepot A - Rack 3");
         grid.add(locationLabel, 0, row);
         grid.add(locationField, 1, row++);
         
         container.getChildren().addAll(
-            new Label("Informations gÃ©nÃ©rales"),
+            new Label("Informations generales"),
             new Separator(),
             grid
         );
@@ -200,24 +200,24 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         grid.add(brandLabel, 0, row);
         grid.add(brandField, 1, row++);
         
-        // ModÃ¨le
-        Label modelLabel = new Label("ModÃ¨le");
+        // Modele
+        Label modelLabel = new Label("Modele");
         modelLabel.getStyleClass().add("form-label");
         modelField = new TextField();
         modelField.setPromptText("Ex: M32");
         grid.add(modelLabel, 0, row);
         grid.add(modelField, 1, row++);
         
-        // NumÃ©ro de sÃ©rie
-        Label serialLabel = new Label("NumÃ©ro de sÃ©rie");
+        // Numero de serie
+        Label serialLabel = new Label("Numero de serie");
         serialLabel.getStyleClass().add("form-label");
         serialNumberField = new TextField();
         serialNumberField.setPromptText("Ex: SN-M32-001");
         grid.add(serialLabel, 0, row);
         grid.add(serialNumberField, 1, row++);
         
-        // RÃ©fÃ©rence interne
-        Label internalRefLabel = new Label("RÃ©fÃ©rence interne");
+        // Reference interne
+        Label internalRefLabel = new Label("Reference interne");
         internalRefLabel.getStyleClass().add("form-label");
         internalRefField = new TextField();
         internalRefField.setPromptText("Ex: MAG-AUDIO-001");
@@ -241,7 +241,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         grid.add(dimensionsField, 1, row++);
         
         container.getChildren().addAll(
-            new Label("SpÃ©cifications techniques"),
+            new Label("Specifications techniques"),
             new Separator(),
             grid
         );
@@ -260,7 +260,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         int row = 0;
         
         // Prix d'achat
-        Label priceLabel = new Label("Prix d'achat (â‚¬)");
+        Label priceLabel = new Label("Prix d'achat (€)");
         priceLabel.getStyleClass().add("form-label");
         purchasePriceField = new TextField();
         purchasePriceField.setPromptText("Ex: 4500.00");
@@ -279,12 +279,12 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         Label supplierLabel = new Label("Fournisseur");
         supplierLabel.getStyleClass().add("form-label");
         supplierField = new TextField();
-        supplierField.setPromptText("Ex: Son VidÃ©o.com");
+        supplierField.setPromptText("Ex: Son Video.com");
         grid.add(supplierLabel, 0, row);
         grid.add(supplierField, 1, row++);
         
         // Valeur d'assurance
-        Label insuranceLabel = new Label("Valeur d'assurance (â‚¬)");
+        Label insuranceLabel = new Label("Valeur d'assurance (€)");
         insuranceLabel.getStyleClass().add("form-label");
         insuranceValueField = new TextField();
         insuranceValueField.setPromptText("Ex: 5000.00");
@@ -298,8 +298,8 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         grid.add(warrantyLabel, 0, row);
         grid.add(warrantyExpirationPicker, 1, row++);
         
-        // DerniÃ¨re maintenance
-        Label lastMaintenanceLabel = new Label("DerniÃ¨re maintenance");
+        // Derniere maintenance
+        Label lastMaintenanceLabel = new Label("Derniere maintenance");
         lastMaintenanceLabel.getStyleClass().add("form-label");
         lastMaintenancePicker = new DatePicker();
         grid.add(lastMaintenanceLabel, 0, row);
@@ -334,17 +334,17 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         VBox container = new VBox(15);
         container.setPadding(new Insets(20));
         
-        Label titleLabel = new Label("Photo de l'Ã©quipement");
+        Label titleLabel = new Label("Photo de l'equipement");
         titleLabel.getStyleClass().add("section-title");
         
         VBox photoSection = new VBox(10);
         photoSection.setPadding(new Insets(10));
         photoSection.setStyle("-fx-border-color: #ddd; -fx-border-radius: 5px;");
         
-        photoPathLabel = new Label("Aucune photo sÃ©lectionnÃ©e");
+        photoPathLabel = new Label("Aucune photo selectionnee");
         photoPathLabel.getStyleClass().add("text-muted");
         
-        selectPhotoButton = new Button("SÃ©lectionner une photo");
+        selectPhotoButton = new Button("Selectionner une photo");
         selectPhotoButton.setOnAction(e -> selectPhoto());
         
         Button removePhotoButton = new Button("Supprimer");
@@ -364,22 +364,26 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     }
     
     private void loadCategories() {
-        // Chargement asynchrone des catÃ©gories depuis l'API
+        // Chargement asynchrone des categories depuis l'API
         apiService.getCategories().thenAccept(categories -> {
             Platform.runLater(() -> {
                 categoryCombo.getItems().clear();
                 categories.forEach(cat -> {
-                    categoryCombo.getItems().add((String) cat.get("name"));
+                    if (cat instanceof Map) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> categoryMap = (Map<String, Object>) cat;
+                        categoryCombo.getItems().add((String) categoryMap.get("name"));
+                    }
                 });
             });
         }).exceptionally(throwable -> {
-            Platform.runLater(() -> showError("Erreur", "Impossible de charger les catÃ©gories: " + throwable.getMessage()));
+            Platform.runLater(() -> showError("Erreur", "Impossible de charger les categories: " + throwable.getMessage()));
             return null;
         });
     }
     
     private void generateQRCode() {
-        // GÃ©nÃ©ration automatique d'un QR code unique
+        // Generation automatique d'un QR code unique
         String prefix = "QR";
         String timestamp = String.valueOf(System.currentTimeMillis()).substring(8);
         qrCodeField.setText(prefix + timestamp);
@@ -387,7 +391,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     
     private void selectPhoto() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("SÃ©lectionner une photo");
+        fileChooser.setTitle("Selectionner une photo");
         fileChooser.getExtensionFilters().addAll(
             new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp")
         );
@@ -402,14 +406,14 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     
     private void removePhoto() {
         selectedPhotoPath = null;
-        photoPathLabel.setText("Aucune photo sÃ©lectionnÃ©e");
+        photoPathLabel.setText("Aucune photo selectionnee");
         photoPathLabel.getStyleClass().add("text-muted");
     }
     
     private void populateFields() {
         if (equipmentData == null) return;
         
-        // Remplissage des champs avec les donnÃ©es existantes
+        // Remplissage des champs avec les donnees existantes
         nameField.setText(getStringValue("name"));
         descriptionField.setText(getStringValue("description"));
         categoryCombo.setValue(getStringValue("category"));
@@ -465,7 +469,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
             return null;
         });
         
-        // Validation en temps rÃ©el
+        // Validation en temps reel
         Button saveButton = (Button) getDialogPane().lookupButton(getDialogPane().getButtonTypes().get(0));
         saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             if (!validateForm()) {
@@ -476,12 +480,12 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     
     private boolean validateForm() {
         if (nameField.getText().trim().isEmpty()) {
-            showError("Erreur de validation", "Le nom de l'Ã©quipement est obligatoire.");
+            showError("Erreur de validation", "Le nom de l'equipement est obligatoire.");
             return false;
         }
         
         if (categoryCombo.getValue() == null || categoryCombo.getValue().isEmpty()) {
-            showError("Erreur de validation", "La catÃ©gorie est obligatoire.");
+            showError("Erreur de validation", "La categorie est obligatoire.");
             return false;
         }
         
@@ -495,7 +499,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
             try {
                 Double.parseDouble(purchasePriceField.getText().trim());
             } catch (NumberFormatException e) {
-                showError("Erreur de validation", "Le prix d'achat doit Ãªtre un nombre valide.");
+                showError("Erreur de validation", "Le prix d'achat doit etre un nombre valide.");
                 return false;
             }
         }
@@ -505,7 +509,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
             try {
                 Double.parseDouble(insuranceValueField.getText().trim());
             } catch (NumberFormatException e) {
-                showError("Erreur de validation", "La valeur d'assurance doit Ãªtre un nombre valide.");
+                showError("Erreur de validation", "La valeur d'assurance doit etre un nombre valide.");
                 return false;
             }
         }
@@ -516,7 +520,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     private Map<String, Object> collectFormData() {
         Map<String, Object> data = new HashMap<>();
         
-        // Informations gÃ©nÃ©rales
+        // Informations generales
         data.put("name", nameField.getText().trim());
         data.put("description", getStringOrNull(descriptionField.getText()));
         data.put("category", categoryCombo.getValue());
@@ -540,7 +544,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
             }
         }
         
-        // Informations financiÃ¨res et maintenance
+        // Informations financieres et maintenance
         if (!purchasePriceField.getText().trim().isEmpty()) {
             try {
                 data.put("purchasePrice", Double.parseDouble(purchasePriceField.getText().trim()));
@@ -579,7 +583,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
             data.put("photoPath", selectedPhotoPath);
         }
         
-        // En mode Ã©dition, inclure l'ID
+        // En mode edition, inclure l'ID
         if (isEditMode && equipmentData.get("id") != null) {
             data.put("id", equipmentData.get("id"));
         }
@@ -617,14 +621,14 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
             case "OUT_OF_ORDER":
                 return "Hors service";
             case "RETIRED":
-                return "RetirÃ©";
+                return "Retire";
             default:
                 return "Disponible";
         }
     }
     
     /**
-     * Utilitaire pour convertir les chaÃ®nes vides en null afin d'Ã©viter les contraintes d'unicitÃ©
+     * Utilitaire pour convertir les chaines vides en null afin d'eviter les contraintes d'unicite
      */
     private String getStringOrNull(String value) {
         if (value == null || value.trim().isEmpty()) {

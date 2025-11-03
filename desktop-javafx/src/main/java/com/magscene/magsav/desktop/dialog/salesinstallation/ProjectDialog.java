@@ -15,11 +15,11 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Dialogue pour créer/modifier un projet
+ * Dialogue pour creer/modifier un projet
  */
 public class ProjectDialog extends Dialog<Map<String, Object>> {
 
-    // Onglet Général
+    // Onglet General
     private TextField projectNumberField;
     private TextField nameField;
     private ComboBox<String> typeCombo;
@@ -49,7 +49,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
     private TextField depositAmountField;
     private TextField remainingAmountField;
 
-    // Onglet Équipe
+    // Onglet Equipe
     private TextField projectManagerField;
     private TextField technicalManagerField;
     private TextField salesRepresentativeField;
@@ -71,7 +71,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
         getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
         
-        // Création de l'interface à onglets
+        // Creation de l'interface a onglets
         TabPane tabPane = createTabbedInterface();
         getDialogPane().setContent(tabPane);
         
@@ -80,7 +80,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
             populateFields();
         }
         
-        // Configuration du résultat
+        // Configuration du resultat
         setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
                 return collectData();
@@ -88,24 +88,29 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
             return null;
         });
         
-        // Validation en temps réel
+        // Validation en temps reel amelioree
         Node saveButton = getDialogPane().lookupButton(saveButtonType);
-        // Initialement on laisse désactivé, puis on va valider l'état courant
         saveButton.setDisable(true);
 
-        // Écouter les changements pour activer/désactiver le bouton Enregistrer
-        nameField.textProperty().addListener((obs, old, text) -> validateForm(saveButton));
-        clientNameField.textProperty().addListener((obs, old, text) -> validateForm(saveButton));
+        // Configuration CSS pour le bouton
+        saveButton.getStyleClass().add("project-save-button");
 
-        // Valider immédiatement l'état du formulaire (utile lors de la modification existante)
-        validateForm(saveButton);
+        // Ecouter les changements pour validation dynamique
+        setupFormValidation(saveButton);
+
+        // Valider immediatement l'etat du formulaire
+        validateFormWithVisualFeedback(saveButton);
+        
+        // Style CSS pour le dialogue
+        getDialogPane().getStyleClass().add("project-dialog");
+        getDialogPane().setPrefSize(800, 600);
     }
 
     private TabPane createTabbedInterface() {
         TabPane tabPane = new TabPane();
         
-        // Onglet Général
-        Tab generalTab = new Tab("Général", createGeneralPane());
+        // Onglet General
+        Tab generalTab = new Tab("General", createGeneralPane());
         generalTab.setClosable(false);
         
         // Onglet Client
@@ -120,8 +125,8 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         Tab financialTab = new Tab("Financier", createFinancialPane());
         financialTab.setClosable(false);
         
-        // Onglet Équipe
-        Tab teamTab = new Tab("Équipe", createTeamPane());
+        // Onglet Equipe
+        Tab teamTab = new Tab("Equipe", createTeamPane());
         teamTab.setClosable(false);
         
         // Onglet Notes
@@ -141,10 +146,10 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         
         int row = 0;
         
-        // Numéro de projet
-        grid.add(new Label("Numéro de projet:"), 0, row);
+        // Numero de projet
+        grid.add(new Label("Numero de projet:"), 0, row);
         projectNumberField = new TextField();
-        projectNumberField.setPromptText("Généré automatiquement si vide");
+        projectNumberField.setPromptText("Genere automatiquement si vide");
         grid.add(projectNumberField, 1, row++);
         
         // Nom du projet
@@ -167,8 +172,8 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         statusCombo.setValue("DRAFT");
         grid.add(statusCombo, 1, row++);
         
-        // Priorité
-        grid.add(new Label("Priorité:"), 0, row);
+        // Priorite
+        grid.add(new Label("Priorite:"), 0, row);
         priorityCombo = new ComboBox<>(FXCollections.observableArrayList(
             "LOW", "MEDIUM", "HIGH", "URGENT"));
         priorityCombo.setValue("MEDIUM");
@@ -205,7 +210,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         clientEmailField = new TextField();
         grid.add(clientEmailField, 1, row++);
         
-        grid.add(new Label("Téléphone:"), 0, row);
+        grid.add(new Label("Telephone:"), 0, row);
         clientPhoneField = new TextField();
         grid.add(clientPhoneField, 1, row++);
         
@@ -226,7 +231,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         
         int row = 0;
         
-        grid.add(new Label("Date de début:"), 0, row);
+        grid.add(new Label("Date de debut:"), 0, row);
         startDatePicker = new DatePicker();
         grid.add(startDatePicker, 1, row++);
         
@@ -242,7 +247,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         deliveryDatePicker = new DatePicker();
         grid.add(deliveryDatePicker, 1, row++);
         
-        grid.add(new Label("Lieu de l'événement:"), 0, row);
+        grid.add(new Label("Lieu de l'evenement:"), 0, row);
         venueField = new TextField();
         grid.add(venueField, 1, row++);
         
@@ -267,7 +272,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         
         int row = 0;
         
-        grid.add(new Label("Montant estimé (€):"), 0, row);
+        grid.add(new Label("Montant estime (EUR):"), 0, row);
         estimatedAmountField = new TextField();
         estimatedAmountField.setPromptText("0.00");
         grid.add(estimatedAmountField, 1, row++);
@@ -285,7 +290,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         grid.add(new Label("Solde restant (€):"), 0, row);
         remainingAmountField = new TextField();
         remainingAmountField.setPromptText("0.00");
-        remainingAmountField.setEditable(false); // Calculé automatiquement
+        remainingAmountField.setEditable(false); // Calcule automatiquement
         grid.add(remainingAmountField, 1, row);
         
         // Calcul automatique du solde
@@ -322,7 +327,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         VBox vbox = new VBox(10);
         vbox.setPadding(new Insets(20));
         
-        vbox.getChildren().add(new Label("Notes générales:"));
+        vbox.getChildren().add(new Label("Notes generales:"));
         notesArea = new TextArea();
         notesArea.setPrefRowCount(4);
         notesArea.setWrapText(true);
@@ -344,7 +349,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
     }
 
     private void populateFields() {
-        // Onglet Général
+        // Onglet General
         projectNumberField.setText(getString("projectNumber"));
         nameField.setText(getString("name"));
         typeCombo.setValue(getString("type"));
@@ -383,7 +388,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         depositAmountField.setText(getBigDecimalAsString("depositAmount"));
         remainingAmountField.setText(getBigDecimalAsString("remainingAmount"));
         
-        // Onglet Équipe
+        // Onglet Equipe
         projectManagerField.setText(getString("projectManager"));
         technicalManagerField.setText(getString("technicalManager"));
         salesRepresentativeField.setText(getString("salesRepresentative"));
@@ -397,7 +402,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
     private Map<String, Object> collectData() {
         Map<String, Object> data = new HashMap<>();
         
-        // Onglet Général
+        // Onglet General
         data.put("projectNumber", projectNumberField.getText().trim());
         data.put("name", nameField.getText().trim());
         data.put("type", typeCombo.getValue());
@@ -487,20 +492,127 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
     }
     
     /**
-     * Valide le formulaire et active/désactive le bouton Enregistrer
+     * Configuration de la validation du formulaire en temps réel
      */
-    private void validateForm(Node saveButton) {
+    private void setupFormValidation(Node saveButton) {
+        // Écouter les changements sur tous les champs critiques
+        nameField.textProperty().addListener((obs, old, text) -> validateFormWithVisualFeedback(saveButton));
+        clientNameField.textProperty().addListener((obs, old, text) -> validateFormWithVisualFeedback(saveButton));
+        
+        // Validation des montants avec feedback visuel et calculs automatiques
+        estimatedAmountField.textProperty().addListener((obs, old, text) -> validateAmountField(estimatedAmountField, text));
+        finalAmountField.textProperty().addListener((obs, old, text) -> {
+            validateAmountField(finalAmountField, text);
+            calculateRemainingAmount();
+        });
+        depositAmountField.textProperty().addListener((obs, old, text) -> {
+            validateAmountField(depositAmountField, text);
+            calculateRemainingAmount();
+        });
+        
+        // Validation des dates
+        startDatePicker.valueProperty().addListener((obs, old, date) -> validateDateFields());
+        endDatePicker.valueProperty().addListener((obs, old, date) -> validateDateFields());
+        
+        // Validation email
+        clientEmailField.textProperty().addListener((obs, old, text) -> validateEmailField());
+    }
+
+    /**
+     * Valide le formulaire avec retour visuel et active/désactive le bouton
+     */
+    private void validateFormWithVisualFeedback(Node saveButton) {
         boolean isValid = true;
         
-        // Vérifier que les champs obligatoires sont remplis
+        // Reset styles
+        nameField.getStyleClass().removeAll("error-field");
+        clientNameField.getStyleClass().removeAll("error-field");
+        
+        // Vérifier nom du projet
         if (nameField.getText().trim().isEmpty()) {
             isValid = false;
+            nameField.getStyleClass().add("error-field");
         }
         
+        // Vérifier nom du client
         if (clientNameField.getText().trim().isEmpty()) {
             isValid = false;
+            clientNameField.getStyleClass().add("error-field");
         }
         
         saveButton.setDisable(!isValid);
+    }
+
+    /**
+     * Validation des champs de montants avec feedback visuel
+     */
+    private void validateAmountField(TextField field, String text) {
+        field.getStyleClass().removeAll("error-field", "warning-field");
+        
+        if (text != null && !text.trim().isEmpty()) {
+            try {
+                double value = Double.parseDouble(text.trim());
+                if (value < 0) {
+                    field.getStyleClass().add("warning-field");
+                }
+            } catch (NumberFormatException e) {
+                field.getStyleClass().add("error-field");
+            }
+        }
+    }
+
+    /**
+     * Validation des dates avec logique métier
+     */
+    private void validateDateFields() {
+        startDatePicker.getStyleClass().removeAll("error-field");
+        endDatePicker.getStyleClass().removeAll("error-field");
+        
+        if (startDatePicker.getValue() != null && endDatePicker.getValue() != null) {
+            if (startDatePicker.getValue().isAfter(endDatePicker.getValue())) {
+                startDatePicker.getStyleClass().add("error-field");
+                endDatePicker.getStyleClass().add("error-field");
+            }
+        }
+    }
+
+    /**
+     * Validation de l'email avec regex
+     */
+    private void validateEmailField() {
+        clientEmailField.getStyleClass().removeAll("error-field");
+        
+        String email = clientEmailField.getText().trim();
+        if (!email.isEmpty()) {
+            String emailRegex = "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$";
+            if (!email.matches(emailRegex)) {
+                clientEmailField.getStyleClass().add("error-field");
+            }
+        }
+    }
+
+    /**
+     * Calcul automatique du montant restant
+     */
+    private void calculateRemainingAmount() {
+        try {
+            Double finalAmount = parseAmountAsDouble(finalAmountField.getText());
+            Double depositAmount = parseAmountAsDouble(depositAmountField.getText());
+            
+            if (finalAmount != null && depositAmount != null) {
+                double remaining = finalAmount - depositAmount;
+                remainingAmountField.setText(String.format("%.2f", remaining));
+                
+                // Coloration selon le montant restant
+                remainingAmountField.getStyleClass().removeAll("positive-amount", "negative-amount");
+                if (remaining < 0) {
+                    remainingAmountField.getStyleClass().add("negative-amount");
+                } else {
+                    remainingAmountField.getStyleClass().add("positive-amount");
+                }
+            }
+        } catch (Exception e) {
+            remainingAmountField.setText("");
+        }
     }
 }

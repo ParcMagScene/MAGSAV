@@ -6,6 +6,11 @@ param(
     [switch]$Clean = $false
 )
 
+# Configuration UTF-8 pour PowerShell
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::InputEncoding = [System.Text.Encoding]::UTF8
+
 # Configuration
 $JAVA_HOME = "C:\Users\aalou\.jdk\jdk-21.0.8"
 $PROJECT_ROOT = "C:\Users\aalou\MAGSAV-3.0"
@@ -53,7 +58,7 @@ if ($portInUse) {
 
 # 3. Configuration environnement
 $env:JAVA_HOME = $JAVA_HOME
-$env:GRADLE_OPTS = "-Xmx2g -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
+$env:GRADLE_OPTS = "-Xmx2g -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -Duser.language=fr -Duser.country=FR -Dconsole.encoding=UTF-8"
 Set-Location $PROJECT_ROOT
 
 Write-Host "✅ Environnement configuré" -ForegroundColor Green

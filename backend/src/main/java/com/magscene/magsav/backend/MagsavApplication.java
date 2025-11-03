@@ -16,7 +16,7 @@ public class MagsavApplication {
     
     public static void main(String[] args) {
         SpringApplication.run(MagsavApplication.class, args);
-        System.out.println("🚀 MAGSAV-3.0 Backend démarré avec Java " + 
+        System.out.println("\uD83D\uDE80 MAGSAV-3.0 Backend demarre avec Java " + 
                           System.getProperty("java.version"));
     }
 }

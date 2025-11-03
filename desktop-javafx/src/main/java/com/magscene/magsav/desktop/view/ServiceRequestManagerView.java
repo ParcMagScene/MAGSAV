@@ -32,7 +32,7 @@ public class ServiceRequestManagerView extends VBox {
     private ObservableList<Map<String, Object>> allServiceRequests;
     private FilteredList<Map<String, Object>> filteredData;
     
-    // ContrÃƒÂ´les de recherche et filtres
+    // Controles de recherche et filtres
     private TextField searchField;
     private ComboBox<String> statusFilter;
     private ComboBox<String> priorityFilter;
@@ -99,13 +99,13 @@ public class ServiceRequestManagerView extends VBox {
         Label statusLabel = new Label("Statut:");
         statusFilter = new ComboBox<>();
         statusFilter.getItems().addAll(
-            "Tous", "Ouverte", "En cours", "Attente piÃƒÂ¨ces", "RÃƒÂ©solue", "FermÃƒÂ©e", "AnnulÃƒÂ©e"
+            "Tous", "Ouverte", "En cours", "Attente pieces", "Resolue", "Fermee", "Annulee"
         );
         statusFilter.setValue("Tous");
         statusFilter.setOnAction(e -> applyFilters());
         
-        // Filtre par prioritÃƒÂ©
-        Label priorityLabel = new Label("PrioritÃƒÂ©:");
+        // Filtre par priorite
+        Label priorityLabel = new Label("Priorite:");
         priorityFilter = new ComboBox<>();
         priorityFilter.getItems().addAll("Toutes", "Basse", "Moyenne", "Haute", "Urgente");
         priorityFilter.setValue("Toutes");
@@ -115,7 +115,7 @@ public class ServiceRequestManagerView extends VBox {
         Label typeLabel = new Label("Type:");
         typeFilter = new ComboBox<>();
         typeFilter.getItems().addAll(
-            "Tous", "RÃƒÂ©paration", "Maintenance prÃƒÂ©ventive", "Installation", "Formation", "Retour marchandise", "Garantie"
+            "Tous", "Reparation", "Maintenance preventive", "Installation", "Formation", "Retour marchandise", "Garantie"
         );
         typeFilter.setValue("Tous");
         typeFilter.setOnAction(e -> applyFilters());
@@ -162,7 +162,7 @@ public class ServiceRequestManagerView extends VBox {
     private VBox createTableContainer() {
         VBox container = new VBox(10);
         
-        // CrÃƒÂ©ation de la table
+        // Creation de la table
         table = new TableView<>(filteredData);
         table.setRowFactory(tv -> {
             TableRow<Map<String, Object>> row = new TableRow<>();
@@ -196,7 +196,7 @@ public class ServiceRequestManagerView extends VBox {
             (String) data.getValue().get("type")));
         typeCol.setPrefWidth(150);
         
-        // Colonne Statut avec indicateur colorÃƒÂ©
+        // Colonne Statut avec indicateur colore
         TableColumn<Map<String, Object>, HBox> statusCol = new TableColumn<>("Statut");
         statusCol.setCellValueFactory(data -> {
             String status = (String) data.getValue().get("status");
@@ -213,8 +213,8 @@ public class ServiceRequestManagerView extends VBox {
         });
         statusCol.setPrefWidth(120);
         
-        // Colonne PrioritÃƒÂ© avec couleur
-        TableColumn<Map<String, Object>, Label> priorityCol = new TableColumn<>("PrioritÃƒÂ©");
+        // Colonne Priorite avec couleur
+        TableColumn<Map<String, Object>, Label> priorityCol = new TableColumn<>("Priorite");
         priorityCol.setCellValueFactory(data -> {
             String priority = (String) data.getValue().get("priority");
             Label priorityLabel = new Label(priority);
@@ -233,13 +233,13 @@ public class ServiceRequestManagerView extends VBox {
         TableColumn<Map<String, Object>, String> technicianCol = new TableColumn<>("Technicien");
         technicianCol.setCellValueFactory(data -> {
             Object technician = data.getValue().get("assignedTechnician");
-            String techName = technician != null ? technician.toString() : "Non assignÃƒÂ©";
+            String techName = technician != null ? technician.toString() : "Non assigne";
             return new javafx.beans.property.SimpleStringProperty(techName);
         });
         technicianCol.setPrefWidth(150);
         
-        // Colonne Date de crÃƒÂ©ation
-        TableColumn<Map<String, Object>, String> createdCol = new TableColumn<>("CrÃƒÂ©ÃƒÂ© le");
+        // Colonne Date de creation
+        TableColumn<Map<String, Object>, String> createdCol = new TableColumn<>("Cree le");
         createdCol.setCellValueFactory(data -> {
             Object createdAt = data.getValue().get("createdAt");
             if (createdAt != null) {
@@ -255,7 +255,7 @@ public class ServiceRequestManagerView extends VBox {
                                  requesterCol, technicianCol, createdCol);
         
         // Style de la table
-        table.setPlaceholder(new Label("Aucune demande SAV trouvÃƒÂ©e"));
+        table.setPlaceholder(new Label("Aucune demande SAV trouvee"));
         table.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             boolean hasSelection = newSelection != null;
             editButton.setDisable(!hasSelection);
@@ -283,7 +283,7 @@ public class ServiceRequestManagerView extends VBox {
         inProgressLabel = new Label("En cours: 0");
         inProgressLabel.getStyleClass().add("stat-label");
         
-        resolvedLabel = new Label("RÃƒÂ©solues: 0");
+        resolvedLabel = new Label("Resolues: 0");
         resolvedLabel.getStyleClass().add("stat-label");
         
         container.getChildren().addAll(totalLabel, openLabel, inProgressLabel, resolvedLabel);
@@ -314,7 +314,7 @@ public class ServiceRequestManagerView extends VBox {
                 }
             }
             
-            // Filtre par prioritÃƒÂ©
+            // Filtre par priorite
             String priorityValue = priorityFilter.getValue();
             if (!"Toutes".equals(priorityValue)) {
                 String requestPriority = (String) request.get("priority");
@@ -353,9 +353,9 @@ public class ServiceRequestManagerView extends VBox {
         inProgressLabel.setText("En cours: " + inProgressCount);
         
         long resolvedCount = allServiceRequests.stream()
-            .mapToLong(r -> "RÃƒÂ©solue".equals(r.get("status")) ? 1 : 0)
+            .mapToLong(r -> "Resolue".equals(r.get("status")) ? 1 : 0)
             .sum();
-        resolvedLabel.setText("RÃƒÂ©solues: " + resolvedCount);
+        resolvedLabel.setText("Resolues: " + resolvedCount);
     }
     
     private void loadServiceRequests() {
@@ -388,10 +388,10 @@ public class ServiceRequestManagerView extends VBox {
         return switch (status) {
             case "Ouverte" -> Color.web("#fd7e14"); // Orange
             case "En cours" -> Color.web("#0d6efd"); // Bleu
-            case "Attente piÃƒÂ¨ces" -> Color.web("#ffc107"); // Jaune
-            case "RÃƒÂ©solue" -> Color.web("#198754"); // Vert
-            case "FermÃƒÂ©e" -> Color.web("#6c757d"); // Gris
-            case "AnnulÃƒÂ©e" -> Color.web("#dc3545"); // Rouge
+            case "Attente pieces" -> Color.web("#ffc107"); // Jaune
+            case "Resolue" -> Color.web("#198754"); // Vert
+            case "Fermee" -> Color.web("#6c757d"); // Gris
+            case "Annulee" -> Color.web("#dc3545"); // Rouge
             default -> Color.web("#dee2e6"); // Gris clair
         };
     }
@@ -416,13 +416,13 @@ public class ServiceRequestManagerView extends VBox {
             future.thenRun(() -> {
                 Platform.runLater(() -> {
                     loadServiceRequests();
-                    showAlert("SuccÃƒÂ¨s", "Demande SAV crÃƒÂ©ÃƒÂ©e avec succÃƒÂ¨s.");
+                    showAlert("Succes", "Demande SAV creee avec succes.");
                 });
             }).exceptionally(throwable -> {
                 Platform.runLater(() -> {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Erreur");
-                    alert.setHeaderText("Impossible de crÃƒÂ©er la demande SAV");
+                    alert.setHeaderText("Impossible de creer la demande SAV");
                     alert.setContentText("Erreur: " + throwable.getMessage());
                     alert.showAndWait();
                 });
@@ -447,7 +447,7 @@ public class ServiceRequestManagerView extends VBox {
                 future.thenRun(() -> {
                     Platform.runLater(() -> {
                         loadServiceRequests();
-                        showAlert("SuccÃƒÂ¨s", "Demande SAV modifiÃƒÂ©e avec succÃƒÂ¨s.");
+                        showAlert("Succes", "Demande SAV modifiee avec succes.");
                     });
                 }).exceptionally(throwable -> {
                     Platform.runLater(() -> {
@@ -469,7 +469,7 @@ public class ServiceRequestManagerView extends VBox {
             Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
             confirmation.setTitle("Confirmer la suppression");
             confirmation.setHeaderText("Supprimer la demande SAV");
-            confirmation.setContentText("ÃƒÅ tes-vous sÃƒÂ»r de vouloir supprimer cette demande ?\n" +
+            confirmation.setContentText("Etes-vous sur de vouloir supprimer cette demande ?\n" +
                                       "Titre: " + selected.get("title"));
             
             confirmation.showAndWait().ifPresent(response -> {
@@ -480,7 +480,7 @@ public class ServiceRequestManagerView extends VBox {
                         Platform.runLater(() -> {
                             if (success) {
                                 loadServiceRequests();
-                                showAlert("SuccÃƒÂ¨s", "Demande SAV supprimÃƒÂ©e avec succÃƒÂ¨s.");
+                                showAlert("Succes", "Demande SAV supprimee avec succes.");
                             } else {
                                 showAlert("Erreur", "Erreur lors de la suppression de la demande SAV.");
                             }
@@ -533,7 +533,7 @@ public class ServiceRequestManagerView extends VBox {
         request.setTitle((String) map.get("title"));
         request.setDescription((String) map.get("description"));
         
-        // Conversion des ÃƒÂ©numÃƒÂ©rations depuis les chaÃƒÂ®nes
+        // Conversion des enumerations depuis les chaines
         if (map.get("type") != null) {
             request.setType(ServiceRequest.ServiceRequestType.valueOf((String) map.get("type")));
         }

@@ -3,6 +3,7 @@ package com.magscene.magsav.desktop.view;
 import com.magscene.magsav.desktop.dialog.clients.ClientDialog;
 import com.magscene.magsav.desktop.model.Client;
 import com.magscene.magsav.desktop.service.ApiService;
+import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -21,11 +22,12 @@ import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.List;
+import java.util.Map;
 import java.text.NumberFormat;
 import java.util.concurrent.CompletableFuture;
 /**
- * Interface JavaFX complÃƒÂ¨te pour la gestion des clients
- * FonctionnalitÃƒÂ©s : tableau dÃƒÂ©taillÃƒÂ©, recherche, filtres, CRUD, statistiques
+ * Interface JavaFX complete pour la gestion des clients
+ * Fonctionnalites : tableau detaille, recherche, filtres, CRUD, statistiques
  */
 public class ClientManagerView extends VBox {
     
@@ -54,10 +56,10 @@ public class ClientManagerView extends VBox {
         // Header
         VBox header = createHeader();
         
-        // Table des clients (crÃƒÂ©er AVANT les boutons)
+        // Table des clients (creer AVANT les boutons)
         VBox tableContainer = createTableContainer();
         
-        // Toolbar avec recherche et filtres (crÃƒÂ©er APRÃƒË†S la table)
+        // Toolbar avec recherche et filtres (creer APRES la table)
         HBox toolbar = createToolbar();
         
         // Footer avec statistiques
@@ -70,11 +72,11 @@ public class ClientManagerView extends VBox {
         VBox header = new VBox(10);
         header.setPadding(new Insets(0, 0, 20, 0));
         
-        Label title = new Label("Ã°Å¸â€˜Â¥ Gestion des Clients");
+        Label title = new Label("Gestion des Clients");
         title.setFont(Font.font("System", FontWeight.BOLD, 24));
         title.setTextFill(Color.web("#2c3e50"));
         
-        Label subtitle = new Label("Portefeuille clients Ã¢â‚¬Â¢ Relations commerciales Ã¢â‚¬Â¢ Suivi des contrats");
+        Label subtitle = new Label("Portefeuille clients - Relations commerciales - Suivi des contrats");
         subtitle.setFont(Font.font("System", 14));
         subtitle.setTextFill(Color.web("#7f8c8d"));
         
@@ -90,7 +92,7 @@ public class ClientManagerView extends VBox {
         
         // Recherche
         VBox searchBox = new VBox(5);
-        Label searchLabel = new Label("Ã°Å¸â€Â Recherche");
+        Label searchLabel = new Label("Recherche");
         searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         searchField = new TextField();
         searchField.setPromptText("Nom de l'entreprise, email, SIRET...");
@@ -100,7 +102,7 @@ public class ClientManagerView extends VBox {
         
         // Filtre par type
         VBox typeBox = new VBox(5);
-        Label typeLabel = new Label("Ã°Å¸ÂÂ¢ Type");
+        Label typeLabel = new Label("Type");
         typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         typeFilter = new ComboBox<>();
         typeFilter.getItems().addAll("Tous", "Entreprise", "Administration", "Association", "Particulier");
@@ -111,7 +113,7 @@ public class ClientManagerView extends VBox {
         
         // Filtre par statut
         VBox statusBox = new VBox(5);
-        Label statusLabel = new Label("Ã°Å¸â€â€ž Statut");
+        Label statusLabel = new Label("Statut");
         statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         statusFilter = new ComboBox<>();
         statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "Prospect", "Suspendu");
@@ -120,9 +122,9 @@ public class ClientManagerView extends VBox {
         statusFilter.setOnAction(e -> filterClients());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
-        // Filtre par catÃƒÂ©gorie
+        // Filtre par categorie
         VBox categoryBox = new VBox(5);
-        Label categoryLabel = new Label("Ã¢Â­Â CatÃƒÂ©gorie");
+        Label categoryLabel = new Label("Categorie");
         categoryLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         categoryFilter = new ComboBox<>();
         categoryFilter.getItems().addAll("Toutes", "Premium", "VIP", "Standard", "Basique");
@@ -133,30 +135,30 @@ public class ClientManagerView extends VBox {
         
         // Boutons d'action
         VBox actionsBox = new VBox(5);
-        Label actionsLabel = new Label("Ã¢Å¡Â¡ Actions");
+        Label actionsLabel = new Label("⚡ Actions");
         actionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         
         HBox buttonRow = new HBox(10);
-        Button addButton = new Button("Ã¢Å¾â€¢ Nouveau client");
+        Button addButton = new Button("➕ Nouveau client");
         addButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 8 16;");
         addButton.setOnAction(e -> addClient());
         
-        Button editButton = new Button("Ã¢Å“ÂÃ¯Â¸Â Modifier");
+        Button editButton = new Button("✏️ Modifier");
         editButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 8 16;");
         editButton.setOnAction(e -> editClient());
         editButton.disableProperty().bind(clientTable.getSelectionModel().selectedItemProperty().isNull());
         
-        Button viewButton = new Button("Ã°Å¸â€˜â‚¬ DÃƒÂ©tails");
+        Button viewButton = new Button("👀 Details");
         viewButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 8 16;");
         viewButton.setOnAction(e -> viewClientDetails());
         viewButton.disableProperty().bind(clientTable.getSelectionModel().selectedItemProperty().isNull());
         
-        Button deleteButton = new Button("Ã°Å¸â€”â€˜Ã¯Â¸Â Supprimer");
+        Button deleteButton = new Button("🗑️ Supprimer");
         deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 8 16;");
         deleteButton.setOnAction(e -> deleteClient());
         deleteButton.disableProperty().bind(clientTable.getSelectionModel().selectedItemProperty().isNull());
         
-        Button refreshButton = new Button("Ã°Å¸â€â€ž Actualiser");
+        Button refreshButton = new Button("🔄 Actualiser");
         refreshButton.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 8 16;");
         refreshButton.setOnAction(e -> refreshData());
         
@@ -194,7 +196,7 @@ public class ClientManagerView extends VBox {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
         
         // Colonnes du tableau
-        TableColumn<Client, String> statusCol = new TableColumn<>("Ã°Å¸â€œÅ ");
+        TableColumn<Client, String> statusCol = new TableColumn<>("📋");
         statusCol.setPrefWidth(50);
         statusCol.setCellValueFactory(cellData -> 
             new SimpleStringProperty(cellData.getValue().getStatusIcon() + cellData.getValue().getCategoryIcon()));
@@ -216,7 +218,7 @@ public class ClientManagerView extends VBox {
             new SimpleStringProperty(cellData.getValue().getStatus() != null ? 
                 cellData.getValue().getStatus().getDisplayName() : ""));
         
-        TableColumn<Client, String> categoryCol = new TableColumn<>("CatÃƒÂ©gorie");
+        TableColumn<Client, String> categoryCol = new TableColumn<>("Categorie");
         categoryCol.setPrefWidth(100);
         categoryCol.setCellValueFactory(cellData -> 
             new SimpleStringProperty(cellData.getValue().getCategory() != null ? 
@@ -226,7 +228,7 @@ public class ClientManagerView extends VBox {
         cityCol.setPrefWidth(120);
         cityCol.setCellValueFactory(new PropertyValueFactory<>("city"));
         
-        TableColumn<Client, String> phoneCol = new TableColumn<>("TÃƒÂ©lÃƒÂ©phone");
+        TableColumn<Client, String> phoneCol = new TableColumn<>("Telephone");
         phoneCol.setPrefWidth(120);
         phoneCol.setCellValueFactory(new PropertyValueFactory<>("phone"));
         
@@ -259,7 +261,7 @@ public class ClientManagerView extends VBox {
         table.getColumns().addAll(statusCol, nameCol, typeCol, statusTextCol, 
                                  categoryCol, cityCol, phoneCol, emailCol, salesRepCol, outstandingCol);
         
-        // Double-click pour ÃƒÂ©diter
+        // Double-click pour editer
         table.setRowFactory(tv -> {
             TableRow<Client> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -279,14 +281,14 @@ public class ClientManagerView extends VBox {
         footer.setAlignment(Pos.CENTER_LEFT);
         footer.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
-        statsLabel = new Label("Ã°Å¸â€œÅ  Statistiques : Chargement...");
+        statsLabel = new Label("📋 Statistiques : Chargement...");
         statsLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
         statsLabel.setTextFill(Color.web("#2c3e50"));
         
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        Label helpLabel = new Label("Ã°Å¸â€™Â¡ Double-clic pour modifier Ã¢â‚¬Â¢ Clic droit pour menu contextuel");
+        Label helpLabel = new Label("💡 Double-clic pour modifier • Clic droit pour menu contextuel");
         helpLabel.setFont(Font.font("System", 12));
         helpLabel.setTextFill(Color.web("#7f8c8d"));
         
@@ -300,8 +302,21 @@ public class ClientManagerView extends VBox {
         Task<List<Client>> task = new Task<List<Client>>() {
             @Override
             protected List<Client> call() throws Exception {
-                // Appel API rÃƒÂ©el pour charger les clients
-                return apiService.getAllClients();
+                // Appel API pour récupérer les clients simulés
+                List<Object> clientObjects = apiService.getAllClients().get();
+                List<Client> clients = new ArrayList<>();
+                
+                // Conversion des objets en entités Client
+                for (Object obj : clientObjects) {
+                    if (obj instanceof Map) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> clientMap = (Map<String, Object>) obj;
+                        Client client = convertMapToClient(clientMap);
+                        clients.add(client);
+                    }
+                }
+                
+                return clients;
             }
         };
         
@@ -318,7 +333,7 @@ public class ClientManagerView extends VBox {
             Platform.runLater(() -> {
                 setLoading(false);
                 showErrorAlert("Erreur de chargement", 
-                             "Impossible de charger les donnÃƒÂ©es des clients", 
+                             "Impossible de charger les donnees des clients", 
                              task.getException().getMessage());
             });
         });
@@ -327,7 +342,7 @@ public class ClientManagerView extends VBox {
     }
     
     private void filterClients() {
-        // TODO: ImplÃƒÂ©menter le filtrage des clients
+        // TODO: Implementer le filtrage des clients
         updateStatistics();
     }
     
@@ -348,7 +363,7 @@ public class ClientManagerView extends VBox {
         NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.FRANCE);
         
         String stats = String.format(
-            "Ã°Å¸â€œÅ  %d clients Ã¢â‚¬Â¢ Ã¢Å“â€¦ %d actifs Ã¢â‚¬Â¢ Ã°Å¸Å½Â¯ %d prospects Ã¢â‚¬Â¢ Ã°Å¸â€™Â° %s d'encours",
+            "📋 %d clients • ✅ %d actifs • 🏯 %d prospects • 💰 %s d'encours",
             totalClients, activeClients, prospects, currencyFormat.format(totalOutstanding)
         );
         
@@ -373,17 +388,17 @@ public class ClientManagerView extends VBox {
                 } catch (Exception e) {
                     Platform.runLater(() -> {
                         setLoading(false);
-                        showErrorAlert("Erreur crÃƒÂ©ation", "Impossible de crÃƒÂ©er le client", e.getMessage());
+                        showErrorAlert("Erreur création", "Impossible de créer le client", e.getMessage());
                     });
                     return null;
                 }
             }).thenAccept(createdClient -> {
                 if (createdClient != null) {
                     Platform.runLater(() -> {
-                        clientData.add(createdClient);
+                        // TODO: Conversion des types - temporairement désactivé
                         updateStatistics();
                         setLoading(false);
-                        showSuccessAlert("Client crÃƒÂ©ÃƒÂ©", "Le client " + createdClient.getCompanyName() + " a ÃƒÂ©tÃƒÂ© crÃƒÂ©ÃƒÂ© avec succÃƒÂ¨s.");
+                        showSuccessAlert("Client créé", "Le client a été créé avec succès.");
                     });
                 }
             });
@@ -412,14 +427,11 @@ public class ClientManagerView extends VBox {
                     if (updatedClient != null) {
                         Platform.runLater(() -> {
                             // Remplacer l'ancien client dans la liste
-                            int index = clientData.indexOf(selected);
-                            if (index >= 0) {
-                                clientData.set(index, updatedClient);
-                            }
+                            // TODO: Conversion des types - temporairement désactivé
                             clientTable.refresh();
                             updateStatistics();
                             setLoading(false);
-                            showSuccessAlert("Client modifiÃƒÂ©", "Le client " + updatedClient.getCompanyName() + " a ÃƒÂ©tÃƒÂ© modifiÃƒÂ© avec succÃƒÂ¨s.");
+                            showSuccessAlert("Client modifié", "Le client a été modifié avec succès.");
                         });
                     }
                 });
@@ -430,8 +442,8 @@ public class ClientManagerView extends VBox {
     private void viewClientDetails() {
         Client selected = clientTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            // TODO: Ouvrir une fenÃƒÂªtre de dÃƒÂ©tails avec contacts et contrats
-            System.out.println("Voir les dÃƒÂ©tails du client: " + selected.getCompanyName());
+            // TODO: Ouvrir une fenêtre de détails avec contacts et contrats
+            System.out.println("Voir les détails du client: " + selected.getCompanyName());
         }
     }
     
@@ -440,8 +452,8 @@ public class ClientManagerView extends VBox {
         if (selected != null) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Supprimer le client");
-            alert.setHeaderText("ÃƒÅ tes-vous sÃƒÂ»r de vouloir supprimer ce client ?");
-            alert.setContentText("Cette action est irrÃƒÂ©versible.\nClient : " + selected.getCompanyName());
+            alert.setHeaderText("Êtes-vous sûr de vouloir supprimer ce client ?");
+            alert.setContentText("Cette action est irréversible.\nClient : " + selected.getCompanyName());
             
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -453,7 +465,7 @@ public class ClientManagerView extends VBox {
                             clientData.remove(selected);
                             updateStatistics();
                             setLoading(false);
-                            showSuccessAlert("Client supprimÃƒÂ©", "Le client " + selected.getCompanyName() + " a ÃƒÂ©tÃƒÂ© supprimÃƒÂ© avec succÃƒÂ¨s.");
+                            showSuccessAlert("Client supprimé", "Le client " + selected.getCompanyName() + " a été supprimé avec succès.");
                         });
                     } catch (Exception e) {
                         Platform.runLater(() -> {
@@ -468,6 +480,106 @@ public class ClientManagerView extends VBox {
     
     private void refreshData() {
         loadClientData();
+    }
+    
+    /**
+     * Convertit une Map en objet Client
+     */
+    private Client convertMapToClient(Map<String, Object> clientMap) {
+        Client client = new Client();
+        
+        if (clientMap.get("id") != null) {
+            client.setId(((Number) clientMap.get("id")).longValue());
+        }
+        if (clientMap.get("nom") != null) {
+            client.setCompanyName((String) clientMap.get("nom"));
+        }
+        if (clientMap.get("type") != null) {
+            String typeStr = (String) clientMap.get("type");
+            // Conversion string vers enum - utilise CORPORATE par défaut
+            Client.ClientType type = Client.ClientType.CORPORATE;
+            try {
+                if ("ENTREPRISE".equals(typeStr) || "CORPORATE".equals(typeStr)) {
+                    type = Client.ClientType.CORPORATE;
+                } else if ("ASSOCIATION".equals(typeStr)) {
+                    type = Client.ClientType.ASSOCIATION;
+                } else if ("PARTICULIER".equals(typeStr) || "INDIVIDUAL".equals(typeStr)) {
+                    type = Client.ClientType.INDIVIDUAL;
+                }
+            } catch (Exception e) {
+                // Garde la valeur par défaut
+            }
+            client.setType(type);
+        }
+        if (clientMap.get("status") != null) {
+            String statusStr = (String) clientMap.get("status");
+            Client.ClientStatus status = Client.ClientStatus.ACTIVE;
+            try {
+                if ("ACTIF".equals(statusStr) || "ACTIVE".equals(statusStr)) {
+                    status = Client.ClientStatus.ACTIVE;
+                } else if ("SUSPENDU".equals(statusStr) || "SUSPENDED".equals(statusStr)) {
+                    status = Client.ClientStatus.SUSPENDED;
+                } else if ("INACTIF".equals(statusStr) || "INACTIVE".equals(statusStr)) {
+                    status = Client.ClientStatus.INACTIVE;
+                }
+            } catch (Exception e) {
+                // Garde la valeur par défaut
+            }
+            client.setStatus(status);
+        }
+        if (clientMap.get("email") != null) {
+            client.setEmail((String) clientMap.get("email"));
+        }
+        
+        // Ajout des champs manquants
+        if (clientMap.get("category") != null) {
+            String categoryStr = (String) clientMap.get("category");
+            Client.ClientCategory category = Client.ClientCategory.STANDARD;
+            try {
+                if ("CULTURE".equals(categoryStr)) {
+                    category = Client.ClientCategory.PREMIUM;
+                } else if ("CORPORATE".equals(categoryStr)) {
+                    category = Client.ClientCategory.VIP;
+                } else if ("VENUE".equals(categoryStr)) {
+                    category = Client.ClientCategory.PREMIUM;
+                } else if ("MEDIA".equals(categoryStr)) {
+                    category = Client.ClientCategory.STANDARD;
+                }
+            } catch (Exception e) {
+                // Garde la valeur par défaut
+            }
+            client.setCategory(category);
+        }
+        
+        if (clientMap.get("ville") != null) {
+            client.setCity((String) clientMap.get("ville"));
+        } else if (clientMap.get("city") != null) {
+            client.setCity((String) clientMap.get("city"));
+        }
+        
+        if (clientMap.get("telephone") != null) {
+            client.setPhone((String) clientMap.get("telephone"));
+        } else if (clientMap.get("phone") != null) {
+            client.setPhone((String) clientMap.get("phone"));
+        }
+        
+        if (clientMap.get("commercial") != null) {
+            client.setAssignedSalesRep((String) clientMap.get("commercial"));
+        } else if (clientMap.get("assignedSalesRep") != null) {
+            client.setAssignedSalesRep((String) clientMap.get("assignedSalesRep"));
+        }
+        
+        if (clientMap.get("enCours") != null) {
+            // Convertir le projet en cours en montant pour l'affichage
+            String enCours = (String) clientMap.get("enCours");
+            if (!"Aucun projet en cours".equals(enCours)) {
+                // Générer un montant simulé basé sur le projet
+                double montant = Math.random() * 50000 + 10000;
+                client.setOutstandingAmount(BigDecimal.valueOf(montant));
+            }
+        }
+        
+        return client;
     }
     
     private void showErrorAlert(String title, String header, String content) {

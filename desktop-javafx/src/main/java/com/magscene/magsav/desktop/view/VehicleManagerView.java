@@ -24,8 +24,8 @@ import java.util.Optional;
 import java.util.List;
 
 /**
- * Vue de gestion des vÃƒÂ©hicules
- * Interface principale pour CRUD vÃƒÂ©hicules avec filtres et recherche
+ * Vue de gestion des vehicules
+ * Interface principale pour CRUD vehicules avec filtres et recherche
  */
 public class VehicleManagerView extends VBox {
     
@@ -74,7 +74,7 @@ public class VehicleManagerView extends VBox {
         setPadding(new Insets(20));
         
         // Titre
-        Label titleLabel = new Label("Gestion des VÃƒÂ©hicules");
+        Label titleLabel = new Label("Gestion des Vehicules");
         titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
         titleLabel.setTextFill(Color.web("#2c3e50"));
         
@@ -87,10 +87,10 @@ public class VehicleManagerView extends VBox {
         // Barre de boutons d'actions
         HBox buttonsBox = createButtonsBar();
         
-        // Table des vÃƒÂ©hicules
+        // Table des vehicules
         vehicleTable = createVehicleTable();
         
-        // Ajout ÃƒÂ  la vue principale
+        // Ajout a la vue principale
         getChildren().addAll(titleLabel, statsBox, filtersBox, buttonsBox, vehicleTable);
         VBox.setVgrow(vehicleTable, Priority.ALWAYS);
     }
@@ -112,7 +112,7 @@ public class VehicleManagerView extends VBox {
             label.setTextFill(Color.web("#34495e"));
         }
         
-        // Couleurs spÃƒÂ©cifiques
+        // Couleurs specifiques
         availableLabel.setTextFill(Color.web("#27ae60"));
         maintenanceLabel.setTextFill(Color.web("#f39c12"));
         alertsLabel.setTextFill(Color.web("#e74c3c"));
@@ -132,7 +132,7 @@ public class VehicleManagerView extends VBox {
         
         // Recherche globale
         searchField = new TextField();
-        searchField.setPromptText("Rechercher vÃƒÂ©hicule, marque, plaque...");
+        searchField.setPromptText("Rechercher vehicule, marque, plaque...");
         searchField.setPrefWidth(250);
         
         // Filtre par type
@@ -148,9 +148,9 @@ public class VehicleManagerView extends VBox {
         statusFilter.setValue("Tous statuts");
         statusFilter.setPrefWidth(140);
         
-        // Filtres spÃƒÂ©ciaux
+        // Filtres speciaux
         maintenanceAlertFilter = new CheckBox("Maintenance requise");
-        documentsExpiredFilter = new CheckBox("Documents expirÃƒÂ©s");
+        documentsExpiredFilter = new CheckBox("Documents expires");
         
         Label filtersLabel = new Label("Filtres:");
         filtersLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
@@ -172,7 +172,7 @@ public class VehicleManagerView extends VBox {
         buttonsBox.setPadding(new Insets(10, 0, 10, 0));
         
         // Boutons principaux
-        addButton = new Button("Nouveau VÃƒÂ©hicule");
+        addButton = new Button("Nouveau Vehicule");
         addButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
         
         editButton = new Button("Modifier");
@@ -191,7 +191,7 @@ public class VehicleManagerView extends VBox {
         statusButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white;");
         statusButton.setDisable(true);
         
-        mileageButton = new Button("Mettre ÃƒÂ  jour KM");
+        mileageButton = new Button("Mettre a jour KM");
         mileageButton.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white;");
         mileageButton.setDisable(true);
         
@@ -216,7 +216,7 @@ public class VehicleManagerView extends VBox {
             new SimpleStringProperty(String.valueOf(data.getValue().get("name"))));
         nameCol.setPrefWidth(150);
         
-        TableColumn<Map<String, Object>, String> brandModelCol = new TableColumn<>("Marque/ModÃƒÂ¨le");
+        TableColumn<Map<String, Object>, String> brandModelCol = new TableColumn<>("Marque/Modele");
         brandModelCol.setCellValueFactory(data -> {
             String brand = String.valueOf(data.getValue().get("brand"));
             String model = String.valueOf(data.getValue().get("model"));
@@ -255,7 +255,7 @@ public class VehicleManagerView extends VBox {
             }
         });
         
-        TableColumn<Map<String, Object>, String> mileageCol = new TableColumn<>("KilomÃƒÂ©trage");
+        TableColumn<Map<String, Object>, String> mileageCol = new TableColumn<>("Kilometrage");
         mileageCol.setCellValueFactory(data -> {
             Object mileage = data.getValue().get("mileage");
             return new SimpleStringProperty(mileage != null ? 
@@ -290,9 +290,9 @@ public class VehicleManagerView extends VBox {
                     setStyle("");
                 } else {
                     setText(alerts);
-                    if (alerts.contains("Ã°Å¸â€Â´")) {
+                    if (alerts.contains("URGENT")) {
                         setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                    } else if (alerts.contains("Ã°Å¸Å¸Â¡")) {
+                    } else if (alerts.contains("WARNING")) {
                         setStyle("-fx-text-fill: #f39c12; -fx-font-weight: bold;");
                     } else {
                         setStyle("-fx-text-fill: #27ae60;");
@@ -311,14 +311,14 @@ public class VehicleManagerView extends VBox {
         table.getColumns().add(locationCol);
         table.getColumns().add(alertsCol);
         
-        // SÃƒÂ©lection simple
+        // Selection simple
         table.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         
         return table;
     }
     
     private void setupEventHandlers() {
-        // SÃƒÂ©lection dans la table
+        // Selection dans la table
         vehicleTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
             boolean hasSelection = newSel != null;
             editButton.setDisable(!hasSelection);
@@ -338,7 +338,7 @@ public class VehicleManagerView extends VBox {
             return row;
         });
         
-        // Filtres temps rÃƒÂ©el
+        // Filtres temps reel
         searchField.textProperty().addListener((obs, oldText, newText) -> applyFilters());
         typeFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
@@ -366,12 +366,12 @@ public class VehicleManagerView extends VBox {
                     vehicleData.add((Map<String, Object>) vehicle);
                 }
                 applyFilters();
-                logger.info("ChargÃƒÂ© {} vÃƒÂ©hicules", vehicles.size());
+                logger.info("Charge {} vehicules", vehicles.size());
             });
         }).exceptionally(throwable -> {
             Platform.runLater(() -> {
-                logger.error("Erreur chargement vÃƒÂ©hicules: {}", throwable.getMessage());
-                showError("Erreur de chargement", "Impossible de charger les vÃƒÂ©hicules:\n" + throwable.getMessage());
+                logger.error("Erreur chargement vehicules: {}", throwable.getMessage());
+                showError("Erreur de chargement", "Impossible de charger les vehicules:\n" + throwable.getMessage());
             });
             return null;
         });
@@ -380,10 +380,14 @@ public class VehicleManagerView extends VBox {
     private void loadStatistics() {
         apiService.getVehicleStatistics().thenAccept(stats -> {
             Platform.runLater(() -> {
-                updateStatisticsLabels(stats);
+                if (stats instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> statsMap = (Map<String, Object>) stats;
+                    updateStatisticsLabels(statsMap);
+                }
             });
         }).exceptionally(throwable -> {
-            logger.error("Erreur chargement statistiques vÃƒÂ©hicules: {}", throwable.getMessage());
+            logger.error("Erreur chargement statistiques vehicules: {}", throwable.getMessage());
             return null;
         });
     }
@@ -402,12 +406,12 @@ public class VehicleManagerView extends VBox {
     }
     
     private void applyFilters() {
-        // Implementation des filtres sera ajoutÃƒÂ©e
-        // Pour l'instant, on affiche tous les vÃƒÂ©hicules
+        // Implementation des filtres sera ajoutee
+        // Pour l'instant, on affiche tous les vehicules
     }
     
     private void addVehicle() {
-        VehicleDialog dialog = new VehicleDialog(null, (Stage) getScene().getWindow());
+        VehicleDialog dialog = new VehicleDialog(null);
         Optional<Map<String, Object>> result = dialog.showAndWait();
         
         if (result.isPresent()) {
@@ -415,11 +419,11 @@ public class VehicleManagerView extends VBox {
                 Platform.runLater(() -> {
                     loadVehicleData(); // Recharger pour avoir l'ID
                     loadStatistics();
-                    showInfo("VÃƒÂ©hicule crÃƒÂ©ÃƒÂ©", "Le vÃƒÂ©hicule a ÃƒÂ©tÃƒÂ© crÃƒÂ©ÃƒÂ© avec succÃƒÂ¨s.");
+                    showInfo("Vehicule cree", "Le vehicule a ete cree avec succes.");
                 });
             }).exceptionally(throwable -> {
                 Platform.runLater(() -> {
-                    showError("Erreur de crÃƒÂ©ation", "Impossible de crÃƒÂ©er le vÃƒÂ©hicule:\n" + throwable.getMessage());
+                    showError("Erreur de creation", "Impossible de creer le vehicule:\n" + throwable.getMessage());
                 });
                 return null;
             });
@@ -430,7 +434,7 @@ public class VehicleManagerView extends VBox {
         Map<String, Object> selected = vehicleTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
         
-        VehicleDialog dialog = new VehicleDialog(selected, (Stage) getScene().getWindow());
+        VehicleDialog dialog = new VehicleDialog(selected);
         Optional<Map<String, Object>> result = dialog.showAndWait();
         
         if (result.isPresent()) {
@@ -439,11 +443,11 @@ public class VehicleManagerView extends VBox {
                 Platform.runLater(() -> {
                     loadVehicleData();
                     loadStatistics();
-                    showInfo("VÃƒÂ©hicule modifiÃƒÂ©", "Le vÃƒÂ©hicule a ÃƒÂ©tÃƒÂ© modifiÃƒÂ© avec succÃƒÂ¨s.");
+                    showInfo("Vehicule modifie", "Le vehicule a ete modifie avec succes.");
                 });
             }).exceptionally(throwable -> {
                 Platform.runLater(() -> {
-                    showError("Erreur de modification", "Impossible de modifier le vÃƒÂ©hicule:\n" + throwable.getMessage());
+                    showError("Erreur de modification", "Impossible de modifier le vehicule:\n" + throwable.getMessage());
                 });
                 return null;
             });
@@ -458,8 +462,8 @@ public class VehicleManagerView extends VBox {
         
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmer la suppression");
-        alert.setHeaderText("Supprimer le vÃƒÂ©hicule");
-        alert.setContentText("ÃƒÅ tes-vous sÃƒÂ»r de vouloir supprimer le vÃƒÂ©hicule:\n" + vehicleName);
+        alert.setHeaderText("Supprimer le vehicule");
+        alert.setContentText("Etes-vous sur de vouloir supprimer le vehicule:\n" + vehicleName);
         
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -469,11 +473,11 @@ public class VehicleManagerView extends VBox {
                 Platform.runLater(() -> {
                     loadVehicleData();
                     loadStatistics();
-                    showInfo("VÃƒÂ©hicule supprimÃƒÂ©", "Le vÃƒÂ©hicule a ÃƒÂ©tÃƒÂ© supprimÃƒÂ© avec succÃƒÂ¨s.");
+                    showInfo("Vehicule supprime", "Le vehicule a ete supprime avec succes.");
                 });
             }).exceptionally(throwable -> {
                 Platform.runLater(() -> {
-                    showError("Erreur de suppression", "Impossible de supprimer le vÃƒÂ©hicule:\n" + throwable.getMessage());
+                    showError("Erreur de suppression", "Impossible de supprimer le vehicule:\n" + throwable.getMessage());
                 });
                 return null;
             });
@@ -487,7 +491,7 @@ public class VehicleManagerView extends VBox {
         // Dialog simple pour changer le statut
         ChoiceDialog<String> dialog = new ChoiceDialog<>();
         dialog.setTitle("Changer le statut");
-        dialog.setHeaderText("Modifier le statut du vÃƒÂ©hicule");
+        dialog.setHeaderText("Modifier le statut du vehicule");
         dialog.setContentText("Nouveau statut:");
         
         dialog.getItems().addAll("AVAILABLE", "IN_USE", "MAINTENANCE", 
@@ -502,7 +506,7 @@ public class VehicleManagerView extends VBox {
                 Platform.runLater(() -> {
                     loadVehicleData();
                     loadStatistics();
-                    showInfo("Statut modifiÃƒÂ©", "Le statut du vÃƒÂ©hicule a ÃƒÂ©tÃƒÂ© modifiÃƒÂ© avec succÃƒÂ¨s.");
+                    showInfo("Statut modifie", "Le statut du vehicule a ete modifie avec succes.");
                 });
             }).exceptionally(throwable -> {
                 Platform.runLater(() -> {
@@ -517,11 +521,11 @@ public class VehicleManagerView extends VBox {
         Map<String, Object> selected = vehicleTable.getSelectionModel().getSelectedItem();
         if (selected == null) return;
         
-        // Dialog pour mettre ÃƒÂ  jour le kilomÃƒÂ©trage
+        // Dialog pour mettre a jour le kilometrage
         TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Mettre ÃƒÂ  jour le kilomÃƒÂ©trage");
-        dialog.setHeaderText("Modifier le kilomÃƒÂ©trage du vÃƒÂ©hicule");
-        dialog.setContentText("Nouveau kilomÃƒÂ©trage (km):");
+        dialog.setTitle("Mettre a jour le kilometrage");
+        dialog.setHeaderText("Modifier le kilometrage du vehicule");
+        dialog.setContentText("Nouveau kilometrage (km):");
         
         Object currentMileage = selected.get("mileage");
         if (currentMileage != null) {
@@ -537,16 +541,16 @@ public class VehicleManagerView extends VBox {
                 apiService.updateVehicleMileage(vehicleId, newMileage).thenAccept(updatedVehicle -> {
                     Platform.runLater(() -> {
                         loadVehicleData();
-                        showInfo("KilomÃƒÂ©trage modifiÃƒÂ©", "Le kilomÃƒÂ©trage a ÃƒÂ©tÃƒÂ© mis ÃƒÂ  jour avec succÃƒÂ¨s.");
+                        showInfo("Kilometrage modifie", "Le kilometrage a ete mis a jour avec succes.");
                     });
                 }).exceptionally(throwable -> {
                     Platform.runLater(() -> {
-                        showError("Erreur", "Impossible de modifier le kilomÃƒÂ©trage:\n" + throwable.getMessage());
+                        showError("Erreur", "Impossible de modifier le kilometrage:\n" + throwable.getMessage());
                     });
                     return null;
                 });
             } catch (NumberFormatException e) {
-                showError("Erreur de saisie", "Veuillez saisir un nombre valide pour le kilomÃƒÂ©trage.");
+                showError("Erreur de saisie", "Veuillez saisir un nombre valide pour le kilometrage.");
             }
         }
     }
@@ -557,8 +561,8 @@ public class VehicleManagerView extends VBox {
             case "IN_USE" -> "En utilisation";
             case "MAINTENANCE" -> "Maintenance";
             case "OUT_OF_ORDER" -> "Hors service";
-            case "RENTED_OUT" -> "LouÃƒÂ© externe";
-            case "RESERVED" -> "RÃƒÂ©servÃƒÂ©";
+            case "RENTED_OUT" -> "Loue externe";
+            case "RESERVED" -> "Reserve";
             default -> status;
         };
     }
@@ -577,24 +581,24 @@ public class VehicleManagerView extends VBox {
     private String getVehicleAlerts(Map<String, Object> vehicle) {
         StringBuilder alerts = new StringBuilder();
         
-        // VÃƒÂ©rifier maintenance
+        // Verifier maintenance
         String nextMaintenance = (String) vehicle.get("nextMaintenanceDate");
         if (nextMaintenance != null) {
             LocalDate maintenanceDate = LocalDate.parse(nextMaintenance);
             if (maintenanceDate.isBefore(LocalDate.now().plusDays(30))) {
-                alerts.append("Ã°Å¸Å¸Â¡M ");
+                alerts.append("🚡M ");
             }
         }
         
-        // VÃƒÂ©rifier documents
+        // Verifier documents
         String insuranceExp = (String) vehicle.get("insuranceExpiration");
         String technicalExp = (String) vehicle.get("technicalControlExpiration");
         
         if (insuranceExp != null && LocalDate.parse(insuranceExp).isBefore(LocalDate.now())) {
-            alerts.append("Ã°Å¸â€Â´A ");
+            alerts.append("🚴A ");
         }
         if (technicalExp != null && LocalDate.parse(technicalExp).isBefore(LocalDate.now())) {
-            alerts.append("Ã°Å¸â€Â´CT ");
+            alerts.append("🚴CT ");
         }
         
         return alerts.toString().trim();

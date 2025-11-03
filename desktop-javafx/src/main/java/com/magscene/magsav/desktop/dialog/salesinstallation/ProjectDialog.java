@@ -161,8 +161,8 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         // Type de projet
         grid.add(new Label("Type:"), 0, row);
         typeCombo = new ComboBox<>(FXCollections.observableArrayList(
-            "SALE", "INSTALLATION", "RENTAL", "MAINTENANCE", "EVENT", "PROJECT"));
-        typeCombo.setValue("SALE");
+            "Vente", "Installation", "Location", "Prestation", "Maintenance"));
+        typeCombo.setValue("Vente");
         grid.add(typeCombo, 1, row++);
         
         // Statut

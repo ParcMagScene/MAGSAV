@@ -120,7 +120,7 @@ public class ProjectManagerView extends BorderPane {
         statusFilter.setValue("Tous");
         
         typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous", "SALE", "INSTALLATION", "RENTAL", "MAINTENANCE", "EVENT", "PROJECT");
+        typeFilter.getItems().addAll("Tous", "Vente", "Installation", "Location", "Prestation", "Maintenance");
         typeFilter.setValue("Tous");
         
         searchField = new TextField();

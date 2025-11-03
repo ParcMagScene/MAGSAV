@@ -671,14 +671,14 @@ public class ApiService {
     private List<Map<String, Object>> getSimulatedProjectData() {
         if (persistentProjects == null) {
             persistentProjects = new ArrayList<>();
-            persistentProjects.add(createProjectMap(1L, "PROJ-2024-001", "Concert Stade de France", "NEGOCIATION", "MagScene Productions", 185000.0, "CONCERT"));
-            persistentProjects.add(createProjectMap(2L, "PROJ-2024-002", "Festival Solidays", "CONFIRME", "Festival Solidays", 95000.0, "FESTIVAL"));
-            persistentProjects.add(createProjectMap(3L, "PROJ-2024-003", "Opéra Bastille - Saison 2024", "EN_COURS", "Opéra National de Paris", 220000.0, "SPECTACLE"));
-            persistentProjects.add(createProjectMap(4L, "PROJ-2024-004", "Tournée Européenne", "FINALISE", "Live Nation", 450000.0, "TOURNEE"));
-            persistentProjects.add(createProjectMap(5L, "PROJ-2024-005", "Convention Microsoft", "NEGOCIATION", "Microsoft France", 75000.0, "CORPORATE"));
-            persistentProjects.add(createProjectMap(6L, "PROJ-2024-006", "Fête de la Musique Paris", "PLANIFIE", "Mairie de Paris", 120000.0, "FESTIVAL"));
-            persistentProjects.add(createProjectMap(7L, "PROJ-2024-007", "Installation permanente Casino", "INSTALLATION", "Groupe Barrière", 320000.0, "INSTALLATION"));
-            persistentProjects.add(createProjectMap(8L, "PROJ-2024-008", "Formation équipes techniques", "FORMATION", "Centre Formation Pro", 45000.0, "FORMATION"));
+            persistentProjects.add(createProjectMap(1L, "PROJ-2024-001", "Concert Stade de France", "NEGOCIATION", "MagScene Productions", 185000.0, "Vente"));
+            persistentProjects.add(createProjectMap(2L, "PROJ-2024-002", "Festival Solidays", "CONFIRME", "Festival Solidays", 95000.0, "Prestation"));
+            persistentProjects.add(createProjectMap(3L, "PROJ-2024-003", "Opéra Bastille - Saison 2024", "EN_COURS", "Opéra National de Paris", 220000.0, "Prestation"));
+            persistentProjects.add(createProjectMap(4L, "PROJ-2024-004", "Tournée Européenne", "FINALISE", "Live Nation", 450000.0, "Location"));
+            persistentProjects.add(createProjectMap(5L, "PROJ-2024-005", "Convention Microsoft", "NEGOCIATION", "Microsoft France", 75000.0, "Prestation"));
+            persistentProjects.add(createProjectMap(6L, "PROJ-2024-006", "Fête de la Musique Paris", "PLANIFIE", "Mairie de Paris", 120000.0, "Location"));
+            persistentProjects.add(createProjectMap(7L, "PROJ-2024-007", "Installation permanente Casino", "INSTALLATION", "Groupe Barrière", 320000.0, "Installation"));
+            persistentProjects.add(createProjectMap(8L, "PROJ-2024-008", "Formation équipes techniques", "FORMATION", "Centre Formation Pro", 45000.0, "Maintenance"));
         }
         return new ArrayList<>(persistentProjects); // Retourner une copie
     }

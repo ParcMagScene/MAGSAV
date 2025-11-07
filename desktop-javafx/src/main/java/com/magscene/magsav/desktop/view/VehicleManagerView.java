@@ -1,7 +1,9 @@
 package com.magscene.magsav.desktop.view;
 
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.dialog.VehicleDialog;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -27,7 +29,7 @@ import java.util.List;
  * Vue de gestion des vehicules
  * Interface principale pour CRUD vehicules avec filtres et recherche
  */
-public class VehicleManagerView extends VBox {
+public class VehicleManagerView extends BorderPane {
     
     private static final Logger logger = LoggerFactory.getLogger(VehicleManagerView.class);
     
@@ -45,13 +47,11 @@ public class VehicleManagerView extends VBox {
     private CheckBox maintenanceAlertFilter;
     private CheckBox documentsExpiredFilter;
     
-    // Boutons d'action
-    private Button addButton;
-    private Button editButton;
-    private Button deleteButton;
-    private Button refreshButton;
-    private Button statusButton;
-    private Button mileageButton;
+    // Références aux boutons pour configuration des listeners  
+    private Button editVehicleBtn;
+    private Button deleteVehicleBtn;
+    private Button statusVehicleBtn;
+    private Button mileageVehicleBtn;
     
     // Labels de statistiques
     private Label totalLabel;
@@ -70,36 +70,51 @@ public class VehicleManagerView extends VBox {
     }
     
     private void initializeUI() {
-        setSpacing(10);
-        setPadding(new Insets(20));
+        // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
+        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
-        // Titre
-        Label titleLabel = new Label("Gestion des Vehicules");
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-        titleLabel.setTextFill(Color.web("#2c3e50"));
+        // Header
+        VBox header = createHeader();
         
         // Barre de statistiques
         HBox statsBox = createStatisticsBar();
         
-        // Barre de recherche et filtres
+        // Barre de recherche et filtres (avec actions intégrées)
         HBox filtersBox = createFiltersBar();
-        
-        // Barre de boutons d'actions
-        HBox buttonsBox = createButtonsBar();
         
         // Table des vehicules
         vehicleTable = createVehicleTable();
         
-        // Ajout a la vue principale
-        getChildren().addAll(titleLabel, statsBox, filtersBox, buttonsBox, vehicleTable);
+        // Layout principal - EXACTEMENT comme Ventes et Installations
+        VBox topContainer = new VBox(header, statsBox, filtersBox);
+        
+        setTop(topContainer);
+        // Créer le conteneur avec volet de détails
+        DetailPanelContainer tableContainer = createVehicleTableWithDetailPanel();
+        setCenter(tableContainer);
         VBox.setVgrow(vehicleTable, Priority.ALWAYS);
+        
+        // Configuration finale après création de tous les composants
+        setupButtonActivation();
+    }
+    
+    private VBox createHeader() {
+        VBox header = new VBox(10); // EXACTEMENT comme Ventes et Installations
+        header.setPadding(new Insets(0, 0, 20, 0)); // EXACTEMENT comme Ventes et Installations
+        
+        Label title = new Label("🚐 Véhicules");
+        title.setFont(Font.font("System", FontWeight.BOLD, 24));
+        title.setTextFill(Color.web("#2c3e50"));
+        
+        header.getChildren().add(title);
+        return header;
     }
     
     private HBox createStatisticsBar() {
         HBox statsBox = new HBox(20);
         statsBox.setAlignment(Pos.CENTER_LEFT);
         statsBox.setPadding(new Insets(10));
-        statsBox.setStyle("-fx-background-color: #ecf0f1; -fx-background-radius: 5;");
+        statsBox.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-background-radius: 5;");
         
         totalLabel = new Label("Total: 0");
         availableLabel = new Label("Disponibles: 0");
@@ -126,84 +141,246 @@ public class VehicleManagerView extends VBox {
     }
     
     private HBox createFiltersBar() {
-        HBox filtersBox = new HBox(10);
+        HBox filtersBox = new HBox(10); // EXACTEMENT comme Ventes & Installations
         filtersBox.setAlignment(Pos.CENTER_LEFT);
-        filtersBox.setPadding(new Insets(10));
+        filtersBox.setPadding(new Insets(0, 10, 10, 10)); // EXACTEMENT comme filterBar Ventes & Installations
+        filtersBox.setStyle("-fx-background-color: #142240; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         // Recherche globale
+        VBox searchBox = new VBox(5);
+        Label searchLabel = new Label("🔍 Recherche");
+        searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         searchField = new TextField();
         searchField.setPromptText("Rechercher vehicule, marque, plaque...");
         searchField.setPrefWidth(250);
+        searchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        // Force agressive des couleurs pour contrer le CSS global
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
+        searchBox.getChildren().addAll(searchLabel, searchField);
         
         // Filtre par type
+        VBox typeBox = new VBox(5);
+        Label typeLabel = new Label("🚗 Type");
+        typeLabel.setStyle("-fx-text-fill: #6B71F2;");
+        typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         typeFilter = new ComboBox<>();
         typeFilter.getItems().addAll("Tous types", "VAN", "TRUCK", "TRAILER", "CAR", "MOTORCYCLE", "OTHER");
         typeFilter.setValue("Tous types");
         typeFilter.setPrefWidth(120);
+        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        typeBox.getChildren().addAll(typeLabel, typeFilter);
         
         // Filtre par statut
+        VBox statusBox = new VBox(5);
+        Label statusLabel = new Label("📊 Statut");
+        statusLabel.setStyle("-fx-text-fill: #6B71F2;");
+        statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         statusFilter = new ComboBox<>();
         statusFilter.getItems().addAll("Tous statuts", "AVAILABLE", "IN_USE", "MAINTENANCE", 
                                       "OUT_OF_ORDER", "RENTED_OUT", "RESERVED");
         statusFilter.setValue("Tous statuts");
         statusFilter.setPrefWidth(140);
+        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        statusBox.getChildren().addAll(statusLabel, statusFilter);
         
         // Filtres speciaux
+        VBox specialBox = new VBox(5);
+        Label specialLabel = new Label("🔧 Filtres");
+        specialLabel.setStyle("-fx-text-fill: #6B71F2;");
+        specialLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         maintenanceAlertFilter = new CheckBox("Maintenance requise");
-        documentsExpiredFilter = new CheckBox("Documents expires");
+        maintenanceAlertFilter.setStyle("-fx-text-fill: #7DD3FC;");
+        documentsExpiredFilter = new CheckBox("Documents expirés");
+        documentsExpiredFilter.setStyle("-fx-text-fill: #7DD3FC;");
+        specialBox.getChildren().addAll(specialLabel, maintenanceAlertFilter, documentsExpiredFilter);
         
-        Label filtersLabel = new Label("Filtres:");
-        filtersLabel.setFont(Font.font("Arial", FontWeight.BOLD, 12));
+        // Boutons d'action
+        VBox actionsBox = new VBox(5);
+        Label actionsLabel = new Label("⚡ Actions");
+        actionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         
-        filtersBox.getChildren().addAll(
-            new Label("Recherche:"), searchField,
-            new Separator(),
-            filtersLabel, typeFilter, statusFilter,
-            new Separator(),
-            maintenanceAlertFilter, documentsExpiredFilter
-        );
+        HBox buttonRow = new HBox(10);
+        Button addVehicleBtn = new Button("➕ Ajouter");
+        addVehicleBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4;");
+        addVehicleBtn.setOnAction(e -> addVehicle());
+        
+        editVehicleBtn = new Button("✏️ Modifier");
+        editVehicleBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 4;");
+        editVehicleBtn.setOnAction(e -> editVehicle());
+        
+        deleteVehicleBtn = new Button("🗑️ Supprimer");
+        deleteVehicleBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 4;");
+        deleteVehicleBtn.setOnAction(e -> deleteVehicle());
+        
+        statusVehicleBtn = new Button("📊 Statut");
+        statusVehicleBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 4;");
+        statusVehicleBtn.setOnAction(e -> changeVehicleStatus());
+        
+        mileageVehicleBtn = new Button("🔢 Kilomètres");
+        mileageVehicleBtn.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-background-radius: 4;");
+        mileageVehicleBtn.setOnAction(e -> updateVehicleMileage());
+        
+        Button refreshBtn = new Button("🔄 Actualiser");
+        refreshBtn.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4;");
+        refreshBtn.setOnAction(e -> loadVehicleData());
+        
+        // Les boutons seront activés/désactivés après la création de la table
+        editVehicleBtn.setDisable(true);
+        deleteVehicleBtn.setDisable(true);
+        statusVehicleBtn.setDisable(true);
+        mileageVehicleBtn.setDisable(true);
+        
+        buttonRow.getChildren().addAll(addVehicleBtn, editVehicleBtn, deleteVehicleBtn, statusVehicleBtn, mileageVehicleBtn, refreshBtn);
+        actionsBox.getChildren().addAll(actionsLabel, buttonRow);
+        
+        // Spacer pour pousser les actions à droite
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        filtersBox.getChildren().addAll(searchBox, typeBox, statusBox, specialBox, spacer, actionsBox);
         
         return filtersBox;
     }
     
-    private HBox createButtonsBar() {
-        HBox buttonsBox = new HBox(10);
-        buttonsBox.setAlignment(Pos.CENTER_LEFT);
-        buttonsBox.setPadding(new Insets(10, 0, 10, 0));
+    // Méthode createButtonsBar() supprimée - Les boutons sont maintenant
+    // intégrés dans la toolbar unifiée createFiltersBar() pour éviter les doublons
+    
+    private DetailPanelContainer createVehicleTableWithDetailPanel() {
+        vehicleTable = createVehicleTable();
         
-        // Boutons principaux
-        addButton = new Button("Nouveau Vehicule");
-        addButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
+        // Créer le conteneur
+        DetailPanelContainer container = new DetailPanelContainer(vehicleTable);
         
-        editButton = new Button("Modifier");
-        editButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white;");
-        editButton.setDisable(true);
+        // Ajouter notre propre listener pour gérer les Map
+        vehicleTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                // Convertir les données Map en GenericDetailItem
+                com.magscene.magsav.desktop.component.GenericDetailItem detailItem = 
+                    createVehicleDetailItem(newSelection);
+                
+                // Mettre à jour le contenu du volet
+                container.getDetailPanel().updateContent(
+                    detailItem.getDetailTitle(),
+                    detailItem.getDetailSubtitle(),
+                    detailItem.getDetailImage(),
+                    null, // QR Code sera généré automatiquement
+                    detailItem.getDetailInfoContent()
+                );
+                container.getDetailPanel().show();
+            } else {
+                container.getDetailPanel().hide();
+            }
+        });
         
-        deleteButton = new Button("Supprimer");
-        deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
-        deleteButton.setDisable(true);
+        return container;
+    }
+    
+    private com.magscene.magsav.desktop.component.GenericDetailItem createVehicleDetailItem(Map<String, Object> vehicleData) {
+        String brand = getStringValue(vehicleData, "brand");
+        String model = getStringValue(vehicleData, "model");
+        String licensePlate = getStringValue(vehicleData, "licensePlate");
         
-        refreshButton = new Button("Actualiser");
-        refreshButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white;");
+        // Titre : Marque + Modèle
+        String title = "";
+        if (!brand.isEmpty() && !model.isEmpty()) {
+            title = brand + " " + model;
+        } else if (!brand.isEmpty()) {
+            title = brand;
+        } else if (!model.isEmpty()) {
+            title = model;
+        } else {
+            title = "Véhicule";
+        }
         
-        // Boutons actions rapides
-        statusButton = new Button("Changer Statut");
-        statusButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white;");
-        statusButton.setDisable(true);
+        // Sous-titre : Plaque + Type
+        String subtitle = "";
+        if (!licensePlate.isEmpty()) {
+            subtitle = "🚗 " + licensePlate;
+        }
+        String type = getStringValue(vehicleData, "type");
+        if (!type.isEmpty()) {
+            if (!subtitle.isEmpty()) subtitle += " • ";
+            subtitle += type;
+        }
         
-        mileageButton = new Button("Mettre a jour KM");
-        mileageButton.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white;");
-        mileageButton.setDisable(true);
+        // ID
+        String id = String.valueOf(vehicleData.get("id"));
         
-        buttonsBox.getChildren().addAll(
-            addButton, editButton, deleteButton,
-            new Separator(),
-            refreshButton,
-            new Separator(),
-            statusButton, mileageButton
+        // Propriétés pour les détails
+        Map<String, String> properties = new java.util.HashMap<>();
+        
+        String status = getStringValue(vehicleData, "status");
+        if (!status.isEmpty()) {
+            properties.put("Statut", convertVehicleStatusToDisplay(status));
+        }
+        
+        String location = getStringValue(vehicleData, "location");
+        if (!location.isEmpty()) {
+            properties.put("Localisation", location);
+        }
+        
+        String fuelType = getStringValue(vehicleData, "fuelType");
+        if (!fuelType.isEmpty()) {
+            properties.put("Carburant", fuelType);
+        }
+        
+        Object mileageObj = vehicleData.get("mileage");
+        if (mileageObj instanceof Number) {
+            double mileage = ((Number) mileageObj).doubleValue();
+            if (mileage > 0) {
+                properties.put("Kilométrage", String.format("%.0f km", mileage));
+            }
+        }
+        
+        Object dailyRateObj = vehicleData.get("dailyRate");
+        if (dailyRateObj instanceof Number) {
+            double dailyRate = ((Number) dailyRateObj).doubleValue();
+            if (dailyRate > 0) {
+                properties.put("Tarif journalier", String.format("%.2f €", dailyRate));
+            }
+        }
+        
+        String lastMaintenance = getStringValue(vehicleData, "lastMaintenance");
+        if (!lastMaintenance.isEmpty()) {
+            properties.put("Dernière maintenance", lastMaintenance);
+        }
+        
+        String nextMaintenance = getStringValue(vehicleData, "nextMaintenance");
+        if (!nextMaintenance.isEmpty()) {
+            properties.put("Prochaine maintenance", nextMaintenance);
+        }
+        
+        String insuranceExpiry = getStringValue(vehicleData, "insuranceExpiry");
+        if (!insuranceExpiry.isEmpty()) {
+            properties.put("Expiration assurance", insuranceExpiry);
+        }
+        
+        String notes = getStringValue(vehicleData, "notes");
+        if (!notes.isEmpty()) {
+            properties.put("Notes", notes);
+        }
+        
+        return new com.magscene.magsav.desktop.component.GenericDetailItem(
+            title, subtitle, id, properties, "VEHICLE"
         );
+    }
+    
+    private String getStringValue(Map<String, Object> data, String key) {
+        Object value = data.get(key);
+        return value != null ? value.toString() : "";
+    }
+    
+    private String convertVehicleStatusToDisplay(String status) {
+        if (status == null || status.isEmpty()) return "Inconnu";
         
-        return buttonsBox;
+        return switch (status.toUpperCase()) {
+            case "AVAILABLE" -> "Disponible";
+            case "IN_USE" -> "En cours d'utilisation";
+            case "MAINTENANCE" -> "En maintenance";
+            case "OUT_OF_ORDER" -> "Hors service";
+            case "RESERVED" -> "Réservé";
+            default -> status;
+        };
     }
     
     private TableView<Map<String, Object>> createVehicleTable() {
@@ -318,18 +495,31 @@ public class VehicleManagerView extends VBox {
     }
     
     private void setupEventHandlers() {
-        // Selection dans la table
-        vehicleTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-            boolean hasSelection = newSel != null;
-            editButton.setDisable(!hasSelection);
-            deleteButton.setDisable(!hasSelection);
-            statusButton.setDisable(!hasSelection);
-            mileageButton.setDisable(!hasSelection);
-        });
-        
-        // Double-clic pour modifier
+        // Double-clic pour modifier (conservé)
         vehicleTable.setRowFactory(tv -> {
             TableRow<Map<String, Object>> row = new TableRow<>();
+            
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty()) {
+                    row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection prioritaire (#142240)
+                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                               "-fx-border-width: 2px;");
+                } else {
+                    // Style par défaut
+                    row.setStyle("");
+                }
+            };
+            
+            // Écouter les changements de sélection
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
                     editVehicle();
@@ -345,16 +535,23 @@ public class VehicleManagerView extends VBox {
         maintenanceAlertFilter.selectedProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         documentsExpiredFilter.selectedProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         
-        // Boutons d'action
-        addButton.setOnAction(e -> addVehicle());
-        editButton.setOnAction(e -> editVehicle());
-        deleteButton.setOnAction(e -> deleteVehicle());
-        refreshButton.setOnAction(e -> {
-            loadVehicleData();
-            loadStatistics();
+        // Note: Les boutons d'action sont maintenant gérés directement dans createFiltersBar()
+        // Mais nous devons configurer l'activation/désactivation après création de la table
+        setupButtonActivation();
+    }
+    
+    /**
+     * Configure l'activation/désactivation des boutons selon la sélection
+     */
+    private void setupButtonActivation() {
+        // Configuration du listener de sélection après création de tous les composants
+        vehicleTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+            boolean hasSelection = newSel != null;
+            editVehicleBtn.setDisable(!hasSelection);
+            deleteVehicleBtn.setDisable(!hasSelection);
+            statusVehicleBtn.setDisable(!hasSelection);
+            mileageVehicleBtn.setDisable(!hasSelection);
         });
-        statusButton.setOnAction(e -> changeVehicleStatus());
-        mileageButton.setOnAction(e -> updateVehicleMileage());
     }
     
     @SuppressWarnings("unchecked")
@@ -406,8 +603,74 @@ public class VehicleManagerView extends VBox {
     }
     
     private void applyFilters() {
-        // Implementation des filtres sera ajoutee
-        // Pour l'instant, on affiche tous les vehicules
+        String searchText = searchField.getText().toLowerCase().trim();
+        String typeValue = typeFilter.getValue();
+        String statusValue = statusFilter.getValue();
+        boolean showMaintenanceAlerts = maintenanceAlertFilter.isSelected();
+        boolean showDocumentsExpired = documentsExpiredFilter.isSelected();
+        
+        ObservableList<Map<String, Object>> filteredData = FXCollections.observableArrayList();
+        
+        for (Map<String, Object> vehicle : vehicleData) {
+            // Filtre de recherche
+            boolean matchesSearch = searchText.isEmpty();
+            if (!matchesSearch) {
+                String brand = (String) vehicle.get("brand");
+                String model = (String) vehicle.get("model");
+                String licensePlate = (String) vehicle.get("licensePlate");
+                String vin = (String) vehicle.get("vin");
+                
+                matchesSearch = (brand != null && brand.toLowerCase().contains(searchText)) ||
+                              (model != null && model.toLowerCase().contains(searchText)) ||
+                              (licensePlate != null && licensePlate.toLowerCase().contains(searchText)) ||
+                              (vin != null && vin.toLowerCase().contains(searchText));
+            }
+                
+            // Filtre par type
+            boolean matchesType = "Tous types".equals(typeValue);
+            if (!matchesType) {
+                String vehicleType = (String) vehicle.get("type");
+                matchesType = typeValue.equals(vehicleType);
+            }
+                
+            // Filtre par statut  
+            boolean matchesStatus = "Tous statuts".equals(statusValue);
+            if (!matchesStatus) {
+                String vehicleStatus = (String) vehicle.get("status");
+                matchesStatus = statusValue.equals(vehicleStatus);
+            }
+                
+            // Filtre alertes maintenance
+            boolean matchesMaintenanceAlert = !showMaintenanceAlerts;
+            if (showMaintenanceAlerts) {
+                // Vérifier si le véhicule nécessite une maintenance
+                Object lastMaintenance = vehicle.get("lastMaintenanceDate");
+                if (lastMaintenance != null) {
+                    // Logique d'alerte maintenance (ex: > 6 mois)
+                    matchesMaintenanceAlert = true; // À adapter selon la logique métier
+                }
+            }
+                
+            // Filtre documents expirés
+            boolean matchesDocumentsExpired = !showDocumentsExpired;
+            if (showDocumentsExpired) {
+                // Vérifier si des documents sont expirés
+                Object insuranceExpiry = vehicle.get("insuranceExpiryDate");
+                Object inspectionExpiry = vehicle.get("technicalInspectionDate");
+                if (insuranceExpiry != null || inspectionExpiry != null) {
+                    // Logique documents expirés
+                    matchesDocumentsExpired = true; // À adapter selon la logique métier
+                }
+            }
+                
+            if (matchesSearch && matchesType && matchesStatus && 
+                matchesMaintenanceAlert && matchesDocumentsExpired) {
+                filteredData.add(vehicle);
+            }
+        }
+        
+        vehicleTable.setItems(filteredData);
+        loadStatistics(); // Mettre à jour les statistiques
     }
     
     private void addVehicle() {

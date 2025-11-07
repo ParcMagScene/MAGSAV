@@ -1,5 +1,6 @@
 package com.magscene.magsav.desktop.dialog;
 
+import com.magscene.magsav.desktop.config.CategoriesConfigManager;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -9,6 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -24,6 +26,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     private final ApiService apiService;
     private final boolean isEditMode;
     private Map<String, Object> equipmentData;
+    private final CategoriesConfigManager categoriesManager;
     
     // Champs de formulaire
     private TextField nameField;
@@ -56,6 +59,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         this.apiService = apiService;
         this.isEditMode = equipment != null;
         this.equipmentData = equipment != null ? equipment : new HashMap<>();
+        this.categoriesManager = CategoriesConfigManager.getInstance();
         
         setupDialog();
         createFormContent();
@@ -77,7 +81,14 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         
         // Taille du dialogue
         getDialogPane().setPrefSize(800, 600);
-        getDialogPane().getStylesheets().add(getClass().getResource("/styles/magsav-theme.css").toExternalForm());
+        
+        // Application du thème actuel au dialogue
+        String currentTheme = ThemeManager.getInstance().getCurrentTheme();
+        if ("dark".equals(currentTheme)) {
+            getDialogPane().getStylesheets().add(getClass().getResource("/styles/theme-dark-ultra.css").toExternalForm());
+        } else {
+            getDialogPane().getStylesheets().add(getClass().getResource("/styles/theme-light.css").toExternalForm());
+        }
     }
     
     private void createFormContent() {
@@ -147,7 +158,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         statusLabel.getStyleClass().add("form-label");
         statusCombo = new ComboBox<>();
         statusCombo.setItems(FXCollections.observableArrayList(
-            "Disponible", "En cours d'utilisation", "En maintenance", "Hors service"
+            "Disponible", "En cours d'utilisation", "En maintenance", "Hors service", "En SAV"
         ));
         statusCombo.setValue("Disponible");
         statusCombo.setPrefWidth(200);
@@ -364,22 +375,31 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     }
     
     private void loadCategories() {
-        // Chargement asynchrone des categories depuis l'API
-        apiService.getCategories().thenAccept(categories -> {
-            Platform.runLater(() -> {
-                categoryCombo.getItems().clear();
-                categories.forEach(cat -> {
-                    if (cat instanceof Map) {
-                        @SuppressWarnings("unchecked")
-                        Map<String, Object> categoryMap = (Map<String, Object>) cat;
-                        categoryCombo.getItems().add((String) categoryMap.get("name"));
-                    }
+        // Chargement depuis le gestionnaire de configuration local
+        categoryCombo.getItems().clear();
+        
+        // Ajouter toutes les catégories (racines et sous-catégories)
+        for (CategoriesConfigManager.CategoryItem category : categoriesManager.getAllCategories()) {
+            categoryCombo.getItems().add(category.getFullPath());
+        }
+        
+        // Fallback: chargement depuis l'API si la configuration locale est vide
+        if (categoryCombo.getItems().isEmpty()) {
+            apiService.getCategories().thenAccept(categories -> {
+                Platform.runLater(() -> {
+                    categories.forEach(cat -> {
+                        if (cat instanceof Map) {
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> categoryMap = (Map<String, Object>) cat;
+                            categoryCombo.getItems().add((String) categoryMap.get("name"));
+                        }
+                    });
                 });
+            }).exceptionally(throwable -> {
+                Platform.runLater(() -> showError("Erreur", "Impossible de charger les categories: " + throwable.getMessage()));
+                return null;
             });
-        }).exceptionally(throwable -> {
-            Platform.runLater(() -> showError("Erreur", "Impossible de charger les categories: " + throwable.getMessage()));
-            return null;
-        });
+        }
     }
     
     private void generateQRCode() {
@@ -603,6 +623,8 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
                 return "MAINTENANCE";
             case "Hors service":
                 return "OUT_OF_ORDER";
+            case "En SAV":
+                return "IN_SAV";
             default:
                 return "AVAILABLE";
         }
@@ -620,6 +642,8 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
                 return "En maintenance";
             case "OUT_OF_ORDER":
                 return "Hors service";
+            case "IN_SAV":
+                return "En SAV";
             case "RETIRED":
                 return "Retire";
             default:

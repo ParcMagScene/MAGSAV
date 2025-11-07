@@ -3,6 +3,8 @@ package com.magscene.magsav.desktop.view;
 import com.magscene.magsav.desktop.dialog.clients.ClientDialog;
 import com.magscene.magsav.desktop.model.Client;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import java.util.ArrayList;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -29,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
  * Interface JavaFX complete pour la gestion des clients
  * Fonctionnalites : tableau detaille, recherche, filtres, CRUD, statistiques
  */
-public class ClientManagerView extends VBox {
+public class ClientManagerView extends BorderPane {
     
     private final ApiService apiService;
     private TableView<Client> clientTable;
@@ -49,87 +51,93 @@ public class ClientManagerView extends VBox {
     }
     
     private void initializeUI() {
-        setSpacing(15);
-        setPadding(new Insets(20));
-        setStyle("-fx-background-color: #f8f9fa;");
+        // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
+        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
-        // Header
+        // Zone principale avec tableau - EXACTEMENT comme référence
+        createTableContainer();
+        
+        // Header avec titre
         VBox header = createHeader();
         
-        // Table des clients (creer AVANT les boutons)
-        VBox tableContainer = createTableContainer();
-        
-        // Toolbar avec recherche et filtres (creer APRES la table)
+        // Toolbar séparée comme dans la référence
         HBox toolbar = createToolbar();
         
         // Footer avec statistiques
         HBox footer = createFooter();
         
-        getChildren().addAll(header, toolbar, tableContainer, footer);
+        // Layout principal - EXACTEMENT comme Ventes et Installations
+        VBox topContainer = new VBox(header, toolbar);
+        
+        setTop(topContainer);
+        setBottom(footer);
     }
     
     private VBox createHeader() {
-        VBox header = new VBox(10);
+        VBox header = new VBox(10); // STANDARD : 10px spacing comme référence
         header.setPadding(new Insets(0, 0, 20, 0));
         
-        Label title = new Label("Gestion des Clients");
+        Label title = new Label("👥 Clients");
         title.setFont(Font.font("System", FontWeight.BOLD, 24));
         title.setTextFill(Color.web("#2c3e50"));
         
-        Label subtitle = new Label("Portefeuille clients - Relations commerciales - Suivi des contrats");
-        subtitle.setFont(Font.font("System", 14));
-        subtitle.setTextFill(Color.web("#7f8c8d"));
-        
-        header.getChildren().addAll(title, subtitle);
+        header.getChildren().add(title);
         return header;
     }
     
     private HBox createToolbar() {
         HBox toolbar = new HBox(15);
-        toolbar.setPadding(new Insets(15));
+        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme Ventes & Installations
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+        toolbar.setStyle("-fx-background-color: #142240; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         // Recherche
         VBox searchBox = new VBox(5);
-        Label searchLabel = new Label("Recherche");
+        Label searchLabel = new Label("🔍 Recherche");
         searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         searchField = new TextField();
         searchField.setPromptText("Nom de l'entreprise, email, SIRET...");
         searchField.setPrefWidth(280);
+        searchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
         searchField.textProperty().addListener((obs, oldText, newText) -> filterClients());
         searchBox.getChildren().addAll(searchLabel, searchField);
         
         // Filtre par type
         VBox typeBox = new VBox(5);
-        Label typeLabel = new Label("Type");
+        Label typeLabel = new Label("🏢 Type");
+        typeLabel.setStyle("-fx-text-fill: #6B71F2;");
         typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         typeFilter = new ComboBox<>();
         typeFilter.getItems().addAll("Tous", "Entreprise", "Administration", "Association", "Particulier");
         typeFilter.setValue("Tous");
         typeFilter.setPrefWidth(150);
+        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
         typeFilter.setOnAction(e -> filterClients());
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
         // Filtre par statut
         VBox statusBox = new VBox(5);
-        Label statusLabel = new Label("Statut");
+        Label statusLabel = new Label("📊 Statut");
+        statusLabel.setStyle("-fx-text-fill: #6B71F2;");
         statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         statusFilter = new ComboBox<>();
         statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "Prospect", "Suspendu");
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(120);
+        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
         statusFilter.setOnAction(e -> filterClients());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
         // Filtre par categorie
         VBox categoryBox = new VBox(5);
-        Label categoryLabel = new Label("Categorie");
+        Label categoryLabel = new Label("⭐ Catégorie");
+        categoryLabel.setStyle("-fx-text-fill: #6B71F2;");
         categoryLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         categoryFilter = new ComboBox<>();
         categoryFilter.getItems().addAll("Toutes", "Premium", "VIP", "Standard", "Basique");
         categoryFilter.setValue("Toutes");
         categoryFilter.setPrefWidth(120);
+        categoryFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
         categoryFilter.setOnAction(e -> filterClients());
         categoryBox.getChildren().addAll(categoryLabel, categoryFilter);
         
@@ -173,9 +181,7 @@ public class ClientManagerView extends VBox {
         return toolbar;
     }
     
-    private VBox createTableContainer() {
-        VBox container = new VBox(10);
-        
+    private void createTableContainer() {
         // Loading indicator
         loadingIndicator = new ProgressIndicator();
         loadingIndicator.setVisible(false);
@@ -184,14 +190,17 @@ public class ClientManagerView extends VBox {
         // Tableau des clients
         clientTable = createClientTable();
         
-        container.getChildren().addAll(loadingIndicator, clientTable);
-        return container;
+        // Enveloppement du tableau dans DetailPanelContainer pour le volet de détail
+        DetailPanelContainer containerWithDetail = new DetailPanelContainer(clientTable);
+        
+        // Remplacer le tableau par le container dans le centre
+        setCenter(containerWithDetail);
     }
     
     @SuppressWarnings("unchecked")
     private TableView<Client> createClientTable() {
         TableView<Client> table = new TableView<>(clientData);
-        table.setStyle("-fx-background-color: white; -fx-background-radius: 8;");
+        table.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-background-radius: 8;");
         table.setPrefHeight(400);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
         
@@ -264,6 +273,28 @@ public class ClientManagerView extends VBox {
         // Double-click pour editer
         table.setRowFactory(tv -> {
             TableRow<Client> row = new TableRow<>();
+            
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty()) {
+                    row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection prioritaire (#142240)
+                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                               "-fx-border-width: 2px;");
+                } else {
+                    // Style par défaut
+                    row.setStyle("");
+                }
+            };
+            
+            // Écouter les changements de sélection
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
                     editClient();
@@ -279,7 +310,7 @@ public class ClientManagerView extends VBox {
         HBox footer = new HBox(20);
         footer.setPadding(new Insets(15));
         footer.setAlignment(Pos.CENTER_LEFT);
-        footer.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+        footer.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         statsLabel = new Label("📋 Statistiques : Chargement...");
         statsLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
@@ -342,7 +373,49 @@ public class ClientManagerView extends VBox {
     }
     
     private void filterClients() {
-        // TODO: Implementer le filtrage des clients
+        String searchText = searchField.getText().toLowerCase().trim();
+        String typeValue = typeFilter.getValue();
+        String statusValue = statusFilter.getValue();
+        String categoryValue = categoryFilter.getValue();
+        
+        ObservableList<Client> filteredData = FXCollections.observableArrayList();
+        
+        for (Client client : clientData) {
+            // Filtre de recherche
+            boolean matchesSearch = searchText.isEmpty() || 
+                (client.getCompanyName() != null && client.getCompanyName().toLowerCase().contains(searchText)) ||
+                (client.getAddress() != null && client.getAddress().toLowerCase().contains(searchText)) ||
+                (client.getEmail() != null && client.getEmail().toLowerCase().contains(searchText)) ||
+                (client.getPhone() != null && client.getPhone().toLowerCase().contains(searchText)) ||
+                (client.getCity() != null && client.getCity().toLowerCase().contains(searchText));
+                
+            // Filtre par type
+            boolean matchesType = "Tous".equals(typeValue);
+            if (!matchesType) {
+                String clientType = client.getType() != null ? client.getType().toString() : "";
+                matchesType = typeValue.equals(clientType);
+            }
+                
+            // Filtre par statut  
+            boolean matchesStatus = "Tous".equals(statusValue);
+            if (!matchesStatus) {
+                String clientStatus = client.getStatus() != null ? client.getStatus().toString() : "";
+                matchesStatus = statusValue.equals(clientStatus);
+            }
+                
+            // Filtre par catégorie
+            boolean matchesCategory = "Toutes".equals(categoryValue);
+            if (!matchesCategory) {
+                String clientCategory = client.getCategory() != null ? client.getCategory().toString() : "";
+                matchesCategory = categoryValue.equals(clientCategory);
+            }
+                
+            if (matchesSearch && matchesType && matchesStatus && matchesCategory) {
+                filteredData.add(client);
+            }
+        }
+        
+        clientTable.setItems(filteredData);
         updateStatistics();
     }
     
@@ -482,6 +555,78 @@ public class ClientManagerView extends VBox {
         loadClientData();
     }
     
+    /**
+     * Sélectionne un client par nom et ouvre sa fiche de modification
+     * Méthode publique appelée depuis la recherche globale
+     */
+    public void selectAndViewClient(String clientName) {
+        System.out.println("🔍 Recherche client: " + clientName + " dans " + clientData.size() + " éléments");
+        
+        // Attendre que les données soient chargées si nécessaire
+        if (clientData.isEmpty()) {
+            System.out.println("⏳ Données client non chargées, attente...");
+            scheduleClientDataCheck(clientName, 0);
+            return;
+        }
+        
+        Platform.runLater(() -> {
+            // Rechercher le client dans la liste
+            boolean found = false;
+            for (Client client : clientData) {
+                if (client.getCompanyName() != null && 
+                    client.getCompanyName().toLowerCase().contains(clientName.toLowerCase())) {
+                    // Sélectionner le client dans la table
+                    clientTable.getSelectionModel().select(client);
+                    clientTable.scrollTo(client);
+                    
+                    System.out.println("✅ Client trouvé et sélectionné: " + client.getCompanyName());
+                    
+                    // Ouvrir automatiquement la fiche de modification avec délai
+                    Platform.runLater(() -> {
+                        try {
+                            Thread.sleep(200); // Petit délai pour la sélection
+                            editClient();
+                        } catch (InterruptedException e) {
+                            editClient();
+                        }
+                    });
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                System.out.println("❌ Client non trouvé: " + clientName);
+            }
+        });
+    }
+    
+    /**
+     * Vérifie périodiquement si les données client sont chargées pour la sélection automatique
+     */
+    private void scheduleClientDataCheck(String clientName, int attempt) {
+        if (attempt > 10) { // Maximum 10 tentatives (5 secondes)
+            System.out.println("❌ Timeout: Client non trouvé après 10 tentatives: " + clientName);
+            return;
+        }
+        
+        Platform.runLater(() -> {
+            if (!clientData.isEmpty()) {
+                System.out.println("✅ Données client chargées, nouvelle tentative de sélection");
+                selectAndViewClient(clientName);
+            } else {
+                // Réessayer après 500ms
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(500);
+                        scheduleClientDataCheck(clientName, attempt + 1);
+                    } catch (InterruptedException e) {
+                        // Ignore
+                    }
+                }).start();
+            }
+        });
+    }
+
     /**
      * Convertit une Map en objet Client
      */

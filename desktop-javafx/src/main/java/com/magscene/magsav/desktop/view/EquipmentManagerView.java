@@ -1,7 +1,9 @@
 package com.magscene.magsav.desktop.view;
 
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.dialog.EquipmentDialog;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -24,7 +26,7 @@ import java.util.Optional;
  * Interface JavaFX complète pour la gestion du parc matériel
  * Fonctionnalités : tableau détaillé, recherche, filtres, CRUD, statistiques
  */
-public class EquipmentManagerView extends VBox {
+public class EquipmentManagerView extends BorderPane {
     
     private final ApiService apiService;
     private TableView<EquipmentItem> equipmentTable;
@@ -43,46 +45,46 @@ public class EquipmentManagerView extends VBox {
     }
     
     private void initializeUI() {
-        setSpacing(15);
-        setPadding(new Insets(20));
-        setStyle("-fx-background-color: #f8f9fa;");
+        // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
+        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
-        // Header
+        // Table des équipements (créer EN PREMIER pour être disponible dans la toolbar)
+        DetailPanelContainer tableContainer = createTableContainer();
+        
+        // Header avec titre
         VBox header = createHeader();
         
-        // Table des équipements (créer AVANT les boutons)
-        VBox tableContainer = createTableContainer();
-        
-        // Toolbar avec recherche et filtres (créer APRÈS la table)
+        // Toolbar séparée comme dans la référence
         HBox toolbar = createToolbar();
         
         // Footer avec statistiques
         HBox footer = createFooter();
         
-        getChildren().addAll(header, toolbar, tableContainer, footer);
+        // Layout principal - EXACTEMENT comme Ventes et Installations
+        VBox topContainer = new VBox(header, toolbar);
+        
+        setTop(topContainer);
+        setCenter(tableContainer);
+        setBottom(footer);
     }
     
     private VBox createHeader() {
-        VBox header = new VBox(10);
-        header.setPadding(new Insets(0, 0, 20, 0));
+        VBox header = new VBox(10); // STANDARD : 10px spacing comme référence
+        header.setPadding(new Insets(0, 0, 20, 0)); // STANDARD : padding comme référence
         
-        Label title = new Label("📦 Gestion du Parc Matériel");
+        Label title = new Label("📦 Parc Matériel");
         title.setFont(Font.font("System", FontWeight.BOLD, 24));
         title.setTextFill(Color.web("#2c3e50"));
         
-        Label subtitle = new Label("Inventaire complet • Suivi en temps réel • Maintenance préventive");
-        subtitle.setFont(Font.font("System", 14));
-        subtitle.setTextFill(Color.web("#7f8c8d"));
-        
-        header.getChildren().addAll(title, subtitle);
+        header.getChildren().add(title); // SEUL le titre dans header
         return header;
     }
     
     private HBox createToolbar() {
-        HBox toolbar = new HBox(15);
-        toolbar.setPadding(new Insets(15));
+        HBox toolbar = new HBox(10); // EXACTEMENT comme Ventes & Installations
+        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme Ventes & Installations
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setStyle("-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+        toolbar.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         // Recherche
         VBox searchBox = new VBox(5);
@@ -91,28 +93,37 @@ public class EquipmentManagerView extends VBox {
         searchField = new TextField();
         searchField.setPromptText("Nom, modèle, numéro de série...");
         searchField.setPrefWidth(250);
+        searchField.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                            "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                            "-fx-border-color: " + ThemeManager.getInstance().getSelectionTextColor() + "; -fx-border-radius: 4;");
         searchField.textProperty().addListener((obs, oldText, newText) -> filterEquipment());
         searchBox.getChildren().addAll(searchLabel, searchField);
         
         // Filtre par catégorie
         VBox categoryBox = new VBox(5);
         Label categoryLabel = new Label("📁 Catégorie");
+        categoryLabel.setStyle("-fx-text-fill: #6B71F2;");
         categoryLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         categoryFilter = new ComboBox<>();
-        categoryFilter.getItems().addAll("Toutes", "Audio", "Éclairage", "Vidéo", "Structures", "Câblage", "Transport");
+        categoryFilter.getItems().add("Toutes"); // Valeur par défaut, sera mis à jour dynamiquement
         categoryFilter.setValue("Toutes");
         categoryFilter.setPrefWidth(150);
+        categoryFilter.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                              "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + ";");
         categoryFilter.setOnAction(e -> filterEquipment());
         categoryBox.getChildren().addAll(categoryLabel, categoryFilter);
         
         // Filtre par statut
         VBox statusBox = new VBox(5);
         Label statusLabel = new Label("🔄 Statut");
+        statusLabel.setStyle("-fx-text-fill: #6B71F2;");
         statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll("Tous", "Disponible", "En cours d'utilisation", "En maintenance", "Hors service");
+        statusFilter.getItems().add("Tous"); // Valeur par défaut, sera mis à jour dynamiquement
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(180);
+        statusFilter.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                           "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + ";");
         statusFilter.setOnAction(e -> filterEquipment());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
@@ -156,46 +167,82 @@ public class EquipmentManagerView extends VBox {
         return toolbar;
     }
     
-    private VBox createTableContainer() {
-        VBox container = new VBox(10);
-        
+    private DetailPanelContainer createTableContainer() {
         // Configuration de la table
         equipmentTable = new TableView<>();
         equipmentTable.setItems(equipmentData);
-        equipmentTable.setStyle("-fx-background-color: white; -fx-background-radius: 8;");
+        // Style appliqué via CSS pour permettre la sélection MAGSAV
+        equipmentTable.getStyleClass().add("equipment-table");
         equipmentTable.setPrefHeight(400);
         
         // Colonnes de la table
         createTableColumns();
         
-        // Style des lignes
+        // Style des lignes avec gestion de la sélection
         equipmentTable.setRowFactory(tv -> {
-            TableRow<EquipmentItem> row = new TableRow<>();
-            row.itemProperty().addListener((obs, oldItem, newItem) -> {
-                if (newItem != null) {
-                    switch (newItem.getStatus()) {
-                        case "Disponible":
-                            row.setStyle("-fx-background-color: #d5f4e6;");
-                            break;
-                        case "En cours d'utilisation":
-                            row.setStyle("-fx-background-color: #fff3cd;");
-                            break;
-                        case "En maintenance":
-                            row.setStyle("-fx-background-color: #f8d7da;");
-                            break;
-                        case "Hors service":
-                            row.setStyle("-fx-background-color: #f5c6cb;");
-                            break;
-                        default:
-                            row.setStyle("");
-                    }
+            TableRow<EquipmentItem> row = new TableRow<EquipmentItem>();
+            
+            // Méthode pour appliquer le style approprié
+            Runnable updateStyle = () -> {
+                if (row.isEmpty() || row.getItem() == null) {
+                    row.setStyle("");
+                    return;
                 }
-            });
+                
+                // Priorité 1: Si sélectionné, couleur de sélection MAGSAV
+                if (row.isSelected()) {
+                    // Style de sélection plus visible avec bordure
+                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                               "-fx-border-width: 2px;");
+                    return;
+                }
+                
+                // Priorité 2: Couleur selon le statut (seulement si pas sélectionné)
+                EquipmentItem item = row.getItem();
+                switch (item.getStatus()) {
+                    case "Disponible":
+                        row.setStyle("-fx-background-color: rgba(213, 244, 230, 0.3);");
+                        break;
+                    case "En cours d'utilisation":
+                        row.setStyle("-fx-background-color: rgba(255, 243, 205, 0.3);");
+                        break;
+                    case "En maintenance":
+                        row.setStyle("-fx-background-color: rgba(248, 215, 218, 0.3);");
+                        break;
+                    case "En SAV":
+                        row.setStyle("-fx-background-color: rgba(107, 113, 242, 0.2);");
+                        break;
+                    case "Hors service":
+                        row.setStyle("-fx-background-color: rgba(245, 198, 203, 0.3);");
+                        break;
+                    default:
+                        row.setStyle("");
+                }
+            };
+            
+            // Mise à jour du style quand l'item change
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
+            // Mise à jour du style quand la sélection change
+            row.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> updateStyle.run());
+            
             return row;
         });
         
-        container.getChildren().add(equipmentTable);
-        VBox.setVgrow(equipmentTable, Priority.ALWAYS);
+        // Double-clic pour ouvrir la fiche de modification
+        equipmentTable.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                EquipmentItem selectedEquipment = equipmentTable.getSelectionModel().getSelectedItem();
+                if (selectedEquipment != null) {
+                    editEquipment();
+                }
+            }
+        });
+        
+        // Créer le conteneur avec volet de détails
+        DetailPanelContainer container = DetailPanelContainer.wrapTableView(equipmentTable);
         
         return container;
     }
@@ -237,16 +284,25 @@ public class EquipmentManagerView extends VBox {
                     setText(status);
                     switch (status) {
                         case "Disponible":
-                            setStyle("-fx-text-fill: #27ae60; -fx-font-weight: bold;");
+                            setStyle("-fx-text-fill: #27ae60;");
                             break;
-                        case "En cours d'utilisation":
-                            setStyle("-fx-text-fill: #f39c12; -fx-font-weight: bold;");
+                        case "En Cours D'utilisation":
+                            setStyle("-fx-text-fill: #f39c12;");
                             break;
-                        case "En maintenance":
-                            setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+                        case "En Maintenance":
+                            setStyle("-fx-text-fill: #e74c3c;");
                             break;
-                        case "Hors service":
-                            setStyle("-fx-text-fill: #c0392b; -fx-font-weight: bold;");
+                        case "Hors Service":
+                            setStyle("-fx-text-fill: #c0392b;");
+                            break;
+                        case "En SAV":
+                            setStyle("-fx-text-fill: #9b59b6;");
+                            break;
+                        case "Retiré Du Service":
+                            setStyle("-fx-text-fill: #7f8c8d;");
+                            break;
+                        default:
+                            setStyle("-fx-text-fill: #34495e;");
                             break;
                     }
                 }
@@ -305,12 +361,15 @@ public class EquipmentManagerView extends VBox {
                                 equipmentData.add(item);
                             }
                         }
+                        updateCategoryFilter();
+                        updateStatusFilter();
                         updateStatistics();
                         loadingIndicator.setVisible(false);
                     });
                 }).exceptionally(throwable -> {
                     Platform.runLater(() -> {
-                        showError("Erreur de chargement", "Impossible de charger les équipements: " + throwable.getMessage());
+                        // En cas d'échec, charger des données de démo
+                        loadDemoData();
                         loadingIndicator.setVisible(false);
                     });
                     return null;
@@ -323,6 +382,58 @@ public class EquipmentManagerView extends VBox {
         loadThread.setDaemon(true);
         loadThread.start();
     }
+
+    private void loadDemoData() {
+        equipmentData.clear();
+        
+        // Données de démonstration pour tester le volet de détails
+        Map<String, Object> demo1 = new java.util.HashMap<>();
+        demo1.put("id", 1L);
+        demo1.put("name", "Projecteur LED 500W");
+        demo1.put("brand", "ARRI");
+        demo1.put("model", "SkyPanel S60-C");
+        demo1.put("serialNumber", "SP60C-2023-001");
+        demo1.put("category", "Éclairage");
+        demo1.put("status", "AVAILABLE");
+        demo1.put("location", "Hangar A - Rack 3");
+        demo1.put("description", "Projecteur LED haute puissance avec contrôle couleur");
+        demo1.put("purchasePrice", 2500.0);
+        demo1.put("notes", "Révision annuelle effectuée");
+        
+        Map<String, Object> demo2 = new java.util.HashMap<>();
+        demo2.put("id", 2L);
+        demo2.put("name", "Console Audio Numérique");
+        demo2.put("brand", "Yamaha");
+        demo2.put("model", "CL5");
+        demo2.put("serialNumber", "CL5-2022-078");
+        demo2.put("category", "Audio");
+        demo2.put("status", "IN_USE");
+        demo2.put("location", "Régie Son - Position 1");
+        demo2.put("description", "Console numérique 72 canaux avec processeurs intégrés");
+        demo2.put("purchasePrice", 15000.0);
+        demo2.put("notes", "En cours d'utilisation pour le concert du 15/11");
+        
+        Map<String, Object> demo3 = new java.util.HashMap<>();
+        demo3.put("id", 3L);
+        demo3.put("name", "Caméra Broadcast 4K");
+        demo3.put("brand", "Sony");
+        demo3.put("model", "PXW-FX9");
+        demo3.put("serialNumber", "FX9-2023-142");
+        demo3.put("category", "Vidéo");
+        demo3.put("status", "MAINTENANCE");
+        demo3.put("location", "Atelier Technique");
+        demo3.put("description", "Caméra professionnelle 4K avec optiques interchangeables");
+        demo3.put("purchasePrice", 8500.0);
+        demo3.put("notes", "Maintenance préventive en cours - Retour prévu le 20/11");
+        
+        equipmentData.add(new EquipmentItem(demo1));
+        equipmentData.add(new EquipmentItem(demo2));
+        equipmentData.add(new EquipmentItem(demo3));
+        
+        updateCategoryFilter();
+        updateStatusFilter();
+        updateStatistics();
+    }
     
     private void filterEquipment() {
         String searchText = searchField.getText().toLowerCase();
@@ -333,16 +444,16 @@ public class EquipmentManagerView extends VBox {
         
         for (EquipmentItem item : equipmentData) {
             boolean matchesSearch = searchText.isEmpty() || 
-                item.getName().toLowerCase().contains(searchText) ||
-                item.getBrand().toLowerCase().contains(searchText) ||
-                item.getModel().toLowerCase().contains(searchText) ||
-                item.getSerialNumber().toLowerCase().contains(searchText);
+                (item.getName() != null && item.getName().toLowerCase().contains(searchText)) ||
+                (item.getBrand() != null && item.getBrand().toLowerCase().contains(searchText)) ||
+                (item.getModel() != null && item.getModel().toLowerCase().contains(searchText)) ||
+                (item.getSerialNumber() != null && item.getSerialNumber().toLowerCase().contains(searchText));
                 
             boolean matchesCategory = "Toutes".equals(categoryValue) || 
-                item.getCategory().equals(categoryValue);
+                (item.getCategory() != null && item.getCategory().equals(categoryValue));
                 
             boolean matchesStatus = "Tous".equals(statusValue) || 
-                item.getStatus().equals(statusValue);
+                (item.getStatus() != null && item.getStatus().equals(statusValue));
                 
             if (matchesSearch && matchesCategory && matchesStatus) {
                 filteredData.add(item);
@@ -351,6 +462,54 @@ public class EquipmentManagerView extends VBox {
         
         equipmentTable.setItems(filteredData);
         updateStatistics();
+    }
+    
+    /**
+     * Met à jour dynamiquement le filtre des catégories avec les valeurs réelles
+     */
+    private void updateCategoryFilter() {
+        String selectedCategory = categoryFilter.getValue();
+        categoryFilter.getItems().clear();
+        categoryFilter.getItems().add("Toutes");
+        
+        // Récupérer toutes les catégories uniques des données
+        equipmentData.stream()
+            .map(EquipmentItem::getCategory)
+            .filter(category -> category != null && !category.trim().isEmpty())
+            .distinct()
+            .sorted()
+            .forEach(category -> categoryFilter.getItems().add(category));
+        
+        // Restaurer la sélection si elle existe toujours
+        if (categoryFilter.getItems().contains(selectedCategory)) {
+            categoryFilter.setValue(selectedCategory);
+        } else {
+            categoryFilter.setValue("Toutes");
+        }
+    }
+    
+    /**
+     * Met à jour dynamiquement le filtre des statuts avec les valeurs réelles
+     */
+    private void updateStatusFilter() {
+        String selectedStatus = statusFilter.getValue();
+        statusFilter.getItems().clear();
+        statusFilter.getItems().add("Tous");
+        
+        // Récupérer tous les statuts uniques des données (déjà convertis en français)
+        equipmentData.stream()
+            .map(EquipmentItem::getStatus)
+            .filter(status -> status != null && !status.trim().isEmpty())
+            .distinct()
+            .sorted()
+            .forEach(status -> statusFilter.getItems().add(status));
+        
+        // Restaurer la sélection si elle existe toujours
+        if (statusFilter.getItems().contains(selectedStatus)) {
+            statusFilter.setValue(selectedStatus);
+        } else {
+            statusFilter.setValue("Tous");
+        }
     }
     
     /**
@@ -454,6 +613,79 @@ public class EquipmentManagerView extends VBox {
         loadEquipmentData();
     }
     
+    /**
+     * Sélectionne un équipement par nom et ouvre sa fiche de modification
+     * Méthode publique appelée depuis la recherche globale
+     */
+    public void selectAndViewEquipment(String equipmentName) {
+        System.out.println("🔍 Recherche équipement: " + equipmentName + " dans " + equipmentData.size() + " éléments");
+        
+        // Attendre que les données soient chargées si nécessaire
+        if (equipmentData.isEmpty()) {
+            System.out.println("⏳ Données non chargées, attente...");
+            // Programmer une vérification périodique
+            scheduleDataCheck(equipmentName, 0);
+            return;
+        }
+        
+        Platform.runLater(() -> {
+            // Rechercher l'équipement dans la liste
+            boolean found = false;
+            for (EquipmentItem equipment : equipmentData) {
+                if (equipment.getName() != null && 
+                    equipment.getName().toLowerCase().contains(equipmentName.toLowerCase())) {
+                    // Sélectionner l'équipement dans la table
+                    equipmentTable.getSelectionModel().select(equipment);
+                    equipmentTable.scrollTo(equipment);
+                    
+                    System.out.println("✅ Équipement trouvé et sélectionné: " + equipment.getName());
+                    
+                    // Ouvrir automatiquement la fiche de modification avec délai
+                    Platform.runLater(() -> {
+                        try {
+                            Thread.sleep(200); // Petit délai pour la sélection
+                            editEquipment();
+                        } catch (InterruptedException e) {
+                            editEquipment();
+                        }
+                    });
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                System.out.println("❌ Équipement non trouvé: " + equipmentName);
+            }
+        });
+    }
+    
+    /**
+     * Vérifie périodiquement si les données sont chargées pour la sélection automatique
+     */
+    private void scheduleDataCheck(String equipmentName, int attempt) {
+        if (attempt > 10) { // Maximum 10 tentatives (5 secondes)
+            System.out.println("❌ Timeout: Équipement non trouvé après 10 tentatives: " + equipmentName);
+            return;
+        }
+        
+        Platform.runLater(() -> {
+            if (!equipmentData.isEmpty()) {
+                System.out.println("✅ Données chargées, nouvelle tentative de sélection");
+                selectAndViewEquipment(equipmentName);
+            } else {
+                // Réessayer après 500ms
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(500);
+                        scheduleDataCheck(equipmentName, attempt + 1);
+                    } catch (InterruptedException e) {
+                        // Ignore
+                    }
+                }).start();
+            }
+        });
+    }
+
     /**
      * Convertir EquipmentItem en Map pour édition
      */

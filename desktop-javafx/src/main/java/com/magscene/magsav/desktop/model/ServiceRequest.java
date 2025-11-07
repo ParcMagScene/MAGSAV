@@ -1,11 +1,16 @@
 package com.magscene.magsav.desktop.model;
 
+import com.magscene.magsav.desktop.component.DetailPanelProvider;
+import javafx.scene.image.Image;
+import javafx.scene.layout.VBox;
+import com.magscene.magsav.desktop.component.DetailPanel;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * DTO pour ServiceRequest côté JavaFX
  */
-public class ServiceRequest {
+public class ServiceRequest implements DetailPanelProvider {
     
     public enum ServiceRequestType {
         REPAIR, MAINTENANCE, INSTALLATION, TRAINING, RMA, WARRANTY
@@ -34,7 +39,7 @@ public class ServiceRequest {
     private LocalDateTime createdAt;
     private LocalDateTime resolvedAt;
     private LocalDateTime updatedAt;
-    private Equipment equipment;
+    private String equipmentName;
 
     // Constructeurs
     public ServiceRequest() {}
@@ -98,8 +103,8 @@ public class ServiceRequest {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    public Equipment getEquipment() { return equipment; }
-    public void setEquipment(Equipment equipment) { this.equipment = equipment; }
+    public String getEquipmentName() { return equipmentName; }
+    public void setEquipmentName(String equipmentName) { this.equipmentName = equipmentName; }
 
     @Override
     public String toString() {
@@ -110,5 +115,137 @@ public class ServiceRequest {
                 ", status=" + status +
                 ", priority=" + priority +
                 '}';
+    }
+
+    // Implémentation de DetailPanelProvider
+    @Override
+    public String getDetailTitle() {
+        return title != null ? title : "Demande SAV sans titre";
+    }
+
+    @Override
+    public String getDetailSubtitle() {
+        StringBuilder subtitle = new StringBuilder();
+        
+        if (type != null) {
+            subtitle.append(getTypeIcon()).append(" ").append(type.name());
+        }
+        
+        if (priority != null) {
+            if (subtitle.length() > 0) subtitle.append(" • ");
+            subtitle.append(getPriorityIcon()).append(" ").append(priority.name());
+        }
+        
+        if (assignedTechnician != null && !assignedTechnician.trim().isEmpty()) {
+            if (subtitle.length() > 0) subtitle.append(" • ");
+            subtitle.append("Technicien: ").append(assignedTechnician);
+        }
+        
+        return subtitle.toString();
+    }
+
+    @Override
+    public Image getDetailImage() {
+        // Pour l'instant, pas d'image spécifique pour les demandes SAV
+        return null;
+    }
+
+    @Override
+    public String getQRCodeData() {
+        StringBuilder qrData = new StringBuilder();
+        qrData.append("SAV|");
+        qrData.append("ID:").append(id != null ? id : "").append("|");
+        qrData.append("TITLE:").append(title != null ? title : "").append("|");
+        qrData.append("TYPE:").append(type != null ? type.name() : "").append("|");
+        qrData.append("STATUS:").append(status != null ? status.name() : "");
+        return qrData.toString();
+    }
+
+    @Override
+    public VBox getDetailInfoContent() {
+        VBox content = new VBox(8);
+        
+        if (requesterName != null && !requesterName.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Demandeur", requesterName));
+        }
+        
+        if (requesterEmail != null && !requesterEmail.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Email", requesterEmail));
+        }
+        
+        if (description != null && !description.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Description", description));
+        }
+        
+        if (status != null) {
+            content.getChildren().add(DetailPanel.createInfoRow("Statut", getStatusIcon() + " " + status.name()));
+        }
+        
+        if (estimatedCost != null && estimatedCost > 0) {
+            content.getChildren().add(DetailPanel.createInfoRow("Coût estimé", String.format("%.2f €", estimatedCost)));
+        }
+        
+        if (actualCost != null && actualCost > 0) {
+            content.getChildren().add(DetailPanel.createInfoRow("Coût réel", String.format("%.2f €", actualCost)));
+        }
+        
+        if (createdAt != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            content.getChildren().add(DetailPanel.createInfoRow("Créé le", createdAt.format(formatter)));
+        }
+        
+        if (resolvedAt != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            content.getChildren().add(DetailPanel.createInfoRow("Résolu le", resolvedAt.format(formatter)));
+        }
+        
+        if (resolutionNotes != null && !resolutionNotes.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Notes de résolution", resolutionNotes));
+        }
+        
+        return content;
+    }
+
+    @Override
+    public String getDetailId() {
+        return id != null ? id.toString() : "";
+    }
+
+    // Méthodes utilitaires pour les icônes
+    private String getTypeIcon() {
+        if (type == null) return "❓";
+        switch (type) {
+            case REPAIR: return "🔧";
+            case MAINTENANCE: return "🛠️";
+            case INSTALLATION: return "📦";
+            case TRAINING: return "📚";
+            case RMA: return "↩️";
+            case WARRANTY: return "🛡️";
+            default: return "❓";
+        }
+    }
+    
+    private String getPriorityIcon() {
+        if (priority == null) return "❓";
+        switch (priority) {
+            case LOW: return "🟢";
+            case MEDIUM: return "🟡";
+            case HIGH: return "🟠";
+            case URGENT: return "🔴";
+            default: return "❓";
+        }
+    }
+    
+    private String getStatusIcon() {
+        if (status == null) return "❓";
+        switch (status) {
+            case OPEN: return "📋";
+            case IN_PROGRESS: return "⚙️";
+            case WAITING_PARTS: return "⏳";
+            case RESOLVED: return "✅";
+            case CLOSED: return "🔒";
+            case CANCELLED: return "❌";
+            default: return "❓";
+        }
     }
 }

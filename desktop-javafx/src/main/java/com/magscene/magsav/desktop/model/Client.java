@@ -1,13 +1,19 @@
 package com.magscene.magsav.desktop.model;
 
+import com.magscene.magsav.desktop.component.DetailPanel;
+import com.magscene.magsav.desktop.component.DetailPanelProvider;
+import javafx.scene.image.Image;
+import javafx.scene.layout.VBox;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 
 /**
  * DTO Client pour l'interface JavaFX Desktop
  * Correspond aux données de l'entité Client du backend
  */
-public class Client {
+public class Client implements DetailPanelProvider {
     
     // Énumérations pour les propriétés du client
     public enum ClientType {
@@ -387,5 +393,129 @@ public class Client {
     public String toString() {
         return String.format("Client{id=%d, companyName='%s', type=%s, status=%s}", 
                             id, companyName, type, status);
+    }
+
+    // Implémentation de DetailPanelProvider
+    @Override
+    public String getDetailTitle() {
+        if (companyName != null && !companyName.trim().isEmpty()) {
+            return companyName;
+        }
+        return "Client sans nom";
+    }
+
+    @Override
+    public String getDetailSubtitle() {
+        StringBuilder subtitle = new StringBuilder();
+        
+        if (type != null) {
+            subtitle.append(type.getDisplayName());
+        }
+        
+        if (category != null) {
+            if (subtitle.length() > 0) subtitle.append(" • ");
+            subtitle.append(category.getDisplayName());
+        }
+        
+        if (businessSector != null && !businessSector.trim().isEmpty()) {
+            if (subtitle.length() > 0) subtitle.append(" • ");
+            subtitle.append(businessSector);
+        }
+        
+        return subtitle.toString();
+    }
+
+    @Override
+    public Image getDetailImage() {
+        // Avatar/logo selon le type de client
+        String avatarType = "company"; // par défaut entreprise
+        
+        if (type != null) {
+            switch (type) {
+                case INDIVIDUAL:
+                    avatarType = "individual"; // Particulier
+                    break;
+                case CORPORATE:
+                    avatarType = "company"; // Entreprise
+                    break;
+                case GOVERNMENT:
+                    avatarType = "government"; // Administration
+                    break;
+                case ASSOCIATION:
+                    avatarType = "nonprofit"; // Association
+                    break;
+            }
+        }
+        
+        try {
+            return new Image(getClass().getResourceAsStream("/images/clients/" + avatarType + ".png"));
+        } catch (Exception e) {
+            try {
+                return new Image(getClass().getResourceAsStream("/images/clients/default.png"));
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public String getQRCodeData() {
+        // Les clients n'ont pas de QR Code
+        return "";
+    }
+
+    @Override
+    public VBox getDetailInfoContent() {
+        VBox content = new VBox(8);
+        
+        if (email != null && !email.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Email", email));
+        }
+        
+        if (phone != null && !phone.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Téléphone", phone));
+        }
+        
+        if (fax != null && !fax.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Fax", fax));
+        }
+        
+        if (website != null && !website.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Site web", website));
+        }
+        
+        if (address != null && !address.trim().isEmpty()) {
+            String fullAddress = address;
+            if (postalCode != null || city != null) {
+                fullAddress += "\n";
+                if (postalCode != null) fullAddress += postalCode + " ";
+                if (city != null) fullAddress += city;
+            }
+            if (country != null) fullAddress += "\n" + country;
+            content.getChildren().add(DetailPanel.createInfoRow("Adresse", fullAddress));
+        }
+        
+        if (status != null) {
+            content.getChildren().add(DetailPanel.createInfoRow("Statut", status.getDisplayName()));
+        }
+        
+        if (siretNumber != null && !siretNumber.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("SIRET", siretNumber));
+        }
+        
+        if (vatNumber != null && !vatNumber.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("N° TVA", vatNumber));
+        }
+        
+        if (employeeCount != null && employeeCount > 0) {
+            content.getChildren().add(DetailPanel.createInfoRow("Employés", employeeCount.toString()));
+        }
+        
+        return content;
+    }
+
+    @Override
+    public String getDetailId() {
+        return id != null ? id.toString() : "";
     }
 }

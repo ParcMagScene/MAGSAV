@@ -81,6 +81,8 @@ public class ApiService {
             persistentPersonnel.add(createPersonnelMap(6L, "Julie", "Rousseau", "Éclairagiste", "ACTIVE", "06.67.89.01.23", "julie.rousseau@magscene.fr"));
             persistentPersonnel.add(createPersonnelMap(7L, "Pierre", "Dubois", "Assistant Technique", "ACTIVE", "06.78.90.12.34", "pierre.dubois@magscene.fr"));
             persistentPersonnel.add(createPersonnelMap(8L, "Lucie", "Fernandez", "Régisseuse Générale", "ACTIVE", "06.89.01.23.45", "lucie.fernandez@magscene.fr"));
+            persistentPersonnel.add(createPersonnelMap(9L, "Alex", "Mercier", "Intermittent Musicien", "ACTIVE", "06.90.12.34.56", "alex.mercier@intermittent.fr"));
+            persistentPersonnel.add(createPersonnelMap(10L, "Clara", "Durand", "Intermittent Artiste Scénique", "ACTIVE", "06.01.23.45.67", "clara.durand@intermittent.fr"));
         }
         return new ArrayList<>(persistentPersonnel); // Retourner une copie
     }
@@ -108,6 +110,7 @@ public class ApiService {
         
         // Champs manquants ajoutés
         personnel.put("type", getPersonnelType(role));
+        personnel.put("specialties", generateSpecialties(role));
         personnel.put("notes", "Employé qualifié - Formation à jour - Habilitation électrique");
         personnel.put("createdAt", "2023-01-15T10:00:00");
         personnel.put("updatedAt", "2024-11-01T15:30:00");
@@ -131,7 +134,33 @@ public class ApiService {
         if (role.toLowerCase().contains("assistant") || role.toLowerCase().contains("stagiaire")) {
             return "INTERN";
         }
+        if (role.toLowerCase().contains("intermittent") || role.toLowerCase().contains("artiste") || role.toLowerCase().contains("musicien")) {
+            return "PERFORMER";
+        }
         return Math.random() > 0.7 ? "FREELANCE" : "EMPLOYEE";
+    }
+    
+    private String generateSpecialties(String role) {
+        String roleL = role.toLowerCase();
+        if (roleL.contains("son") || roleL.contains("audio")) {
+            return "Son, Mixage, Mastering, Enregistrement";
+        }
+        if (roleL.contains("éclairage") || roleL.contains("lumière")) {
+            return "Éclairage, Programmation, DMX, LED";
+        }
+        if (roleL.contains("vidéo") || roleL.contains("caméra")) {
+            return "Vidéo, Montage, Streaming, Réalisation";
+        }
+        if (roleL.contains("technique")) {
+            return "Technique générale, Maintenance, Câblage";
+        }
+        if (roleL.contains("régie") || roleL.contains("régisseur")) {
+            return "Régie générale, Coordination, Planning";
+        }
+        if (roleL.contains("intermittent") || roleL.contains("artiste")) {
+            return "Performance scénique, Animation, Spectacle";
+        }
+        return "Polyvalent, Support technique";
     }
     
     // Methodes pour les equipements
@@ -153,6 +182,18 @@ public class ApiService {
             persistentEquipment.add(createEquipmentMap(6L, "Gradateur Strand C21", "ECLAIRAGE", "GRADATEUR", "DISPONIBLE", "STR-C21-022"));
             persistentEquipment.add(createEquipmentMap(7L, "Micro Shure SM58", "AUDIO", "MICROPHONE", "DISPONIBLE", "SHU-SM58-089"));
             persistentEquipment.add(createEquipmentMap(8L, "Ecran LED ROE MC-7H", "VIDEO", "ECRAN", "EN_LOCATION", "ROE-MC7-008"));
+            // Équipements Yamaha pour correspondre à la recherche globale
+            persistentEquipment.add(createEquipmentMap(9L, "Yamaha MG16XU", "AUDIO", "MIXAGE", "DISPONIBLE", "YAM-MG16XU-001"));
+            persistentEquipment.add(createEquipmentMap(10L, "Yamaha A15", "AUDIO", "DIFFUSION", "DISPONIBLE", "YAM-A15-001"));
+            persistentEquipment.add(createEquipmentMap(11L, "Yamaha B218", "AUDIO", "DIFFUSION", "DISPONIBLE", "YAM-B218-001"));
+            persistentEquipment.add(createEquipmentMap(12L, "Yamaha P7000S", "AUDIO", "AMPLIFICATION", "DISPONIBLE", "YAM-P7000S-001"));
+            
+            // Équipements en SAV pour test
+            persistentEquipment.add(createEquipmentMap(13L, "Console Soundcraft Vi3000", "AUDIO", "MIXAGE", "IN_SAV", "SOU-VI3000-002"));
+            persistentEquipment.add(createEquipmentMap(14L, "Projecteur Clay Paky Sharpy", "ECLAIRAGE", "PROJECTEUR", "IN_SAV", "CLA-SHARPY-007"));
+            persistentEquipment.add(createEquipmentMap(15L, "Caméra Blackmagic URSA Mini Pro", "VIDEO", "CAPTATION", "IN_SAV", "BLA-URSA-004"));
+            persistentEquipment.add(createEquipmentMap(16L, "Micro HF Sennheiser EW 100 G4", "AUDIO", "MICROPHONE", "IN_SAV", "SEN-EW100-015"));
+            persistentEquipment.add(createEquipmentMap(17L, "Enceinte Meyer Sound UPM-1P", "AUDIO", "DIFFUSION", "IN_SAV", "MEY-UPM1P-009"));
         }
         return new ArrayList<>(persistentEquipment); // Retourner une copie
     }

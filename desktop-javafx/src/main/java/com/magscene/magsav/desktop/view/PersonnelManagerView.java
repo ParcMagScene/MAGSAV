@@ -1,7 +1,11 @@
 package com.magscene.magsav.desktop.view;
 
+import com.magscene.magsav.desktop.component.DetailPanel;
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.component.DetailPanelProvider;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.dialog.PersonnelDialog;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -15,10 +19,9 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.image.Image;
+import javafx.scene.layout.VBox;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.List;
@@ -27,7 +30,7 @@ import java.util.concurrent.CompletableFuture;
  * Interface JavaFX complete pour la gestion du personnel
  * Fonctionnalites : tableau detaille, recherche, filtres, CRUD, statistiques
  */
-public class PersonnelManagerView extends VBox {
+public class PersonnelManagerView extends BorderPane {
     
     private final ApiService apiService;
     private TableView<PersonnelItem> personnelTable;
@@ -38,6 +41,8 @@ public class PersonnelManagerView extends VBox {
     private ComboBox<String> departmentFilter;
     private Label statsLabel;
     private ProgressIndicator loadingIndicator;
+    private Button editButton;
+    private Button deleteButton;
     
     public PersonnelManagerView(ApiService apiService) {
         this.apiService = apiService;
@@ -47,8 +52,8 @@ public class PersonnelManagerView extends VBox {
     }
     
     private void initializeUI() {
-        this.setSpacing(15);
-        this.setPadding(new Insets(20));
+        // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
+        this.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
         // Header avec titre et statistiques
         VBox header = createHeader();
@@ -56,84 +61,145 @@ public class PersonnelManagerView extends VBox {
         // Barre d'outils avec recherche et filtres
         HBox toolbar = createToolbar();
         
-        // Zone principale avec tableau
-        VBox tableContainer = createTableContainer();
+        // Zone principale avec tableau - EXACTEMENT comme référence
+        createTableContainer();
         
-        // Footer avec boutons d'actions
-        HBox footer = createFooter();
+        // Layout principal avec volet de détail
+        VBox topContainer = new VBox(header, toolbar);
         
-        this.getChildren().addAll(header, toolbar, tableContainer, footer);
+        setTop(topContainer);
+        
+        // Intégration du volet de visualisation pour le personnel
+        DetailPanelContainer detailContainer = new DetailPanelContainer(personnelTable);
+        setCenter(detailContainer);
+        
+        // Configuration finale après création de tous les composants
+        setupButtonActivation();
     }
     
     private VBox createHeader() {
-        VBox header = new VBox(10);
-        header.setPadding(new Insets(0, 0, 10, 0));
+        VBox header = new VBox(10); // EXACTEMENT comme Ventes et Installations
+        header.setPadding(new Insets(0, 0, 20, 0)); // EXACTEMENT comme Ventes et Installations
         
         // Titre principal
-        Label titleLabel = new Label("Gestion du Personnel");
-        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
-        titleLabel.setTextFill(Color.DARKBLUE);
+        Label titleLabel = new Label("👤 Personnel");
+        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
+        titleLabel.setTextFill(Color.web("#2c3e50"));
         
-        // Statistiques
-        statsLabel = new Label("Chargement des statistiques...");
-        statsLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
-        statsLabel.setTextFill(Color.GRAY);
-        
-        header.getChildren().addAll(titleLabel, statsLabel);
+        header.getChildren().add(titleLabel);
         return header;
     }
     
     private HBox createToolbar() {
-        HBox toolbar = new HBox(15);
+        HBox toolbar = new HBox(10); // EXACTEMENT comme Ventes & Installations
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(10, 0, 10, 0));
+        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme Ventes & Installations
+        toolbar.setStyle("-fx-background-color: #142240; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
-        // Champ de recherche
-        Label searchLabel = new Label("Recherche:");
+        // Recherche
+        VBox searchBox = new VBox(5);
+        Label searchLabel = new Label("🔍 Recherche");
+        searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         searchField = new TextField();
         searchField.setPromptText("Nom, prenom, email...");
         searchField.setPrefWidth(250);
+        searchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        // Force agressive des couleurs pour contrer le CSS global
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchField.textProperty().addListener((obs, oldText, newText) -> filterPersonnelData());
+        searchBox.getChildren().addAll(searchLabel, searchField);
         
-        // Filtres
-        Label typeLabel = new Label("Type:");
+        // Filtre par type
+        VBox typeBox = new VBox(5);
+        Label typeLabel = new Label("👤 Type");
+        typeLabel.setStyle("-fx-text-fill: #6B71F2;");
+        typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous", "Employe", "Freelance", "Stagiaire", "Interimaire");
+        typeFilter.getItems().addAll("Tous", "Employe", "Freelance", "Stagiaire", "Interimaire", "Intermittent du spectacle");
         typeFilter.setValue("Tous");
+        typeFilter.setPrefWidth(150);
+        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
         typeFilter.setOnAction(e -> filterPersonnelData());
+        typeBox.getChildren().addAll(typeLabel, typeFilter);
         
-        Label statusLabel = new Label("Statut:");
+        // Filtre par statut
+        VBox statusBox = new VBox(5);
+        Label statusLabel = new Label("📊 Statut");
+        statusLabel.setStyle("-fx-text-fill: #6B71F2;");
+        statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         statusFilter = new ComboBox<>();
         statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "En conge", "Termine");
         statusFilter.setValue("Tous");
+        statusFilter.setPrefWidth(120);
+        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
         statusFilter.setOnAction(e -> filterPersonnelData());
+        statusBox.getChildren().addAll(statusLabel, statusFilter);
         
-        Label deptLabel = new Label("Departement:");
+        // Filtre par département
+        VBox deptBox = new VBox(5);
+        Label deptLabel = new Label("🏢 Département");
+        deptLabel.setStyle("-fx-text-fill: #6B71F2;");
+        deptLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         departmentFilter = new ComboBox<>();
         departmentFilter.getItems().add("Tous");
         departmentFilter.setValue("Tous");
+        departmentFilter.setPrefWidth(140);
+        departmentFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
         departmentFilter.setOnAction(e -> filterPersonnelData());
+        deptBox.getChildren().addAll(deptLabel, departmentFilter);
         
-        // Bouton rafraichir
-        Button refreshButton = new Button("Actualiser");
+        // Boutons d'action
+        VBox actionsBox = new VBox(5);
+        Label actionsLabel = new Label("⚡ Actions");
+        actionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
+        
+        HBox buttonRow = new HBox(10);
+        Button addButton = new Button("➕ Ajouter");
+        addButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4;");
+        addButton.setOnAction(e -> createNewPersonnel());
+        
+        editButton = new Button("✏️ Modifier");
+        editButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 4;");
+        editButton.setDisable(true);
+        editButton.setOnAction(e -> {
+            PersonnelItem selected = personnelTable.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                editPersonnel(selected);
+            } else {
+                showAlert("Selection requise", "Veuillez selectionner un membre du personnel a modifier.");
+            }
+        });
+        
+        deleteButton = new Button("🗑️ Supprimer");
+        deleteButton.setStyle("-fx-background-color: #F44336; -fx-text-fill: white; -fx-background-radius: 4;");
+        deleteButton.setDisable(true);
+        deleteButton.setOnAction(e -> {
+            PersonnelItem selected = personnelTable.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                deletePersonnel(selected);
+            } else {
+                showAlert("Selection requise", "Veuillez selectionner un membre du personnel a supprimer.");
+            }
+        });
+        
+        Button refreshButton = new Button("🔄 Actualiser");
+        refreshButton.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4;");
         refreshButton.setOnAction(e -> loadPersonnelData());
         
-        toolbar.getChildren().addAll(
-            searchLabel, searchField,
-            new Separator(),
-            typeLabel, typeFilter,
-            statusLabel, statusFilter,
-            deptLabel, departmentFilter,
-            new Separator(),
-            refreshButton
-        );
+        // Activation/désactivation des boutons selon la sélection (sera configurée après création table)
         
+        buttonRow.getChildren().addAll(addButton, editButton, deleteButton, refreshButton);
+        actionsBox.getChildren().addAll(actionsLabel, buttonRow);
+        
+        // Spacer pour pousser les actions à droite
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        toolbar.getChildren().addAll(searchBox, typeBox, statusBox, deptBox, spacer, actionsBox);
         return toolbar;
     }
     
-    private VBox createTableContainer() {
-        VBox container = new VBox(10);
-        
+    private void createTableContainer() {
         // Indicateur de chargement
         loadingIndicator = new ProgressIndicator();
         loadingIndicator.setVisible(false);
@@ -144,6 +210,28 @@ public class PersonnelManagerView extends VBox {
         personnelTable.setItems(personnelData);
         personnelTable.setRowFactory(tv -> {
             TableRow<PersonnelItem> row = new TableRow<>();
+            
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty()) {
+                    row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection prioritaire (#142240)
+                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                               "-fx-border-width: 2px;");
+                } else {
+                    // Style par défaut
+                    row.setStyle("");
+                }
+            };
+            
+            // Écouter les changements de sélection
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
                     editPersonnel(row.getItem());
@@ -155,11 +243,19 @@ public class PersonnelManagerView extends VBox {
         createTableColumns();
         
         // Style du tableau
-        personnelTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        personnelTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         personnelTable.setPrefHeight(400);
         
-        container.getChildren().addAll(loadingIndicator, personnelTable);
-        return container;
+        // Plus besoin de container - tableau directement dans setCenter
+    }
+    
+    private void setupButtonActivation() {
+        // Activation des boutons Modifier et Supprimer basée sur la sélection
+        personnelTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            boolean itemSelected = newSelection != null;
+            editButton.setDisable(!itemSelected);
+            deleteButton.setDisable(!itemSelected);
+        });
     }
     
     private void createTableColumns() {
@@ -262,49 +358,19 @@ public class PersonnelManagerView extends VBox {
         hireDateCol.setCellValueFactory(new PropertyValueFactory<>("hireDate"));
         hireDateCol.setPrefWidth(100);
         
+        // Colonne Spécialités
+        TableColumn<PersonnelItem, String> specialtiesCol = new TableColumn<>("Spécialités");
+        specialtiesCol.setCellValueFactory(new PropertyValueFactory<>("specialties"));
+        specialtiesCol.setPrefWidth(150);
+        
         personnelTable.getColumns().addAll(
             idCol, nameCol, emailCol, phoneCol, 
-            typeCol, statusCol, jobCol, deptCol, hireDateCol
+            typeCol, statusCol, jobCol, deptCol, hireDateCol, specialtiesCol
         );
     }
     
-    private HBox createFooter() {
-        HBox footer = new HBox(15);
-        footer.setAlignment(Pos.CENTER_LEFT);
-        footer.setPadding(new Insets(15, 0, 0, 0));
-        
-        Button addButton = new Button("➕ Nouveau Personnel");
-        addButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
-        addButton.setPrefWidth(150);
-        addButton.setOnAction(e -> createNewPersonnel());
-        
-        Button editButton = new Button("✏️ Modifier");
-        editButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;");
-        editButton.setPrefWidth(120);
-        editButton.setOnAction(e -> {
-            PersonnelItem selected = personnelTable.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                editPersonnel(selected);
-            } else {
-                showAlert("Selection requise", "Veuillez selectionner un membre du personnel a modifier.");
-            }
-        });
-        
-        Button deleteButton = new Button("🗑️ Supprimer");
-        deleteButton.setStyle("-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-weight: bold;");
-        deleteButton.setPrefWidth(120);
-        deleteButton.setOnAction(e -> {
-            PersonnelItem selected = personnelTable.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                deletePersonnel(selected);
-            } else {
-                showAlert("Selection requise", "Veuillez selectionner un membre du personnel a supprimer.");
-            }
-        });
-        
-        footer.getChildren().addAll(addButton, editButton, deleteButton);
-        return footer;
-    }
+    // Méthode createFooter() supprimée - Les boutons sont maintenant
+    // intégrés dans la toolbar unifiée pour éviter les doublons
     
     private void loadPersonnelData() {
         loadingIndicator.setVisible(true);
@@ -367,6 +433,7 @@ public class PersonnelManagerView extends VBox {
         }
         
         item.setNotes(getStringValue(personnelMap, "notes"));
+        item.setSpecialties(getStringValue(personnelMap, "specialties"));
         
         // Stockage de la map originale pour les operations
         item.setOriginalData(personnelMap);
@@ -386,6 +453,7 @@ public class PersonnelManagerView extends VBox {
             case "FREELANCE": return "Freelance";
             case "INTERN": return "Stagiaire";
             case "TEMPORARY": return "Interimaire";
+            case "PERFORMER": return "Intermittent du spectacle";
             default: return type;
         }
     }
@@ -419,21 +487,48 @@ public class PersonnelManagerView extends VBox {
     }
     
     private void updateStatistics() {
-        long total = personnelData.size();
-        long actif = personnelData.stream().filter(p -> "Actif".equals(p.getStatus())).count();
-        long employes = personnelData.stream().filter(p -> "Employe".equals(p.getType())).count();
-        long freelances = personnelData.stream().filter(p -> "Freelance".equals(p.getType())).count();
-        
-        String stats = String.format(
-            "👥 Total: %d • Actifs: %d • Employes: %d • Freelances: %d",
-            total, actif, employes, freelances
-        );
-        statsLabel.setText(stats);
+        // Statistiques supprimées du header pour uniformiser l'affichage
+        // avec les autres modules après unification des toolbars
     }
     
     private void filterPersonnelData() {
-        // TODO: Implementer le filtrage
-        // Pour l'instant, on affiche toutes les donnees
+        String searchText = searchField.getText().toLowerCase().trim();
+        String typeValue = typeFilter.getValue();
+        String statusValue = statusFilter.getValue();
+        String departmentValue = departmentFilter.getValue();
+        
+        ObservableList<PersonnelItem> filteredData = FXCollections.observableArrayList();
+        
+        for (PersonnelItem item : personnelData) {
+            // Filtre de recherche
+            boolean matchesSearch = searchText.isEmpty() || 
+                (item.getFullName() != null && item.getFullName().toLowerCase().contains(searchText)) ||
+                (item.getEmail() != null && item.getEmail().toLowerCase().contains(searchText)) ||
+                (item.getPhone() != null && item.getPhone().toLowerCase().contains(searchText)) ||
+                (item.getSpecialties() != null && item.getSpecialties().toLowerCase().contains(searchText));
+                
+            // Filtre par type
+            boolean matchesType = "Tous".equals(typeValue) || 
+                (item.getType() != null && item.getType().equals(typeValue));
+                
+            // Filtre par statut  
+            boolean matchesStatus = "Tous".equals(statusValue) || 
+                (item.getStatus() != null && item.getStatus().equals(statusValue));
+                
+            // Filtre par département
+            boolean matchesDepartment = "Tous".equals(departmentValue) || 
+                (item.getDepartment() != null && item.getDepartment().equals(departmentValue));
+                
+            if (matchesSearch && matchesType && matchesStatus && matchesDepartment) {
+                filteredData.add(item);
+            }
+        }
+        
+        personnelTable.setItems(filteredData);
+        // Mise à jour des statistiques si nécessaire
+        if (statsLabel != null) {
+            statsLabel.setText("Affichage: " + filteredData.size() + " / " + personnelData.size());
+        }
     }
     
     private void createNewPersonnel() {
@@ -486,7 +581,7 @@ public class PersonnelManagerView extends VBox {
     }
     
     // Classe interne pour representer un element du personnel dans le tableau
-    public static class PersonnelItem {
+    public static class PersonnelItem implements DetailPanelProvider {
         private SimpleStringProperty id = new SimpleStringProperty();
         private SimpleStringProperty firstName = new SimpleStringProperty();
         private SimpleStringProperty lastName = new SimpleStringProperty();
@@ -499,6 +594,7 @@ public class PersonnelManagerView extends VBox {
         private SimpleStringProperty department = new SimpleStringProperty();
         private SimpleStringProperty hireDate = new SimpleStringProperty();
         private SimpleStringProperty notes = new SimpleStringProperty();
+        private SimpleStringProperty specialties = new SimpleStringProperty();
         private Map<String, Object> originalData;
         
         // Getters et setters
@@ -539,8 +635,114 @@ public class PersonnelManagerView extends VBox {
         public String getNotes() { return notes.get(); }
         public void setNotes(String notes) { this.notes.set(notes); }
         
+        public String getSpecialties() { return specialties.get(); }
+        public void setSpecialties(String specialties) { this.specialties.set(specialties); }
+        
         public Map<String, Object> getOriginalData() { return originalData; }
         public void setOriginalData(Map<String, Object> originalData) { this.originalData = originalData; }
+
+        // Implémentation de DetailPanelProvider
+        @Override
+        public String getDetailTitle() {
+            return getFullName() != null && !getFullName().isEmpty() ? getFullName() : "Personnel sans nom";
+        }
+
+        @Override
+        public String getDetailSubtitle() {
+            StringBuilder subtitle = new StringBuilder();
+            if (getJobTitle() != null && !getJobTitle().isEmpty()) {
+                subtitle.append(getJobTitle());
+            }
+            
+            if (getDepartment() != null && !getDepartment().isEmpty()) {
+                if (subtitle.length() > 0) {
+                    subtitle.append(" • ");
+                }
+                subtitle.append(getDepartment());
+            }
+            
+            if (getType() != null && !getType().isEmpty()) {
+                if (subtitle.length() > 0) {
+                    subtitle.append(" • ");
+                }
+                subtitle.append(getType());
+            }
+            
+            return subtitle.toString();
+        }
+
+        @Override
+        public Image getDetailImage() {
+            // Avatar selon le type de personnel
+            String avatarType = "default";
+            
+            // Détermine le type d'avatar selon la fonction/département
+            if (getJobTitle() != null) {
+                String jobTitle = getJobTitle().toLowerCase();
+                if (jobTitle.contains("technicien") || jobTitle.contains("ingénieur")) {
+                    avatarType = "technician";
+                } else if (jobTitle.contains("manager") || jobTitle.contains("responsable") || jobTitle.contains("chef")) {
+                    avatarType = "manager";
+                } else if (jobTitle.contains("commercial") || jobTitle.contains("vente")) {
+                    avatarType = "sales";
+                } else if (jobTitle.contains("admin") || jobTitle.contains("secrétaire")) {
+                    avatarType = "admin";
+                }
+            }
+            
+            try {
+                return new Image(getClass().getResourceAsStream("/images/avatars/" + avatarType + ".png"));
+            } catch (Exception e) {
+                try {
+                    return new Image(getClass().getResourceAsStream("/images/avatars/default.png"));
+                } catch (Exception ex) {
+                    return null;
+                }
+            }
+        }
+
+        @Override
+        public String getQRCodeData() {
+            return ""; // Pas de QR code pour le personnel
+        }
+
+        @Override
+        public VBox getDetailInfoContent() {
+            VBox content = new VBox(8);
+            
+            if (getEmail() != null && !getEmail().trim().isEmpty()) {
+                content.getChildren().add(DetailPanel.createInfoRow("Email", getEmail()));
+            }
+            
+            if (getPhone() != null && !getPhone().trim().isEmpty()) {
+                content.getChildren().add(DetailPanel.createInfoRow("Téléphone", getPhone()));
+            }
+            
+            if (getStatus() != null && !getStatus().trim().isEmpty()) {
+                content.getChildren().add(DetailPanel.createInfoRow("Statut", getStatus()));
+            }
+            
+            if (getHireDate() != null && !getHireDate().trim().isEmpty()) {
+                content.getChildren().add(DetailPanel.createInfoRow("Date d'embauche", getHireDate()));
+            }
+            
+            if (getSpecialties() != null && !getSpecialties().trim().isEmpty()) {
+                content.getChildren().add(DetailPanel.createInfoRow("Spécialités", getSpecialties()));
+            }
+            
+            if (getNotes() != null && !getNotes().trim().isEmpty()) {
+                content.getChildren().add(DetailPanel.createInfoRow("Notes", getNotes()));
+            }
+            
+            return content;
+        }
+
+        @Override
+        public String getDetailId() {
+            return getId() != null ? getId() : "";
+        }
     }
+    
+
 }
 

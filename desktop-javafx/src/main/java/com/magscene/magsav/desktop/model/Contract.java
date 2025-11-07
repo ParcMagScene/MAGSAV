@@ -1,14 +1,19 @@
 package com.magscene.magsav.desktop.model;
 
+import com.magscene.magsav.desktop.component.DetailPanelProvider;
+import javafx.scene.image.Image;
+import javafx.scene.layout.VBox;
+import com.magscene.magsav.desktop.component.DetailPanel;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * DTO Contract pour l'interface JavaFX Desktop
  * Correspond aux données de l'entité Contract du backend
  */
-public class Contract {
+public class Contract implements DetailPanelProvider {
     
     // Énumérations pour les propriétés du contrat
     public enum ContractType {
@@ -346,5 +351,93 @@ public class Contract {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+
+    // Implémentation de DetailPanelProvider
+    @Override
+    public String getDetailTitle() {
+        return title != null ? title : "Contrat sans titre";
+    }
+
+    @Override
+    public String getDetailSubtitle() {
+        StringBuilder subtitle = new StringBuilder();
+        
+        if (type != null) {
+            subtitle.append(getTypeIcon()).append(" ").append(type.getDisplayName());
+        }
+        
+        if (status != null) {
+            if (subtitle.length() > 0) subtitle.append(" • ");
+            subtitle.append(getStatusIcon()).append(" ").append(status.getDisplayName());
+        }
+        
+        if (contractNumber != null) {
+            if (subtitle.length() > 0) subtitle.append(" • ");
+            subtitle.append("N° ").append(contractNumber);
+        }
+        
+        return subtitle.toString();
+    }
+
+    @Override
+    public Image getDetailImage() {
+        // Pour l'instant, pas d'image spécifique pour les contrats
+        return null;
+    }
+
+    @Override
+    public String getQRCodeData() {
+        return ""; // Pas de QR code pour les contrats
+    }
+
+    @Override
+    public VBox getDetailInfoContent() {
+        VBox content = new VBox(8);
+        
+        if (contractNumber != null && !contractNumber.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("N° Contrat", contractNumber));
+        }
+        
+        if (description != null && !description.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Description", description));
+        }
+        
+        if (totalAmount != null && totalAmount.compareTo(BigDecimal.ZERO) > 0) {
+            content.getChildren().add(DetailPanel.createInfoRow("Montant total", String.format("%.2f €", totalAmount)));
+        }
+        
+        if (monthlyAmount != null && monthlyAmount.compareTo(BigDecimal.ZERO) > 0) {
+            content.getChildren().add(DetailPanel.createInfoRow("Montant mensuel", String.format("%.2f €", monthlyAmount)));
+        }
+        
+        if (startDate != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            content.getChildren().add(DetailPanel.createInfoRow("Date début", startDate.format(formatter)));
+        }
+        
+        if (endDate != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            content.getChildren().add(DetailPanel.createInfoRow("Date fin", endDate.format(formatter)));
+        }
+        
+        if (billingFrequency != null) {
+            content.getChildren().add(DetailPanel.createInfoRow("Fréquence", billingFrequency.getDisplayName()));
+        }
+        
+        if (isAutoRenewable != null && isAutoRenewable) {
+            content.getChildren().add(DetailPanel.createInfoRow("Renouvellement", "Automatique"));
+        }
+        
+        if (notes != null && !notes.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Notes", notes));
+        }
+        
+        return content;
+    }
+
+    @Override
+    public String getDetailId() {
+        return id != null ? id.toString() : "";
     }
 }

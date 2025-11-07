@@ -99,6 +99,7 @@ public class Equipment {
         IN_USE("En cours d'utilisation"),
         MAINTENANCE("En maintenance"),
         OUT_OF_ORDER("Hors service"),
+        IN_SAV("En SAV"),
         RETIRED("RetirÃƒÂ© du service");
         
         private final String displayName;

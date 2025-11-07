@@ -11,10 +11,14 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 import com.magscene.magsav.desktop.model.ServiceRequest;
-import com.magscene.magsav.desktop.model.Equipment;
+// import com.magscene.magsav.desktop.model.Equipment; // Supprimé après refactoring
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.SpacingManager;
 import com.magscene.magsav.desktop.util.AlertUtil;
 import com.magscene.magsav.desktop.dialog.ServiceRequestDialog;
+import com.magscene.magsav.desktop.component.DetailPanel;
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -25,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
  * Interface avancée de suivi des réparations et interventions SAV
  * Permet un suivi détaillé de l'état des réparations avec historique
  */
-public class RepairTrackingView extends VBox {
+public class RepairTrackingView extends BorderPane {
     
     private final ApiService apiService;
     private final ObservableList<ServiceRequest> serviceRequests;
@@ -33,30 +37,16 @@ public class RepairTrackingView extends VBox {
     private final TextArea historyArea;
     private final Label statusSummaryLabel;
     
-    // Filtres et recherche
-    private final TextField searchField;
-    private final ComboBox<String> statusFilter;
-    private final ComboBox<String> priorityFilter;
-    private final ComboBox<String> typeFilter;
-    private final DatePicker dateFromFilter;
-    private final DatePicker dateToFilter;
+    // Les filtres et la recherche sont maintenant dans le toolbar parent SAVManagerView
     
     public RepairTrackingView() {
         this.apiService = new ApiService();
         this.serviceRequests = FXCollections.observableArrayList();
         
-        // Configuration principale
-        this.setSpacing(15);
-        this.setPadding(new Insets(20));
-        this.setStyle("-fx-background-color: #f8f9fa;");
+        // Configuration principale - BorderPane n'a pas de setSpacing
+        this.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
-        // Initialisation des composants
-        this.searchField = new TextField();
-        this.statusFilter = new ComboBox<>();
-        this.priorityFilter = new ComboBox<>();
-        this.typeFilter = new ComboBox<>();
-        this.dateFromFilter = new DatePicker();
-        this.dateToFilter = new DatePicker();
+        // Initialisation des composants principaux
         this.requestsTable = createRequestsTable();
         this.historyArea = new TextArea();
         this.statusSummaryLabel = new Label();
@@ -73,22 +63,20 @@ public class RepairTrackingView extends VBox {
         // En-tête avec titre et résumé
         HBox headerBox = createHeaderSection();
         
-        // Section de filtres et recherche
-        VBox filtersSection = createFiltersSection();
-        
         // Section principale avec tableau et détails
         HBox mainSection = createMainSection();
         
-        // Barre d'actions
-        HBox actionsBar = createActionsBar();
+        // Layout principal - EXACTEMENT comme Ventes et Installations
+        VBox topContainer = new VBox(headerBox);
         
-        this.getChildren().addAll(headerBox, filtersSection, mainSection, actionsBar);
+        setTop(topContainer);
+        setCenter(mainSection);
     }
     
     private HBox createHeaderSection() {
-        HBox headerBox = new HBox(20);
+        HBox headerBox = new HBox(SpacingManager.SPACING_NORMAL);
         headerBox.setAlignment(Pos.CENTER_LEFT);
-        headerBox.setPadding(new Insets(0, 0, 15, 0));
+        headerBox.setPadding(new Insets(0, 0, 5, 0)); // Padding minimal comme Ventes et Installations
         
         // Titre principal
         Label titleLabel = new Label("🔧 Suivi des Réparations SAV");
@@ -99,117 +87,13 @@ public class RepairTrackingView extends VBox {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
         // Résumé des statuts
-        statusSummaryLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-background-color: white; -fx-padding: 8px 12px; -fx-background-radius: 4px;");
+        statusSummaryLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 8px 12px; -fx-background-radius: 4px;");
         
         headerBox.getChildren().addAll(titleLabel, spacer, statusSummaryLabel);
         return headerBox;
     }
     
-    private VBox createFiltersSection() {
-        VBox filtersSection = new VBox(10);
-        filtersSection.setStyle("-fx-background-color: white; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
-        
-        Label filtersTitle = new Label("🔍 Filtres et Recherche");
-        filtersTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
-        
-        // Ligne 1 : Recherche textuelle
-        HBox searchBox = new HBox(10);
-        searchBox.setAlignment(Pos.CENTER_LEFT);
-        
-        Label searchLabel = new Label("Rechercher :");
-        searchLabel.setMinWidth(80);
-        
-        searchField.setPromptText("Titre, description, demandeur...");
-        searchField.setPrefWidth(300);
-        searchField.setStyle("-fx-background-radius: 4px; -fx-border-color: #bdc3c7; -fx-border-radius: 4px;");
-        
-        Button clearSearchBtn = new Button("✕");
-        clearSearchBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 10px;");
-        clearSearchBtn.setOnAction(e -> {
-            searchField.clear();
-            applyFilters();
-        });
-        
-        searchBox.getChildren().addAll(searchLabel, searchField, clearSearchBtn);
-        
-        // Ligne 2 : Filtres par combos
-        HBox combosBox = new HBox(15);
-        combosBox.setAlignment(Pos.CENTER_LEFT);
-        
-        // Configuration des ComboBox de filtres
-        setupFilterComboBoxes();
-        
-        combosBox.getChildren().addAll(
-            createFilterGroup("Statut :", statusFilter),
-            createFilterGroup("Priorité :", priorityFilter),
-            createFilterGroup("Type :", typeFilter)
-        );
-        
-        // Ligne 3 : Filtres par dates
-        HBox datesBox = new HBox(15);
-        datesBox.setAlignment(Pos.CENTER_LEFT);
-        
-        dateFromFilter.setPromptText("Date début");
-        dateToFilter.setPromptText("Date fin");
-        
-        Button todayBtn = new Button("Aujourd'hui");
-        todayBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px;");
-        todayBtn.setOnAction(e -> {
-            LocalDate today = LocalDate.now();
-            dateFromFilter.setValue(today);
-            dateToFilter.setValue(today);
-            applyFilters();
-        });
-        
-        Button weekBtn = new Button("Cette semaine");
-        weekBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px;");
-        weekBtn.setOnAction(e -> {
-            LocalDate today = LocalDate.now();
-            dateFromFilter.setValue(today.minusDays(7));
-            dateToFilter.setValue(today);
-            applyFilters();
-        });
-        
-        Button clearDatesBtn = new Button("Réinitialiser");
-        clearDatesBtn.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px;");
-        clearDatesBtn.setOnAction(e -> {
-            dateFromFilter.setValue(null);
-            dateToFilter.setValue(null);
-            applyFilters();
-        });
-        
-        datesBox.getChildren().addAll(
-            new Label("Période :"), dateFromFilter, new Label("à"), dateToFilter,
-            todayBtn, weekBtn, clearDatesBtn
-        );
-        
-        filtersSection.getChildren().addAll(filtersTitle, searchBox, combosBox, datesBox);
-        return filtersSection;
-    }
-    
-    private VBox createFilterGroup(String labelText, ComboBox<String> combo) {
-        VBox group = new VBox(3);
-        Label label = new Label(labelText);
-        label.setStyle("-fx-font-size: 11px; -fx-text-fill: #7f8c8d;");
-        combo.setPrefWidth(120);
-        combo.setStyle("-fx-background-radius: 4px; -fx-border-color: #bdc3c7; -fx-border-radius: 4px;");
-        group.getChildren().addAll(label, combo);
-        return group;
-    }
-    
-    private void setupFilterComboBoxes() {
-        // Configuration du filtre de statut
-        statusFilter.getItems().addAll("Tous", "Ouverte", "En cours", "En attente de pièces", "Résolue", "Fermée", "Annulée");
-        statusFilter.setValue("Tous");
-        
-        // Configuration du filtre de priorité
-        priorityFilter.getItems().addAll("Toutes", "Faible", "Moyenne", "Élevée", "Urgente");
-        priorityFilter.setValue("Toutes");
-        
-        // Configuration du filtre de type
-        typeFilter.getItems().addAll("Tous types", "Réparation", "Maintenance", "Installation", "Formation", "RMA", "Garantie");
-        typeFilter.setValue("Tous types");
-    }
+
     
     private HBox createMainSection() {
         HBox mainSection = new HBox(15);
@@ -232,25 +116,28 @@ public class RepairTrackingView extends VBox {
     
     private VBox createTableSection() {
         VBox tableSection = new VBox(10);
-        tableSection.setStyle("-fx-background-color: white; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+        tableSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         Label tableTitle = new Label("📋 Liste des Interventions");
         tableTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
         
         // Configuration du tableau
         requestsTable.setPrefHeight(400);
-        requestsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        requestsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
         requestsTable.setStyle("-fx-background-color: transparent;");
         
-        tableSection.getChildren().addAll(tableTitle, requestsTable);
-        VBox.setVgrow(requestsTable, Priority.ALWAYS);
+        // Enveloppement dans DetailPanelContainer pour le volet de détail
+        DetailPanelContainer containerWithDetail = new DetailPanelContainer(requestsTable);
+        
+        tableSection.getChildren().addAll(tableTitle, containerWithDetail);
+        VBox.setVgrow(containerWithDetail, Priority.ALWAYS);
         
         return tableSection;
     }
     
     private VBox createDetailsSection() {
         VBox detailsSection = new VBox(10);
-        detailsSection.setStyle("-fx-background-color: white; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+        detailsSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         Label detailsTitle = new Label("📄 Détails & Historique");
         detailsTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
@@ -259,7 +146,7 @@ public class RepairTrackingView extends VBox {
         historyArea.setPrefHeight(350);
         historyArea.setEditable(false);
         historyArea.setWrapText(true);
-        historyArea.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #dee2e6; -fx-border-radius: 4px; -fx-font-family: 'Courier New'; -fx-font-size: 11px;");
+        historyArea.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #dee2e6; -fx-border-radius: 4px; -fx-font-family: 'Courier New'; -fx-font-size: 11px;");
         historyArea.setPromptText("Sélectionnez une demande pour voir les détails et l'historique...");
         
         detailsSection.getChildren().addAll(detailsTitle, historyArea);
@@ -268,48 +155,8 @@ public class RepairTrackingView extends VBox {
         return detailsSection;
     }
     
-    private HBox createActionsBar() {
-        HBox actionsBar = new HBox(10);
-        actionsBar.setAlignment(Pos.CENTER_LEFT);
-        actionsBar.setPadding(new Insets(15, 0, 0, 0));
-        
-        Button newRequestBtn = new Button("➕ Nouvelle Demande");
-        newRequestBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 6px; -fx-font-weight: bold; -fx-padding: 10px 15px;");
-        newRequestBtn.setOnAction(e -> openServiceRequestDialog(null));
-        
-        Button editRequestBtn = new Button("✏️ Modifier");
-        editRequestBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
-        editRequestBtn.setDisable(true);
-        editRequestBtn.setOnAction(e -> {
-            ServiceRequest selected = requestsTable.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                openServiceRequestDialog(selected);
-            }
-        });
-        
-        Button refreshBtn = new Button("🔄 Actualiser");
-        refreshBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
-        refreshBtn.setOnAction(e -> loadServiceRequests());
-        
-        Button exportBtn = new Button("📊 Exporter");
-        exportBtn.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
-        exportBtn.setOnAction(e -> exportToCSV());
-        
-        // Activation/désactivation des boutons selon la sélection
-        requestsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
-            editRequestBtn.setDisable(newSel == null);
-        });
-        
-        // Région pour pousser les stats à droite
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        Label statsLabel = new Label("Statistiques en temps réel");
-        statsLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
-        
-        actionsBar.getChildren().addAll(newRequestBtn, editRequestBtn, refreshBtn, exportBtn, spacer, statsLabel);
-        return actionsBar;
-    }
+    // Méthode createActionsBar() supprimée - Les boutons sont maintenant gérés
+    // par la toolbar principale dans SAVManagerView pour éviter les doublons
     
     private TableView<ServiceRequest> createRequestsTable() {
         TableView<ServiceRequest> table = new TableView<>();
@@ -374,17 +221,33 @@ public class RepairTrackingView extends VBox {
         // Style du tableau
         table.setRowFactory(tv -> {
             TableRow<ServiceRequest> row = new TableRow<>();
-            row.itemProperty().addListener((obs, oldItem, newItem) -> {
-                if (newItem == null) {
+            
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty() || row.getItem() == null) {
                     row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection prioritaire (#142240)
+                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                               "-fx-border-width: 2px;");
                 } else {
-                    String priority = newItem.getPriority() != null ? newItem.getPriority().toString() : "MEDIUM";
-                    String status = newItem.getStatus() != null ? newItem.getStatus().toString() : "OPEN";
+                    // Style basé sur la priorité et le statut
+                    ServiceRequest item = row.getItem();
+                    String priority = item.getPriority() != null ? item.getPriority().toString() : "MEDIUM";
+                    String status = item.getStatus() != null ? item.getStatus().toString() : "OPEN";
                     
                     String backgroundColor = getRowBackgroundColor(priority, status);
                     row.setStyle(backgroundColor + "; -fx-border-color: #ecf0f1; -fx-border-width: 0 0 1 0;");
                 }
-            });
+            };
+            
+            // Écouter les changements de sélection et d'item
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
             return row;
         });
         
@@ -399,26 +262,12 @@ public class RepairTrackingView extends VBox {
             }
         });
         
-        // Gestionnaires pour les filtres
-        searchField.textProperty().addListener((obs, oldText, newText) -> applyFilters());
-        statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-        priorityFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-        typeFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-        dateFromFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-        dateToFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        // Les gestionnaires de filtres sont maintenant dans le toolbar parent SAVManagerView
     }
     
     private void applyFilters() {
-        // Implementation du filtrage en temps réel
-        // Cette méthode sera appelée à chaque changement de filtre
-        String searchText = searchField.getText().toLowerCase();
-        String statusFilterValue = statusFilter.getValue();
-        String priorityFilterValue = priorityFilter.getValue(); 
-        String typeFilterValue = typeFilter.getValue();
-        LocalDate dateFrom = dateFromFilter.getValue();
-        LocalDate dateTo = dateToFilter.getValue();
-        
-        // Appliquer les filtres (implémentation complète nécessaire)
+        // Les filtres sont maintenant dans le toolbar parent SAVManagerView
+        // Cette méthode sera connectée aux filtres du parent quand nécessaire
         updateStatusSummary();
     }
     
@@ -440,9 +289,9 @@ public class RepairTrackingView extends VBox {
         details.append("🔨 Technicien: ").append(request.getAssignedTechnician() != null ? request.getAssignedTechnician() : "Non assigné").append("\n\n");
         
         // Équipement concerné
-        if (request.getEquipment() != null) {
+        if (request.getEquipmentName() != null && !request.getEquipmentName().trim().isEmpty()) {
             details.append("═══ ÉQUIPEMENT ═══\n");
-            details.append("🖥️ ID Équipement: ").append(request.getEquipment().getId()).append("\n\n");
+            details.append("🖥️ Équipement: ").append(request.getEquipmentName()).append("\n\n");
         }
         
         // Description
@@ -515,7 +364,7 @@ public class RepairTrackingView extends VBox {
         } else if (status.equals("IN_PROGRESS")) {
             return "-fx-background-color: #fff3e0";
         }
-        return "-fx-background-color: white";
+        return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor();
     }
     
     private void loadServiceRequests() {
@@ -621,6 +470,22 @@ public class RepairTrackingView extends VBox {
      */
     public void refreshData() {
         loadServiceRequests();
+    }
+    
+    /**
+     * Méthode publique pour modifier la demande sélectionnée
+     */
+    public void editSelectedRequest() {
+        ServiceRequest selected = requestsTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            openServiceRequestDialog(selected);
+        } else {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Aucune sélection");
+            alert.setHeaderText("Modification impossible");
+            alert.setContentText("Veuillez sélectionner une demande SAV à modifier.");
+            alert.showAndWait();
+        }
     }
     
     private List<ServiceRequest> createSimulatedServiceRequests() {

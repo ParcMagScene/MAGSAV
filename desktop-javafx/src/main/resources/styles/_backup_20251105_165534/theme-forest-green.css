@@ -1,0 +1,49 @@
+/* MAGSAV-3.0 - Thème Vert Nature */
+
+.root {
+    -fx-base: #166534;
+    -fx-background: linear-gradient(135deg, #166534, #22c55e);
+    -fx-control-inner-background: #15803d;
+    -fx-text-base-color: #ffffff;
+    -fx-text-fill: #ffffff;
+    -fx-accent: #4ade80;
+    -fx-selection-bar: #4ade80;
+}
+
+.sidebar {
+    -fx-background-color: linear-gradient(to bottom, #166534, #15803d);
+}
+
+.header {
+    -fx-background-color: linear-gradient(to right, #166534, #14532d);
+    -fx-text-fill: white;
+}
+
+.module-title {
+    -fx-text-fill: #dcfce7 !important;
+}
+
+.main-content {
+    -fx-background-color: linear-gradient(135deg, #15803d, #16a34a);
+}
+
+.button {
+    -fx-background-color: #22c55e;
+}
+
+.button:hover {
+    -fx-background-color: #16a34a;
+}
+
+.table-view {
+    -fx-background-color: rgba(21, 128, 61, 0.9);
+}
+
+.table-row-cell {
+    -fx-background-color: rgba(34, 197, 94, 0.3);
+    -fx-text-fill: #dcfce7;
+}
+
+.card {
+    -fx-background-color: rgba(21, 128, 61, 0.8);
+}

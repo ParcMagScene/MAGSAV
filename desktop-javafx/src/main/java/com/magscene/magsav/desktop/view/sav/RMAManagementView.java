@@ -11,8 +11,9 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 import com.magscene.magsav.desktop.model.ServiceRequest;
-import com.magscene.magsav.desktop.model.Equipment;
+// import com.magscene.magsav.desktop.model.Equipment; // Supprimé après refactoring
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.util.AlertUtil;
 
 import java.time.LocalDate;
@@ -45,9 +46,9 @@ public class RMAManagementView extends VBox {
         this.rmaRecords = FXCollections.observableArrayList();
         
         // Configuration principale
-        this.setSpacing(15);
-        this.setPadding(new Insets(20));
-        this.setStyle("-fx-background-color: #f8f9fa;");
+        this.setSpacing(0); // AUCUN ESPACEMENT comme Ventes et Installations
+        this.setPadding(new Insets(5)); // Padding minimal
+        this.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
         // Initialisation des composants
         this.rmaStatusFilter = new ComboBox<>();
@@ -85,7 +86,7 @@ public class RMAManagementView extends VBox {
     private HBox createRMAHeaderSection() {
         HBox headerBox = new HBox(20);
         headerBox.setAlignment(Pos.CENTER_LEFT);
-        headerBox.setPadding(new Insets(0, 0, 15, 0));
+        headerBox.setPadding(new Insets(0, 0, 5, 0)); // Padding minimal
         
         Label titleLabel = new Label("📦 Gestion des RMA (Return Merchandise Authorization)");
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;");
@@ -111,7 +112,7 @@ public class RMAManagementView extends VBox {
     
     private VBox createRMAFiltersSection() {
         VBox filtersSection = new VBox(10);
-        filtersSection.setStyle("-fx-background-color: white; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.2), 6, 0, 0, 2);");
+        filtersSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.2), 6, 0, 0, 2);");
         
         Label filtersTitle = new Label("🔍 Filtres RMA");
         filtersTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #c0392b;");
@@ -125,7 +126,7 @@ public class RMAManagementView extends VBox {
         
         rmaSearchField.setPromptText("N° RMA, équipement, motif...");
         rmaSearchField.setPrefWidth(300);
-        rmaSearchField.setStyle("-fx-background-radius: 4px; -fx-border-color: #e74c3c; -fx-border-radius: 4px;");
+        rmaSearchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
         
         searchBox.getChildren().addAll(new Label("Rechercher :"), rmaSearchField);
         
@@ -204,7 +205,7 @@ public class RMAManagementView extends VBox {
     
     private VBox createRMATableSection() {
         VBox tableSection = new VBox(10);
-        tableSection.setStyle("-fx-background-color: white; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+        tableSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         Label tableTitle = new Label("📋 Registre des RMA");
         tableTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
@@ -220,7 +221,7 @@ public class RMAManagementView extends VBox {
     
     private VBox createRMAWorkflowSection() {
         VBox workflowSection = new VBox(15);
-        workflowSection.setStyle("-fx-background-color: white; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.2), 6, 0, 0, 2);");
+        workflowSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.2), 6, 0, 0, 2);");
         
         Label workflowTitle = new Label("⚙️ Workflow RMA");
         workflowTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #c0392b;");
@@ -369,14 +370,29 @@ public class RMAManagementView extends VBox {
         // Style conditionnel pour les lignes
         table.setRowFactory(tv -> {
             TableRow<RMARecord> row = new TableRow<>();
-            row.itemProperty().addListener((obs, oldItem, newItem) -> {
-                if (newItem == null) {
+            
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty() || row.getItem() == null) {
                     row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection prioritaire (#142240)
+                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                               "-fx-border-width: 2px;");
                 } else {
-                    String backgroundColor = getRMARowBackgroundColor(newItem.getStatus());
+                    // Style basé sur le statut RMA
+                    String backgroundColor = getRMARowBackgroundColor(row.getItem().getStatus());
                     row.setStyle(backgroundColor + "; -fx-border-color: #ecf0f1; -fx-border-width: 0 0 1 0;");
                 }
-            });
+            };
+            
+            // Écouter les changements de sélection et d'item
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
             return row;
         });
         
@@ -455,7 +471,7 @@ public class RMAManagementView extends VBox {
             case "REÇU": return "-fx-background-color: #d4edda";
             case "RÉPARÉ": case "REMPLACÉ": case "REMBOURSÉ": return "-fx-background-color: #d1ecf1";
             case "REFUSÉ": return "-fx-background-color: #f8d7da";
-            default: return "-fx-background-color: white";
+            default: return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor();
         }
     }
     

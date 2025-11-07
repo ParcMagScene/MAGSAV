@@ -19,7 +19,8 @@ public class Personnel {
         EMPLOYEE("Employé"),
         FREELANCE("Freelance"),
         INTERN("Stagiaire"),
-        TEMPORARY("Intérimaire");
+        TEMPORARY("Intérimaire"),
+        PERFORMER("Intermittent du spectacle");
         
         private final String displayName;
         
@@ -86,6 +87,9 @@ public class Personnel {
     
     @Column(name = "notes", length = 1000)
     private String notes;
+    
+    @Column(name = "specialties", length = 500)
+    private String specialties; // Stocké comme texte séparé par des virgules
     
     @Column(name = "created_at")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -169,6 +173,12 @@ public class Personnel {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { 
         this.notes = notes;
+        updateTimestamp();
+    }
+    
+    public String getSpecialties() { return specialties; }
+    public void setSpecialties(String specialties) { 
+        this.specialties = specialties;
         updateTimestamp();
     }
     

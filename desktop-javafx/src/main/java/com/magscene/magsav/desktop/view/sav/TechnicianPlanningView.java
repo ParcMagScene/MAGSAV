@@ -11,6 +11,7 @@ import javafx.concurrent.Task;
 
 import com.magscene.magsav.desktop.model.ServiceRequest;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.util.AlertUtil;
 
 import java.time.LocalDate;
@@ -48,9 +49,9 @@ public class TechnicianPlanningView extends VBox {
         this.technicianSkills = new HashMap<>();
         
         // Configuration principale
-        this.setSpacing(15);
-        this.setPadding(new Insets(20));
-        this.setStyle("-fx-background-color: #f8f9fa;");
+        this.setSpacing(0); // AUCUN ESPACEMENT comme Ventes et Installations
+        this.setPadding(new Insets(5)); // Padding minimal
+        this.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
         // Initialisation des composants
         this.planningDate = new DatePicker(LocalDate.now());
@@ -107,7 +108,7 @@ public class TechnicianPlanningView extends VBox {
     private HBox createPlanningHeaderSection() {
         HBox headerBox = new HBox(20);
         headerBox.setAlignment(Pos.CENTER_LEFT);
-        headerBox.setPadding(new Insets(0, 0, 15, 0));
+        headerBox.setPadding(new Insets(0, 0, 5, 0)); // Padding minimal
         
         Label titleLabel = new Label("📅 Planning Intelligent des Techniciens");
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2980b9;");
@@ -118,7 +119,7 @@ public class TechnicianPlanningView extends VBox {
         // Métriques du planning
         VBox metricsBox = new VBox(3);
         metricsBox.setAlignment(Pos.CENTER_RIGHT);
-        metricsBox.setStyle("-fx-background-color: white; -fx-padding: 8px 12px; -fx-background-radius: 6px;");
+        metricsBox.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 8px 12px; -fx-background-radius: 6px;");
         
         Label efficiencyLabel = new Label("🎯 Efficacité tournée: 0%");
         efficiencyLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #27ae60;");
@@ -134,7 +135,7 @@ public class TechnicianPlanningView extends VBox {
     
     private VBox createPlanningControlSection() {
         VBox controlSection = new VBox(10);
-        controlSection.setStyle("-fx-background-color: white; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(41,128,185,0.3), 6, 0, 0, 2);");
+        controlSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(41,128,185,0.3), 6, 0, 0, 2);");
         
         Label controlTitle = new Label("🎛️ Contrôles de Planning");
         controlTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2980b9;");
@@ -236,7 +237,7 @@ public class TechnicianPlanningView extends VBox {
     
     private VBox createPlanningTableSection() {
         VBox tableSection = new VBox(10);
-        tableSection.setStyle("-fx-background-color: white; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+        tableSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 20px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         Label tableTitle = new Label("📋 Planning du Jour");
         tableTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
@@ -252,7 +253,7 @@ public class TechnicianPlanningView extends VBox {
     
     private VBox createOptimizationSummarySection() {
         VBox summarySection = new VBox(15);
-        summarySection.setStyle("-fx-background-color: white; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(41,128,185,0.3), 6, 0, 0, 2);");
+        summarySection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(41,128,185,0.3), 6, 0, 0, 2);");
         
         Label summaryTitle = new Label("📊 Analyse & Optimisation");
         summaryTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2980b9;");
@@ -267,7 +268,7 @@ public class TechnicianPlanningView extends VBox {
         optimizationSummaryArea.setPrefHeight(200);
         optimizationSummaryArea.setEditable(false);
         optimizationSummaryArea.setWrapText(true);
-        optimizationSummaryArea.setStyle("-fx-background-color: #f8f9fa; -fx-border-color: #2980b9; -fx-border-radius: 4px; -fx-font-family: 'Segoe UI'; -fx-font-size: 11px;");
+        optimizationSummaryArea.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #2980b9; -fx-border-radius: 4px; -fx-font-family: 'Segoe UI'; -fx-font-size: 11px;");
         optimizationSummaryArea.setPromptText("Cliquez sur 'Optimiser trajets' pour analyser le planning...");
         
         // Recommandations intelligentes
@@ -432,14 +433,30 @@ public class TechnicianPlanningView extends VBox {
         // Style conditionnel des lignes
         table.setRowFactory(tv -> {
             TableRow<TechnicianSchedule> row = new TableRow<>();
-            row.itemProperty().addListener((obs, oldItem, newItem) -> {
-                if (newItem == null) {
+            
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty() || row.getItem() == null) {
                     row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection prioritaire (#142240)
+                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                               "-fx-border-width: 2px;");
                 } else {
-                    String backgroundColor = getScheduleRowBackgroundColor(newItem.getStatus(), newItem.getPriority());
+                    // Style basé sur le statut et la priorité
+                    TechnicianSchedule item = row.getItem();
+                    String backgroundColor = getScheduleRowBackgroundColor(item.getStatus(), item.getPriority());
                     row.setStyle(backgroundColor + "; -fx-border-color: #ecf0f1; -fx-border-width: 0 0 1 0;");
                 }
-            });
+            };
+            
+            // Écouter les changements de sélection et d'item
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
             return row;
         });
         
@@ -615,7 +632,7 @@ public class TechnicianPlanningView extends VBox {
         } else if (status.equals("Terminé")) {
             return "-fx-background-color: #e8f5e8";
         }
-        return "-fx-background-color: white";
+        return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor();
     }
     
     /**

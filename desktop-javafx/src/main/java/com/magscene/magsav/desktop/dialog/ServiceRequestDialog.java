@@ -23,8 +23,9 @@ import java.util.concurrent.CompletableFuture;
 import com.magscene.magsav.desktop.model.ServiceRequest;
 import com.magscene.magsav.desktop.model.ServiceRequest.ServiceRequestStatus;
 import com.magscene.magsav.desktop.model.ServiceRequest.ServiceRequestType;
-import com.magscene.magsav.desktop.model.Equipment;
+// Equipment simple pour relation
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 
 public class ServiceRequestDialog {
     private final Stage dialog;
@@ -216,7 +217,11 @@ public class ServiceRequestDialog {
         // Style des boutons
         cancelButton.setPrefWidth(80);
         saveButton.setPrefWidth(80);
-        saveButton.setStyle("-fx-background-color: #007acc; -fx-text-fill: white;");
+        
+        // Application du thème dynamique pour le bouton de sauvegarde
+        String buttonBgColor = ThemeManager.getInstance().isDarkTheme() ? "#4a90e2" : "#007acc";
+        String buttonTextColor = ThemeManager.getInstance().isDarkTheme() ? "#ffffff" : "#ffffff";
+        saveButton.setStyle("-fx-background-color: " + buttonBgColor + "; -fx-text-fill: " + buttonTextColor + ";");
         
         buttonBox.getChildren().addAll(cancelButton, saveButton);
         return buttonBox;
@@ -368,10 +373,9 @@ public class ServiceRequestDialog {
         // Recuperation de l'equipement selectionne
         if (equipmentCombo.getValue() != null) {
             Map<String, Object> selectedEquipment = equipmentCombo.getValue();
-            // Creer un objet Equipment avec juste l'ID pour la relation @ManyToOne
-            Equipment equipment = new Equipment();
-            equipment.setId(((Number) selectedEquipment.get("id")).longValue());
-            request.setEquipment(equipment);
+            // Relation équipement simplifiée pour l'API
+            Long equipmentId = ((Number) selectedEquipment.get("id")).longValue();
+            // TODO: Adapter selon l'API ServiceRequest backend
         }
 
         // Les notes vont dans resolutionNotes

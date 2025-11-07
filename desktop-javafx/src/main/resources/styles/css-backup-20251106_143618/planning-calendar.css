@@ -1,0 +1,531 @@
+/* Styles pour le module Planning - Vue calendaire moderne */
+
+/* =================================================================== */
+/* Vue Calendaire Générale */
+/* =================================================================== */
+
+.week-calendar {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+/* =================================================================== */
+/* Vue Jour */
+/* =================================================================== */
+
+.day-calendar-view {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.day-header {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212529;
+    -fx-padding: 15 20 15 20;
+    -fx-background-color: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 0 1 0;
+    -fx-alignment: center;
+}
+
+.hours-container {
+    -fx-background-color: white;
+    -fx-padding: 0;
+}
+
+.day-time-slot {
+    -fx-background-color: white;
+    -fx-border-color: #e9ecef;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0;
+    -fx-alignment: center-left;
+}
+
+.day-time-slot:hover {
+    -fx-background-color: rgba(33, 150, 243, 0.05);
+}
+
+.day-time-slot.time-slot-selected {
+    -fx-background-color: rgba(33, 150, 243, 0.1);
+    -fx-border-color: #1976d2;
+    -fx-border-width: 2;
+}
+
+.hour-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6c757d;
+    -fx-padding: 5 10 5 5;
+    -fx-min-width: 60px;
+    -fx-alignment: center-right;
+}
+
+.time-slot-content {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.hour-separator {
+    -fx-background-color: #f1f3f4;
+}
+
+.day-scroll-pane {
+    -fx-background-color: white;
+    -fx-padding: 0;
+}
+
+.day-scroll-pane .viewport {
+    -fx-background-color: white;
+}
+
+.day-scroll-pane .scroll-bar:vertical {
+    -fx-background-color: #f8f9fa;
+    -fx-pref-width: 12px;
+}
+
+.day-scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: #e9ecef;
+    -fx-background-radius: 6px;
+}
+
+.day-scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #adb5bd;
+    -fx-background-radius: 6px;
+}
+
+.day-scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #6c757d;
+}
+
+/* =================================================================== */
+/* Vue Mois */
+/* =================================================================== */
+
+.month-calendar-view {
+    -fx-background-color: white;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.month-header {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212529;
+    -fx-padding: 20;
+    -fx-alignment: center;
+    -fx-background-color: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 0 1 0;
+}
+
+.days-header {
+    -fx-background-color: #495057;
+    -fx-padding: 10 0;
+}
+
+.day-header {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-alignment: center;
+}
+
+.month-grid {
+    -fx-background-color: #f8f9fa;
+    -fx-padding: 0;
+}
+
+.day-cell {
+    -fx-background-color: white;
+    -fx-border-color: #e9ecef;
+    -fx-border-width: 1;
+    -fx-padding: 4;
+    -fx-alignment: top-left;
+}
+
+.day-cell:hover {
+    -fx-background-color: rgba(33, 150, 243, 0.05);
+    -fx-cursor: hand;
+}
+
+.day-cell.day-cell-selected {
+    -fx-background-color: rgba(33, 150, 243, 0.1);
+    -fx-border-color: #1976d2;
+    -fx-border-width: 2;
+}
+
+.day-cell.other-month {
+    -fx-background-color: #f8f9fa;
+    -fx-opacity: 0.6;
+}
+
+.day-cell.today {
+    -fx-background-color: rgba(76, 175, 80, 0.1);
+    -fx-border-color: #4caf50;
+    -fx-border-width: 2;
+}
+
+.day-number {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+    -fx-padding: 2;
+}
+
+.day-number.today-number {
+    -fx-text-fill: #4caf50;
+    -fx-font-size: 16px;
+}
+
+.day-events {
+    -fx-padding: 2 0 0 0;
+    -fx-spacing: 1;
+}
+
+.event-indicator {
+    -fx-background-radius: 3;
+    -fx-padding: 1 4;
+    -fx-font-size: 10px;
+    -fx-text-fill: white;
+    -fx-max-width: infinity;
+}
+
+.event-indicator.more-events {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: white;
+    -fx-font-style: italic;
+}
+
+.week-header {
+    -fx-background-color: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 0 1 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);
+}
+
+.day-column {
+    -fx-padding: 10;
+    -fx-alignment: center;
+    -fx-border-color: #e9ecef;
+    -fx-border-width: 0 1 0 0;
+}
+
+.day-column.today {
+    -fx-background-color: rgba(33, 150, 243, 0.1);
+    -fx-background-radius: 6px;
+}
+
+.day-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+}
+
+.day-name.today-label {
+    -fx-text-fill: #1976d2;
+}
+
+/* =================================================================== */
+/* Grille Horaire */
+/* =================================================================== */
+
+.time-grid {
+    -fx-background-color: white;
+    -fx-grid-lines-visible: false;
+}
+
+.time-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6c757d;
+    -fx-padding: 5 10 5 5;
+    -fx-alignment: center-right;
+    -fx-border-color: transparent #e9ecef transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.time-slot {
+    -fx-border-color: #f1f3f4;
+    -fx-border-width: 0.5;
+    -fx-cursor: hand;
+}
+
+.time-slot:hover,
+.time-slot-hover {
+    -fx-background-color: rgba(33, 150, 243, 0.1);
+}
+
+.time-slot-selected {
+    -fx-background-color: rgba(33, 150, 243, 0.2);
+    -fx-border-color: #2196f3;
+    -fx-border-width: 2;
+}
+
+/* =================================================================== */
+/* Blocs d'Événements */
+/* =================================================================== */
+
+.event-block {
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 3, 0, 0, 1);
+    -fx-cursor: hand;
+    -fx-margin: 1;
+}
+
+.event-block:hover,
+.event-hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 5, 0, 0, 2);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+/* Couleurs par catégorie d'événement */
+.event-sav {
+    -fx-background-color: #ff5722;
+    -fx-border-color: #e64a19;
+}
+
+.event-installation {
+    -fx-background-color: #2196f3;
+    -fx-border-color: #1976d2;
+}
+
+.event-maintenance {
+    -fx-background-color: #ff9800;
+    -fx-border-color: #f57c00;
+}
+
+.event-formation {
+    -fx-background-color: #4caf50;
+    -fx-border-color: #388e3c;
+}
+
+.event-reunion {
+    -fx-background-color: #9c27b0;
+    -fx-border-color: #7b1fa2;
+}
+
+.event-conges {
+    -fx-background-color: #607d8b;
+    -fx-border-color: #455a64;
+}
+
+.event-location {
+    -fx-background-color: #795548;
+    -fx-border-color: #5d4037;
+}
+
+.event-google {
+    -fx-background-color: #34a853;
+    -fx-border-color: #137333;
+}
+
+.event-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-wrap-text: true;
+}
+
+.event-time {
+    -fx-font-size: 10px;
+    -fx-text-fill: rgba(255, 255, 255, 0.9);
+}
+
+/* =================================================================== */
+/* Panneau de Sélection des Calendriers */
+/* =================================================================== */
+
+.calendar-selection-panel {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #e9ecef;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 4, 0, 0, 2);
+}
+
+.calendar-panel-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+    -fx-padding: 0 0 10 0;
+}
+
+.google-calendar-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #6c757d;
+}
+
+.calendar-checkbox {
+    -fx-font-size: 13px;
+    -fx-text-fill: #495057;
+    -fx-spacing: 8;
+}
+
+.calendar-checkbox:selected {
+    -fx-font-weight: bold;
+}
+
+.calendar-checkbox .text {
+    -fx-fill: #495057;
+}
+
+/* =================================================================== */
+/* Interface Planning Principale */
+/* =================================================================== */
+
+.planning-header {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #f8f9fa);
+    -fx-padding: 20;
+    -fx-border-color: #e9ecef;
+    -fx-border-width: 0 0 1 0;
+}
+
+.planning-sidebar {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #e9ecef;
+    -fx-border-width: 0 1 0 0;
+    -fx-min-width: 300px;
+    -fx-max-width: 300px;
+}
+
+.planning-main-area {
+    -fx-background-color: white;
+}
+
+/* Navigation temporelle */
+.time-navigation {
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+    -fx-padding: 10 0;
+}
+
+.nav-button {
+    -fx-background-color: #007bff;
+    -fx-text-fill: white;
+    -fx-background-radius: 20px;
+    -fx-padding: 8 16;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover {
+    -fx-background-color: #0056b3;
+}
+
+.nav-button:pressed {
+    -fx-background-color: #004085;
+}
+
+.view-mode-combo {
+    -fx-background-color: white;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 5 10;
+}
+
+/* =================================================================== */
+/* Dialog de Création d'Événement */
+/* =================================================================== */
+
+.event-dialog .dialog-pane {
+    -fx-background-color: white;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+}
+
+.event-dialog .text-field,
+.event-dialog .text-area,
+.event-dialog .combo-box,
+.event-dialog .date-picker {
+    -fx-background-color: white;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8 12;
+    -fx-font-size: 14px;
+}
+
+.event-dialog .text-field:focused,
+.event-dialog .text-area:focused,
+.event-dialog .combo-box:focused,
+.event-dialog .date-picker:focused {
+    -fx-border-color: #007bff;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0, 123, 255, 0.25), 4, 0, 0, 0);
+}
+
+.event-dialog .check-box {
+    -fx-font-size: 14px;
+    -fx-text-fill: #495057;
+}
+
+.event-dialog .check-box .box {
+    -fx-background-color: white;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+}
+
+.event-dialog .check-box:selected .mark {
+    -fx-background-color: #007bff;
+}
+
+/* =================================================================== */
+/* Animations et Transitions */
+/* =================================================================== */
+
+.event-block,
+.time-slot,
+.calendar-checkbox {
+    -fx-transition: all 0.2s ease;
+}
+
+/* Effet de survol fluide */
+.nav-button,
+.event-block,
+.time-slot {
+    -fx-transition: -fx-background-color 0.2s ease, -fx-effect 0.2s ease;
+}
+
+/* =================================================================== */
+/* Mode Responsive */
+/* =================================================================== */
+
+@media (max-width: 1200px) {
+    .planning-sidebar {
+        -fx-min-width: 250px;
+        -fx-max-width: 250px;
+    }
+    
+    .day-column {
+        -fx-min-width: 100px;
+    }
+}
+
+@media (max-width: 800px) {
+    .planning-sidebar {
+        -fx-min-width: 200px;
+        -fx-max-width: 200px;
+    }
+    
+    .day-column {
+        -fx-min-width: 80px;
+    }
+    
+    .event-title {
+        -fx-font-size: 11px;
+    }
+    
+    .event-time {
+        -fx-font-size: 9px;
+    }
+}

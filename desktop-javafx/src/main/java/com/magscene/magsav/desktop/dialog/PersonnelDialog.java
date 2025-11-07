@@ -1,6 +1,7 @@
 package com.magscene.magsav.desktop.dialog;
 
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.config.SpecialtiesConfigManager;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -34,13 +35,16 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
     private TextField departmentField;
     private DatePicker hireDatePicker;
     private TextArea notesArea;
+    private VBox specialtiesContainer;
+    private final SpecialtiesConfigManager specialtiesManager;
     
     // Enumerations locales pour l'interface
     private enum PersonnelType {
         EMPLOYEE("Employe"),
         FREELANCE("Freelance"),
         INTERN("Stagiaire"),
-        TEMPORARY("Interimaire");
+        TEMPORARY("Interimaire"),
+        PERFORMER("Intermittent du spectacle");
         
         private final String displayName;
         
@@ -76,6 +80,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         this.apiService = apiService;
         this.existingPersonnel = existingPersonnel;
         this.isEditMode = (existingPersonnel != null);
+        this.specialtiesManager = SpecialtiesConfigManager.getInstance();
         
         setTitle(isEditMode ? "Modifier le personnel" : "Nouveau personnel");
         setHeaderText(isEditMode ? "Modification d'un membre du personnel" : "Creation d'un nouveau membre du personnel");
@@ -240,11 +245,87 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         
         notesArea = new TextArea();
         notesArea.setPromptText("Notes additionnelles...");
-        notesArea.setPrefRowCount(4);
+        notesArea.setPrefRowCount(3);
         notesArea.setWrapText(true);
         
-        section.getChildren().addAll(sectionTitle, notesArea);
+        // Section spécialités
+        Label specialtiesTitle = new Label("🎯 Spécialités");
+        specialtiesTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #9C27B0;");
+        
+        specialtiesContainer = createSpecialtiesCheckBoxes();
+        
+        section.getChildren().addAll(sectionTitle, notesArea, specialtiesTitle, specialtiesContainer);
         return section;
+    }
+    
+    private VBox createSpecialtiesCheckBoxes() {
+        VBox container = new VBox(5);
+        
+        // Grille pour les CheckBox (3 colonnes)
+        GridPane checkBoxGrid = new GridPane();
+        checkBoxGrid.setHgap(10);
+        checkBoxGrid.setVgap(5);
+        
+        int col = 0;
+        int row = 0;
+        
+        for (String specialty : specialtiesManager.getAvailableSpecialties()) {
+            CheckBox checkBox = new CheckBox(specialty);
+            checkBox.setUserData(specialty); // Pour retrouver la spécialité facilement
+            
+            checkBoxGrid.add(checkBox, col, row);
+            
+            col++;
+            if (col >= 3) { // 3 colonnes max
+                col = 0;
+                row++;
+            }
+        }
+        
+        container.getChildren().add(checkBoxGrid);
+        return container;
+    }
+    
+    private void loadSpecialtiesFromData(String specialtiesData) {
+        if (specialtiesData == null || specialtiesData.trim().isEmpty()) {
+            return;
+        }
+        
+        String[] selectedSpecialties = specialtiesData.split(",");
+        
+        // Parcourir tous les CheckBox et cocher ceux qui correspondent
+        getAllCheckBoxes().forEach(checkBox -> {
+            String specialty = (String) checkBox.getUserData();
+            for (String selected : selectedSpecialties) {
+                if (specialty.equals(selected.trim())) {
+                    checkBox.setSelected(true);
+                    break;
+                }
+            }
+        });
+    }
+    
+    private String getSelectedSpecialties() {
+        return getAllCheckBoxes().stream()
+                .filter(CheckBox::isSelected)
+                .map(checkBox -> (String) checkBox.getUserData())
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("");
+    }
+    
+    private java.util.List<CheckBox> getAllCheckBoxes() {
+        java.util.List<CheckBox> checkBoxes = new java.util.ArrayList<>();
+        
+        if (specialtiesContainer != null && !specialtiesContainer.getChildren().isEmpty()) {
+            GridPane grid = (GridPane) specialtiesContainer.getChildren().get(0);
+            grid.getChildren().forEach(node -> {
+                if (node instanceof CheckBox) {
+                    checkBoxes.add((CheckBox) node);
+                }
+            });
+        }
+        
+        return checkBoxes;
     }
     
     private void loadExistingData() {
@@ -257,6 +338,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         jobTitleField.setText(getStringValue("jobTitle"));
         departmentField.setText(getStringValue("department"));
         notesArea.setText(getStringValue("notes"));
+        loadSpecialtiesFromData(getStringValue("specialties"));
         
         // Type
         String type = getStringValue("type");
@@ -349,6 +431,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         personnelData.put("jobTitle", jobTitleField.getText().trim());
         personnelData.put("department", departmentField.getText().trim());
         personnelData.put("notes", notesArea.getText().trim());
+        personnelData.put("specialties", getSelectedSpecialties());
         
         // Date d'embauche
         if (hireDatePicker.getValue() != null) {

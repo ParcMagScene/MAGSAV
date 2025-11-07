@@ -161,6 +161,7 @@ public class RepairTrackingView extends BorderPane {
     private TableView<ServiceRequest> createRequestsTable() {
         TableView<ServiceRequest> table = new TableView<>();
         table.setItems(serviceRequests);
+        table.getStyleClass().add("interventions-table");
         
         // Colonne ID avec indicateur de priorité
         TableColumn<ServiceRequest, String> idCol = new TableColumn<>("ID");

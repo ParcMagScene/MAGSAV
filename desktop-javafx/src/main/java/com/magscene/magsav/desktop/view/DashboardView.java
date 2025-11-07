@@ -141,7 +141,7 @@ public class DashboardView extends BorderPane {
         
         // Force programmatique du style pour éviter les overrides CSS
         Platform.runLater(() -> {
-            chartTitle.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; " +
+            chartTitle.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2; " +
                               "-fx-padding: 8px 12px; -fx-background-radius: 4px;");
         });
         
@@ -196,7 +196,7 @@ public class DashboardView extends BorderPane {
         
         // Force programmatique du style pour éviter les overrides CSS
         Platform.runLater(() -> {
-            chartTitle.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; " +
+            chartTitle.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2; " +
                               "-fx-padding: 8px 12px; -fx-background-radius: 4px;");
         });
         
@@ -251,6 +251,9 @@ public class DashboardView extends BorderPane {
         
         // Forcer l'application des couleurs harmoniques pour le PieChart
         forceChartColors(pieChart, harmonicColors);
+        
+        // Styliser les labels du camembert
+        stylePieChartLabels(pieChart);
         
         return chartContainer;
     }
@@ -327,6 +330,77 @@ public class DashboardView extends BorderPane {
                 });
             }
         });
+    }
+    
+    private void stylePieChartLabels(PieChart pieChart) {
+        // Styliser les labels du camembert en #6B71F2
+        javafx.application.Platform.runLater(() -> {
+            try {
+                Thread.sleep(300); // Attendre le rendu complet des labels
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            
+            pieChart.applyCss();
+            
+            // Styliser TOUS les éléments texte du PieChart
+            pieChart.lookupAll("Text").forEach(node -> {
+                if (node instanceof javafx.scene.text.Text) {
+                    javafx.scene.text.Text textNode = (javafx.scene.text.Text) node;
+                    textNode.setFill(javafx.scene.paint.Color.web("#6B71F2"));
+                    System.out.println("📝 Texte du camembert stylisé: " + textNode.getText());
+                }
+            });
+            
+            // Styliser les labels spécifiques
+            pieChart.lookupAll(".chart-pie-label").forEach(node -> {
+                node.setStyle("-fx-text-fill: #6B71F2 !important; -fx-font-size: 12px;");
+                System.out.println("🏷️ Label de camembert stylisé en #6B71F2");
+            });
+            
+            // Styliser les lignes de connexion des labels
+            pieChart.lookupAll(".chart-pie-label-line").forEach(node -> {
+                node.setStyle("-fx-stroke: #6B71F2 !important;");
+                System.out.println("📏 Ligne de label stylisée en #6B71F2");
+            });
+            
+            // Approche alternative pour les textes
+            pieChart.lookupAll(".text").forEach(node -> {
+                node.setStyle("-fx-fill: #6B71F2 !important; -fx-text-fill: #6B71F2 !important;");
+                System.out.println("📄 Élément text stylisé en #6B71F2");
+            });
+            
+            // Forcer sur tous les enfants récursivement
+            stylePieChartChildrenRecursively(pieChart);
+        });
+    }
+    
+    private void stylePieChartChildrenRecursively(javafx.scene.Node node) {
+        if (node instanceof javafx.scene.text.Text) {
+            javafx.scene.text.Text textNode = (javafx.scene.text.Text) node;
+            try {
+                // Essayer de modifier la couleur via setFill si possible
+                if (!textNode.fillProperty().isBound()) {
+                    textNode.setFill(javafx.scene.paint.Color.web("#6B71F2"));
+                    System.out.println("🔤 Texte récursif stylisé via Fill: " + textNode.getText());
+                } else {
+                    // Sinon utiliser le style CSS
+                    textNode.setStyle("-fx-fill: #6B71F2 !important;");
+                    System.out.println("🎨 Texte récursif stylisé via CSS: " + textNode.getText());
+                }
+            } catch (Exception e) {
+                // En cas d'erreur, utiliser uniquement le style CSS
+                textNode.setStyle("-fx-fill: #6B71F2 !important;");
+                System.out.println("⚠️ Texte stylisé via CSS (fallback): " + textNode.getText());
+            }
+        }
+        
+        if (node instanceof javafx.scene.Parent) {
+            javafx.scene.Parent parent = (javafx.scene.Parent) node;
+            for (javafx.scene.Node child : parent.getChildrenUnmodifiable()) {
+                stylePieChartChildrenRecursively(child);
+            }
+        }
     }
     
     /**

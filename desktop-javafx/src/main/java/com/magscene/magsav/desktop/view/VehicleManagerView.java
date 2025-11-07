@@ -153,7 +153,7 @@ public class VehicleManagerView extends BorderPane {
         searchField = new TextField();
         searchField.setPromptText("Rechercher vehicule, marque, plaque...");
         searchField.setPrefWidth(250);
-        searchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        // Style supprimé - géré par forceSearchFieldColors
         // Force agressive des couleurs pour contrer le CSS global
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchBox.getChildren().addAll(searchLabel, searchField);
@@ -167,7 +167,7 @@ public class VehicleManagerView extends BorderPane {
         typeFilter.getItems().addAll("Tous types", "VAN", "TRUCK", "TRAILER", "CAR", "MOTORCYCLE", "OTHER");
         typeFilter.setValue("Tous types");
         typeFilter.setPrefWidth(120);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
         // Filtre par statut
@@ -180,7 +180,7 @@ public class VehicleManagerView extends BorderPane {
                                       "OUT_OF_ORDER", "RENTED_OUT", "RESERVED");
         statusFilter.setValue("Tous statuts");
         statusFilter.setPrefWidth(140);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
         // Filtres speciaux
@@ -189,9 +189,9 @@ public class VehicleManagerView extends BorderPane {
         specialLabel.setStyle("-fx-text-fill: #6B71F2;");
         specialLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         maintenanceAlertFilter = new CheckBox("Maintenance requise");
-        maintenanceAlertFilter.setStyle("-fx-text-fill: #7DD3FC;");
+        maintenanceAlertFilter.setStyle("-fx-text-fill: #6B71F2;");
         documentsExpiredFilter = new CheckBox("Documents expirés");
-        documentsExpiredFilter.setStyle("-fx-text-fill: #7DD3FC;");
+        documentsExpiredFilter.setStyle("-fx-text-fill: #6B71F2;");
         specialBox.getChildren().addAll(specialLabel, maintenanceAlertFilter, documentsExpiredFilter);
         
         // Boutons d'action

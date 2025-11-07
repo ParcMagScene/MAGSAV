@@ -58,7 +58,7 @@ public class GlobalSearchSuggestions {
         container.setPrefWidth(380);
         container.setMaxHeight(300);
         container.setStyle("-fx-background-color: #142240; " +
-                          "-fx-border-color: #7DD3FC; " +
+                          "-fx-border-color: #6B71F2; " +
                           "-fx-border-width: 0.5; " +
                           "-fx-border-radius: 6; " +
                           "-fx-background-radius: 6; " +
@@ -106,7 +106,7 @@ public class GlobalSearchSuggestions {
         
         if (results.isEmpty()) {
             Label noResults = new Label("Aucun résultat trouvé");
-            noResults.setStyle("-fx-text-fill: #7DD3FC; -fx-padding: 10;");
+            noResults.setStyle("-fx-text-fill: #6B71F2; -fx-padding: 10;");
             noResults.setFont(Font.font("System", FontPosture.ITALIC, 12));
             suggestionContainer.getChildren().add(noResults);
         } else {
@@ -159,7 +159,7 @@ public class GlobalSearchSuggestions {
         // Icône
         Label icon = new Label(result.getIcon());
         icon.setFont(Font.font("System", 14));
-        icon.setStyle("-fx-text-fill: #7DD3FC;");
+        icon.setStyle("-fx-text-fill: #6B71F2;");
         
         // Nom et description
         VBox textContent = new VBox(2);
@@ -170,7 +170,7 @@ public class GlobalSearchSuggestions {
         name.setFont(Font.font("System", FontWeight.BOLD, 11));
         
         Label description = new Label(result.getDescription());
-        description.setStyle("-fx-text-fill: #7DD3FC;");
+        description.setStyle("-fx-text-fill: #6B71F2;");
         description.setFont(Font.font("System", 9));
         
         textContent.getChildren().addAll(name, description);

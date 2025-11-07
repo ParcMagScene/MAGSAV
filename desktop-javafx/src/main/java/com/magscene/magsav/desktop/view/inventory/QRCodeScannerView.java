@@ -290,7 +290,7 @@ public class QRCodeScannerView extends VBox {
         // Recherche rapide
         quickSearchField.setPromptText("Recherche rapide...");
         quickSearchField.setPrefWidth(200);
-        quickSearchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(quickSearchField);
         
         tableHeaderBox.getChildren().addAll(tableTitle, headerSpacer, quickSearchField);
         

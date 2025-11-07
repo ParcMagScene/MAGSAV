@@ -170,7 +170,7 @@ public class ProjectManagerView extends BorderPane {
         searchField = new TextField();
         searchField.setPromptText("Rechercher projets...");
         searchField.setPrefWidth(200);
-        searchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        // Style supprimé - géré par forceSearchFieldColors
         
         startDatePicker = new DatePicker();
         startDatePicker.setPromptText("Date debut");

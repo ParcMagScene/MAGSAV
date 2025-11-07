@@ -126,7 +126,7 @@ public class RMAManagementView extends VBox {
         
         rmaSearchField.setPromptText("N° RMA, équipement, motif...");
         rmaSearchField.setPrefWidth(300);
-        rmaSearchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(rmaSearchField);
         
         searchBox.getChildren().addAll(new Label("Rechercher :"), rmaSearchField);
         

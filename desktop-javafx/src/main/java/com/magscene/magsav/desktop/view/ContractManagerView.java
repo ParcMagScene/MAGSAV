@@ -118,7 +118,7 @@ public class ContractManagerView extends BorderPane {
         searchField = new TextField();
         searchField.setPromptText("Rechercher par numero, titre, client...");
         searchField.setPrefWidth(250);
-        searchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchField.textProperty().addListener((obs, old, text) -> filterContracts());
         searchBox.getChildren().addAll(searchLabel, searchField);
         
@@ -131,7 +131,7 @@ public class ContractManagerView extends BorderPane {
         typeFilter.getItems().addAll("Tous", "Maintenance", "Location", "Prestation de service", "Support technique", "Fourniture materiel", "Mixte");
         typeFilter.setValue("Tous");
         typeFilter.setPrefWidth(150);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         typeFilter.setOnAction(e -> filterContracts());
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
@@ -144,7 +144,7 @@ public class ContractManagerView extends BorderPane {
         statusFilter.getItems().addAll("Tous", "Brouillon", "En attente signature", "Actif", "Suspendu", "Resilie", "Expire", "Termine");
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(150);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         statusFilter.setOnAction(e -> filterContracts());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
@@ -156,7 +156,7 @@ public class ContractManagerView extends BorderPane {
         clientFilter.getItems().add("Tous les clients");
         clientFilter.setValue("Tous les clients");
         clientFilter.setPrefWidth(200);
-        clientFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        clientFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         clientFilter.setOnAction(e -> filterContracts());
         clientBox.getChildren().addAll(clientLabel, clientFilter);
         

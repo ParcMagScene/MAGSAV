@@ -98,7 +98,7 @@ public class ClientManagerView extends BorderPane {
         searchField = new TextField();
         searchField.setPromptText("Nom de l'entreprise, email, SIRET...");
         searchField.setPrefWidth(280);
-        searchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchField.textProperty().addListener((obs, oldText, newText) -> filterClients());
         searchBox.getChildren().addAll(searchLabel, searchField);
         
@@ -111,7 +111,7 @@ public class ClientManagerView extends BorderPane {
         typeFilter.getItems().addAll("Tous", "Entreprise", "Administration", "Association", "Particulier");
         typeFilter.setValue("Tous");
         typeFilter.setPrefWidth(150);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         typeFilter.setOnAction(e -> filterClients());
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
@@ -124,7 +124,7 @@ public class ClientManagerView extends BorderPane {
         statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "Prospect", "Suspendu");
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(120);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         statusFilter.setOnAction(e -> filterClients());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
@@ -137,7 +137,7 @@ public class ClientManagerView extends BorderPane {
         categoryFilter.getItems().addAll("Toutes", "Premium", "VIP", "Standard", "Basique");
         categoryFilter.setValue("Toutes");
         categoryFilter.setPrefWidth(120);
-        categoryFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        categoryFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         categoryFilter.setOnAction(e -> filterClients());
         categoryBox.getChildren().addAll(categoryLabel, categoryFilter);
         

@@ -1,5 +1,13 @@
 plugins {
     id 'java'
+    id 'io.spring.dependency-management'
+}
+
+// Gestion des dépendances Spring Boot
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+    }
 }
 
 dependencies {

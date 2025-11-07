@@ -104,7 +104,7 @@ public class ServiceRequestManagerView extends VBox {
         searchField = new TextField();
         searchField.setPromptText("Rechercher par titre, demandeur...");
         searchField.setPrefWidth(300);
-        searchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        // Style supprimé - géré par forceSearchFieldColors
         // Force agressive des couleurs pour contrer le CSS global
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
@@ -121,7 +121,7 @@ public class ServiceRequestManagerView extends VBox {
         );
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(120);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         statusFilter.setOnAction(e -> applyFilters());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
@@ -134,7 +134,7 @@ public class ServiceRequestManagerView extends VBox {
         priorityFilter.getItems().addAll("Toutes", "Basse", "Moyenne", "Haute", "Urgente");
         priorityFilter.setValue("Toutes");
         priorityFilter.setPrefWidth(120);
-        priorityFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        priorityFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         priorityFilter.setOnAction(e -> applyFilters());
         priorityBox.getChildren().addAll(priorityLabel, priorityFilter);
         
@@ -149,7 +149,7 @@ public class ServiceRequestManagerView extends VBox {
         );
         typeFilter.setValue("Tous");
         typeFilter.setPrefWidth(140);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         typeFilter.setOnAction(e -> applyFilters());
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
@@ -196,6 +196,7 @@ public class ServiceRequestManagerView extends VBox {
         
         // Creation de la table
         table = new TableView<>(filteredData);
+        table.getStyleClass().add("sav-table");
         table.setRowFactory(tv -> {
             TableRow<Map<String, Object>> row = new TableRow<>();
             

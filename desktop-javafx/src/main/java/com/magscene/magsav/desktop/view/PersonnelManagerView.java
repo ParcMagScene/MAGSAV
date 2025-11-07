@@ -103,7 +103,7 @@ public class PersonnelManagerView extends BorderPane {
         searchField = new TextField();
         searchField.setPromptText("Nom, prenom, email...");
         searchField.setPrefWidth(250);
-        searchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        // Style supprimé - géré par forceSearchFieldColors
         // Force agressive des couleurs pour contrer le CSS global
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchField.textProperty().addListener((obs, oldText, newText) -> filterPersonnelData());
@@ -118,7 +118,7 @@ public class PersonnelManagerView extends BorderPane {
         typeFilter.getItems().addAll("Tous", "Employe", "Freelance", "Stagiaire", "Interimaire", "Intermittent du spectacle");
         typeFilter.setValue("Tous");
         typeFilter.setPrefWidth(150);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         typeFilter.setOnAction(e -> filterPersonnelData());
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
@@ -131,7 +131,7 @@ public class PersonnelManagerView extends BorderPane {
         statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "En conge", "Termine");
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(120);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         statusFilter.setOnAction(e -> filterPersonnelData());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
@@ -144,7 +144,7 @@ public class PersonnelManagerView extends BorderPane {
         departmentFilter.getItems().add("Tous");
         departmentFilter.setValue("Tous");
         departmentFilter.setPrefWidth(140);
-        departmentFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        departmentFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         departmentFilter.setOnAction(e -> filterPersonnelData());
         deptBox.getChildren().addAll(deptLabel, departmentFilter);
         

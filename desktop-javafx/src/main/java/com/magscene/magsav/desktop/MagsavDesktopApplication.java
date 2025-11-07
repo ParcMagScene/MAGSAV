@@ -31,7 +31,9 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.geometry.Rectangle2D;
 
 /**
  * Application JavaFX 21 pour MAGSAV-3.0
@@ -123,6 +125,13 @@ public class MagsavDesktopApplication extends Application {
         this.globalSearchService = new GlobalSearchService();
         
         primaryStage.setScene(scene);
+        
+        // Force tous les TextField à avoir les bonnes couleurs
+        forceAllTextFieldsColors(scene);
+        
+        // Configuration automatique du deuxième écran
+        configureSecondaryScreen(primaryStage);
+        
         primaryStage.setMaximized(true);
         primaryStage.show();
 
@@ -208,25 +217,28 @@ public class MagsavDesktopApplication extends Application {
         // Force le style du conteneur programmatiquement
         searchContainer.setStyle("-fx-background-color: #142240; -fx-border-color: transparent;");
         
-        // Icône de recherche
+        // Conteneur pour le champ de recherche avec icône intégrée
+        HBox searchFieldContainer = new HBox(8);
+        searchFieldContainer.setAlignment(Pos.CENTER_LEFT);
+        searchFieldContainer.setStyle("-fx-background-color: #142240; -fx-background-radius: 4; " +
+                                    "-fx-border-color: #6B71F2; -fx-border-width: 0.5; -fx-border-radius: 4; " +
+                                    "-fx-padding: 6 10;");
+        
+        // Icône loupe intégrée
         Label searchIcon = new Label("🔍");
-        searchIcon.setFont(Font.font("System", 14));
-        searchIcon.setTextFill(Color.web("#7DD3FC"));
-        // Harmoniser le fond de l'icône avec la barre de recherche
-        searchIcon.setStyle("-fx-background-color: #142240; -fx-padding: 0;");
-        searchIcon.getStyleClass().add("search-icon");
+        searchIcon.setStyle("-fx-text-fill: #6B71F2; -fx-font-size: 14px;");
         
         // Champ de recherche global
         TextField globalSearchField = new TextField();
-        globalSearchField.setPromptText("Recherche globale: équipements, clients, interventions...");
-        globalSearchField.setPrefWidth(350);
+        globalSearchField.setPromptText("Recherche globale");
+        globalSearchField.setPrefWidth(320);
         globalSearchField.getStyleClass().addAll("global-search-field", "search-container");
         
         // Force TOUS les styles programmatiquement pour surpasser JavaFX
-        String searchFieldStyle = "-fx-background-color: #142240 !important; " +
-                                "-fx-control-inner-background: #142240 !important; " +
-                                "-fx-text-fill: #7DD3FC !important; " +
-                                "-fx-prompt-text-fill: #5F65D9 !important; " +
+        String searchFieldStyle = "-fx-background-color: transparent !important; " +
+                                "-fx-control-inner-background: transparent !important; " +
+                                "-fx-text-fill: #6B71F2 !important; " +
+                                "-fx-prompt-text-fill: #6B71F2 !important; " +
                                 "-fx-background-insets: 0; " +
                                 "-fx-background-radius: 0; " +
                                 "-fx-border-color: transparent; " +
@@ -248,20 +260,16 @@ public class MagsavDesktopApplication extends Application {
         });
         // Styles appliqués via CSS ET programmatiquement
         
+        // Assembler l'icône et le champ de recherche
+        searchFieldContainer.getChildren().addAll(searchIcon, globalSearchField);
+        
         // Initialisation du composant de suggestions avec callback de navigation
         this.globalSearchSuggestions = new GlobalSearchSuggestions(globalSearchField, this::handleSearchNavigation);
         
         // Zone de résultats (PopOver qui apparaîtra)
         setupGlobalSearch(globalSearchField);
         
-        // Bouton de recherche avancée (optionnel)
-        Button advancedSearchBtn = new Button("⚙");
-        advancedSearchBtn.setStyle("-fx-background-color: #142240; -fx-text-fill: #5F65D9; " +
-                                 "-fx-border-color: transparent; -fx-font-size: 12px;");
-        advancedSearchBtn.getStyleClass().add("search-advanced-btn");
-        advancedSearchBtn.setTooltip(new Tooltip("Options de recherche avancée"));
-        
-        searchContainer.getChildren().addAll(searchIcon, globalSearchField, advancedSearchBtn);
+        searchContainer.getChildren().add(searchFieldContainer);
         return searchContainer;
     }
     
@@ -425,6 +433,35 @@ public class MagsavDesktopApplication extends Application {
         
         statusBar.getChildren().addAll(statusLabel, new Label(" | "), backendUrl, spacer, javaVersion);
         return statusBar;
+    }
+
+    /**
+     * Configure l'affichage automatique sur le deuxième écran si disponible
+     */
+    private void configureSecondaryScreen(Stage primaryStage) {
+        try {
+            // Obtenir tous les écrans disponibles
+            var screens = Screen.getScreens();
+            
+            if (screens.size() > 1) {
+                // Utiliser le deuxième écran (index 1)
+                Screen secondaryScreen = screens.get(1);
+                Rectangle2D bounds = secondaryScreen.getVisualBounds();
+                
+                // Positionner la fenêtre sur le deuxième écran
+                primaryStage.setX(bounds.getMinX());
+                primaryStage.setY(bounds.getMinY());
+                primaryStage.setWidth(bounds.getWidth());
+                primaryStage.setHeight(bounds.getHeight());
+                
+                System.out.println("✓ Application configurée sur le deuxième écran : " + 
+                                   (int)bounds.getWidth() + "x" + (int)bounds.getHeight());
+            } else {
+                System.out.println("ℹ️ Deuxième écran non détecté, utilisation de l'écran principal");
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Erreur lors de la configuration du deuxième écran : " + e.getMessage());
+        }
     }
 
     /**
@@ -679,6 +716,9 @@ public class MagsavDesktopApplication extends Application {
         
         settingsTabPane.getTabs().addAll(themeTab, specialtiesTab, categoriesTab);
         
+        // Forcer le style des boutons de navigation des onglets
+        forceTabNavigationButtonsStyle(settingsTabPane);
+        
         // Assembly du container principal
         settingsContainer.getChildren().addAll(header, settingsTabPane);
         VBox.setVgrow(settingsTabPane, Priority.ALWAYS);
@@ -799,9 +839,9 @@ public class MagsavDesktopApplication extends Application {
                            "-fx-background-color: #142240 !important; " +
                            "-fx-control-inner-background: #142240 !important; " +
                            "-fx-control-inner-background-alt: #142240 !important; " +
-                           "-fx-text-fill: #7DD3FC !important; " +
-                           "-fx-text-base-color: #7DD3FC !important; " +
-                           "-fx-prompt-text-fill: #7DD3FC !important;";
+                           "-fx-text-fill: #6B71F2 !important; " +
+                           "-fx-text-base-color: #6B71F2 !important; " +
+                           "-fx-prompt-text-fill: #6B71F2 !important;";
         
         textField.setStyle(forceStyle);
         
@@ -813,10 +853,137 @@ public class MagsavDesktopApplication extends Application {
                     String nodeStyle = "-fx-base: #142240 !important; " +
                                      "-fx-background: #142240 !important; " +
                                      "-fx-background-color: #142240 !important; " +
-                                     "-fx-fill: #7DD3FC !important; " +
-                                     "-fx-text-fill: #7DD3FC !important; " +
-                                     "-fx-text-base-color: #7DD3FC !important;";
+                                     "-fx-fill: #6B71F2 !important; " +
+                                     "-fx-text-fill: #6B71F2 !important; " +
+                                     "-fx-text-base-color: #6B71F2 !important;";
                     node.setStyle(nodeStyle);
+                });
+            });
+        });
+    }
+
+    /**
+     * Méthode utilitaire pour forcer le style des boutons de navigation des onglets
+     * Applique directement en Java le style #6B71F2 pour les boutons de navigation
+     */
+    public static void forceTabNavigationButtonsStyle(TabPane tabPane) {
+        // Multiple délais pour s'assurer que tous les éléments sont rendus
+        Platform.runLater(() -> {
+            Platform.runLater(() -> {
+                Platform.runLater(() -> { // Triple runLater pour être sûr
+                    System.out.println("🎨 Forçage du style des boutons de navigation des onglets...");
+                    
+                    // Rechercher TOUS les éléments possibles dans le TabPane
+                    String[] selectors = {
+                        ".tab-header-area", ".headers-region", ".control-buttons-tab",
+                        ".tab-down-button", ".increment-button", ".decrement-button",
+                        ".left-arrow", ".right-arrow", ".scroll-arrows-visible",
+                        ".button", ".arrow", "Button", "StackPane", "Region"
+                    };
+                    
+                    for (String selector : selectors) {
+                        tabPane.lookupAll(selector).forEach(node -> {
+                            String nodeClass = node.getClass().getSimpleName();
+                            System.out.println("📍 Trouvé élément: " + nodeClass + " avec sélecteur: " + selector);
+                            
+                            if (selector.contains("arrow") || nodeClass.contains("Arrow")) {
+                                // Style spécial pour les flèches
+                                String arrowStyle = "-fx-background-color: #6B71F2 !important; " +
+                                                  "-fx-shape: \"M 0 0 h 7 l -3.5 4 z\" !important;";
+                                node.setStyle(arrowStyle);
+                                System.out.println("➤ Flèche stylée en #6B71F2");
+                            } else if (selector.contains("button") || nodeClass.contains("Button")) {
+                                // Style pour les boutons
+                                String buttonStyle = "-fx-background-color: #091326 !important; " +
+                                                   "-fx-text-fill: #6B71F2 !important; " +
+                                                   "-fx-border-color: #6B71F2 !important; " +
+                                                   "-fx-border-width: 1px !important; " +
+                                                   "-fx-border-radius: 3px !important; " +
+                                                   "-fx-background-radius: 3px !important;";
+                                node.setStyle(buttonStyle);
+                                System.out.println("🔘 Bouton stylé avec bordure #6B71F2");
+                            } else {
+                                // Style général pour conteneurs
+                                String containerStyle = "-fx-background-color: #091326 !important;";
+                                node.setStyle(containerStyle);
+                                System.out.println("📦 Conteneur stylé en #091326");
+                            }
+                        });
+                    }
+                    
+                    // Force absolue - parcourir TOUS les nodes sans exception
+                    tabPane.lookupAll("*").forEach(node -> {
+                        String nodeType = node.getClass().getSimpleName();
+                        String styleClasses = node.getStyleClass().toString();
+                        
+                        // Détecter les types de navigation par nom de classe
+                        if (nodeType.toLowerCase().contains("button") || 
+                            nodeType.toLowerCase().contains("arrow") ||
+                            styleClasses.contains("button") ||
+                            styleClasses.contains("arrow") ||
+                            styleClasses.contains("control") ||
+                            styleClasses.contains("increment") ||
+                            styleClasses.contains("decrement")) {
+                            
+                            String forceStyle = "-fx-background-color: #091326 !important; " +
+                                               "-fx-text-fill: #6B71F2 !important; " +
+                                               "-fx-border-color: #6B71F2 !important; " +
+                                               "-fx-border-width: 1px !important;";
+                            node.setStyle(forceStyle);
+                            System.out.println("🎯 Force absolue appliquée sur: " + nodeType);
+                        }
+                        
+                        // Traitement SPÉCIAL pour TabControlButtons
+                        if (nodeType.equals("TabControlButtons")) {
+                            String tabControlStyle = "-fx-background-color: #091326 !important; " +
+                                                   "-fx-border-color: #6B71F2 !important; " +
+                                                   "-fx-border-width: 2px !important; " +
+                                                   "-fx-border-radius: 5px !important; " +
+                                                   "-fx-background-radius: 5px !important;";
+                            node.setStyle(tabControlStyle);
+                            System.out.println("🎯🎯 TabControlButtons SPÉCIALEMENT stylé !");
+                            
+                            // Stylér tous les enfants du TabControlButtons
+                            if (node instanceof javafx.scene.Parent) {
+                                javafx.scene.Parent parent = (javafx.scene.Parent) node;
+                                parent.getChildrenUnmodifiable().forEach(child -> {
+                                    String childStyle = "-fx-background-color: #091326 !important; " +
+                                                       "-fx-text-fill: #6B71F2 !important; " +
+                                                       "-fx-border-color: #6B71F2 !important; " +
+                                                       "-fx-border-width: 1px !important;";
+                                    child.setStyle(childStyle);
+                                    System.out.println("🔧 Enfant de TabControlButtons stylé: " + child.getClass().getSimpleName());
+                                });
+                            }
+                        }
+                    });
+                    
+                    System.out.println("✅ Forçage terminé pour TabPane");
+                });
+            });
+        });
+    }
+
+    /**
+     * Force TOUS les TextField d'une scene à utiliser les bonnes couleurs
+     * Méthode à appeler après création de chaque vue
+     */
+    public static void forceAllTextFieldsColors(Scene scene) {
+        if (scene == null) return;
+        
+        Platform.runLater(() -> {
+            scene.getRoot().lookupAll(".text-field").forEach(node -> {
+                if (node instanceof TextField) {
+                    forceSearchFieldColors((TextField) node);
+                }
+            });
+            
+            // Réapplication périodique pour les vues chargées dynamiquement
+            Platform.runLater(() -> {
+                scene.getRoot().lookupAll(".text-field").forEach(node -> {
+                    if (node instanceof TextField) {
+                        forceSearchFieldColors((TextField) node);
+                    }
                 });
             });
         });

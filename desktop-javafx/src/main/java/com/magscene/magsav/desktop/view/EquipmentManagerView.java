@@ -93,9 +93,7 @@ public class EquipmentManagerView extends BorderPane {
         searchField = new TextField();
         searchField.setPromptText("Nom, modèle, numéro de série...");
         searchField.setPrefWidth(250);
-        searchField.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                            "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                            "-fx-border-color: " + ThemeManager.getInstance().getSelectionTextColor() + "; -fx-border-radius: 4;");
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchField.textProperty().addListener((obs, oldText, newText) -> filterEquipment());
         searchBox.getChildren().addAll(searchLabel, searchField);
         

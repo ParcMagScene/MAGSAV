@@ -1,735 +1,645 @@
-/* MAGSAV - Thème Sombre ULTRA AGRESSIF */
+/* MAGSAV - Theme Sombre Ultra */
 
-/* ===== FORÇAGE TOTAL DE TOUTES LES COULEURS ===== */
-
-/* ÉTAPE 1: Réinitialisation complète */
-* {
-    -fx-base: #091326 !important;
-    -fx-background: #091326 !important;
-    -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-control-inner-background: #091326 !important;
-    -fx-control-inner-background-alt: #091326 !important;
-    -fx-text-fill: #7DD3FC !important;
-    -fx-text-base-color: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
-
-/* ÉTAPE 1a: Forçage GLOBAL des couleurs de sélection */
 .root {
-    -fx-accent: #142240 !important;
-    -fx-selection-bar: #142240 !important;
-    -fx-selection-bar-non-focused: #142240 !important;
+    -fx-base: #091326;
+    -fx-background: #091326;
+    -fx-control-inner-background: #142240;
+    -fx-control-inner-background-alt: #142240;
+    -fx-accent: #6B71F2;
+    -fx-selection-bar: #142240;
+    -fx-text-fill: #6B71F2;
 }
 
-/* Sélection globale pour TOUS les types de listes */
-.table-view .table-row-cell:selected,
-.list-view .list-cell:selected,
-.tree-view .tree-cell:selected,
-.combo-box-popup .list-cell:selected {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-text-fill: #FFFFFF !important;
-    color: #FFFFFF !important;
+* {
+    -fx-background-color: #091326;
+    -fx-text-fill: #6B71F2;
 }
 
-/* ÉTAPE 1b: Forçage des Labels avec fond #091326 partout sauf navigation */
-.label:not(.sidebar .label):not(.navigation .label):not(.menu-bar .label) {
-    -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
-
-/* ÉTAPE 2: Tous les conteneurs possibles */
-.root, .scene, .parent, .region, .pane, .control, .labeled,
-.hbox, .vbox, .gridpane, .flowpane, .tilepane, .stackpane, 
-.anchorpane, .borderpane, .content, .main-content, .center-content,
-.navigation, .menu-bar, .tool-bar, .status-bar,
-.tab-pane, .tab, .scroll-pane, .split-pane, .accordion, .titled-pane,
-.list-view, .table-view, .tree-view {
-    -fx-base: #091326 !important;
-    -fx-background: #091326 !important;
-    -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-control-inner-background: #091326 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-    -fx-border-color: #1D2659 !important;
-    -fx-border-width: 1px !important;
-}
-
-/* Zones de texte avec fond #142240 (sauf navigation et header) */
-.text-area, .text-field, .text-input, .combo-box, .choice-box, 
-.date-picker, .spinner, .password-field {
-    -fx-base: #142240 !important;
-    -fx-background: #142240 !important;
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-    -fx-border-color: #1D2659 !important;
-    -fx-border-width: 1px !important;
-}
-
-/* Labels et textes avec fond #091326 dans le contenu SAUF les titres dashboard */
-.label:not(.dashboard-sav-title):not(.dashboard-equipment-title), 
-.text, 
-.titled-pane > .title, 
-.tab-pane > .tab-header-area > .headers-region > .tab,
-.chart-title:not(.dashboard-sav-title):not(.dashboard-equipment-title) {
-    -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
-
-/* Titres du dashboard - harmonisation avec fond #142240 - PRIORITÉ ABSOLUE */
-.label.dashboard-sav-title, 
-.label.dashboard-equipment-title,
-.chart-title.dashboard-sav-title, 
-.chart-title.dashboard-equipment-title,
-.dashboard-sav-title, 
-.dashboard-equipment-title {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-    -fx-padding: 8px 12px !important;
-    padding: 8px 12px !important;
-    -fx-background-radius: 4px !important;
-}
-
-/* ÉTAPE 3: Boutons */
 .button {
-    -fx-base: #142240 !important;
-    -fx-background: #142240 !important;
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-text-fill: #FFFFFF !important;
-    color: #FFFFFF !important;
+    -fx-background-color: #091326;
+    -fx-text-fill: #6B71F2;
+    -fx-border-color: #6B71F2;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
 }
 
 .button:hover {
-    -fx-background-color: #1D2659 !important;
-    background-color: #1D2659 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
+    -fx-background-color: #091326;
+    -fx-border-color: #FFFFFF;
 }
 
-/* ÉTAPE 4: Navigation et sidebar */
+.text-field, .text-area {
+    -fx-background-color: #142240 !important;
+    -fx-text-fill: #6B71F2;
+    -fx-border-color: #6B71F2;
+    -fx-control-inner-background: #142240 !important;
+    -fx-control-inner-background-alt: #142240 !important;
+}
+
+/* R�gles sp�cifiques pour les champs de recherche */
+.text-field:focused, .text-area:focused {
+    -fx-background-color: #142240 !important;
+    -fx-control-inner-background: #142240 !important;
+}
+
+.text-field > .content {
+    -fx-background-color: #142240 !important;
+}
+
+/* Forcer tous les �l�ments internes des TextField */
+.text-field .text, .text-field .content, .text-field .text-input {
+    -fx-background-color: #142240 !important;
+}
+
+.table-view, .list-view {
+    -fx-background-color: #091326;
+    -fx-selection-bar: #142240;
+    -fx-border-color: #6B71F2;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+}
+
+/* Lignes de s�paration des colonnes */
+.table-view .column-header-background {
+    -fx-border-color: #1D2659;
+}
+
+.table-view .table-column {
+    -fx-border-color: #1D2659;
+    -fx-border-width: 0 1px 0 0;
+}
+
+.table-view .table-cell {
+    -fx-border-color: #1D2659;
+    -fx-border-width: 0 1px 0 0;
+}
+
+/* Suppression des lignes horizontales pour SAV et Interventions */
+.sav-table .table-row-cell,
+.interventions-table .table-row-cell {
+    -fx-border-width: 0 !important;
+    -fx-background-insets: 0 !important;
+    -fx-border-color: transparent !important;
+    -fx-padding: 0 !important;
+}
+
+.sav-table .table-cell,
+.interventions-table .table-cell {
+    -fx-border-width: 0 1px 0 0 !important;
+    -fx-border-color: #1D2659 !important;
+}
+
+/* R�gles suppl�mentaires pour forcer la suppression des lignes */
+.sav-table .table-row-cell .table-cell,
+.interventions-table .table-row-cell .table-cell {
+    -fx-border-bottom: none !important;
+    -fx-border-top: none !important;
+}
+
+.label {
+    -fx-text-fill: #6B71F2;
+}
+
+/* R�GLE GLOBALE ABSOLUE - Forcer TOUT dans les TabPane */
+.tab-pane * * * {
+    -fx-text-fill: #6B71F2 !important;
+}
+
+/* Forcer ABSOLUMENT tous les textes dans les zones d'onglets */
+.tab-pane .tab-header-area .headers-region .tab .tab-container .tab-label,
+.tab-pane .tab-header-area .headers-region .tab .tab-container .label,
+.tab-pane .tab-header-area .tab .label,
+.tab-pane .tab .label,
+.tab-pane Label,
+.tab-header-area Label,
+.tab-header-area .label,
+.headers-region .label,
+.tab-container .label,
+.tab-pane * {
+    -fx-text-fill: #6B71F2 !important;
+}
+
+/* R�gle globale pour tous les textes dans TabPane */
+.tab-pane .tab-header-area *,
+.tab-pane .headers-region *,
+.tab-pane .tab-container * {
+    -fx-text-fill: #6B71F2 !important;
+}
+
+/* FORCER TOUS les boutons et �l�ments de navigation d'onglets */
+.tab-pane Button,
+.tab-pane .button,
+.tab-header-area Button,
+.tab-header-area .button,
+.headers-region Button,
+.headers-region .button,
+.tab-pane .tab-header-area Button,
+.tab-pane .tab-header-area .button,
+.tab-pane .headers-region Button,
+.tab-pane .headers-region .button,
+.control-buttons-tab,
+.tab-down-button,
+.scroll-arrows-visible,
+.arrow {
+    -fx-text-fill: #6B71F2 !important;
+    -fx-background-color: #091326 !important;
+}
+
+/* Forcer les fl�ches et ic�nes */
+.tab-pane .arrow,
+.tab-header-area .arrow,
+.headers-region .arrow,
+.button .arrow,
+Button .arrow,
+.control-buttons-tab .arrow,
+.tab-down-button .arrow {
+    -fx-background-color: #6B71F2 !important;
+    -fx-shape: null !important;
+}
+
+/* R�gle ultime - Forcer TOUT dans tab-header-area */
+.tab-header-area Button *,
+.tab-header-area .button *,
+.headers-region Button *,
+.headers-region .button * {
+    -fx-text-fill: #6B71F2 !important;
+    -fx-background-color: #6B71F2 !important;
+}
+
+/* APPROCHE ALTERNATIVE - Cibler sp�cifiquement les contr�les de navigation */
+.tab-pane > .tab-header-area > .headers-region > .control-buttons-tab,
+.tab-pane > .tab-header-area > .headers-region > .control-buttons-tab > .tab-down-button,
+.tab-pane > .tab-header-area > .control-buttons-tab,
+.tab-pane > .tab-header-area > .control-buttons-tab > .tab-down-button {
+    -fx-background-color: #091326 !important;
+    -fx-border-color: #6B71F2 !important;
+    -fx-border-width: 1px !important;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .control-buttons-tab > .tab-down-button > .arrow,
+.tab-pane > .tab-header-area > .control-buttons-tab > .tab-down-button > .arrow {
+    -fx-background-color: #6B71F2 !important;
+    -fx-shape: "M 0 0 h 7 l -3.5 4 z" !important;
+}
+
+/* Cibler les boutons de scroll des onglets */
+.tab-pane .tab-header-area .headers-region .scroll-arrows-visible .left-arrow,
+.tab-pane .tab-header-area .headers-region .scroll-arrows-visible .right-arrow {
+    -fx-background-color: #091326 !important;
+    -fx-border-color: #6B71F2 !important;
+    -fx-border-width: 1px !important;
+}
+
+.tab-pane .tab-header-area .headers-region .scroll-arrows-visible .left-arrow .arrow,
+.tab-pane .tab-header-area .headers-region .scroll-arrows-visible .right-arrow .arrow {
+    -fx-background-color: #6B71F2 !important;
+}
+
+/* Forcer avec des sp�cifit�s CSS maximales */
+.tab-pane[style] .tab-header-area[style] .headers-region[style] Button[style],
+.tab-pane[style] .tab-header-area[style] Button[style] {
+    -fx-background-color: #091326 !important;
+    -fx-text-fill: #6B71F2 !important;
+    -fx-border-color: #6B71F2 !important;
+}
+
+/* ULTRA SP�CIFIQUE - Tous les types de boutons de navigation JavaFX */
+.tab-header-area .control-buttons-tab .tab-down-button,
+.tab-header-area .headers-region .scroll-arrows-visible .increment-button,
+.tab-header-area .headers-region .scroll-arrows-visible .decrement-button,
+.tab-header-area .headers-region .left-arrow,
+.tab-header-area .headers-region .right-arrow,
+.tab-header-area .increment-button,
+.tab-header-area .decrement-button,
+.tab-pane .increment-button,
+.tab-pane .decrement-button {
+    -fx-background-color: #091326 !important;
+    -fx-text-fill: #6B71F2 !important;
+    -fx-border-color: #6B71F2 !important;
+    -fx-border-width: 1px !important;
+    -fx-border-radius: 3px !important;
+    -fx-background-radius: 3px !important;
+}
+
+/* Fl�ches des boutons de navigation */
+.tab-header-area .control-buttons-tab .tab-down-button .arrow,
+.tab-header-area .headers-region .scroll-arrows-visible .increment-button .arrow,
+.tab-header-area .headers-region .scroll-arrows-visible .decrement-button .arrow,
+.tab-header-area .headers-region .left-arrow .arrow,
+.tab-header-area .headers-region .right-arrow .arrow,
+.tab-header-area .increment-button .arrow,
+.tab-header-area .decrement-button .arrow,
+.tab-pane .increment-button .arrow,
+.tab-pane .decrement-button .arrow {
+    -fx-background-color: #6B71F2 !important;
+    -fx-shape: "M 0 0 h 7 l -3.5 4 z" !important;
+}
+
+/* Forcer TOUS les StackPane et Region dans les onglets */
+.tab-pane .tab-header-area StackPane,
+.tab-pane .tab-header-area Region {
+    -fx-background-color: #091326 !important;
+}
+
+/* R�gle de dernier recours - TOUS les �l�ments graphiques */
+.tab-pane .tab-header-area *:hover,
+.tab-pane .tab-header-area *:pressed,
+.tab-pane .tab-header-area *:focused {
+    -fx-background-color: #091326 !important;
+    -fx-text-fill: #6B71F2 !important;
+    -fx-border-color: #6B71F2 !important;
+}
+
+/* ========================================
+   CUSTOM TAB PANE STYLES - MAGSAV THEME
+   ======================================== */
+
+.custom-tab-pane {
+    -fx-background-color: #091326;
+    -fx-spacing: 0;
+}
+
+.custom-tab-header-container {
+    -fx-background-color: #091326;
+    -fx-padding: 0;
+    -fx-spacing: 0;
+}
+
+.custom-tab-navigation-row {
+    -fx-background-color: #091326;
+    -fx-padding: 5;
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+}
+
+.custom-tab-header {
+    -fx-background-color: #091326;
+    -fx-padding: 0;
+    -fx-spacing: 2;
+    -fx-alignment: center-left;
+}
+
+.custom-tab-scroll-pane {
+    -fx-background-color: #091326;
+    -fx-background: #091326;
+    -fx-border-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.custom-tab-scroll-pane .viewport {
+    -fx-background-color: #091326;
+}
+
+.custom-tab-scroll-pane .scroll-bar {
+    -fx-opacity: 0;
+}
+
+.custom-tab-content-area {
+    -fx-background-color: #091326;
+    -fx-padding: 10;
+}
+
+/* Boutons de navigation des onglets */
+.custom-tab-nav-button {
+    -fx-background-color: #091326;
+    -fx-text-fill: #6B71F2;
+    -fx-border-color: #6B71F2;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 5 10;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.custom-tab-nav-button:hover {
+    -fx-background-color: #142240;
+    -fx-text-fill: #FFFFFF;
+}
+
+.custom-tab-nav-button:pressed {
+    -fx-background-color: #1A2B47;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* Boutons d'onglets */
+.custom-tab-button {
+    -fx-background-color: #091326;
+    -fx-text-fill: #6B71F2;
+    -fx-border-color: #6B71F2;
+    -fx-border-width: 0 0 2px 0;
+    -fx-background-radius: 0;
+    -fx-padding: 10 15;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-min-width: 120;
+}
+
+.custom-tab-button:hover {
+    -fx-background-color: #1A2B47;
+}
+
+.custom-tab-button:pressed,
+.custom-tab-button.selected {
+    -fx-background-color: #142240;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-width: 0 0 3px 0;
+    -fx-font-weight: bold;
+}
+
+/* Forcer #091326 pour tous les composants */
+.tab-pane, .tab-pane .tab-header-area, .tab-pane .tab-content-area {
+    -fx-background-color: #091326;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #091326;
+    -fx-text-fill: #6B71F2 !important;
+    -fx-border-color: #6B71F2;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #091326;
+    -fx-text-fill: #6B71F2 !important;
+    -fx-border-color: #6B71F2;
+}
+
+/* Forcer TOUS les textes dans les onglets - Approche exhaustive */
+.tab-pane .tab .tab-label,
+.tab-pane .tab-header-area .tab .tab-label,
+.tab .tab-label,
+.tab-label,
+.tab-pane .tab Text,
+.tab-pane .tab-header-area .tab Text,
+.tab Text,
+.tab-pane .tab .text,
+.tab-pane .tab-header-area .tab .text,
+.tab .text,
+.tab-pane .tab Button,
+.tab-pane .tab-header-area .tab Button,
+.tab Button,
+.tab-pane .tab .button,
+.tab-pane .tab-header-area .tab .button,
+.tab .button {
+    -fx-text-fill: #6B71F2 !important;
+}
+
+.tab-pane .tab:selected .tab-label,
+.tab-pane .tab-header-area .tab:selected .tab-label,
+.tab:selected .tab-label,
+.tab-pane .tab:selected Text,
+.tab-pane .tab-header-area .tab:selected Text,
+.tab:selected Text,
+.tab-pane .tab:selected .text,
+.tab-pane .tab-header-area .tab:selected .text,
+.tab:selected .text,
+.tab-pane .tab:selected Button,
+.tab-pane .tab-header-area .tab:selected Button,
+.tab:selected Button,
+.tab-pane .tab:selected .button,
+.tab-pane .tab-header-area .tab:selected .button,
+.tab:selected .button {
+    -fx-text-fill: #6B71F2 !important;
+}
+
+.menu-bar, .menu-bar .menu, .context-menu {
+    -fx-background-color: #091326;
+}
+
+.tool-bar, .status-bar {
+    -fx-background-color: #091326;
+}
+
+.combo-box, .combo-box-popup .list-view {
+    -fx-background-color: #091326;
+}
+
+.combo-box-popup .list-cell {
+    -fx-background-color: #091326;
+    -fx-text-fill: #6B71F2;
+}
+
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: #091326;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #FFFFFF;
+}
+
+.scroll-bar, .scroll-bar .track {
+    -fx-background-color: #091326;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #6B71F2;
+}
+
+.progress-bar {
+    -fx-background-color: #091326;
+}
+
+.check-box .box, .radio-button .radio {
+    -fx-background-color: #091326;
+    -fx-border-color: #6B71F2;
+}
+
+.slider .track {
+    -fx-background-color: #091326;
+}
+
+.split-pane, .split-pane .split-pane-divider {
+    -fx-background-color: #091326;
+}
+
+.accordion .titled-pane .title, .accordion .titled-pane .content {
+    -fx-background-color: #091326;
+}
+
+.tooltip {
+    -fx-background-color: #091326;
+    -fx-text-fill: #6B71F2;
+    -fx-border-color: #6B71F2;
+}
+
+/* Conteneurs et volets */
+.hbox, .vbox, .gridpane, .flowpane, .tilepane, .stackpane,
+.anchorpane, .borderpane, .content, .main-content, .center-content {
+    -fx-background-color: #091326;
+}
+
+/* Header et Sidebar - Force #091326 */
 .sidebar {
     -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
 }
 
 .menu-button {
     -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-text-fill: #5F65D9 !important;
-    color: #5F65D9 !important;
-    -fx-font-size: 16px !important;
-    font-size: 16px !important;
-    -fx-alignment: center-left !important;
-    text-align: left !important;
-    -fx-padding: 0 0 0 10px !important;
-    padding: 0 0 0 10px !important;
-}
-
-.menu-button:hover, .menu-button.active {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-text-fill: #F2F2F2 !important;
-    color: #F2F2F2 !important;
-    -fx-font-size: 16px !important;
-    font-size: 16px !important;
-    -fx-alignment: center-left !important;
-    text-align: left !important;
-    -fx-padding: 0 0 0 10px !important;
-    padding: 0 0 0 10px !important;
-}
-
-/* Exclusions pour navigation et sidebar - gardent le fond sombre */
-.sidebar .text-field, .sidebar .text-area, .navigation .text-field, .navigation .text-area {
-    -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-}
-
-/* Harmonisation de la barre de recherche globale - fond uniforme #142240 */
-.header .text-field, .header .text-area, .menu-bar .text-field, .menu-bar .text-area {
-    -fx-base: #142240 !important;
-    -fx-background: #142240 !important;
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-    -fx-border-color: #1D2659 !important;
-    -fx-border-width: 1px !important;
-    -fx-prompt-text-fill: #5F65D9 !important;
-}
-
-/* FORCE ABSOLUE - Tous les éléments dans le header avec fond #142240 */
-.header *, .header .text, .header > * {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-}
-
-/* Styles spécifiques pour la barre de recherche globale - force le fond du texte */
-.global-search-field {
-    -fx-base: #142240 !important;
-    -fx-background: #142240 !important;
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-text-box-border: transparent !important;
-    -fx-focus-color: transparent !important;
-    -fx-faint-focus-color: transparent !important;
-    -fx-background-insets: 0 !important;
-    -fx-background-radius: 0 !important;
+    -fx-text-fill: #6B71F2 !important;
     -fx-border-color: transparent !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-    -fx-prompt-text-fill: #5F65D9 !important;
 }
 
-/* Force le fond sur TOUS les sous-éléments de la recherche globale */
-.global-search-field .text {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-fill: #7DD3FC !important;
-}
-
-/* Force le fond sur le texte de prompt et tous les éléments internes */
-.global-search-field .text-field,
-.global-search-field .text-input,
-.global-search-field > .text,
-.global-search-field > * {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    -fx-prompt-text-fill: #5F65D9 !important;
-}
-
-/* Force spécifiquement le prompt text */
-.global-search-field .prompt-text {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-fill: #5F65D9 !important;
-}
-
-/* Forcer TOUS les éléments de type Text dans la recherche globale */
-.global-search-field Text,
-.global-search-field .text,
-.search-container Text,
-.search-container .text {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-fill: #7DD3FC !important;
-}
-
-/* Forcer le Container de recherche */
-.search-container {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-}
-
-/* Icône de recherche harmonisée */
-.search-icon {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-    -fx-padding: 0 !important;
-    padding: 0 !important;
-}
-
-/* Bouton de recherche avancée harmonisé */
-.search-advanced-btn {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-text-fill: #5F65D9 !important;
-    color: #5F65D9 !important;
-    -fx-border-color: transparent !important;
-    border-color: transparent !important;
-}
-
-/* SOLUTION BRUTALE: Forcer TOUS les Text du header à avoir fond #142240 */
-.header Text,
-.header .text,
-.top-bar Text,
-.top-bar .text {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-fill: #7DD3FC !important;
-}
-
-/* Forcer spécifiquement le prompt-text de TOUS les TextFields */
-.text-field .prompt-text,
-.text-input .prompt-text {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-}
-
-.global-search-field:focused {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-border-color: #1D2659 !important;
-}
-
-/* ÉTAPE 5: Suppression de TOUS les styles par défaut de JavaFX */
-.root {
-    -fx-accent: #142240 !important;
-    -fx-focus-color: transparent !important;
-    -fx-faint-focus-color: transparent !important;
-    -fx-selection-bar: #142240 !important;
-    -fx-selection-bar-non-focused: #142240 !important;
-}
-
-/* ÉTAPE 6: Tables et listes */
-.table-view, .list-view, .tree-view {
+.menu-button:hover {
     -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-}
-
-.table-row-cell, .list-cell, .tree-cell {
-    -fx-background-color: transparent;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
-
-/* Règles PRIORITAIRES pour la sélection - doivent être APRÈS les règles générales */
-.table-row-cell:selected, .list-cell:selected, .tree-cell:selected,
-.table-view .table-row-cell:selected, 
-.list-view .list-cell:selected, 
-.tree-view .tree-cell:selected,
-.table-row-cell:selected:focused,
-.table-row-cell:selected:hover,
-.list-cell:selected:focused,
-.list-cell:selected:hover,
-.tree-cell:selected:focused,
-.tree-cell:selected:hover {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
+    -fx-border-color: #6B71F2 !important;
     -fx-text-fill: #FFFFFF !important;
-    color: #FFFFFF !important;
 }
 
-/* Règles encore plus spécifiques pour contrer tout override */
-.root .table-view .table-row-cell:selected,
-.root .list-view .list-cell:selected,
-.root .tree-view .tree-cell:selected {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
+.menu-button:pressed,
+.menu-button.active {
+    -fx-background-color: #091326 !important;
+    -fx-border-color: #FFFFFF !important;
     -fx-text-fill: #FFFFFF !important;
-    color: #FFFFFF !important;
 }
 
-/* ÉTAPE 7: Forçage pour MAGSAV spécifiquement */
-.sav-manager, .equipment-manager, .vehicle-manager, .personnel-manager,
-.dashboard-view, .main-view, .content-pane, .module-content {
+/* Header global */
+VBox.header,
+.global-header {
     -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-    -fx-border-color: #1D2659 !important;
-    -fx-border-width: 1px !important;
 }
 
-/* ÉTAPE 8: Cartes spécifiques avec fond #142240 */
-.dashboard-card, .card, .stats-card, .info-card, .summary-card,
-.equipment-card, .vehicle-card, .personnel-card, .sav-card,
-.project-card, .client-card, .chart-container, .content-card {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-border-color: #1D2659 !important;
-    -fx-border-width: 1px !important;
-}
-
-/* ÉTAPE 9: Labels spéciaux du dashboard avec fond #091326 (priorité haute) */
-.section-title, .status-ok, .last-update, .chart-title {
+/* Toolbars des modules - Force #091326 */
+.hbox,
+HBox {
     -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
 }
 
-/* Labels des cartes dashboard avec fond #142240 */
-.card-title, .card-value, .card-description, .card-icon {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
-
-/* ÉTAPE 10: Styles spécifiques pour les onglets SAV */
-.sav-tab-pane .tab-header-area .tab {
+/* Classes sp�cifiques pour toolbars */
+.toolbar,
+.toolbar-button {
     -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-text-fill: #5F65D9 !important;
-    color: #5F65D9 !important;
 }
 
-.sav-tab-pane .tab-header-area .tab:selected {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-text-fill: #FFFFFF !important;
-    color: #FFFFFF !important;
-}
-
-/* ÉTAPE 11: Fonds de texte dans les onglets SAV */
-.sav-manager-view .label:not(.sidebar .label):not(.navigation .label),
-.sav-manager-view .text-area, .sav-manager-view .text-field,
-.repair-tracking-view .label, .repair-tracking-view .text-area, .repair-tracking-view .text-field,
-.rma-management-view .label, .rma-management-view .text-area, .rma-management-view .text-field {
+/* For�age sp�cifique pour les modules */
+.equipment-toolbar,
+.sav-toolbar, 
+.client-toolbar,
+.personnel-toolbar,
+.vehicle-toolbar,
+.project-toolbar,
+.planning-toolbar {
     -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
 }
 
-/* ÉTAPE 12: Styles spécifiques pour les onglets de Paramètres - Même style que SAV */
-.settings-tab-pane .tab-header-area .tab {
+/* Surcharge g�n�rale des HBox avec background diff�rent */
+HBox[style*="background-color"] {
     -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-text-fill: #5F65D9 !important;
-    color: #5F65D9 !important;
-    -fx-border-color: transparent !important;
-    -fx-border-width: 0 !important;
-    -fx-padding: 8px 15px !important;
 }
 
-.settings-tab-pane .tab-header-area .tab:selected {
+/* Cartes Dashboard - Fond #142240 */
+.dashboard-card {
     -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-text-fill: #FFFFFF !important;
-    color: #FFFFFF !important;
-}
-
-.settings-tab-pane .tab-header-area .tab .tab-label {
-    -fx-text-fill: inherit !important;
-}
-
-.settings-tab-pane .tab-content-area {
-    -fx-background-color: #091326 !important;
-    -fx-padding: 15px !important;
-}
-
-/* ÉTAPE 13: Fonds de texte dans les onglets de Paramètres */
-.settings-container .label:not(.navigation .label):not(.sidebar .label),
-ThemePreferencesView .label, SpecialtiesConfigView .label, CategoriesConfigView .label,
-.settings-view .label,
-.settings-container .text-area, .settings-container .text-field, 
-.settings-container .combo-box, .settings-container .choice-box {
-    -fx-background-color: #091326 !important;
-    background-color: #091326 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
-
-/* ÉTAPE 14: ComboBox flèches - Visibilité des icônes déroulantes avec conteneur plus large */
-.combo-box .arrow-button {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-padding: 4px !important;
-    -fx-pref-width: 28px !important;
-    -fx-pref-height: 28px !important;
-    -fx-min-width: 28px !important;
-    -fx-min-height: 28px !important;
-    -fx-max-width: 28px !important;
-    -fx-max-height: 28px !important;
-}
-
-.combo-box .arrow-button .arrow {
-    -fx-background-color: #142240 !important;
-    -fx-shape: "M 2 4 L 10 4 L 6 9 Z" !important;
-    -fx-pref-width: 10px !important;
-    -fx-pref-height: 8px !important;
-    -fx-min-width: 10px !important;
-    -fx-min-height: 8px !important;
-    -fx-max-width: 10px !important;
-    -fx-max-height: 8px !important;
-    -fx-padding: 3px !important;
-    -fx-scale-x: 1.0 !important;
-    -fx-scale-y: 1.0 !important;
-}
-
-.combo-box:hover .arrow-button .arrow {
-    -fx-background-color: #7DD3FC !important;
-}
-
-.combo-box:pressed .arrow-button .arrow {
-    -fx-background-color: #F2F2F2 !important;
-}
-
-/* Flèches pour tous les autres contrôles similaires avec conteneur plus large */
-.choice-box .arrow-button,
-.date-picker .arrow-button {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-padding: 4px !important;
-    -fx-pref-width: 28px !important;
-    -fx-pref-height: 28px !important;
-    -fx-min-width: 28px !important;
-    -fx-min-height: 28px !important;
-    -fx-max-width: 28px !important;
-    -fx-max-height: 28px !important;
-}
-
-.choice-box .arrow-button .arrow,
-.date-picker .arrow-button .arrow {
-    -fx-background-color: #142240 !important;
-    -fx-shape: "M 2 4 L 10 4 L 6 9 Z" !important;
-    -fx-pref-width: 10px !important;
-    -fx-pref-height: 8px !important;
-    -fx-min-width: 10px !important;
-    -fx-min-height: 8px !important;
-    -fx-max-width: 10px !important;
-    -fx-max-height: 8px !important;
-    -fx-padding: 3px !important;
-}
-
-.spinner .increment-arrow-button .arrow {
-    -fx-background-color: #142240 !important;
-    -fx-shape: "M 2 7 L 10 7 L 6 2 Z" !important;
-    -fx-pref-width: 10px !important;
-    -fx-pref-height: 8px !important;
-    -fx-padding: 3px !important;
-}
-
-.spinner .decrement-arrow-button .arrow {
-    -fx-background-color: #142240 !important;
-    -fx-shape: "M 2 4 L 10 4 L 6 9 Z" !important;
-    -fx-pref-width: 10px !important;
-    -fx-pref-height: 8px !important;
-    -fx-padding: 3px !important;
-}
-
-.choice-box:hover .arrow-button .arrow,
-.date-picker:hover .arrow-button .arrow {
-    -fx-background-color: #7DD3FC !important;
-}
-
-/* ÉTAPE 15: Couleurs harmoniques pour les graphiques statistiques */
-
-/* Palette harmonique en carré basée sur #142240 (240°) */
-/* Couleurs : 240° - 330° - 60° - 150° */
-
-/* BarChart - Couleurs des barres */
-.chart-bar { -fx-bar-fill: #142240 !important; -fx-background-color: #142240 !important; }
-.default-color0.chart-bar, .default-color0 .chart-bar { -fx-bar-fill: #142240 !important; -fx-background-color: #142240 !important; }
-.default-color1.chart-bar, .default-color1 .chart-bar { -fx-bar-fill: #F26BA6 !important; -fx-background-color: #F26BA6 !important; }
-.default-color2.chart-bar, .default-color2 .chart-bar { -fx-bar-fill: #A6F26B !important; -fx-background-color: #A6F26B !important; }
-.default-color3.chart-bar, .default-color3 .chart-bar { -fx-bar-fill: #6BF2A6 !important; -fx-background-color: #6BF2A6 !important; }
-.default-color4.chart-bar, .default-color4 .chart-bar { -fx-bar-fill: #8A7DD3 !important; -fx-background-color: #8A7DD3 !important; }
-
-/* PieChart - Couleurs des segments */
-.chart-pie { -fx-background-color: #142240 !important; }
-.default-color0.chart-pie, .default-color0 .chart-pie { -fx-pie-color: #142240 !important; -fx-background-color: #142240 !important; }
-.default-color1.chart-pie, .default-color1 .chart-pie { -fx-pie-color: #F26BA6 !important; -fx-background-color: #F26BA6 !important; }
-.default-color2.chart-pie, .default-color2 .chart-pie { -fx-pie-color: #A6F26B !important; -fx-background-color: #A6F26B !important; }
-.default-color3.chart-pie, .default-color3 .chart-pie { -fx-pie-color: #6BF2A6 !important; -fx-background-color: #6BF2A6 !important; }
-.default-color4.chart-pie, .default-color4 .chart-pie { -fx-pie-color: #8A7DD3 !important; -fx-background-color: #8A7DD3 !important; }
-
-/* Couleurs alternatives pour compatibilité */
-.chart-series-area-fill.default-color0, .chart-area-symbol.default-color0 { -fx-background-color: #142240 !important; }
-.chart-series-area-fill.default-color1, .chart-area-symbol.default-color1 { -fx-background-color: #F26BA6 !important; }
-.chart-series-area-fill.default-color2, .chart-area-symbol.default-color2 { -fx-background-color: #A6F26B !important; }
-.chart-series-area-fill.default-color3, .chart-area-symbol.default-color3 { -fx-background-color: #6BF2A6 !important; }
-.chart-series-area-fill.default-color4, .chart-area-symbol.default-color4 { -fx-background-color: #8A7DD3 !important; }
-
-/* Légendes des graphiques */
-.chart-legend-item-symbol.default-color0 { -fx-background-color: #142240 !important; }
-.chart-legend-item-symbol.default-color1 { -fx-background-color: #F26BA6 !important; }
-.chart-legend-item-symbol.default-color2 { -fx-background-color: #A6F26B !important; }
-.chart-legend-item-symbol.default-color3 { -fx-background-color: #6BF2A6 !important; }
-.chart-legend-item-symbol.default-color4 { -fx-background-color: #8A7DD3 !important; }
-
-/* Styles généraux pour les graphiques */
-.chart {
-    -fx-background-color: #091326;
-    -fx-border-color: #1D2659;
+    -fx-background-radius: 8px;
+    -fx-border-color: #6B71F2;
+    -fx-border-radius: 8px;
     -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 2);
+}
+
+/* Textes des cartes Dashboard */
+.card-icon, .card-title, .card-value, .card-description {
+    -fx-background-color: #142240 !important;
+    -fx-text-fill: #6B71F2 !important;
+}
+
+/* Graphiques Dashboard - Fond #091326 */
+.chart-container {
+    -fx-background-color: #091326 !important;
+    -fx-background-radius: 8px;
+    -fx-border-color: #6B71F2;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-padding: 15px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 2);
+}
+
+/* Graphiques sp�cifiques */
+.bar-chart, .pie-chart {
+    -fx-background-color: #091326 !important;
+    -fx-background-radius: 8px;
+}
+
+/* Zone de trac� des graphiques */
+.chart-plot-background {
+    -fx-background-color: #091326 !important;
+}
+
+/* L�gendes des graphiques */
+.chart-legend {
+    -fx-background-color: #091326 !important;
+    -fx-text-fill: #6B71F2 !important;
+}
+
+/* L�gendes sp�cifiques aux camemberts */
+.pie-chart .chart-legend {
+    -fx-background-color: #091326 !important;
+    -fx-text-fill: #6B71F2 !important;
+}
+
+.chart-legend .label {
+    -fx-text-fill: #6B71F2 !important;
+}
+
+/* Axes des graphiques */
+.axis {
+    -fx-tick-label-fill: #6B71F2 !important;
+}
+
+/* Titres des graphiques */
+.chart-title {
+    -fx-background-color: #091326 !important;
+    -fx-text-fill: #6B71F2 !important;
+}
+
+/* Titres sp�cifiques Dashboard */
+.dashboard-sav-title, .dashboard-equipment-title {
+    -fx-background-color: #091326 !important;
+    -fx-text-fill: #6B71F2 !important;
+}
+
+/* Graphiques uniquement - Fond #091326 */
+.chart-content {
+    -fx-background-color: #091326 !important;
 }
 
 .chart-plot-background {
-    -fx-background-color: #091326;
+    -fx-background-color: #091326 !important;
 }
 
-.chart-content {
-    -fx-background-color: #091326;
+/* Conteneurs de graphiques seulement */
+.bar-chart .chart-content,
+.pie-chart .chart-content {
+    -fx-background-color: #091326 !important;
 }
 
-.axis {
-    -fx-tick-label-fill: #7DD3FC;
-    -fx-tick-mark-stroke: #1D2659;
+/* Zone de trac� sp�cifique aux graphiques */
+.bar-chart .chart-plot-background,
+.pie-chart .chart-plot-background {
+    -fx-background-color: #091326 !important;
 }
 
-.axis-label {
-    -fx-text-fill: #7DD3FC;
+/* Labels des segments de camembert */
+.pie-chart .chart-pie-label {
+    -fx-text-fill: #6B71F2 !important;
+    -fx-font-size: 12px;
 }
 
-.chart-legend {
-    -fx-background-color: #091326;
-    -fx-text-fill: #7DD3FC;
+.pie-chart .chart-pie-label-line {
+    -fx-stroke: #6B71F2 !important;
 }
 
-/* ÉTAPE 15: Contours spéciaux supprimés pour navigation */
-
-/* ===== UNIFICATION CHAMPS DE RECHERCHE - FOND #142240 ===== */
-/* Forçage ULTRA AGRESSIF des champs de recherche pour contrer le * selector */
-.text-field, .text-field:focused, .text-field:hover {
-    -fx-base: #142240 !important;
-    -fx-background: #142240 !important;
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-control-inner-background-alt: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    -fx-text-base-color: #7DD3FC !important;
-    color: #7DD3FC !important;
-    -fx-border-color: #7DD3FC !important;
-    -fx-border-radius: 4 !important;
-    -fx-background-radius: 4 !important;
+/* Labels de donn�es sur les graphiques */
+.chart-line-symbol .chart-symbol {
+    -fx-background-color: #6B71F2 !important;
 }
 
-/* Éléments internes du TextField (zone de texte) */
-.text-field > .text, 
-.text-field .text,
-.text-field > .content,
-.text-field .content {
-    -fx-base: #142240 !important;
-    -fx-background: #142240 !important;
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    -fx-text-base-color: #7DD3FC !important;
-    color: #7DD3FC !important;
+/* �tiquettes de donn�es g�n�riques */
+.data-label {
+    -fx-text-fill: #6B71F2 !important;
 }
 
-/* Style spécifique pour champs de recherche avec classe */
-.search-field, .global-search-field {
-    -fx-base: #142240 !important;
-    -fx-background: #142240 !important;
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-control-inner-background-alt: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    -fx-text-base-color: #7DD3FC !important;
-    color: #7DD3FC !important;
-    -fx-border-color: #7DD3FC !important;
-    -fx-border-radius: 4 !important;
-    -fx-background-radius: 4 !important;
+/* Labels sp�cifiques aux parts de camembert */
+.chart-pie-label-line,
+.chart-pie-label {
+    -fx-text-fill: #6B71F2 !important;
 }
-
-/* Éléments internes des champs avec classes */
-.search-field > .text, .search-field .text,
-.search-field > .content, .search-field .content,
-.global-search-field > .text, .global-search-field .text,
-.global-search-field > .content, .global-search-field .content {
-    -fx-base: #142240 !important;
-    -fx-background: #142240 !important;
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    -fx-text-base-color: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
-
-/* Prompt text des champs de recherche */
-.text-field .prompt-text,
-.search-field .prompt-text,
-.global-search-field .prompt-text {
-    -fx-fill: #7DD3FC !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
-
-/* Règle ULTIME pour tous les sous-éléments des TextField */
-.text-field *,
-.search-field *,
-.global-search-field * {
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
-
-/* RÈGLE ABSOLUE - Surcharge la règle * du début pour les TextField uniquement */
-.text-field, .text-field *,
-.search-field, .search-field *,
-.global-search-field, .global-search-field * {
-    -fx-base: #142240 !important;
-    -fx-background: #142240 !important;
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-control-inner-background-alt: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    -fx-text-base-color: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
-
-/* FORCE BRUTE - Application sur tous les états et pseudo-classes */
-.text-field:hover, .text-field:focused, .text-field:pressed,
-.text-field:hover *, .text-field:focused *, .text-field:pressed *,
-.search-field:hover, .search-field:focused, .search-field:pressed,
-.search-field:hover *, .search-field:focused *, .search-field:pressed *,
-.global-search-field:hover, .global-search-field:focused, .global-search-field:pressed,
-.global-search-field:hover *, .global-search-field:focused *, .global-search-field:pressed * {
-    -fx-base: #142240 !important;
-    -fx-background: #142240 !important;
-    -fx-background-color: #142240 !important;
-    background-color: #142240 !important;
-    -fx-control-inner-background: #142240 !important;
-    -fx-control-inner-background-alt: #142240 !important;
-    -fx-text-fill: #7DD3FC !important;
-    -fx-text-base-color: #7DD3FC !important;
-    color: #7DD3FC !important;
-}
- 
- / *   = = = = =   R � G L E S   S P � C I F I Q U E S   M A G S A V   I N T � G R � E S   = = = = =   * / 
- 
- / *   S A V   M o d u l e   S t y l e s   * / 
- . s a v - t a b   { 
-         - f x - b a c k g r o u n d - c o l o r :   # 1 4 2 2 4 0   ! i m p o r t a n t ; 
-         - f x - t e x t - b a s e - c o l o r :   # 7 D D 3 F C   ! i m p o r t a n t ; 
- } 
- 
- . s a v - t a b : s e l e c t e d   { 
-         - f x - b a c k g r o u n d - c o l o r :   # 6 B 7 1 F 2   ! i m p o r t a n t ; 
-         - f x - t e x t - b a s e - c o l o r :   # F F F F F F   ! i m p o r t a n t ; 
- } 
- 
- / *   B o u t o n s   d ' a c t i o n   * / 
- . a c t i o n - b u t t o n - p r i m a r y   { 
-         - f x - b a c k g r o u n d - c o l o r :   # 6 B 7 1 F 2   ! i m p o r t a n t ; 
-         - f x - t e x t - f i l l :   # F F F F F F   ! i m p o r t a n t ; 
-         - f x - f o n t - w e i g h t :   b o l d ; 
-         - f x - p a d d i n g :   8   1 6   8   1 6 ; 
-         - f x - b a c k g r o u n d - r a d i u s :   6 ; 
- } 
- 
- . a c t i o n - b u t t o n - p r i m a r y : h o v e r   { 
-         - f x - b a c k g r o u n d - c o l o r :   # 5 A 6 1 E 2   ! i m p o r t a n t ; 
- } 
- 
- / *   S � L E C T I O N   F I N A L E   -   R � G L E S   U L T R A - P R I O R I T A I R E S   * / 
- . t a b l e - r o w - c e l l : s e l e c t e d ,   . l i s t - c e l l : s e l e c t e d ,   . t r e e - c e l l : s e l e c t e d   { 
-         - f x - b a c k g r o u n d - c o l o r :   # 6 B 7 1 F 2   ! i m p o r t a n t ; 
-         b a c k g r o u n d - c o l o r :   # 6 B 7 1 F 2   ! i m p o r t a n t ; 
-         - f x - t e x t - f i l l :   # F F F F F F   ! i m p o r t a n t ; 
-         c o l o r :   # F F F F F F   ! i m p o r t a n t ; 
- } 
- 
- . e q u i p m e n t - t a b l e   {   - f x - b a c k g r o u n d - c o l o r :   # 1 4 2 2 4 0   ! i m p o r t a n t ;   - f x - b a c k g r o u n d - r a d i u s :   8 ;   } 
- 
- 

@@ -190,21 +190,21 @@ public class ThemeManager {
      * Obtient la couleur de background principale selon le thème actuel
      */
     public String getCurrentBackgroundColor() {
-        return isDarkTheme() ? "#1e3a5f" : "#f8f9fa";
+        return isDarkTheme() ? "#091326" : "#f8f9fa";
     }
     
     /**
      * Obtient la couleur de background secondaire selon le thème actuel
      */
     public String getCurrentSecondaryColor() {
-        return isDarkTheme() ? "#1a1a1a" : "#ffffff";
+        return isDarkTheme() ? "#091326" : "#ffffff";
     }
     
     /**
      * Obtient la couleur des éléments UI selon le thème actuel
      */
     public String getCurrentUIColor() {
-        return isDarkTheme() ? "#2c2c2c" : "#ffffff";
+        return isDarkTheme() ? "#091326" : "#ffffff";
     }
     
     /**
@@ -246,14 +246,14 @@ public class ThemeManager {
      * Obtient la couleur de sélection selon le thème actuel
      */
     public String getSelectionColor() {
-        return "#142240"; // Couleur de sélection unifiée pour tous les thèmes
+        return "#091326"; // Couleur de sélection unifiée pour tous les thèmes
     }
     
     /**
      * Obtient la couleur du texte de sélection selon le thème actuel
      */
     public String getSelectionTextColor() {
-        return "#7DD3FC"; // Couleur de texte pour les éléments sélectionnés
+        return "#6B71F2"; // Couleur de texte pour les éléments sélectionnés
     }
     
     /**

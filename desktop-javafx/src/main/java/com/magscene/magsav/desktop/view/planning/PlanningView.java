@@ -237,6 +237,9 @@ public class PlanningView extends BorderPane {
         sidebarTabs.getTabs().add(calendarsTab);
         VBox.setVgrow(sidebarTabs, Priority.ALWAYS);
         
+        // Forcer le style des boutons de navigation des onglets
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceTabNavigationButtonsStyle(sidebarTabs);
+        
         // Section mini-calendrier pour navigation rapide
         VBox miniCalendarSection = createMiniCalendarSection();
         

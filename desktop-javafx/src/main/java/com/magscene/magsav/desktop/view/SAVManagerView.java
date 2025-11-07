@@ -5,6 +5,7 @@ import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.view.sav.RepairTrackingView;
 import com.magscene.magsav.desktop.view.sav.RMAManagementView;
 import com.magscene.magsav.desktop.view.sav.TechnicianPlanningView;
+import com.magscene.magsav.desktop.component.CustomTabPane;
 // import com.magscene.magsav.desktop.view.sav.QRCodeScannerView; // Temporairement désactivé
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -21,7 +22,7 @@ import javafx.scene.text.FontWeight;
 public class SAVManagerView extends BorderPane {
     
     private final ApiService apiService;
-    private TabPane tabPane;
+    private CustomTabPane customTabPane;
     
     // Vues SAV spécialisées
     private RepairTrackingView repairTrackingView;
@@ -55,9 +56,9 @@ public class SAVManagerView extends BorderPane {
         VBox topContainer = new VBox(header, toolbar);
         setTop(topContainer);
         
-        // TabPane principal avec toutes les fonctionnalités SAV
-        tabPane = createTabPane();
-        setCenter(tabPane);
+        // CustomTabPane principal avec toutes les fonctionnalités SAV
+        customTabPane = createCustomTabPane();
+        setCenter(customTabPane);
         
         // Style CSS
         getStyleClass().add("sav-manager-view");
@@ -90,7 +91,7 @@ public class SAVManagerView extends BorderPane {
         TextField searchField = new TextField();
         searchField.setPromptText("Titre, description, demandeur...");
         searchField.setPrefWidth(250);
-        searchField.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC; -fx-border-color: #7DD3FC; -fx-border-radius: 4;");
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchBox.getChildren().addAll(searchLabel, searchField);
         
         // Filtre par statut
@@ -101,7 +102,7 @@ public class SAVManagerView extends BorderPane {
         statusFilter.getItems().addAll("Tous", "Ouverte", "En cours", "En attente pièces", "Résolue", "Fermée", "Annulée");
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(150);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
         // Filtre par priorité
@@ -112,7 +113,7 @@ public class SAVManagerView extends BorderPane {
         priorityFilter.getItems().addAll("Toutes", "Urgente", "Élevée", "Moyenne", "Faible");
         priorityFilter.setValue("Toutes");
         priorityFilter.setPrefWidth(120);
-        priorityFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        priorityFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         priorityBox.getChildren().addAll(priorityLabel, priorityFilter);
         
         // Filtre par type
@@ -123,7 +124,7 @@ public class SAVManagerView extends BorderPane {
         typeFilter.getItems().addAll("Tous types", "Réparation", "Maintenance", "Installation", "Formation", "RMA", "Garantie");
         typeFilter.setValue("Tous types");
         typeFilter.setPrefWidth(140);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #7DD3FC;");
+        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
         // Boutons d'action
@@ -163,32 +164,40 @@ public class SAVManagerView extends BorderPane {
         return toolbar;
     }
     
-    private TabPane createTabPane() {
-        TabPane tabs = new TabPane();
-        tabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        tabs.getStyleClass().add("sav-tab-pane");
+    private CustomTabPane createCustomTabPane() {
+        CustomTabPane customTabs = new CustomTabPane();
+        customTabs.getStyleClass().add("sav-custom-tab-pane");
         
         // Onglet 1: Suivi des Réparations
-        Tab repairTab = new Tab("🔧 Suivi Réparations");
-        repairTab.setContent(repairTrackingView);
-        repairTab.getStyleClass().add("sav-tab");
+        CustomTabPane.CustomTab repairTab = new CustomTabPane.CustomTab(
+            "Suivi Réparations", 
+            repairTrackingView, 
+            "🔧"
+        );
+        customTabs.addTab(repairTab);
         
         // Onglet 2: Gestion RMA
-        Tab rmaTab = new Tab("📦 Gestion RMA");
-        rmaTab.setContent(rmaManagementView);
-        rmaTab.getStyleClass().add("sav-tab");
+        CustomTabPane.CustomTab rmaTab = new CustomTabPane.CustomTab(
+            "Gestion RMA", 
+            rmaManagementView, 
+            "📦"
+        );
+        customTabs.addTab(rmaTab);
         
         // Onglet 3: Scanner QR (temporairement désactivé)
-        // Tab scannerTab = new Tab("📱 Scanner Inventaire");
-        // scannerTab.setContent(qrCodeScannerView);
-        // scannerTab.getStyleClass().add("sav-tab");
-        
-        tabs.getTabs().addAll(repairTab, rmaTab);
+        // CustomTabPane.CustomTab scannerTab = new CustomTabPane.CustomTab(
+        //     "Scanner Inventaire", 
+        //     qrCodeScannerView, 
+        //     "📱"
+        // );
+        // customTabs.addTab(scannerTab);
         
         // Sélectionner le premier onglet par défaut
-        tabs.getSelectionModel().select(0);
+        customTabs.selectTab(0);
         
-        return tabs;
+        System.out.println("✅ CustomTabPane créé pour SAV avec boutons de navigation personnalisés");
+        
+        return customTabs;
     }
     
     
@@ -214,8 +223,8 @@ public class SAVManagerView extends BorderPane {
      * Sélectionner un onglet spécifique par programme
      */
     public void selectTab(int tabIndex) {
-        if (tabIndex >= 0 && tabIndex < tabPane.getTabs().size()) {
-            tabPane.getSelectionModel().select(tabIndex);
+        if (tabIndex >= 0 && tabIndex < customTabPane.getTabs().size()) {
+            customTabPane.selectTab(tabIndex);
         }
     }
     
@@ -241,9 +250,9 @@ public class SAVManagerView extends BorderPane {
      * Modifier la demande sélectionnée dans l'onglet actif
      */
     private void editSelectedRequest() {
-        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+        CustomTabPane.CustomTab selectedTab = customTabPane.getSelectedTab();
         if (selectedTab != null) {
-            if (selectedTab.getText().equals("🔧 Suivi Réparations") && repairTrackingView != null) {
+            if (selectedTab.getText().equals("Suivi Réparations") && repairTrackingView != null) {
                 // Déléguer à la vue de suivi des réparations
                 repairTrackingView.editSelectedRequest();
             } else {
@@ -261,7 +270,7 @@ public class SAVManagerView extends BorderPane {
      * Exporter les données de l'onglet actif
      */
     private void exportData() {
-        Tab selectedTab = tabPane.getSelectionModel().getSelectedItem();
+        CustomTabPane.CustomTab selectedTab = customTabPane.getSelectedTab();
         if (selectedTab != null) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Export");

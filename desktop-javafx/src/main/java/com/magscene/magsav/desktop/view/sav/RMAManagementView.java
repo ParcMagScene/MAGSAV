@@ -6,33 +6,30 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.application.Platform;
-import javafx.concurrent.Task;
 
-import com.magscene.magsav.desktop.model.ServiceRequest;
-// import com.magscene.magsav.desktop.model.Equipment; // Supprimé après refactoring
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.StandardColors;
 import com.magscene.magsav.desktop.util.AlertUtil;
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.component.DetailPanel;
+import com.magscene.magsav.desktop.dialog.sav.RMADialog;
+import javafx.scene.image.Image;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
- * Interface de gestion des RMA (Return Merchandise Authorization)
- * Permet la gestion complète des retours matériel avec traçabilité
+ * Interface de gestion des RMA (Return Merchandise Authorization) - VERSION SIMPLIFIÉE
+ * Structure épurée : BorderPane → DetailPanelContainer directement
  */
-public class RMAManagementView extends VBox {
+public class RMAManagementView extends BorderPane {
     
     private final ApiService apiService;
     private final ObservableList<RMARecord> rmaRecords;
     private final TableView<RMARecord> rmaTable;
-    private final TextArea rmaDetailsArea;
     
     // Filtres spécifiques aux RMA
     private final ComboBox<String> rmaStatusFilter;
@@ -45,19 +42,17 @@ public class RMAManagementView extends VBox {
         this.apiService = new ApiService();
         this.rmaRecords = FXCollections.observableArrayList();
         
-        // Configuration principale
-        this.setSpacing(0); // AUCUN ESPACEMENT comme Ventes et Installations
-        this.setPadding(new Insets(5)); // Padding minimal
+        // Configuration principale - STRUCTURE SIMPLIFIÉE BorderPane
         this.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
         // Initialisation des composants
         this.rmaStatusFilter = new ComboBox<>();
         this.rmaTypeFilter = new ComboBox<>();
         this.rmaSearchField = new TextField();
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(this.rmaSearchField);
         this.rmaDateFrom = new DatePicker();
         this.rmaDateTo = new DatePicker();
         this.rmaTable = createRMATable();
-        this.rmaDetailsArea = new TextArea();
         
         // Construction de l'interface
         setupRMAInterface();
@@ -68,108 +63,21 @@ public class RMAManagementView extends VBox {
     }
     
     private void setupRMAInterface() {
-        // En-tête spécifique aux RMA
-        HBox headerBox = createRMAHeaderSection();
+        // STRUCTURE SIMPLIFIÉE - Direct DetailPanelContainer comme RepairTrackingView; // Configuration de la table RMA
+        rmaTable.setPrefHeight(400);
+        rmaTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
+        // rmaTable supprimé - Style géré par CSS
+        DetailPanelContainer containerWithDetail = new DetailPanelContainer(rmaTable);
         
-        // Section de filtres RMA
-        VBox filtersSection = createRMAFiltersSection();
+        // Configuration directe - INTERFACE ÉPURÉE
+        setCenter(containerWithDetail);
         
-        // Section principale avec tableau et workflow RMA
-        HBox mainSection = createRMAMainSection();
-        
-        // Barre d'actions RMA
-        HBox actionsBar = createRMAActionsBar();
-        
-        this.getChildren().addAll(headerBox, filtersSection, mainSection, actionsBar);
-    }
-    
-    private HBox createRMAHeaderSection() {
-        HBox headerBox = new HBox(20);
-        headerBox.setAlignment(Pos.CENTER_LEFT);
-        headerBox.setPadding(new Insets(0, 0, 5, 0)); // Padding minimal
-        
-        Label titleLabel = new Label("📦 Gestion des RMA (Return Merchandise Authorization)");
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;");
-        
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        // Indicateurs spécifiques aux RMA
-        VBox statsBox = new VBox(3);
-        statsBox.setAlignment(Pos.CENTER_RIGHT);
-        
-        Label pendingLabel = new Label("⏳ En attente: 0");
-        pendingLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #f39c12;");
-        
-        Label processedLabel = new Label("✅ Traités: 0");
-        processedLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #27ae60;");
-        
-        statsBox.getChildren().addAll(pendingLabel, processedLabel);
-        
-        headerBox.getChildren().addAll(titleLabel, spacer, statsBox);
-        return headerBox;
-    }
-    
-    private VBox createRMAFiltersSection() {
-        VBox filtersSection = new VBox(10);
-        filtersSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.2), 6, 0, 0, 2);");
-        
-        Label filtersTitle = new Label("🔍 Filtres RMA");
-        filtersTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #c0392b;");
-        
-        // Configuration des filtres spécifiques aux RMA
+        // Configuration des filtres (logique conservée pour synchronisation toolbar)
         setupRMAFilterComboBoxes();
-        
-        // Ligne de recherche RMA
-        HBox searchBox = new HBox(10);
-        searchBox.setAlignment(Pos.CENTER_LEFT);
-        
-        rmaSearchField.setPromptText("N° RMA, équipement, motif...");
-        rmaSearchField.setPrefWidth(300);
-        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(rmaSearchField);
-        
-        searchBox.getChildren().addAll(new Label("Rechercher :"), rmaSearchField);
-        
-        // Ligne de filtres par statut et type
-        HBox combosBox = new HBox(15);
-        combosBox.setAlignment(Pos.CENTER_LEFT);
-        
-        combosBox.getChildren().addAll(
-            createRMAFilterGroup("Statut RMA :", rmaStatusFilter),
-            createRMAFilterGroup("Type de retour :", rmaTypeFilter)
-        );
-        
-        // Ligne de filtres par dates
-        HBox datesBox = new HBox(15);
-        datesBox.setAlignment(Pos.CENTER_LEFT);
-        
-        Button thisMonthBtn = new Button("Ce mois");
-        thisMonthBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px;");
-        thisMonthBtn.setOnAction(e -> {
-            LocalDate today = LocalDate.now();
-            rmaDateFrom.setValue(today.withDayOfMonth(1));
-            rmaDateTo.setValue(today);
-            applyRMAFilters();
-        });
-        
-        datesBox.getChildren().addAll(
-            new Label("Période RMA :"), rmaDateFrom, new Label("à"), rmaDateTo, thisMonthBtn
-        );
-        
-        filtersSection.getChildren().addAll(filtersTitle, searchBox, combosBox, datesBox);
-        return filtersSection;
     }
     
-    private VBox createRMAFilterGroup(String labelText, ComboBox<String> combo) {
-        VBox group = new VBox(3);
-        Label label = new Label(labelText);
-        label.setStyle("-fx-font-size: 11px; -fx-text-fill: #c0392b;");
-        combo.setPrefWidth(150);
-        combo.setStyle("-fx-background-radius: 4px; -fx-border-color: #e74c3c; -fx-border-radius: 4px;");
-        group.getChildren().addAll(label, combo);
-        return group;
-    }
-    
+    // SUPPRESSION createRMAHeaderSection() - Plus de statistiques comme RepairTrackingView
+
     private void setupRMAFilterComboBoxes() {
         // Statuts RMA
         rmaStatusFilter.getItems().addAll(
@@ -186,134 +94,7 @@ public class RMAManagementView extends VBox {
         rmaTypeFilter.setValue("Tous types");
     }
     
-    private HBox createRMAMainSection() {
-        HBox mainSection = new HBox(15);
-        mainSection.setAlignment(Pos.TOP_LEFT);
-        
-        // Tableau des RMA (60% de la largeur)
-        VBox tableSection = createRMATableSection();
-        
-        // Panneau de workflow RMA (40% de la largeur)
-        VBox workflowSection = createRMAWorkflowSection();
-        
-        HBox.setHgrow(tableSection, Priority.ALWAYS);
-        workflowSection.setPrefWidth(400);
-        
-        mainSection.getChildren().addAll(tableSection, workflowSection);
-        return mainSection;
-    }
-    
-    private VBox createRMATableSection() {
-        VBox tableSection = new VBox(10);
-        tableSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
-        
-        Label tableTitle = new Label("📋 Registre des RMA");
-        tableTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
-        
-        rmaTable.setPrefHeight(400);
-        rmaTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        
-        tableSection.getChildren().addAll(tableTitle, rmaTable);
-        VBox.setVgrow(rmaTable, Priority.ALWAYS);
-        
-        return tableSection;
-    }
-    
-    private VBox createRMAWorkflowSection() {
-        VBox workflowSection = new VBox(15);
-        workflowSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(231,76,60,0.2), 6, 0, 0, 2);");
-        
-        Label workflowTitle = new Label("⚙️ Workflow RMA");
-        workflowTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #c0392b;");
-        
-        // Étapes du workflow RMA avec indicateurs visuels
-        VBox stepsBox = createRMAStepsIndicator();
-        
-        // Zone de détails RMA
-        Label detailsLabel = new Label("📄 Détails RMA sélectionné");
-        detailsLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
-        
-        rmaDetailsArea.setPrefHeight(200);
-        rmaDetailsArea.setEditable(false);
-        rmaDetailsArea.setWrapText(true);
-        rmaDetailsArea.setStyle("-fx-background-color: #fdf2f2; -fx-border-color: #e74c3c; -fx-border-radius: 4px; -fx-font-family: 'Courier New'; -fx-font-size: 11px;");
-        rmaDetailsArea.setPromptText("Sélectionnez un RMA pour voir les détails...");
-        
-        // Actions rapides RMA
-        HBox quickActionsBox = createRMAQuickActions();
-        
-        workflowSection.getChildren().addAll(workflowTitle, stepsBox, detailsLabel, rmaDetailsArea, quickActionsBox);
-        VBox.setVgrow(rmaDetailsArea, Priority.ALWAYS);
-        
-        return workflowSection;
-    }
-    
-    private VBox createRMAStepsIndicator() {
-        VBox stepsBox = new VBox(8);
-        stepsBox.setStyle("-fx-background-color: #fdf2f2; -fx-padding: 10px; -fx-background-radius: 6px;");
-        
-        String[] steps = {
-            "1️⃣ Initiation RMA",
-            "2️⃣ Autorisation", 
-            "3️⃣ Expédition retour",
-            "4️⃣ Réception & analyse",
-            "5️⃣ Résolution",
-            "6️⃣ Clôture"
-        };
-        
-        for (String step : steps) {
-            Label stepLabel = new Label(step);
-            stepLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #7f8c8d; -fx-padding: 3px 0;");
-            stepsBox.getChildren().add(stepLabel);
-        }
-        
-        return stepsBox;
-    }
-    
-    private HBox createRMAQuickActions() {
-        HBox actionsBox = new HBox(8);
-        actionsBox.setAlignment(Pos.CENTER);
-        
-        Button authorizeBtn = new Button("✅ Autoriser");
-        authorizeBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 10px; -fx-padding: 5px 8px;");
-        
-        Button receiveBtn = new Button("📦 Marquer reçu");
-        receiveBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 10px; -fx-padding: 5px 8px;");
-        
-        Button closeBtn = new Button("🔒 Clôturer");
-        closeBtn.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 10px; -fx-padding: 5px 8px;");
-        
-        // Désactivés par défaut, activés selon la sélection
-        authorizeBtn.setDisable(true);
-        receiveBtn.setDisable(true);
-        closeBtn.setDisable(true);
-        
-        actionsBox.getChildren().addAll(authorizeBtn, receiveBtn, closeBtn);
-        return actionsBox;
-    }
-    
-    private HBox createRMAActionsBar() {
-        HBox actionsBar = new HBox(10);
-        actionsBar.setAlignment(Pos.CENTER_LEFT);
-        actionsBar.setPadding(new Insets(15, 0, 0, 0));
-        
-        Button newRMABtn = new Button("📦 Nouveau RMA");
-        newRMABtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 6px; -fx-font-weight: bold; -fx-padding: 10px 15px;");
-        newRMABtn.setOnAction(e -> openNewRMADialog());
-        
-        Button printLabelBtn = new Button("🏷️ Imprimer étiquette");
-        printLabelBtn.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
-        
-        Button generateReportBtn = new Button("📊 Rapport RMA");
-        generateReportBtn.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
-        
-        Button refreshBtn = new Button("🔄 Actualiser");
-        refreshBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
-        refreshBtn.setOnAction(e -> loadRMARecords());
-        
-        actionsBar.getChildren().addAll(newRMABtn, printLabelBtn, generateReportBtn, refreshBtn);
-        return actionsBar;
-    }
+    // SUPPRESSION createRMAMainSection() et createRMATableSection(); // Configuration directe dans setupRMAInterface(); // Méthodes de filtres et actions supprimées - Maintenant gérées par la toolbar adaptative SAVManagerView
     
     private TableView<RMARecord> createRMATable() {
         TableView<RMARecord> table = new TableView<>();
@@ -365,33 +146,78 @@ public class RMAManagementView extends VBox {
             return new javafx.beans.property.SimpleStringProperty(value != null ? String.format("%.0f €", value) : "N/A");
         });
         
-        table.getColumns().addAll(rmaNumberCol, equipmentCol, reasonCol, statusCol, customerCol, dateCol, valueCol);
+        // Ajout individuel des colonnes pour éviter les warnings de generic array
+        table.getColumns().add(rmaNumberCol);
+        table.getColumns().add(equipmentCol);
+        table.getColumns().add(reasonCol);
+        table.getColumns().add(statusCol);
+        table.getColumns().add(customerCol);
+        table.getColumns().add(dateCol);
+        table.getColumns().add(valueCol);
+        
+        // Classe CSS générique pour uniformiser le style
+        table.getStyleClass().add("equipment-table");
         
         // Style conditionnel pour les lignes
         table.setRowFactory(tv -> {
-            TableRow<RMARecord> row = new TableRow<>();
+            TableRow<RMARecord> row = new TableRow<RMARecord>();
             
-            // Runnable pour mettre à jour le style
+            // Méthode pour appliquer le style approprié
             Runnable updateStyle = () -> {
                 if (row.isEmpty() || row.getItem() == null) {
                     row.setStyle("");
-                } else if (row.isSelected()) {
-                    // Style de sélection prioritaire (#142240)
-                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
-                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    return;
+                }
+                
+                // Priorité 1: Si sélectionné, couleur de sélection MAGSAV
+                if (row.isSelected()) {
+                    // Style de sélection plus visible avec bordure
+                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
                                "-fx-border-width: 2px;");
-                } else {
-                    // Style basé sur le statut RMA
-                    String backgroundColor = getRMARowBackgroundColor(row.getItem().getStatus());
-                    row.setStyle(backgroundColor + "; -fx-border-color: #ecf0f1; -fx-border-width: 0 0 1 0;");
+                    return;
+                }
+                
+                // Priorité 2: Couleur selon le statut (seulement si pas sélectionné)
+                String status = row.getItem().getStatus();
+                
+                switch (status) {
+                    case "PENDING":
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                        break;
+                    case "APPROVED":
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                        break;
+                    case "IN_TRANSIT":
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                        break;
+                    case "COMPLETED":
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                        break;
+                    case "REJECTED":
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                        break;
+                    default:
+                        row.setStyle("");
                 }
             };
             
-            // Écouter les changements de sélection et d'item
-            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
-            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            // Mise à jour du style quand l'item change
             row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
+            // Mise à jour du style quand la sélection change
+            row.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> updateStyle.run());
+            
+            // Appel initial pour s'assurer que le style est appliqué
+            updateStyle.run();
+            
+            // Double-clic pour consultation en mode lecture seule
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    openRMADetails();
+                }
+            });
             
             return row;
         });
@@ -400,14 +226,7 @@ public class RMAManagementView extends VBox {
     }
     
     private void setupRMAEventHandlers() {
-        // Gestionnaire de sélection RMA
-        rmaTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                displayRMADetails(newSelection);
-            }
-        });
-        
-        // Gestionnaires de filtres
+        // La gestion de la sélection et l'affichage des détails sont maintenant; // automatiquement gérés par le DetailPanelContainer; // Gestionnaires de filtres
         rmaSearchField.textProperty().addListener((obs, oldText, newText) -> applyRMAFilters());
         rmaStatusFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyRMAFilters());
         rmaTypeFilter.valueProperty().addListener((obs, oldVal, newVal) -> applyRMAFilters());
@@ -416,37 +235,10 @@ public class RMAManagementView extends VBox {
     }
     
     private void applyRMAFilters() {
-        // Implémentation du filtrage des RMA
-        // Logique de filtrage basée sur les critères sélectionnés
+        // Implémentation du filtrage des RMA; // Logique de filtrage basée sur les critères sélectionnés
     }
     
-    private void displayRMADetails(RMARecord rma) {
-        StringBuilder details = new StringBuilder();
-        
-        details.append("═══ DÉTAILS RMA ═══\n\n");
-        details.append("📦 N° RMA: ").append(rma.getRmaNumber()).append("\n");
-        details.append("📊 Statut: ").append(getRMAStatusIcon(rma.getStatus())).append(" ").append(rma.getStatus()).append("\n");
-        details.append("🖥️ Équipement: ").append(rma.getEquipmentName()).append("\n");
-        details.append("📝 Motif: ").append(rma.getReturnReason()).append("\n");
-        details.append("👤 Client: ").append(rma.getCustomerName()).append("\n\n");
-        
-        if (rma.getEstimatedValue() != null) {
-            details.append("💰 Valeur estimée: ").append(String.format("%.2f €", rma.getEstimatedValue())).append("\n");
-        }
-        
-        details.append("📅 Créé le: ").append(rma.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n\n");
-        
-        if (rma.getDescription() != null && !rma.getDescription().trim().isEmpty()) {
-            details.append("═══ DESCRIPTION ═══\n");
-            details.append(rma.getDescription()).append("\n\n");
-        }
-        
-        details.append("═══ WORKFLOW ═══\n");
-        details.append("• Prochaine étape recommandée selon le statut actuel\n");
-        details.append("• Historique des actions (à implémenter)\n");
-        
-        rmaDetailsArea.setText(details.toString());
-    }
+    // L'affichage des détails RMA est maintenant géré par le volet de visualisation; // via l'implémentation DetailPanelProvider de RMARecord
     
     private String getRMAStatusIcon(String status) {
         switch (status.toUpperCase()) {
@@ -464,18 +256,19 @@ public class RMAManagementView extends VBox {
     }
     
     private String getRMARowBackgroundColor(String status) {
+        // Couleurs compatibles thème sombre avec transparence
         switch (status.toUpperCase()) {
-            case "INITIÉ": return "-fx-background-color: #fff3cd";
-            case "AUTORISÉ": return "-fx-background-color: #d1ecf1"; 
-            case "EN TRANSIT RETOUR": return "-fx-background-color: #e2e3e5";
-            case "REÇU": return "-fx-background-color: #d4edda";
-            case "RÉPARÉ": case "REMPLACÉ": case "REMBOURSÉ": return "-fx-background-color: #d1ecf1";
-            case "REFUSÉ": return "-fx-background-color: #f8d7da";
+            case "INITIÉ": return "-fx-background-color: rgba(255, 193, 7, 0.2)"; // Jaune translucide
+            case "AUTORISÉ": return "-fx-background-color: rgba(13, 202, 240, 0.2)"; // Cyan translucide
+            case "EN TRANSIT RETOUR": return "-fx-background-color: rgba(108, 117, 125, 0.2)"; // Gris translucide
+            case "REÇU": return "-fx-background-color: rgba(40, 167, 69, 0.2)"; // Vert translucide
+            case "RÉPARÉ": case "REMPLACÉ": case "REMBOURSÉ": return "-fx-background-color: rgba(32, 201, 151, 0.2)"; // Teal translucide
+            case "REFUSÉ": return "-fx-background-color: rgba(220, 53, 69, 0.2)"; // Rouge translucide
             default: return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor();
         }
     }
     
-    private void loadRMARecords() {
+    public void loadRMARecords() {
         // Simulation de données RMA pour développement
         rmaRecords.clear();
         
@@ -493,28 +286,78 @@ public class RMAManagementView extends VBox {
         );
     }
     
-    private void openNewRMADialog() {
-        // Ouvrir un dialog spécialisé pour créer un nouveau RMA
-        Dialog<RMARecord> dialog = new Dialog<>();
-        dialog.setTitle("Nouveau RMA");
-        dialog.setHeaderText("Créer une nouvelle demande de retour matériel");
+    /**
+     * Ouvre les détails d'un RMA en mode lecture seule (double-clic)
+     */
+    private void openRMADetails() {
+        RMARecord selectedRMA = rmaTable.getSelectionModel().getSelectedItem();
+        if (selectedRMA == null) {
+            AlertUtil.showWarning("Aucune sélection", "Veuillez sélectionner un RMA");
+            return;
+        }
         
-        // Configuration du dialogue (implémentation complète nécessaire)
-        ButtonType createButtonType = new ButtonType("Créer RMA", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
+        // Convertir RMARecord en Map pour le dialogue
+        Map<String, Object> rmaData = convertRMARecordToMap(selectedRMA);
         
-        // TODO: Implémenter le formulaire complet de création RMA
-        
-        dialog.showAndWait().ifPresent(rma -> {
-            rmaRecords.add(rma);
-            AlertUtil.showInfo("RMA Créé", "Le RMA " + rma.getRmaNumber() + " a été créé avec succès");
+        // Ouvrir en mode lecture seule
+        RMADialog dialog = new RMADialog("Détails du RMA", rmaData, true);
+        dialog.showAndWait();
+    }
+    
+    /**
+     * Ouvre le dialogue pour créer un nouveau RMA
+     */
+    public void openNewRMADialog() {
+        RMADialog dialog = new RMADialog("Nouveau RMA", null, false);
+        dialog.showAndWait().ifPresent(result -> {
+            // Convertir le résultat en RMARecord et l'ajouter à la liste
+            RMARecord newRMA = convertMapToRMARecord(result);
+            rmaRecords.add(newRMA);
+            AlertUtil.showInfo("RMA Créé", "Le RMA " + newRMA.getRmaNumber() + " a été créé avec succès");
         });
+    }
+    
+    /**
+     * Convertit un RMARecord en Map pour le dialogue
+     */
+    private Map<String, Object> convertRMARecordToMap(RMARecord rma) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("rmaNumber", rma.getRmaNumber());
+        map.put("equipment", rma.getEquipmentName());
+        map.put("reason", rma.getReturnReason());
+        map.put("status", rma.getStatus());
+        map.put("customerName", rma.getCustomerName());
+        map.put("estimatedValue", rma.getEstimatedValue());
+        map.put("requestDate", rma.getCreatedAt());
+        map.put("description", rma.getDescription());
+        // Ajouter d'autres champs selon les besoins
+        return map;
+    }
+    
+    /**
+     * Convertit une Map en RMARecord
+     */
+    private RMARecord convertMapToRMARecord(Map<String, Object> data) {
+        String rmaNumber = String.valueOf(data.get("rmaNumber"));
+        String equipment = String.valueOf(data.get("equipment"));
+        String reason = String.valueOf(data.get("reason"));
+        String status = String.valueOf(data.get("status"));
+        String customerName = String.valueOf(data.get("customerName"));
+        Double estimatedValue = (Double) data.get("estimatedValue");
+        LocalDateTime creationDate = (LocalDateTime) data.get("requestDate");
+        String description = String.valueOf(data.get("description"));
+        
+        if (creationDate == null) {
+            creationDate = LocalDateTime.now();
+        }
+        
+        return new RMARecord(rmaNumber, equipment, reason, status, customerName, estimatedValue, creationDate, description);
     }
     
     /**
      * Classe interne pour représenter un enregistrement RMA
      */
-    public static class RMARecord {
+    public static class RMARecord implements com.magscene.magsav.desktop.component.DetailPanelProvider {
         private String rmaNumber;
         private String equipmentName;
         private String returnReason;
@@ -556,5 +399,207 @@ public class RMAManagementView extends VBox {
         public void setEstimatedValue(Double estimatedValue) { this.estimatedValue = estimatedValue; }
         public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
         public void setDescription(String description) { this.description = description; }
+        
+        // Implémentation de DetailPanelProvider
+        @Override
+        public String getDetailTitle() {
+            return "RMA " + (rmaNumber != null ? rmaNumber : "N/A");
+        }
+
+        @Override
+        public String getDetailSubtitle() {
+            StringBuilder subtitle = new StringBuilder();
+            
+            if (status != null) {
+                subtitle.append(getRMAStatusIcon()).append(" ").append(status);
+            }
+            
+            if (customerName != null && !customerName.trim().isEmpty()) {
+                if (subtitle.length() > 0) subtitle.append(" • ");
+                subtitle.append("Client: ").append(customerName);
+            }
+            
+            if (estimatedValue != null && estimatedValue > 0) {
+                if (subtitle.length() > 0) subtitle.append(" • ");
+                subtitle.append(String.format("%.2f €", estimatedValue));
+            }
+            
+            return subtitle.toString();
+        }
+
+        @Override
+        public Image getDetailImage() {
+            // Pour l'instant, pas d'image spécifique pour les RMA
+            return null;
+        }
+
+        @Override
+        public String getQRCodeData() {
+            // Les QR codes ne concernent que les équipements, pas les RMA
+            return null;
+        }
+
+        @Override
+        public VBox getDetailInfoContent() {
+            VBox content = new VBox(8);
+            
+            // Section informations RMA
+            Label rmaInfoLabel = new Label("📦 Informations RMA");
+            rmaInfoLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: " + StandardColors.DANGER_RED + "; -fx-padding: 5 0;");
+            content.getChildren().add(rmaInfoLabel);
+            
+            if (equipmentName != null && !equipmentName.trim().isEmpty()) {
+                content.getChildren().add(DetailPanel.createInfoRow("Équipement", equipmentName));
+            }
+            
+            if (returnReason != null && !returnReason.trim().isEmpty()) {
+                content.getChildren().add(DetailPanel.createInfoRow("Motif de retour", returnReason));
+            }
+            
+            if (customerName != null && !customerName.trim().isEmpty()) {
+                content.getChildren().add(DetailPanel.createInfoRow("Client", customerName));
+            }
+            
+            if (status != null) {
+                content.getChildren().add(DetailPanel.createInfoRow("Statut", getRMAStatusIcon() + " " + status));
+            }
+            
+            // Section financière
+            if (estimatedValue != null && estimatedValue > 0) {
+                Label costLabel = new Label("💰 Valeur estimée");
+                costLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: " + StandardColors.DANGER_RED + "; -fx-padding: 10 0 5 0;");
+                content.getChildren().add(costLabel);
+                content.getChildren().add(DetailPanel.createInfoRow("Valeur", String.format("%.2f €", estimatedValue)));
+            }
+            
+            // Section historique RMA
+            Label historyLabel = new Label("📅 Historique RMA");
+            historyLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: " + StandardColors.DANGER_RED + "; -fx-padding: 10 0 5 0;");
+            content.getChildren().add(historyLabel);
+            
+            if (createdAt != null) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                content.getChildren().add(DetailPanel.createInfoRow("📅 Créé le", createdAt.format(formatter)));
+            }
+            
+            // Ajout d'un historique détaillé des étapes RMA
+            if (status != null) {
+                content.getChildren().add(DetailPanel.createInfoRow("🔄 Étape actuelle", status));
+                
+                // Simulation d'un historique d'étapes
+                TextArea historyArea = new TextArea(generateRMAHistory());
+                historyArea.setPrefRowCount(4);
+                historyArea.setWrapText(true);
+                historyArea.setEditable(false);
+                // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                content.getChildren().add(historyArea);
+            }
+            
+            if (description != null && !description.trim().isEmpty()) {
+                Label descLabel = new Label("📝 Description");
+                descLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: " + StandardColors.DANGER_RED + "; -fx-padding: 10 0 5 0;");
+                content.getChildren().add(descLabel);
+                
+                TextArea descArea = new TextArea(description);
+                descArea.setPrefRowCount(2);
+                descArea.setWrapText(true);
+                descArea.setEditable(false);
+                // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                content.getChildren().add(descArea);
+            }
+            
+            return content;
+        }
+
+        @Override
+        public String getDetailId() {
+            return rmaNumber != null ? rmaNumber : "";
+        }
+        
+        // Méthodes utilitaires
+        private String getRMAStatusIcon() {
+            if (status == null) return "❓";
+            switch (status.toLowerCase()) {
+                case "initié": return "📋";
+                case "autorisé": return "✅";
+                case "en transit retour": return "🚚";
+                case "reçu": return "📦";
+                case "en cours d'analyse": return "🔍";
+                case "réparé": return "🔧";
+                case "remplacé": return "🔄";
+                case "remboursé": return "💰";
+                case "refusé": return "❌";
+                default: return "❓";
+            }
+        }
+        
+        private String generateRMAHistory() {
+            StringBuilder history = new StringBuilder();
+            history.append("═══ HISTORIQUE DES ÉTAPES ═══\n\n");
+            
+            if (createdAt != null) {
+                history.append("📅 ").append(createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            }
+            
+            // Simulation d'étapes basées sur le statut actuel
+            if (status != null) {
+                switch (status.toLowerCase()) {
+                    case "autorisé":
+                        history.append("✅ RMA autorisé par le service qualité\n");
+                        break;
+                    case "en transit retour":
+                        history.append("✅ RMA autorisé\n");
+                        history.append("🚚 Équipement en cours de retour\n");
+                        break;
+                    case "reçu":
+                        history.append("✅ RMA autorisé\n");
+                        history.append("🚚 Retour effectué\n");
+                        history.append("📦 Équipement reçu en entrepôt\n");
+                        break;
+                    case "en cours d'analyse":
+                        history.append("✅ RMA autorisé\n");
+                        history.append("📦 Équipement reçu\n");
+                        history.append("🔍 Analyse technique en cours\n");
+                        break;
+                    case "réparé":
+                        history.append("✅ Analyse terminée\n");
+                        history.append("🔧 Réparation effectuée\n");
+                        break;
+                    case "remplacé":
+                        history.append("✅ Analyse terminée\n");
+                        history.append("🔄 Remplacement autorisé\n");
+                        break;
+                }
+            }
+            
+            return history.toString();
+        }
+    }
+    
+    // Getters publics pour l'accès aux contrôles de filtrage depuis SAVManagerView
+    public TextField getRmaSearchField() {
+        return rmaSearchField;
+    }
+    
+    public ComboBox<String> getRmaStatusFilter() {
+        return rmaStatusFilter;
+    }
+    
+    public ComboBox<String> getRmaTypeFilter() {
+        return rmaTypeFilter;
+    }
+    
+    public DatePicker getRmaDateFrom() {
+        return rmaDateFrom;
+    }
+    
+    public DatePicker getRmaDateTo() {
+        return rmaDateTo;
+    }
+    
+    // Méthode publique pour appliquer les filtres depuis la toolbar
+    public void applyFiltersFromToolbar() {
+        // Appel à la méthode privée existante
+        applyRMAFilters();
     }
 }

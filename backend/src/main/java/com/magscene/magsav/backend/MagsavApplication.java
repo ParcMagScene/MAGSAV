@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * Fonctionnant avec Java 21 LTS
  */
 @SpringBootApplication
-@EntityScan("com.magscene.magsav.backend.entity")
+@EntityScan({"com.magscene.magsav.backend.entity", "com.magsav.entities"})
 @EnableJpaRepositories("com.magscene.magsav.backend.repository")
 public class MagsavApplication {
     

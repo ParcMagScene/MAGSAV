@@ -12,6 +12,15 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Vue de configuration des spécialités personnel
@@ -98,12 +107,7 @@ public class SpecialtiesConfigView extends VBox {
         this.setSpacing(10);
         this.setPadding(new Insets(5));
         
-        // === TITRE PRINCIPAL ===
-        Label titleLabel = new Label("🎯 Spécialités");
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
-        titleLabel.setTextFill(Color.web("#2c3e50"));
-        
-        // === SECTION 1: GESTION DES SPÉCIALITÉS ===
+        // Plus de titre principal ici - géré par l'onglet; // === SECTION 1: GESTION DES SPÉCIALITÉS ===
         VBox specialtiesSection = createSpecialtiesManagementSection();
         
         // === SECTION 2: ATTRIBUTION PERSONNEL ===
@@ -113,7 +117,6 @@ public class SpecialtiesConfigView extends VBox {
         HBox globalActions = createGlobalActionsBar();
         
         this.getChildren().addAll(
-            titleLabel,
             new Separator(),
             specialtiesSection,
             new Separator(),
@@ -324,8 +327,7 @@ public class SpecialtiesConfigView extends VBox {
     private void loadPersonnelForSpecialty() {
         String selectedSpecialty = specialtySelector.getValue();
         if (selectedSpecialty != null) {
-            // TODO: Charger le personnel depuis l'ApiService
-            // Pour l'instant, on simule avec des données de test
+            // TODO: Charger le personnel depuis l'ApiService; // Pour l'instant, on simule avec des données de test
             loadPersonnelLists(selectedSpecialty);
         }
     }
@@ -390,13 +392,52 @@ public class SpecialtiesConfigView extends VBox {
     }
     
     private void importSpecialties() {
-        // TODO: Implémenter l'import depuis un fichier
-        showInfoAlert("Import", "Fonctionnalité d'import en développement.");
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Importer Configuration des Spécialités");
+        fileChooser.setInitialFileName("specialties_config.json");
+        
+        // Filtres d'extension
+        FileChooser.ExtensionFilter jsonFilter = 
+            new FileChooser.ExtensionFilter("Fichiers JSON (*.json)", "*.json");
+        FileChooser.ExtensionFilter allFilesFilter = 
+            new FileChooser.ExtensionFilter("Tous les fichiers (*.*)", "*.*");
+        fileChooser.getExtensionFilters().addAll(jsonFilter, allFilesFilter);
+        
+        // Obtenir le stage parent
+        javafx.stage.Stage ownerStage = (javafx.stage.Stage) this.getScene().getWindow();
+        java.io.File file = fileChooser.showOpenDialog(ownerStage);
+        
+        if (file != null) {
+            importSpecialtiesFromFile(file);
+        }
     }
     
     private void exportSpecialties() {
-        // TODO: Implémenter l'export vers un fichier
-        showInfoAlert("Export", "Fonctionnalité d'export en développement.");
+        if (specialtiesTable.getItems() == null || specialtiesTable.getItems().isEmpty()) {
+            showWarningAlert("Export Impossible", "Aucune spécialité à exporter", 
+                           "La liste des spécialités est vide. Ajoutez des spécialités avant d'exporter.");
+            return;
+        }
+        
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exporter Configuration des Spécialités");
+        fileChooser.setInitialFileName("specialties_config_" + 
+            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".json");
+        
+        // Filtres d'extension
+        FileChooser.ExtensionFilter jsonFilter = 
+            new FileChooser.ExtensionFilter("Fichiers JSON (*.json)", "*.json");
+        FileChooser.ExtensionFilter allFilesFilter = 
+            new FileChooser.ExtensionFilter("Tous les fichiers (*.*)", "*.*");
+        fileChooser.getExtensionFilters().addAll(jsonFilter, allFilesFilter);
+        
+        // Obtenir le stage parent
+        javafx.stage.Stage ownerStage = (javafx.stage.Stage) this.getScene().getWindow();
+        java.io.File file = fileChooser.showSaveDialog(ownerStage);
+        
+        if (file != null) {
+            exportSpecialtiesToFile(file);
+        }
     }
     
     private void saveConfiguration() {
@@ -428,6 +469,137 @@ public class SpecialtiesConfigView extends VBox {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void showWarningAlert(String title, String header, String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // === MÉTHODES D'IMPORT/EXPORT ===
+
+    /**
+     * Importe les spécialités depuis un fichier JSON
+     */
+    private void importSpecialtiesFromFile(java.io.File file) {
+        try {
+            // Lire le contenu du fichier
+            String content = Files.readString(file.toPath());
+            
+            // Parser le JSON et importer les spécialités; // Pour l'instant, simuler l'import en parsant un format JSON simple
+            if (parseAndImportSpecialties(content)) {
+                // Recharger les données dans l'interface
+                loadData();
+                showSuccessAlert("Import Réussi", 
+                    "Les spécialités ont été importées avec succès depuis : " + file.getName());
+            } else {
+                showErrorAlert("Erreur d'Import", 
+                    "Le fichier JSON semble invalide ou incompatible.");
+            }
+            
+        } catch (IOException e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, 
+                "Erreur lors de l'import des spécialités", e);
+            showErrorAlert("Erreur d'Import", 
+                "Impossible de lire le fichier : " + e.getMessage());
+        } catch (Exception e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, 
+                "Erreur lors de l'import des spécialités", e);
+            showErrorAlert("Erreur d'Import", 
+                "Erreur lors de l'importation : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Exporte les spécialités vers un fichier JSON
+     */
+    private void exportSpecialtiesToFile(java.io.File file) {
+        try {
+            // Générer le JSON des spécialités
+            String jsonContent = generateSpecialtiesJson();
+            
+            // Écrire dans le fichier
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write(jsonContent);
+                writer.flush();
+            }
+            
+            showSuccessAlert("Export Réussi", 
+                "Les spécialités ont été exportées avec succès vers : " + file.getName());
+                
+        } catch (IOException e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, 
+                "Erreur lors de l'export des spécialités", e);
+            showErrorAlert("Erreur d'Export", 
+                "Impossible d'écrire le fichier : " + e.getMessage());
+        } catch (Exception e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, 
+                "Erreur lors de l'export des spécialités", e);
+            showErrorAlert("Erreur d'Export", 
+                "Erreur lors de l'exportation : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Parse et importe les spécialités depuis du contenu JSON
+     */
+    private boolean parseAndImportSpecialties(String jsonContent) {
+        try {
+            // Format JSON simple attendu : {"specialties": ["Spécialité 1", "Spécialité 2", ...]}
+            if (jsonContent.contains("\"specialties\"") && jsonContent.contains("[")) {
+                // Extraction simple des spécialités
+                int start = jsonContent.indexOf("[");
+                int end = jsonContent.indexOf("]");
+                if (start >= 0 && end > start) {
+                    String specialtiesArray = jsonContent.substring(start + 1, end);
+                    String[] specialties = specialtiesArray.split(",");
+                    
+                    for (String specialty : specialties) {
+                        String cleanSpecialty = specialty.trim()
+                            .replace("\"", "");
+                        if (!cleanSpecialty.isEmpty()) {
+                            configManager.addSpecialty(cleanSpecialty);
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, 
+                "Erreur lors du parsing du JSON", e);
+            return false;
+        }
+    }
+
+    /**
+     * Génère le JSON des spécialités actuelles
+     */
+    private String generateSpecialtiesJson() {
+        StringBuilder json = new StringBuilder();
+        json.append("{\n");
+        json.append("  \"metadata\": {\n");
+        json.append("    \"exportDate\": \"").append(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)).append("\",\n");
+        json.append("    \"version\": \"1.0\",\n");
+        json.append("    \"type\": \"specialties_config\"\n");
+        json.append("  },\n");
+        json.append("  \"specialties\": [\n");
+        
+        ObservableList<String> specialties = specialtiesTable.getItems();
+        for (int i = 0; i < specialties.size(); i++) {
+            json.append("    \"").append(specialties.get(i)).append("\"");
+            if (i < specialties.size() - 1) {
+                json.append(",");
+            }
+            json.append("\n");
+        }
+        
+        json.append("  ]\n");
+        json.append("}");
+        return json.toString();
     }
     
     // === CLASSE INTERNE ===

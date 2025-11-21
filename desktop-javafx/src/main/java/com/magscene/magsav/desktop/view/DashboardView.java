@@ -1,5 +1,6 @@
 package com.magscene.magsav.desktop.view;
 
+import com.magscene.magsav.desktop.theme.ThemeManager;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -141,7 +142,7 @@ public class DashboardView extends BorderPane {
         
         // Force programmatique du style pour éviter les overrides CSS
         Platform.runLater(() -> {
-            chartTitle.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2; " +
+            chartTitle.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; -fx-text-fill: #6B71F2; " +
                               "-fx-padding: 8px 12px; -fx-background-radius: 4px;");
         });
         
@@ -196,7 +197,7 @@ public class DashboardView extends BorderPane {
         
         // Force programmatique du style pour éviter les overrides CSS
         Platform.runLater(() -> {
-            chartTitle.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2; " +
+            chartTitle.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; -fx-text-fill: #6B71F2; " +
                               "-fx-padding: 8px 12px; -fx-background-radius: 4px;");
         });
         
@@ -294,8 +295,7 @@ public class DashboardView extends BorderPane {
     }
     
     private void loadDashboardData() {
-        // Simulation du chargement des données en arrière-plan
-        // Dans une vraie implémentation, ceci ferait appel aux services appropriés
+        // Simulation du chargement des données en arrière-plan; // Dans une vraie implémentation, ceci ferait appel aux services appropriés
         System.out.println("📊 Chargement des données du dashboard...");
     }
     
@@ -354,7 +354,7 @@ public class DashboardView extends BorderPane {
             
             // Styliser les labels spécifiques
             pieChart.lookupAll(".chart-pie-label").forEach(node -> {
-                node.setStyle("-fx-text-fill: #6B71F2 !important; -fx-font-size: 12px;");
+                // $varName supprimÃ© - Style gÃ©rÃ© par CSS
                 System.out.println("🏷️ Label de camembert stylisé en #6B71F2");
             });
             

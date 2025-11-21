@@ -7,6 +7,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -48,6 +49,11 @@ public class VehicleDialog extends Dialog<Map<String, Object>> {
     private TextField currentLocationField;
     private TextField assignedDriverField;
     private TextArea notesArea;
+    
+    // Gestion des modes
+    private boolean isEditMode;
+    private boolean isReadOnlyMode;
+    private Map<String, Object> vehicleData;
     
     // Énumérations pour les ComboBox
     public enum VehicleType {
@@ -93,39 +99,116 @@ public class VehicleDialog extends Dialog<Map<String, Object>> {
     }
     
     public VehicleDialog(Map<String, Object> vehicleData) {
-        boolean isEdit = vehicleData != null;
+        this(vehicleData, false);
+    }
+    
+    public VehicleDialog(Map<String, Object> vehicleData, boolean readOnlyMode) {
+        this.isEditMode = vehicleData != null && !readOnlyMode;
+        this.isReadOnlyMode = readOnlyMode;
+        this.vehicleData = vehicleData != null ? vehicleData : new HashMap<>();
         
-        setTitle(isEdit ? "Modifier le vehicule" : "Nouveau vehicule");
-        setHeaderText(isEdit ? "Modification d'un vehicule existant" : "Creation d'un nouveau vehicule");
-        
-        // Boutons
-        ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
-        getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        setupDialog();
         
         // Interface
         VBox content = createFormContent();
         getDialogPane().setContent(content);
         
+        // Appliquer le thème dark au dialogue
+        ThemeManager.getInstance().applyThemeToDialog(getDialogPane());
+        
         // Remplir les champs si modification
-        if (isEdit) {
+        if (vehicleData != null) {
             populateFields(vehicleData);
         }
         
-        // Validation et conversion résultat
-        setResultConverter(dialogButton -> {
-            if (dialogButton == saveButtonType) {
-                return collectFormData();
-            }
-            return null;
-        });
+        // Désactiver les champs si en mode lecture seule
+        if (isReadOnlyMode) {
+            setFieldsReadOnly();
+        }
         
-        // Validation en temps réel
+        // Validation et conversion résultat
         setupValidation();
         
-        // Focus initial
-        nameField.requestFocus();
+        // Focus initial si pas en mode lecture seule
+        if (!isReadOnlyMode && nameField != null) {
+            nameField.requestFocus();
+        }
     }
     
+    private void setupDialog() {
+        if (isReadOnlyMode) {
+            setTitle("Détails du véhicule");
+            setHeaderText("Consultation des informations du véhicule");
+            
+            // Boutons pour mode lecture seule
+            ButtonType editButtonType = new ButtonType("Modifier", ButtonBar.ButtonData.OK_DONE);
+            ButtonType closeButtonType = new ButtonType("Fermer", ButtonBar.ButtonData.CANCEL_CLOSE);
+            getDialogPane().getButtonTypes().addAll(editButtonType, closeButtonType);
+        } else {
+            setTitle(isEditMode ? "Modifier le véhicule" : "Nouveau véhicule");
+            setHeaderText(isEditMode ? "Modification d'un véhicule existant" : "Création d'un nouveau véhicule");
+            
+            // Boutons pour mode édition
+            ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
+            ButtonType cancelButtonType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
+            getDialogPane().getButtonTypes().addAll(saveButtonType, cancelButtonType);
+        }
+        
+        // Taille du dialogue
+        getDialogPane().setPrefSize(800, 700);
+        
+        // Application du thème actuel au dialogue
+        try {
+            String currentTheme = com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentTheme();
+            if ("dark".equals(currentTheme)) {
+                getDialogPane().getStylesheets().add(getClass().getResource("/styles/theme-dark-ultra.css").toExternalForm());
+            } else {
+                getDialogPane().getStylesheets().add(getClass().getResource("/styles/magsav-light.css").toExternalForm());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors du chargement du thème : " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Désactive tous les champs de saisie pour le mode lecture seule
+     */
+    private void setFieldsReadOnly() {
+        // Champs généraux
+        if (nameField != null) nameField.setDisable(true);
+        if (brandField != null) brandField.setDisable(true);
+        if (modelField != null) modelField.setDisable(true);
+        if (licensePlateField != null) licensePlateField.setDisable(true);
+        if (vinField != null) vinField.setDisable(true);
+        if (typeCombo != null) typeCombo.setDisable(true);
+        if (statusCombo != null) statusCombo.setDisable(true);
+        if (fuelTypeCombo != null) fuelTypeCombo.setDisable(true);
+        if (yearField != null) yearField.setDisable(true);
+        
+        // Champs techniques
+        if (mileageField != null) mileageField.setDisable(true);
+        if (maxPayloadField != null) maxPayloadField.setDisable(true);
+        if (dimensionsField != null) dimensionsField.setDisable(true);
+        
+        // Champs maintenance
+        if (insuranceNumberField != null) insuranceNumberField.setDisable(true);
+        if (insuranceExpirationPicker != null) insuranceExpirationPicker.setDisable(true);
+        if (technicalControlExpirationPicker != null) technicalControlExpirationPicker.setDisable(true);
+        if (lastMaintenancePicker != null) lastMaintenancePicker.setDisable(true);
+        if (nextMaintenancePicker != null) nextMaintenancePicker.setDisable(true);
+        if (maintenanceIntervalField != null) maintenanceIntervalField.setDisable(true);
+        
+        // Champs financiers
+        if (purchaseDatePicker != null) purchaseDatePicker.setDisable(true);
+        if (purchasePriceField != null) purchasePriceField.setDisable(true);
+        if (dailyRentalRateField != null) dailyRentalRateField.setDisable(true);
+        if (currentLocationField != null) currentLocationField.setDisable(true);
+        if (assignedDriverField != null) assignedDriverField.setDisable(true);
+        
+        // Notes
+        if (notesArea != null) notesArea.setDisable(true);
+    }
+
     private VBox createFormContent() {
         VBox content = new VBox(15);
         content.setPadding(new Insets(20));
@@ -450,17 +533,41 @@ public class VehicleDialog extends Dialog<Map<String, Object>> {
     }
     
     private void setupValidation() {
-        // Validation du nom obligatoire
-        nameField.textProperty().addListener((obs, oldVal, newVal) -> 
-            validateRequiredField());
-        
-        // Validation des champs numériques
-        setupNumericValidation(yearField, "Année");
-        setupNumericValidation(mileageField, "Kilométrage");
-        setupNumericValidation(maintenanceIntervalField, "Intervalle maintenance");
-        setupDecimalValidation(maxPayloadField, "Charge utile");
-        setupDecimalValidation(purchasePriceField, "Prix d'achat");
-        setupDecimalValidation(dailyRentalRateField, "Tarif location");
+        if (isReadOnlyMode) {
+            // Configuration pour mode lecture seule
+            setResultConverter(buttonType -> {
+                if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                    // Le bouton "Modifier" a été cliqué - ouvrir une nouvelle instance en mode édition
+                    VehicleDialog editDialog = new VehicleDialog(vehicleData, false);
+                    editDialog.showAndWait().ifPresent(result -> {
+                        // Les modifications seront gérées par le dialog d'édition
+                    });
+                    // Ne pas fermer le dialog de lecture seule, retourner null
+                    return null;
+                }
+                return null;
+            });
+        } else {
+            // Configuration pour mode édition normale
+            setResultConverter(buttonType -> {
+                if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                    return collectFormData();
+                }
+                return null;
+            });
+            
+            // Validation pour mode édition; // Validation du nom obligatoire
+            nameField.textProperty().addListener((obs, oldVal, newVal) -> 
+                validateRequiredField());
+            
+            // Validation des champs numériques
+            setupNumericValidation(yearField, "Année");
+            setupNumericValidation(mileageField, "Kilométrage");
+            setupNumericValidation(maintenanceIntervalField, "Intervalle maintenance");
+            setupDecimalValidation(maxPayloadField, "Charge utile");
+            setupDecimalValidation(purchasePriceField, "Prix d'achat");
+            setupDecimalValidation(dailyRentalRateField, "Tarif location");
+        }
     }
     
     private void validateRequiredField() {

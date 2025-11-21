@@ -6,7 +6,6 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -14,10 +13,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.StandardColors;
 import com.magscene.magsav.desktop.dialog.ServiceRequestDialog;
 import com.magscene.magsav.desktop.model.ServiceRequest;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -41,9 +40,7 @@ public class ServiceRequestManagerView extends VBox {
     private ComboBox<String> priorityFilter;
     private ComboBox<String> typeFilter;
     
-    // Boutons d'action (gérés localement dans createSearchAndFilters)
-    
-    // Labels de statistiques
+    // Boutons d'action (gérés localement dans createSearchAndFilters); // Labels de statistiques
     private Label totalLabel;
     private Label openLabel;
     private Label inProgressLabel;
@@ -65,7 +62,7 @@ public class ServiceRequestManagerView extends VBox {
         // Titre et header
         Label titleLabel = new Label("🔧 Demandes SAV");
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
-        titleLabel.setTextFill(Color.web("#2c3e50"));
+        titleLabel.setTextFill(Color.web(StandardColors.getTextColor()));
         
         // Zone de recherche, filtres et actions unifiée
         HBox searchAndFilters = createSearchAndFilters();
@@ -86,26 +83,21 @@ public class ServiceRequestManagerView extends VBox {
      * Configure les listeners pour activer/désactiver les boutons selon la sélection
      */
     private void setupListeners() {
-        // Les boutons sont créés localement dans createSearchAndFilters()
-        // Pour l'instant, le double-clic sur la table ouvre directement le dialogue d'édition
-        // TODO: Améliorer la gestion des boutons si nécessaire
+        // Les boutons sont créés localement dans createSearchAndFilters(); // Pour l'instant, le double-clic sur la table ouvre directement le dialogue d'édition; // TODO: Améliorer la gestion des boutons si nécessaire
     }
     
     private HBox createSearchAndFilters() {
         HBox container = new HBox(15);
         container.setAlignment(Pos.CENTER_LEFT);
         container.setPadding(new Insets(15));
-        container.setStyle("-fx-background-color: #142240; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
-        
-        // Recherche
+        // container supprimé - Style géré par CSS
         VBox searchBox = new VBox(5);
         Label searchLabel = new Label("🔍 Recherche");
         searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         searchField = new TextField();
         searchField.setPromptText("Rechercher par titre, demandeur...");
         searchField.setPrefWidth(300);
-        // Style supprimé - géré par forceSearchFieldColors
-        // Force agressive des couleurs pour contrer le CSS global
+        // Style supprimé - géré par forceSearchFieldColors; // Force agressive des couleurs pour contrer le CSS global
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         searchBox.getChildren().addAll(searchLabel, searchField);
@@ -113,7 +105,7 @@ public class ServiceRequestManagerView extends VBox {
         // Filtre par statut
         VBox statusBox = new VBox(5);
         Label statusLabel = new Label("📊 Statut");
-        statusLabel.setStyle("-fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         statusFilter = new ComboBox<>();
         statusFilter.getItems().addAll(
@@ -121,27 +113,27 @@ public class ServiceRequestManagerView extends VBox {
         );
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(120);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         statusFilter.setOnAction(e -> applyFilters());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
         // Filtre par priorite
         VBox priorityBox = new VBox(5);
         Label priorityLabel = new Label("⚡ Priorité");
-        priorityLabel.setStyle("-fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         priorityLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         priorityFilter = new ComboBox<>();
         priorityFilter.getItems().addAll("Toutes", "Basse", "Moyenne", "Haute", "Urgente");
         priorityFilter.setValue("Toutes");
         priorityFilter.setPrefWidth(120);
-        priorityFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         priorityFilter.setOnAction(e -> applyFilters());
         priorityBox.getChildren().addAll(priorityLabel, priorityFilter);
         
         // Filtre par type
         VBox typeBox = new VBox(5);
         Label typeLabel = new Label("🔧 Type");
-        typeLabel.setStyle("-fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         typeFilter = new ComboBox<>();
         typeFilter.getItems().addAll(
@@ -149,7 +141,7 @@ public class ServiceRequestManagerView extends VBox {
         );
         typeFilter.setValue("Tous");
         typeFilter.setPrefWidth(140);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         typeFilter.setOnAction(e -> applyFilters());
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
@@ -160,20 +152,20 @@ public class ServiceRequestManagerView extends VBox {
         
         HBox buttonRow = new HBox(10);
         Button newButton = new Button("➕ Nouvelle");
-        newButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         newButton.setOnAction(e -> openAddDialog());
         
         Button editButton = new Button("✏️ Modifier");
-        editButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         editButton.setDisable(true);
         editButton.setOnAction(e -> openEditDialog());
         
         Button exportButton = new Button("📊 Exporter");
-        exportButton.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         exportButton.setOnAction(e -> exportToCSV());
         
         Button refreshButton = new Button("🔄 Actualiser");
-        refreshButton.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         refreshButton.setOnAction(e -> loadServiceRequests());
         
         // Le listener de sélection sera ajouté après la création de la table
@@ -188,9 +180,7 @@ public class ServiceRequestManagerView extends VBox {
         container.getChildren().addAll(searchBox, statusBox, priorityBox, typeBox, spacer, actionsBox);
         return container;
     }
-    
 
-    
     private VBox createTableContainer() {
         VBox container = new VBox(10);
         
@@ -205,7 +195,7 @@ public class ServiceRequestManagerView extends VBox {
                 if (row.isEmpty()) {
                     row.setStyle("");
                 } else if (row.isSelected()) {
-                    // Style de sélection prioritaire (#142240)
+                    // Style de sélection uniforme
                     row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
                                "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
                                "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
@@ -432,25 +422,11 @@ public class ServiceRequestManagerView extends VBox {
     }
     
     private Color getStatusColor(String status) {
-        return switch (status) {
-            case "Ouverte" -> Color.web("#fd7e14"); // Orange
-            case "En cours" -> Color.web("#0d6efd"); // Bleu
-            case "Attente pieces" -> Color.web("#ffc107"); // Jaune
-            case "Resolue" -> Color.web("#198754"); // Vert
-            case "Fermee" -> Color.web("#6c757d"); // Gris
-            case "Annulee" -> Color.web("#dc3545"); // Rouge
-            default -> Color.web("#dee2e6"); // Gris clair
-        };
+        return Color.web(StandardColors.getStatusColor(status));
     }
     
     private String getPriorityStyle(String priority) {
-        return switch (priority) {
-            case "Urgente" -> "-fx-text-fill: #dc3545;"; // Rouge
-            case "Haute" -> "-fx-text-fill: #fd7e14;"; // Orange
-            case "Moyenne" -> "-fx-text-fill: #0d6efd;"; // Bleu
-            case "Basse" -> "-fx-text-fill: #198754;"; // Vert
-            default -> "-fx-text-fill: #6c757d;"; // Gris
-        };
+        return "-fx-text-fill: " + StandardColors.getPriorityColor(priority) + ";";
     }
     
     private void openAddDialog() {

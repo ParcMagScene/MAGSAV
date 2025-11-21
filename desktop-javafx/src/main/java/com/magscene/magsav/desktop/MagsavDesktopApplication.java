@@ -1,996 +1,669 @@
 package com.magscene.magsav.desktop;
 
-import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.service.GlobalSearchService;
-import com.magscene.magsav.desktop.service.GlobalSearchService.SearchResult;
-import com.magscene.magsav.desktop.component.GlobalSearchSuggestions;
-import com.magscene.magsav.desktop.component.GlobalSearchSuggestions.NavigationCallback;
-import com.magscene.magsav.desktop.utils.MemoryProfiler;
-import com.magscene.magsav.desktop.utils.ResourceCleanupManager;
-import com.magscene.magsav.desktop.view.DashboardView;
-import com.magscene.magsav.desktop.view.ClientManagerView;
-import com.magscene.magsav.desktop.view.ContractManagerView;
-import com.magscene.magsav.desktop.view.EquipmentManagerView;
-import com.magscene.magsav.desktop.view.SAVManagerView;
-import com.magscene.magsav.desktop.view.PersonnelManagerView;
-import com.magscene.magsav.desktop.view.VehicleManagerView;
-import com.magscene.magsav.desktop.view.salesinstallation.ProjectManagerView;
-import com.magscene.magsav.desktop.view.config.SpecialtiesConfigView;
-import com.magscene.magsav.desktop.view.config.CategoriesConfigView;
-import com.magscene.magsav.desktop.view.planning.PlanningView;
-import com.magscene.magsav.desktop.view.preferences.ThemePreferencesView;
+import com.magscene.magsav.desktop.core.di.ApplicationContext;
+import com.magscene.magsav.desktop.core.navigation.NavigationManager;
+import com.magscene.magsav.desktop.core.navigation.Route;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.component.GlobalSearchComponent;
+
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.geometry.Rectangle2D;
 
 /**
- * Application JavaFX 21 pour MAGSAV-3.0
- * Interface desktop moderne avec Java 21 LTS connectée à l'API Backend
+ * Application JavaFX 21 pour MAGSAV-3.0 - Version Refactorisée
+ * 
+ * Cette version utilise la nouvelle architecture avec :
+ * - Injection de dépendances (ApplicationContext)
+ * - Navigation centralisée (NavigationManager) 
+ * - Configuration centralisée (ApplicationConfig)
+ * 
+ * @version 3.0.0-refactored
  */
 public class MagsavDesktopApplication extends Application {
-
-    private ApiService apiService;
+    
+    private static MagsavDesktopApplication instance;
+    
+    // Architecture refactorisée
+    private ApplicationContext applicationContext;
+    private NavigationManager navigationManager;
+    
+    // UI Components
+    private Stage primaryStage;
     private StackPane mainContent;
     private Label statusLabel;
-    private GlobalSearchService globalSearchService;
-    private GlobalSearchSuggestions globalSearchSuggestions;
+    private Button[] navigationButtons;
     
-    // Boutons de navigation pour gérer les états actifs
-    private Button btnDashboard;
-    private Button btnSAV;
-    private Button btnEquipment;
-    private Button btnClients;
-    private Button btnContracts;
-    private Button btnSales;
-    private Button btnVehicles;
-    private Button btnPersonnel;
-    private Button btnPlanning;
-    private Button btnSettings;
-    private Button[] allNavigationButtons;
-    
-    // Cache des vues pour optimisation performance
-    private DashboardView cachedDashboardView;
-    private EquipmentManagerView cachedEquipmentView;
-    private SAVManagerView cachedSAVView;
-    private ClientManagerView cachedClientView;
-    private ContractManagerView cachedContractView;
-    private ProjectManagerView cachedSalesView;
-    private VehicleManagerView cachedVehicleView;
-    private PersonnelManagerView cachedPersonnelView;
-    private PlanningView cachedPlanningView;
-    
-    /**
-     * Initialise l'ApiService de manière différée pour optimiser les performances de démarrage
-     */
-    private ApiService getApiService() {
-        if (apiService == null) {
-            apiService = new ApiService();
-            System.out.println("✓ ApiService initialisé avec succès (lazy loading)");
-        }
-        return apiService;
-    }
-
     @Override
     public void start(Stage primaryStage) {
-        // Note: ApiService sera initialisé en lazy loading pour optimiser le démarrage
+        try {
+            instance = this;
+            this.primaryStage = primaryStage;
+            
+            System.out.println("Application MAGSAV 3.0 - Démarrage avec architecture refactorisée");
+            
+            // Initialisation de l'architecture
+            initializeArchitecture();
+            
+            // Construction de l'interface
+            buildUserInterface();
+            
+            // Finalisation
+            finalizeApplication();
+            
+            System.out.println("Application MAGSAV 3.0 - Démarrage réussi");
+            
+        } catch (Exception e) {
+            System.err.println("Erreur lors du démarrage: " + e.getMessage());
+            e.printStackTrace();
+            showErrorDialog("Erreur de démarrage", "Impossible de démarrer l'application: " + e.getMessage());
+            Platform.exit();
+        }
+    }
+    
+    /**
+     * Initialisation de l'architecture refactorisée
+     */
+    private void initializeArchitecture() {
+        System.out.println("Initialisation de l'architecture...");
         
-        // Profiling mémoire au démarrage
-        MemoryProfiler.logMemoryUsage("Application Start");
+        // Initialisation du contexte d'application (DI Container)
+        applicationContext = ApplicationContext.getInstance();
+        System.out.println("ApplicationContext initialisé");
         
-        primaryStage.setTitle("MAGSAV-3.0 - Système SAV & Parc Matériel");
-
-        // Layout principal
+        // Initialisation des données de test
+        System.out.println("🧪 Initialisation des données de test...");
+        com.magscene.magsav.desktop.service.TestDataService.getInstance().initialize();
+        
+        // Récupération du NavigationManager via injection
+        navigationManager = applicationContext.getInstance(NavigationManager.class);
+        System.out.println("NavigationManager récupéré");
+        
+        // Enregistrement des factories de vues
+        registerViewFactories();
+    }
+    
+    /**
+     * Enregistrement des factories de vues dans le NavigationManager
+     */
+    private void registerViewFactories() {
+        // Dashboard
+        navigationManager.registerView(Route.DASHBOARD, () -> {
+            try {
+                return new com.magscene.magsav.desktop.view.DashboardView();
+            } catch (Exception e) {
+                return createErrorPane("Dashboard", e);
+            }
+        });
+        
+        // Equipment - Nouvelle vue refactorisée
+        navigationManager.registerView(Route.EQUIPMENT, () -> {
+            try {
+                return new com.magscene.magsav.desktop.view.equipment.NewEquipmentManagerView();
+            } catch (Exception e) {
+                return createErrorPane("Équipements", e);
+            }
+        });
+        
+        // SAV - Nouvelle vue refactorisée  
+        navigationManager.registerView(Route.SAV, () -> {
+            try {
+                return new com.magscene.magsav.desktop.view.sav.NewSAVManagerView();
+            } catch (Exception e) {
+                return createErrorPane("SAV", e);
+            }
+        });
+        
+        // Clients
+        navigationManager.registerView(Route.CLIENTS, () -> {
+            try {
+                // Utilisation temporaire d'un service factice - à remplacer par un vrai service client
+                com.magscene.magsav.desktop.service.ApiService apiService = 
+                    new com.magscene.magsav.desktop.service.ApiService();
+                return new com.magscene.magsav.desktop.view.ClientManagerView(apiService);
+            } catch (Exception e) {
+                return createErrorPane("Clients", e);
+            }
+        });
+        
+        // Contrats
+        navigationManager.registerView(Route.CONTRACTS, () -> {
+            try {
+                com.magscene.magsav.desktop.service.ApiService apiService = 
+                    new com.magscene.magsav.desktop.service.ApiService();
+                return new com.magscene.magsav.desktop.view.ContractManagerView(apiService);
+            } catch (Exception e) {
+                return createErrorPane("Contrats", e);
+            }
+        });
+        
+        // Ventes & Installations
+        navigationManager.registerView(Route.SALES, () -> {
+            try {
+                com.magscene.magsav.desktop.service.ApiService apiService = 
+                    new com.magscene.magsav.desktop.service.ApiService();
+                return new com.magscene.magsav.desktop.view.salesinstallation.ProjectManagerView(apiService);
+            } catch (Exception e) {
+                return createErrorPane("Ventes", e);
+            }
+        });
+        
+        // Véhicules
+        navigationManager.registerView(Route.VEHICLES, () -> {
+            try {
+                com.magscene.magsav.desktop.service.ApiService apiService = 
+                    new com.magscene.magsav.desktop.service.ApiService();
+                return new com.magscene.magsav.desktop.view.VehicleManagerView(apiService);
+            } catch (Exception e) {
+                return createErrorPane("Véhicules", e);
+            }
+        });
+        
+        // Personnel
+        navigationManager.registerView(Route.PERSONNEL, () -> {
+            try {
+                com.magscene.magsav.desktop.service.ApiService apiService = 
+                    new com.magscene.magsav.desktop.service.ApiService();
+                return new com.magscene.magsav.desktop.view.PersonnelManagerView(apiService);
+            } catch (Exception e) {
+                return createErrorPane("Personnel", e);
+            }
+        });
+        
+        // Planning
+        navigationManager.registerView(Route.PLANNING, () -> {
+            try {
+                return new com.magscene.magsav.desktop.view.planning.PlanningManagerView();
+            } catch (Exception e) {
+                return createErrorPane("Planning", e);
+            }
+        });
+        
+        // Fournisseurs
+        navigationManager.registerView(Route.SUPPLIERS, () -> {
+            try {
+                return (Pane) new com.magscene.magsav.desktop.view.supplier.SupplierManagerViewSimple();
+            } catch (Exception e) {
+                return createErrorPane("Fournisseurs", e);
+            }
+        });
+        
+        // Demandes de matériel
+        navigationManager.registerView(Route.MATERIAL_REQUESTS, () -> {
+            try {
+                return (Pane) new com.magscene.magsav.desktop.view.supplier.MaterialRequestManagerViewSimple();
+            } catch (Exception e) {
+                return createErrorPane("Demandes Matériel", e);
+            }
+        });
+        
+        // Commandes groupées
+        navigationManager.registerView(Route.GROUPED_ORDERS, () -> {
+            try {
+                return (Pane) new com.magscene.magsav.desktop.view.supplier.GroupedOrderManagerViewSimple();
+            } catch (Exception e) {
+                return createErrorPane("Commandes Groupées", e);
+            }
+        });
+        
+        // Paramètres
+        navigationManager.registerView(Route.SETTINGS, () -> {
+            try {
+                return new com.magscene.magsav.desktop.view.settings.SettingsView();
+            } catch (Exception e) {
+                return createErrorPane("Paramètres", e);
+            }
+        });
+        
+        System.out.println("Factories de vues enregistrées avec système de fournisseurs");
+    }
+    
+    /**
+     * Construction de l'interface utilisateur
+     */
+    private void buildUserInterface() {
+        System.out.println("Construction de l'interface...");
+        
+        // Configuration de la fenêtre principale
+        setupMainWindow();
+        
+        // Création du layout principal
+        BorderPane root = createMainLayout();
+        
+        // Création de la scène
+        Scene scene = new Scene(root);
+        applyTheme(scene);
+        
+        // Configuration finale
+        primaryStage.setScene(scene);
+        primaryStage.show();
+        
+        // Configuration des hooks de fermeture
+        primaryStage.setOnCloseRequest(e -> {
+            e.consume();
+            showExitConfirmation();
+        });
+        
+        // Navigation initiale vers le dashboard
+        Platform.runLater(() -> {
+            navigationManager.navigateTo(Route.DASHBOARD);
+            if (navigationButtons.length > 0) {
+                updateActiveButton(navigationButtons[0]);
+            }
+        });
+        
+        System.out.println("Interface utilisateur construite");
+    }
+    
+    /**
+     * Configuration de la fenêtre principale
+     */
+    private void setupMainWindow() {
+        primaryStage.setTitle("MAGSAV 3.0 - Architecture Refactorisée");
+        primaryStage.setMinWidth(1200);
+        primaryStage.setMinHeight(800);
+        
+        // Maximiser sur l'écran principal
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        primaryStage.setX(screenBounds.getMinX());
+        primaryStage.setY(screenBounds.getMinY());
+        primaryStage.setWidth(screenBounds.getWidth());
+        primaryStage.setHeight(screenBounds.getHeight());
+    }
+    
+    /**
+     * Création du layout principal
+     */
+    private BorderPane createMainLayout() {
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(5)); // Marges réduites
-
-        // Header global avec barre de recherche unifiée
-        VBox globalHeader = createGlobalHeader();
-        root.setTop(globalHeader);
-
-        // Zone latérale avec menu navigation
-        VBox leftPanel = createLeftPanel();
-        root.setLeft(leftPanel);
-
-        // Contenu principal (occupe maintenant plus d'espace)
+        root.getStyleClass().add("main-layout");
+        
+        // Barre d'outils utilisateur en haut
+        HBox userToolbar = createUserToolbar();
+        root.setTop(userToolbar);
+        
+        // Panel de navigation à gauche
+        VBox navigationPanel = createNavigationPanel();
+        root.setLeft(navigationPanel);
+        
+        // Contenu principal au centre
         mainContent = createMainContent();
         root.setCenter(mainContent);
-
-        // Status bar
+        
+        // Barre de statut en bas
         HBox statusBar = createStatusBar();
         root.setBottom(statusBar);
-
-        // Scene avec système de thèmes intégré
-        Scene scene = new Scene(root, 1400, 900);
         
-        // Initialisation du système de thèmes
-        ThemeManager themeManager = ThemeManager.getInstance();
-        themeManager.setScene(scene);
-        String currentTheme = themeManager.getCurrentTheme();
-        themeManager.applyTheme(currentTheme);
-        System.out.println("✓ Système de thèmes initialisé avec succès - Thème actuel: " + currentTheme);
-        
-        // Initialisation des services de recherche (d'abord sans ApiService)
-        this.globalSearchService = new GlobalSearchService();
-        
-        primaryStage.setScene(scene);
-        
-        // Force tous les TextField à avoir les bonnes couleurs
-        forceAllTextFieldsColors(scene);
-        
-        // Configuration automatique du deuxième écran
-        configureSecondaryScreen(primaryStage);
-        
-        primaryStage.setMaximized(true);
-        primaryStage.show();
-
-        // Initialiser le Dashboard par défaut
-        showDashboardModule();
-        setActiveButton(btnDashboard);
-        
-        // Initialiser la recherche globale avec les vraies données après le chargement
-        initializeGlobalSearchWithRealData();
-
-        // Test de connectivité au démarrage
-        testBackendConnection();
-        
-        // Démarrage du monitoring mémoire (debug)
-        MemoryProfiler.startContinuousMonitoring("MAGSAV-Desktop", 60000); // Toutes les minutes
-
-        // Fermeture propre avec nettoyage des ressources
-        primaryStage.setOnCloseRequest(e -> {
-            System.out.println("🛑 Fermeture de l'application...");
-            
-            if (apiService != null) {
-                apiService.close();
-            }
-            
-            // Nettoyage final des ressources
-            ResourceCleanupManager.getInstance().shutdown();
-            MemoryProfiler.logMemoryUsage("Application Shutdown");
-            
-            Platform.exit();
-        });
-    }
-
-    private VBox createGlobalHeader() {
-        VBox header = new VBox(5);
-        header.setPadding(new Insets(10, 15, 10, 15));
-        header.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
-                       "-fx-border-color: #1D2659; -fx-border-width: 0 0 2 0; " +
-                       "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0, 0, 2);");
-        
-        HBox topRow = new HBox(20);
-        topRow.setAlignment(Pos.CENTER_LEFT);
-        
-        // Logo et titre
-        HBox logoSection = new HBox(10);
-        logoSection.setAlignment(Pos.CENTER_LEFT);
-        
-        Label logoLabel = new Label("📋");
-        logoLabel.setFont(Font.font("System", 24));
-        
-        VBox titleSection = new VBox();
-        titleSection.setAlignment(Pos.CENTER_LEFT);
-        
-        Label titleLabel = new Label("MAGSAV-3.0");
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
-        titleLabel.setTextFill(Color.web("#2c3e50"));
-        
-        Label subtitleLabel = new Label("Système SAV & Parc Matériel");
-        subtitleLabel.setFont(Font.font("System", 10));
-        subtitleLabel.setTextFill(Color.web("#7f8c8d"));
-        
-        titleSection.getChildren().addAll(titleLabel, subtitleLabel);
-        logoSection.getChildren().addAll(logoLabel, titleSection);
-        
-        // Espaceur
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        // Barre de recherche globale
-        HBox globalSearchBox = createGlobalSearchBox();
-        
-        topRow.getChildren().addAll(logoSection, spacer, globalSearchBox);
-        header.getChildren().add(topRow);
-        
-        return header;
+        return root;
     }
     
-    private HBox createGlobalSearchBox() {
-        HBox searchContainer = new HBox(10);
-        searchContainer.setAlignment(Pos.CENTER_RIGHT);
-        searchContainer.setPadding(new Insets(5, 10, 5, 10));
-        searchContainer.getStyleClass().add("search-container");
+    /**
+     * Création du panel de navigation
+     */
+    private VBox createNavigationPanel() {
+        VBox navPanel = new VBox(10);
+        navPanel.getStyleClass().add("navigation-panel");
         
-        // Force le style du conteneur programmatiquement
-        searchContainer.setStyle("-fx-background-color: #142240; -fx-border-color: transparent;");
+        // Titre
+        Label navTitle = new Label("Navigation");
+        navTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
         
-        // Conteneur pour le champ de recherche avec icône intégrée
-        HBox searchFieldContainer = new HBox(8);
-        searchFieldContainer.setAlignment(Pos.CENTER_LEFT);
-        searchFieldContainer.setStyle("-fx-background-color: #142240; -fx-background-radius: 4; " +
-                                    "-fx-border-color: #6B71F2; -fx-border-width: 0.5; -fx-border-radius: 4; " +
-                                    "-fx-padding: 6 10;");
+        // Création des boutons de navigation
+        navigationButtons = createNavigationButtons();
         
-        // Icône loupe intégrée
-        Label searchIcon = new Label("🔍");
-        searchIcon.setStyle("-fx-text-fill: #6B71F2; -fx-font-size: 14px;");
+        navPanel.getChildren().add(navTitle);
+        navPanel.getChildren().add(new Separator());
         
-        // Champ de recherche global
-        TextField globalSearchField = new TextField();
-        globalSearchField.setPromptText("Recherche globale");
-        globalSearchField.setPrefWidth(320);
-        globalSearchField.getStyleClass().addAll("global-search-field", "search-container");
-        
-        // Force TOUS les styles programmatiquement pour surpasser JavaFX
-        String searchFieldStyle = "-fx-background-color: transparent !important; " +
-                                "-fx-control-inner-background: transparent !important; " +
-                                "-fx-text-fill: #6B71F2 !important; " +
-                                "-fx-prompt-text-fill: #6B71F2 !important; " +
-                                "-fx-background-insets: 0; " +
-                                "-fx-background-radius: 0; " +
-                                "-fx-border-color: transparent; " +
-                                "-fx-focus-color: transparent; " +
-                                "-fx-faint-focus-color: transparent;";
-        
-        globalSearchField.setStyle(searchFieldStyle);
-        
-        // Force aussi après rendu pour tous les nodes internes
-        Platform.runLater(() -> {
-            globalSearchField.setStyle(searchFieldStyle);
-            // Force sur TOUS les éléments possibles dans le TextField
-            forceTextFieldColors(globalSearchField);
-            
-            // Re-force après délai pour être absolument sûr
-            Platform.runLater(() -> {
-                Platform.runLater(() -> forceTextFieldColors(globalSearchField));
-            });
-        });
-        // Styles appliqués via CSS ET programmatiquement
-        
-        // Assembler l'icône et le champ de recherche
-        searchFieldContainer.getChildren().addAll(searchIcon, globalSearchField);
-        
-        // Initialisation du composant de suggestions avec callback de navigation
-        this.globalSearchSuggestions = new GlobalSearchSuggestions(globalSearchField, this::handleSearchNavigation);
-        
-        // Zone de résultats (PopOver qui apparaîtra)
-        setupGlobalSearch(globalSearchField);
-        
-        searchContainer.getChildren().add(searchFieldContainer);
-        return searchContainer;
-    }
-    
-    private void setupGlobalSearch(TextField searchField) {
-        // Recherche progressive pendant la frappe
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue != null && newValue.length() >= 2) {
-                performGlobalSearch(newValue);
-            }
-        });
-        
-        // Action sur Entrée pour recherche complète
-        searchField.setOnAction(e -> {
-            String searchText = searchField.getText();
-            if (searchText != null && !searchText.trim().isEmpty()) {
-                performGlobalSearch(searchText);
-                // Ici on pourrait ouvrir une fenêtre de résultats détaillés
-                showGlobalSearchResults(searchText);
-            }
-        });
-    }
-    
-    private void performGlobalSearch(String query) {
-        // TODO: Implémenter la recherche dans tous les modules
-        System.out.println("🔍 Recherche globale: " + query);
-        // Cette méthode sera complétée pour chercher dans:
-        // - Équipements (nom, modèle, série, catégorie)
-        // - Clients (nom, email, SIRET)
-        // - SAV (numéro intervention, description)
-        // - Contrats (numéro, titre, client)
-        // - Véhicules (immatriculation, modèle)
-        // - Personnel (nom, spécialités)
-    }
-    
-    private void showGlobalSearchResults(String query) {
-        // TODO: Afficher une fenêtre popup avec résultats classés par type
-        System.out.println("📊 Affichage résultats détaillés pour: " + query);
-    }
-
-    private VBox createLeftPanel() {
-        VBox leftPanel = new VBox();
-        leftPanel.setPrefWidth(220); // Élargi pour une meilleure lisibilité des boutons
-        leftPanel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + ";");
-        leftPanel.setPadding(new Insets(10));
-        
-        // Sidebar de navigation (sans header maintenant)
-        VBox sidebar = createSidebar();
-        
-        leftPanel.getChildren().add(sidebar);
-        return leftPanel;
-    }
-
-    private VBox createSidebar() {
-        VBox sidebar = new VBox(0);  // Espacement 0 entre les boutons
-        sidebar.getStyleClass().add("sidebar");
-        sidebar.setPadding(new Insets(0));  // Aucune marge
-        sidebar.setPrefWidth(250);
-
-        btnDashboard = new Button("🏠 Dashboard");
-        btnSAV = new Button("🔧 SAV & Interventions");
-        btnEquipment = new Button("📦 Parc Matériel");
-        btnClients = new Button("👥 Clients");
-        btnContracts = new Button("📋 Contrats");
-        btnSales = new Button("💼 Ventes & Installations");
-        btnVehicles = new Button("🚐 Véhicules");
-        btnPersonnel = new Button("👤 Personnel");
-        btnPlanning = new Button("📅 Planning");
-        btnSettings = new Button("⚙ Paramètres");
-
-        // Initialiser le tableau des boutons pour la gestion des états
-        allNavigationButtons = new Button[]{btnDashboard, btnSAV, btnEquipment, btnClients, btnContracts, btnSales, btnVehicles, btnPersonnel, btnPlanning, btnSettings};
-        
-        // Style des boutons
-        for (Button btn : allNavigationButtons) {
-            btn.getStyleClass().add("menu-button");
-            btn.setMaxWidth(Double.MAX_VALUE);
-            btn.setPrefHeight(40);
+        for (Button button : navigationButtons) {
+            navPanel.getChildren().add(button);
         }
-
-        // Actions avec gestion de l'état actif
-        btnDashboard.setOnAction(e -> {
-            setActiveButton(btnDashboard);
-            showDashboardModule();
-        });
-        btnEquipment.setOnAction(e -> {
-            setActiveButton(btnEquipment);
-            showEquipmentModule();
-        });
-        btnSAV.setOnAction(e -> {
-            setActiveButton(btnSAV);
-            showSAVModule();
-        });
-        btnClients.setOnAction(e -> {
-            setActiveButton(btnClients);
-            showClientModule();
-        });
-        btnContracts.setOnAction(e -> {
-            setActiveButton(btnContracts);
-            showContractModule();
-        });
-        btnSales.setOnAction(e -> {
-            setActiveButton(btnSales);
-            showSalesModule();
-        });
-        btnVehicles.setOnAction(e -> {
-            setActiveButton(btnVehicles);
-            showVehicleModule();
-        });
-        btnPersonnel.setOnAction(e -> {
-            setActiveButton(btnPersonnel);
-            showPersonnelModule();
-        });
-        btnPlanning.setOnAction(e -> {
-            setActiveButton(btnPlanning);
-            showPlanningModule();
-        });
-        btnSettings.setOnAction(e -> {
-            setActiveButton(btnSettings);
-            showSettingsModule();
-        });
-
-        sidebar.getChildren().addAll(
-            btnDashboard,
-            btnEquipment,          // Parc Matériel
-            btnSAV,               // SAV & Interventions  
-            btnSales,             // Ventes & Installations
-            btnVehicles,          // Véhicules
-            btnPersonnel,         // Personnel
-            btnPlanning,          // Planning
-            btnClients,           // Clients
-            btnContracts,         // Contrats
-            btnSettings           // Paramètres
-        );
-
-        return sidebar;
+        
+        return navPanel;
     }
-
+    
+    /**
+     * Création des boutons de navigation
+     */
+    private Button[] createNavigationButtons() {
+        Route[] routes = {
+            Route.DASHBOARD, Route.SAV, Route.EQUIPMENT,
+            Route.CLIENTS, Route.CONTRACTS, Route.SALES,
+            Route.VEHICLES, Route.PERSONNEL, Route.PLANNING,
+            Route.SUPPLIERS, Route.MATERIAL_REQUESTS, Route.GROUPED_ORDERS,
+            Route.SETTINGS
+        };
+        
+        Button[] buttons = new Button[routes.length];
+        
+        for (int i = 0; i < routes.length; i++) {
+            Route route = routes[i];
+            Button button = new Button(route.getDisplayName());
+            button.setMaxWidth(Double.MAX_VALUE);
+            button.getStyleClass().add("nav-button");
+            button.setStyle("-fx-padding: 10px; -fx-font-size: 12px;");
+            
+            // Navigation via NavigationManager
+            button.setOnAction(e -> {
+                updateActiveButton(button);
+                navigationManager.navigateTo(route);
+                updateStatus("Navigation: " + route.getDisplayName());
+            });
+            
+            buttons[i] = button;
+        }
+        
+        return buttons;
+    }
+    
+    /**
+     * Création du contenu principal
+     */
     private StackPane createMainContent() {
         StackPane content = new StackPane();
         content.getStyleClass().add("main-content");
-        
-        // Le contenu sera défini après l'initialisation de la sidebar
-        mainContent = content;
+        // content supprimé - Style géré par CSS
+        navigationManager.setViewChangeHandler(view -> {
+            Platform.runLater(() -> {
+                content.getChildren().clear();
+                content.getChildren().add(view);
+                
+                // S'assurer que la vue prend tout l'espace disponible
+                if (view instanceof Region) {
+                    Region region = (Region) view;
+                    region.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+                    region.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+                }
+                
+                // Forcer un refresh de la mise en page
+                content.layout();
+            });
+        });
         
         return content;
     }
-
+    
+    /**
+     * Création de la barre de statut
+     */
     private HBox createStatusBar() {
-        HBox statusBar = new HBox();
-        statusBar.getStyleClass().add("status-bar");
+        HBox statusBar = new HBox(10);
         statusBar.setPadding(new Insets(5, 10, 5, 10));
         statusBar.setAlignment(Pos.CENTER_LEFT);
+        statusBar.getStyleClass().add("status-bar");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
-        statusLabel = new Label("🔄 Connexion au backend...");
-        Label backendUrl = new Label("🌐 http://localhost:8080");
+        statusLabel = new Label("Prêt - MAGSAV 3.0 (Architecture refactorisée)");
+        statusLabel.getStyleClass().add("status-label");
         
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        Label javaVersion = new Label("☕ Java " + System.getProperty("java.version"));
+        Label versionLabel = new Label("v3.0.0-refactored");
+        versionLabel.getStyleClass().add("version-label");
         
-        statusBar.getChildren().addAll(statusLabel, new Label(" | "), backendUrl, spacer, javaVersion);
+        statusBar.getChildren().addAll(statusLabel, spacer, versionLabel);
         return statusBar;
     }
-
+    
     /**
-     * Configure l'affichage automatique sur le deuxième écran si disponible
+     * Application du thème
      */
-    private void configureSecondaryScreen(Stage primaryStage) {
+    private void applyTheme(Scene scene) {
+        // Application du thème unifié
+        UnifiedThemeManager themeManager = UnifiedThemeManager.getInstance();
+        themeManager.applyThemeToScene(scene);
+        
+        // Gestionnaire de fermeture
+        primaryStage.setOnCloseRequest(e -> {
+            e.consume();
+            exitApplication();
+        });
+    }
+    
+    /**
+     * Finalisation de l'application
+     */
+    private void finalizeApplication() {
+        System.out.println("Finalisation de l'application...");
+        
+        // Test de connectivité backend
+        testBackendConnectivity();
+        
+        // Configuration des hooks de fermeture
+        setupShutdownHooks();
+        
+        System.out.println("Application finalisée");
+    }
+    
+    /**
+     * Test de connectivité avec le backend
+     */
+    private void testBackendConnectivity() {
         try {
-            // Obtenir tous les écrans disponibles
-            var screens = Screen.getScreens();
+            var equipmentService = applicationContext.getInstance(
+                com.magscene.magsav.desktop.service.business.EquipmentService.class
+            );
             
-            if (screens.size() > 1) {
-                // Utiliser le deuxième écran (index 1)
-                Screen secondaryScreen = screens.get(1);
-                Rectangle2D bounds = secondaryScreen.getVisualBounds();
-                
-                // Positionner la fenêtre sur le deuxième écran
-                primaryStage.setX(bounds.getMinX());
-                primaryStage.setY(bounds.getMinY());
-                primaryStage.setWidth(bounds.getWidth());
-                primaryStage.setHeight(bounds.getHeight());
-                
-                System.out.println("✓ Application configurée sur le deuxième écran : " + 
-                                   (int)bounds.getWidth() + "x" + (int)bounds.getHeight());
-            } else {
-                System.out.println("ℹ️ Deuxième écran non détecté, utilisation de l'écran principal");
-            }
-        } catch (Exception e) {
-            System.err.println("⚠️ Erreur lors de la configuration du deuxième écran : " + e.getMessage());
-        }
-    }
-
-    /**
-     * Test de connexion au backend au démarrage
-     */
-    private void testBackendConnection() {
-        Task<Boolean> connectionTask = new Task<>() {
-            @Override
-            protected Boolean call() throws Exception {
-                return getApiService().testConnection().get();
-            }
-        };
-
-        connectionTask.setOnSucceeded(e -> {
-            boolean connected = connectionTask.getValue();
-            Platform.runLater(() -> {
-                if (connected) {
-                    statusLabel.setText("✅ Connecté au backend MAGSAV-3.0");
-                    statusLabel.getStyleClass().removeAll("status-error");
-                    statusLabel.getStyleClass().add("status-success");
-                } else {
-                    statusLabel.setText("❌ Backend non disponible - Mode hors ligne");
-                    statusLabel.getStyleClass().removeAll("status-success");
-                    statusLabel.getStyleClass().add("status-error");
-                }
-            });
-        });
-
-        connectionTask.setOnFailed(e -> {
-            Platform.runLater(() -> {
-                statusLabel.setText("❌ Erreur connexion backend");
-                statusLabel.getStyleClass().removeAll("status-success");
-                statusLabel.getStyleClass().add("status-error");
-            });
-        });
-
-        Thread connectionThread = new Thread(connectionTask);
-        connectionThread.setDaemon(true);
-        connectionThread.start();
-    }
-
-    private void showEquipmentModule() {
-        // Lazy loading avec cache pour optimisation performance
-        if (cachedEquipmentView == null) {
-            System.out.println("✓ Chargement initial du gestionnaire d'équipement...");
-            cachedEquipmentView = new EquipmentManagerView(getApiService());
-            MemoryProfiler.logMemoryUsage("Equipment View Created");
-        } else {
-            System.out.println("⚡ Réutilisation cache Equipment View");
-        }
-        
-        mainContent.getChildren().clear();
-        mainContent.getChildren().add(cachedEquipmentView);
-        statusLabel.setText("📦 Module Parc Matériel actif");
-    }
-
-    private void showSAVModule() {
-        // Lazy loading avec cache pour optimisation performance
-        if (cachedSAVView == null) {
-            System.out.println("✓ Chargement initial du gestionnaire SAV...");
-            cachedSAVView = new SAVManagerView(getApiService());
-            MemoryProfiler.logMemoryUsage("SAV View Created");
-        } else {
-            System.out.println("⚡ Réutilisation cache SAV View");
-        }
-        
-        mainContent.getChildren().clear();
-        mainContent.getChildren().add(cachedSAVView);
-        statusLabel.setText("🔧 Module SAV actif");
-    }
-
-    private void showDashboardModule() {
-        // Lazy loading avec cache pour optimisation performance
-        if (cachedDashboardView == null) {
-            cachedDashboardView = new DashboardView();
-        }
-        
-        mainContent.getChildren().clear();
-        mainContent.getChildren().add(cachedDashboardView);
-        statusLabel.setText("🏠 Dashboard actif");
-    }
-
-    private void showClientModule() {
-        // Lazy loading avec cache pour optimisation performance
-        if (cachedClientView == null) {
-            cachedClientView = new ClientManagerView(getApiService());
-        }
-        
-        mainContent.getChildren().clear();
-        mainContent.getChildren().add(cachedClientView);
-        statusLabel.setText("👥 Module Clients actif");
-    }
-
-    private void showContractModule() {
-        // Lazy loading avec cache pour optimisation performance
-        if (cachedContractView == null) {
-            cachedContractView = new ContractManagerView(getApiService());
-        }
-        
-        mainContent.getChildren().clear();
-        mainContent.getChildren().add(cachedContractView);
-        statusLabel.setText("📋 Module Contrats actif");
-    }
-
-    private void showPersonnelModule() {
-        // Lazy loading avec cache pour optimisation performance
-        if (cachedPersonnelView == null) {
-            cachedPersonnelView = new PersonnelManagerView(getApiService());
-        }
-        
-        mainContent.getChildren().clear();
-        mainContent.getChildren().add(cachedPersonnelView);
-        statusLabel.setText("👤 Module Personnel actif");
-    }
-    
-    private void showPlanningModule() {
-        // Lazy loading avec cache pour optimisation performance
-        if (cachedPlanningView == null) {
-            cachedPlanningView = new PlanningView(getApiService());
-        }
-        
-        mainContent.getChildren().clear();
-        mainContent.getChildren().add(cachedPlanningView);
-        statusLabel.setText("📅 Module Planning actif");
-    }
-
-    private void showVehicleModule() {
-        // Lazy loading avec cache pour optimisation performance
-        if (cachedVehicleView == null) {
-            cachedVehicleView = new VehicleManagerView(getApiService());
-        }
-        
-        mainContent.getChildren().clear();
-        mainContent.getChildren().add(cachedVehicleView);
-        statusLabel.setText("🚐 Module Véhicules actif");
-    }
-
-    private void showSalesModule() {
-        // Lazy loading avec cache pour optimisation performance
-        if (cachedSalesView == null) {
-            cachedSalesView = new ProjectManagerView(getApiService());
-        }
-        
-        mainContent.getChildren().clear();
-        mainContent.getChildren().add(cachedSalesView);
-        statusLabel.setText("💼 Module Ventes & Installations actif");
-    }
-
-    /**
-     * Gère la navigation depuis les résultats de recherche globale
-     */
-    private void handleSearchNavigation(SearchResult result) {
-        System.out.println("🎯 Navigation vers: " + result.getType() + " - " + result.getName());
-        
-        switch (result.getType()) {
-            case "Client":
-                setActiveButton(btnClients);
-                showClientModule();
-                // Sélectionner et ouvrir la fiche du client (après création et chargement de la vue)
-                new Thread(() -> {
-                    try { Thread.sleep(500); } catch (InterruptedException e) {}
-                    Platform.runLater(() -> {
-                        if (cachedClientView != null) {
-                            cachedClientView.selectAndViewClient(result.getName());
-                        }
-                    });
-                }).start();
-                break;
-                
-            case "Matériel":
-                setActiveButton(btnEquipment);
-                showEquipmentModule();
-                // Sélectionner et ouvrir la fiche de l'équipement (après création et chargement de la vue)
-                new Thread(() -> {
-                    try { Thread.sleep(500); } catch (InterruptedException e) {}
-                    Platform.runLater(() -> {
-                        if (cachedEquipmentView != null) {
-                            cachedEquipmentView.selectAndViewEquipment(result.getName());
-                        }
-                    });
-                }).start();
-                break;
-                
-            case "Projet":
-                setActiveButton(btnSales);
-                showSalesModule();
-                // Sélectionner et ouvrir la fiche du projet (après création et chargement de la vue)
-                new Thread(() -> {
-                    try { Thread.sleep(500); } catch (InterruptedException e) {}
-                    Platform.runLater(() -> {
-                        if (cachedSalesView != null) {
-                            cachedSalesView.selectAndViewProject(result.getName());
-                        }
-                    });
-                }).start();
-                break;
-                
-            case "Personnel":
-                setActiveButton(btnPersonnel);
-                showPersonnelModule();
-                // TODO: Sélectionner la personne spécifique dans la table
-                break;
-                
-            case "Intervention":
-                setActiveButton(btnSAV);
-                showSAVModule();
-                // TODO: Sélectionner l'intervention spécifique dans la table
-                break;
-                
-            default:
-                // Fallback: ouvrir le dashboard
-                setActiveButton(btnDashboard);
-                showDashboardModule();
-                System.out.println("⚠️ Type de résultat non reconnu: " + result.getType());
-                break;
-        }
-    }
-
-    private void showSettingsModule() {
-        mainContent.getChildren().clear();
-        
-        // Container principal avec header unifié
-        VBox settingsContainer = new VBox(10);
-        settingsContainer.setPadding(new Insets(5));
-        settingsContainer.getStyleClass().add("settings-container");
-        
-        // Header unifié selon modèle Clients
-        VBox header = createSettingsHeader();
-        
-        // Créer une vue intégrée des préférences avec onglets
-        TabPane settingsTabPane = new TabPane();
-        settingsTabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        settingsTabPane.getStyleClass().add("settings-tab-pane");
-        
-        // Onglet Thèmes intégré
-        Tab themeTab = new Tab("🎨 Thèmes");
-        ThemePreferencesView themePreferencesView = new ThemePreferencesView();
-        ScrollPane themeScrollPane = new ScrollPane(themePreferencesView);
-        themeScrollPane.setFitToWidth(true);
-        themeScrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
-        themeTab.setContent(themeScrollPane);
-        
-        // Onglet Configuration des Spécialités
-        Tab specialtiesTab = new Tab("🎯 Spécialités Personnel");
-        SpecialtiesConfigView specialtiesView = new SpecialtiesConfigView(getApiService());
-        specialtiesTab.setContent(specialtiesView);
-        
-        // Onglet Configuration des Catégories d'Équipement
-        Tab categoriesTab = new Tab("🗂️ Catégories Équipement");
-        CategoriesConfigView categoriesView = new CategoriesConfigView(getApiService());
-        categoriesTab.setContent(categoriesView);
-        
-        settingsTabPane.getTabs().addAll(themeTab, specialtiesTab, categoriesTab);
-        
-        // Forcer le style des boutons de navigation des onglets
-        forceTabNavigationButtonsStyle(settingsTabPane);
-        
-        // Assembly du container principal
-        settingsContainer.getChildren().addAll(header, settingsTabPane);
-        VBox.setVgrow(settingsTabPane, Priority.ALWAYS);
-        
-        mainContent.getChildren().add(settingsContainer);
-        statusLabel.setText("⚙️ Module Paramètres & Thèmes actif");
-    }
-    
-    private VBox createSettingsHeader() {
-        VBox header = new VBox(10);
-        header.setPadding(new Insets(0, 0, 20, 0));
-        
-        Label title = new Label("⚙️ Paramètres");
-        title.setFont(Font.font("System", FontWeight.BOLD, 24));
-        title.setTextFill(Color.web("#2c3e50"));
-        
-        header.getChildren().add(title);
-        return header;
-    }
-
-    private void showWelcomeView() {
-        mainContent.getChildren().clear();
-        
-        VBox welcomeView = new VBox(20);
-        welcomeView.setAlignment(Pos.CENTER);
-        
-        Label welcome = new Label("🎉 Bienvenue dans MAGSAV-3.0");
-        welcome.getStyleClass().add("welcome-title");
-        
-        Label javaInfo = new Label("✨ Propulsé par Java " + System.getProperty("java.version"));
-        javaInfo.getStyleClass().add("java-info");
-        
-        VBox features = new VBox(10);
-        features.setAlignment(Pos.CENTER);
-        features.getChildren().addAll(
-            new Label("🧵 Virtual Threads pour performance optimale"),
-            new Label("� QR Codes pour inventaire intelligent"),
-            new Label("🌐 API REST intégrée"),
-            new Label("💾 Base de données H2 embarquée"),
-            new Label("🔒 Interface sécurisée")
-        );
-        
-        Button btnStartEquipment = new Button("🚀 Commencer avec le Parc Matériel");
-        btnStartEquipment.getStyleClass().add("start-button");
-        btnStartEquipment.setOnAction(e -> showEquipmentModule());
-        
-        welcomeView.getChildren().addAll(welcome, javaInfo, features, btnStartEquipment);
-        mainContent.getChildren().add(welcomeView);
-    }
-
-    private void showError(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText("Erreur");
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    /**
-     * Gère l'état actif des boutons de navigation
-     * @param activeButton Le bouton qui doit être marqué comme actif
-     */
-    private void setActiveButton(Button activeButton) {
-        // Retirer la classe "active" de tous les boutons
-        for (Button btn : allNavigationButtons) {
-            btn.getStyleClass().remove("active");
-        }
-        // Ajouter la classe "active" au bouton sélectionné
-        activeButton.getStyleClass().add("active");
-    }
-
-    /**
-     * Initialise la recherche globale avec les vraies données du backend
-     */
-    private void initializeGlobalSearchWithRealData() {
-        // Exécuter en arrière-plan pour ne pas bloquer l'UI
-        javafx.concurrent.Task<Void> initTask = new javafx.concurrent.Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                // Remplacer le service de recherche par une version avec ApiService
-                GlobalSearchService newSearchService = new GlobalSearchService(getApiService());
-                globalSearchService = newSearchService;
-                
-                // Mettre à jour le composant de suggestions
-                Platform.runLater(() -> {
-                    // Note: Les suggestions utilisent déjà le service mis à jour
-                    System.out.println("✅ Recherche globale initialisée avec les données réelles");
+            equipmentService.testBackendConnection()
+                .thenAccept(connected -> Platform.runLater(() -> {
+                    if (connected) {
+                        updateStatus("Backend connecté");
+                    } else {
+                        updateStatus("Backend non disponible");
+                    }
+                }))
+                .exceptionally(error -> {
+                    Platform.runLater(() -> updateStatus("Erreur backend: " + error.getMessage()));
+                    return null;
                 });
-                return null;
-            }
-        };
-        
-        initTask.setOnFailed(e -> {
-            System.err.println("⚠️ Erreur lors de l'initialisation de la recherche globale: " + 
-                             initTask.getException().getMessage());
-        });
-        
-        new Thread(initTask).start();
+        } catch (Exception e) {
+            System.err.println("Erreur test backend: " + e.getMessage());
+            updateStatus("Test backend échoué");
+        }
     }
     
     /**
-     * Force les couleurs de fond et de texte sur tous les éléments d'un TextField
-     * pour s'assurer que même les éléments internes JavaFX utilisent nos couleurs
+     * Configuration des hooks de fermeture
      */
-    private void forceTextFieldColors(TextField textField) {
-        // Utilise la méthode publique
-        forceSearchFieldColors(textField);
+    private void setupShutdownHooks() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Nettoyage des ressources...");
+            if (applicationContext != null) {
+                applicationContext.clear();
+            }
+            System.out.println("Nettoyage terminé");
+        }));
     }
-
+    
+    // === Méthodes utilitaires === //
+    
+    /**
+     * Met à jour le bouton actif
+     */
+    private void updateActiveButton(Button activeButton) {
+        for (Button button : navigationButtons) {
+            button.setStyle("-fx-padding: 10px; -fx-font-size: 12px;");
+        }
+        activeButton.setStyle("-fx-padding: 10px; -fx-font-size: 12px; -fx-background-color: #007acc; -fx-text-fill: white;");
+    }
+    
+    /**
+     * Met à jour le statut
+     */
+    private void updateStatus(String message) {
+        if (statusLabel != null) {
+            Platform.runLater(() -> statusLabel.setText(message));
+        }
+        System.out.println("Status: " + message);
+    }
+    
+    /**
+     * Fermeture de l'application
+     */
+    private void exitApplication() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Quitter MAGSAV 3.0 ?");
+        alert.setContentText("Êtes-vous sûr de vouloir quitter l'application ?");
+        
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                Platform.exit();
+            }
+        });
+    }
+    
+    /**
+     * Création de la barre d'outils utilisateur
+     */
+    private HBox createUserToolbar() {
+        HBox toolbar = new HBox(10);
+        toolbar.setPadding(new Insets(5, 10, 5, 10));
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        toolbar.getStyleClass().add("user-toolbar");
+        
+        // Logo ou titre de l'application
+        Label appTitle = new Label("MAGSAV 3.0");
+        appTitle.getStyleClass().add("app-title");
+        appTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        
+        // Composant de recherche globale
+        GlobalSearchComponent globalSearch = new GlobalSearchComponent();
+        
+        // Spacer pour pousser les boutons à droite
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        // Bouton paramètres
+        Button settingsButton = new Button("⚙️");
+        settingsButton.setTooltip(new Tooltip("Paramètres"));
+        settingsButton.getStyleClass().add("icon-button");
+        settingsButton.setOnAction(e -> {
+            navigationManager.navigateTo(Route.SETTINGS);
+            updateStatus("Navigation: Paramètres");
+        });
+        
+        // Bouton quitter
+        Button exitButton = new Button("❌");
+        exitButton.setTooltip(new Tooltip("Quitter"));
+        exitButton.getStyleClass().add("icon-button");
+        exitButton.setOnAction(e -> showExitConfirmation());
+        
+        toolbar.getChildren().addAll(appTitle, globalSearch, spacer, settingsButton, exitButton);
+        return toolbar;
+    }
+    
+    /**
+     * Affiche la confirmation de sortie
+     */
+    private void showExitConfirmation() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Quitter MAGSAV 3.0 ?");
+        alert.setContentText("Êtes-vous sûr de vouloir quitter l'application ?");
+        
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                Platform.exit();
+            }
+        });
+    }
+    
+    /**
+     * Affiche un dialog d'erreur
+     */
+    private void showErrorDialog(String title, String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
+    }
+    
+    /**
+     * Crée un panneau d'erreur
+     */
+    private Pane createErrorPane(String viewName, Exception error) {
+        VBox errorPane = new VBox(10);
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        errorPane.setAlignment(Pos.CENTER);
+        
+        Label titleLabel = new Label("Erreur: " + viewName);
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #cc0000;");
+        
+        Label messageLabel = new Label("Impossible de charger la vue: " + error.getMessage());
+        messageLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666666;");
+        messageLabel.setWrapText(true);
+        
+        errorPane.getChildren().addAll(titleLabel, messageLabel);
+        return errorPane;
+    }
+    
+    /**
+     * Crée un panneau par défaut
+     */
+    private Pane createDefaultPane(String moduleName) {
+        VBox defaultPane = new VBox(10);
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        defaultPane.setAlignment(Pos.CENTER);
+        
+        Label titleLabel = new Label(moduleName);
+        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333333;");
+        
+        Label messageLabel = new Label("Module en cours de migration vers la nouvelle architecture");
+        messageLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666666;");
+        
+        defaultPane.getChildren().addAll(titleLabel, messageLabel);
+        return defaultPane;
+    }
+    
+    // === Méthodes statiques === //
+    
+    public static MagsavDesktopApplication getInstance() {
+        return instance;
+    }
+    
     /**
      * Méthode utilitaire publique pour forcer les couleurs des TextField
      * Utilisée par tous les modules pour uniformiser les couleurs des champs de recherche
      */
     public static void forceSearchFieldColors(TextField textField) {
-        // Style ULTRA AGRESSIF pour contrer toute surcharge CSS
-        String forceStyle = "-fx-base: #142240 !important; " +
-                           "-fx-background: #142240 !important; " +
-                           "-fx-background-color: #142240 !important; " +
-                           "-fx-control-inner-background: #142240 !important; " +
-                           "-fx-control-inner-background-alt: #142240 !important; " +
-                           "-fx-text-fill: #6B71F2 !important; " +
-                           "-fx-text-base-color: #6B71F2 !important; " +
-                           "-fx-prompt-text-fill: #6B71F2 !important;";
+        // Style dynamique pour contrer toute surcharge CSS
+        String bgColor = ThemeManager.getInstance().getCurrentBackgroundColor();
+        String forceStyle = "-fx-base: " + bgColor + " !important; " +
+                           "-fx-background: " + bgColor + " !important; " +
+                           "-fx-background-color: " + bgColor + " !important; " +
+                           "-fx-control-inner-background: " + bgColor + " !important; " +
+                           "-fx-control-inner-background-alt: " + bgColor + " !important; " +
+                           "-fx-text-fill: #8B91FF !important; " +
+                           "-fx-text-base-color: #8B91FF !important; " +
+                           "-fx-prompt-text-fill: #8B91FF !important;";
         
         textField.setStyle(forceStyle);
         
         // Force ABSOLUE sur tous les sous-éléments avec délai pour le rendu
         Platform.runLater(() -> {
             Platform.runLater(() -> { // Double Platform.runLater pour être sûr
-                // Force sur TOUS les nodes
-                textField.lookupAll("*").forEach(node -> {
-                    String nodeStyle = "-fx-base: #142240 !important; " +
-                                     "-fx-background: #142240 !important; " +
-                                     "-fx-background-color: #142240 !important; " +
-                                     "-fx-fill: #6B71F2 !important; " +
-                                     "-fx-text-fill: #6B71F2 !important; " +
-                                     "-fx-text-base-color: #6B71F2 !important;";
-                    node.setStyle(nodeStyle);
+                textField.setStyle(forceStyle);
+                textField.lookupAll(".text").forEach(node -> {
+                    node.setStyle(forceStyle);
                 });
             });
         });
     }
-
-    /**
-     * Méthode utilitaire pour forcer le style des boutons de navigation des onglets
-     * Applique directement en Java le style #6B71F2 pour les boutons de navigation
-     */
-    public static void forceTabNavigationButtonsStyle(TabPane tabPane) {
-        // Multiple délais pour s'assurer que tous les éléments sont rendus
-        Platform.runLater(() -> {
-            Platform.runLater(() -> {
-                Platform.runLater(() -> { // Triple runLater pour être sûr
-                    System.out.println("🎨 Forçage du style des boutons de navigation des onglets...");
-                    
-                    // Rechercher TOUS les éléments possibles dans le TabPane
-                    String[] selectors = {
-                        ".tab-header-area", ".headers-region", ".control-buttons-tab",
-                        ".tab-down-button", ".increment-button", ".decrement-button",
-                        ".left-arrow", ".right-arrow", ".scroll-arrows-visible",
-                        ".button", ".arrow", "Button", "StackPane", "Region"
-                    };
-                    
-                    for (String selector : selectors) {
-                        tabPane.lookupAll(selector).forEach(node -> {
-                            String nodeClass = node.getClass().getSimpleName();
-                            System.out.println("📍 Trouvé élément: " + nodeClass + " avec sélecteur: " + selector);
-                            
-                            if (selector.contains("arrow") || nodeClass.contains("Arrow")) {
-                                // Style spécial pour les flèches
-                                String arrowStyle = "-fx-background-color: #6B71F2 !important; " +
-                                                  "-fx-shape: \"M 0 0 h 7 l -3.5 4 z\" !important;";
-                                node.setStyle(arrowStyle);
-                                System.out.println("➤ Flèche stylée en #6B71F2");
-                            } else if (selector.contains("button") || nodeClass.contains("Button")) {
-                                // Style pour les boutons
-                                String buttonStyle = "-fx-background-color: #091326 !important; " +
-                                                   "-fx-text-fill: #6B71F2 !important; " +
-                                                   "-fx-border-color: #6B71F2 !important; " +
-                                                   "-fx-border-width: 1px !important; " +
-                                                   "-fx-border-radius: 3px !important; " +
-                                                   "-fx-background-radius: 3px !important;";
-                                node.setStyle(buttonStyle);
-                                System.out.println("🔘 Bouton stylé avec bordure #6B71F2");
-                            } else {
-                                // Style général pour conteneurs
-                                String containerStyle = "-fx-background-color: #091326 !important;";
-                                node.setStyle(containerStyle);
-                                System.out.println("📦 Conteneur stylé en #091326");
-                            }
-                        });
-                    }
-                    
-                    // Force absolue - parcourir TOUS les nodes sans exception
-                    tabPane.lookupAll("*").forEach(node -> {
-                        String nodeType = node.getClass().getSimpleName();
-                        String styleClasses = node.getStyleClass().toString();
-                        
-                        // Détecter les types de navigation par nom de classe
-                        if (nodeType.toLowerCase().contains("button") || 
-                            nodeType.toLowerCase().contains("arrow") ||
-                            styleClasses.contains("button") ||
-                            styleClasses.contains("arrow") ||
-                            styleClasses.contains("control") ||
-                            styleClasses.contains("increment") ||
-                            styleClasses.contains("decrement")) {
-                            
-                            String forceStyle = "-fx-background-color: #091326 !important; " +
-                                               "-fx-text-fill: #6B71F2 !important; " +
-                                               "-fx-border-color: #6B71F2 !important; " +
-                                               "-fx-border-width: 1px !important;";
-                            node.setStyle(forceStyle);
-                            System.out.println("🎯 Force absolue appliquée sur: " + nodeType);
-                        }
-                        
-                        // Traitement SPÉCIAL pour TabControlButtons
-                        if (nodeType.equals("TabControlButtons")) {
-                            String tabControlStyle = "-fx-background-color: #091326 !important; " +
-                                                   "-fx-border-color: #6B71F2 !important; " +
-                                                   "-fx-border-width: 2px !important; " +
-                                                   "-fx-border-radius: 5px !important; " +
-                                                   "-fx-background-radius: 5px !important;";
-                            node.setStyle(tabControlStyle);
-                            System.out.println("🎯🎯 TabControlButtons SPÉCIALEMENT stylé !");
-                            
-                            // Stylér tous les enfants du TabControlButtons
-                            if (node instanceof javafx.scene.Parent) {
-                                javafx.scene.Parent parent = (javafx.scene.Parent) node;
-                                parent.getChildrenUnmodifiable().forEach(child -> {
-                                    String childStyle = "-fx-background-color: #091326 !important; " +
-                                                       "-fx-text-fill: #6B71F2 !important; " +
-                                                       "-fx-border-color: #6B71F2 !important; " +
-                                                       "-fx-border-width: 1px !important;";
-                                    child.setStyle(childStyle);
-                                    System.out.println("🔧 Enfant de TabControlButtons stylé: " + child.getClass().getSimpleName());
-                                });
-                            }
-                        }
-                    });
-                    
-                    System.out.println("✅ Forçage terminé pour TabPane");
-                });
-            });
-        });
-    }
-
-    /**
-     * Force TOUS les TextField d'une scene à utiliser les bonnes couleurs
-     * Méthode à appeler après création de chaque vue
-     */
-    public static void forceAllTextFieldsColors(Scene scene) {
-        if (scene == null) return;
-        
-        Platform.runLater(() -> {
-            scene.getRoot().lookupAll(".text-field").forEach(node -> {
-                if (node instanceof TextField) {
-                    forceSearchFieldColors((TextField) node);
-                }
-            });
-            
-            // Réapplication périodique pour les vues chargées dynamiquement
-            Platform.runLater(() -> {
-                scene.getRoot().lookupAll(".text-field").forEach(node -> {
-                    if (node instanceof TextField) {
-                        forceSearchFieldColors((TextField) node);
-                    }
-                });
-            });
-        });
-    }
-
+    
     public static void main(String[] args) {
-        System.out.println("\uD83D\uDE80 Demarrage MAGSAV-3.0 Desktop avec Java " + System.getProperty("java.version"));
+        System.out.println("🚀 Démarrage MAGSAV 3.0 - Architecture refactorisée");
         launch(args);
     }
 }

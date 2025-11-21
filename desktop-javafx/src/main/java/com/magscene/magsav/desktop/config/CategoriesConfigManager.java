@@ -11,6 +11,8 @@ import java.util.prefs.Preferences;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import com.magscene.magsav.desktop.theme.StandardColors;
+
 /**
  * Gestionnaire de configuration des catégories d'équipement
  * Permet la gestion centralisée des catégories hiérarchiques avec couleurs et icônes
@@ -152,11 +154,11 @@ public class CategoriesConfigManager {
      * Retourne les catégories par défaut
      */
     private String getDefaultCategories() {
-        return "Éclairage:1:#FF6B35:lightbulb-outline;" +
-               "Son:2:#4ECDC4:volume-high;" +
-               "Vidéo:3:#45B7D1:video;" +
-               "Structure:4:#96CEB4:hammer-wrench;" +
-               "Transport:5:#FECA57:truck";
+        return "Éclairage:1:" + StandardColors.LIGHTING_COLOR + ":lightbulb-outline;" +
+               "Son:2:" + StandardColors.AUDIO_COLOR + ":volume-high;" +
+               "Vidéo:3:" + StandardColors.VIDEO_COLOR + ":video;" +
+               "Structure:4:" + StandardColors.STRUCTURE_COLOR + ":hammer-wrench;" +
+               "Transport:5:" + StandardColors.TRANSPORT_COLOR + ":truck";
     }
     
     /**
@@ -356,7 +358,7 @@ public class CategoriesConfigManager {
         public CategoryItem(String name, int displayOrder, String color, String icon) {
             this.name = name;
             this.displayOrder = displayOrder;
-            this.color = color != null ? color : "#007bff";
+            this.color = color != null ? color : StandardColors.PRIMARY_BLUE;
             this.icon = icon != null ? icon : "folder";
             this.subCategories = FXCollections.observableArrayList();
         }
@@ -409,7 +411,7 @@ public class CategoriesConfigManager {
                 String name = parts[0];
                 try {
                     int order = Integer.parseInt(parts[1]);
-                    String color = parts.length > 2 ? parts[2] : "#007bff";
+                    String color = parts.length > 2 ? parts[2] : StandardColors.PRIMARY_BLUE;
                     String icon = parts.length > 3 ? parts[3] : "folder";
                     
                     return new CategoryItem(name, order, color, icon);

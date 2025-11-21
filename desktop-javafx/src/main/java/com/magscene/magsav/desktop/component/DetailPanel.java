@@ -5,7 +5,6 @@ import com.magscene.magsav.desktop.util.QRCodeGenerator;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -61,11 +60,13 @@ public class DetailPanel extends VBox {
         // Header avec titre et bouton fermer
         titleLabel = new Label();
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
-        titleLabel.setTextFill(Color.web("#2c3e50"));
+        titleLabel.setTextFill(Color.web("#ffffff"));
+        titleLabel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; -fx-padding: 8px 12px; -fx-background-radius: 4px; -fx-text-fill: #ffffff;");
         
         subtitleLabel = new Label();
         subtitleLabel.setFont(Font.font("System", FontWeight.NORMAL, 14));
-        subtitleLabel.setTextFill(Color.web("#7f8c8d"));
+        subtitleLabel.setTextFill(Color.web("#B8BCC8"));
+        subtitleLabel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; -fx-padding: 6px 12px; -fx-background-radius: 4px; -fx-text-fill: #B8BCC8;");
         
         closeButton = new Button("✕");
         closeButton.setFont(Font.font("System", FontWeight.BOLD, 16));
@@ -112,7 +113,7 @@ public class DetailPanel extends VBox {
         
         headerSection = new VBox(5);
         headerSection.setPadding(new Insets(15, 15, 10, 15));
-        headerSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-background-radius: 8 8 0 0;");
+        headerSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; -fx-background-radius: 8 8 0 0;");
         headerSection.getChildren().add(headerBox);
         
         // Section image
@@ -173,8 +174,9 @@ public class DetailPanel extends VBox {
         setMaxWidth(PANEL_WIDTH);
         setStyle(
             "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
-            "-fx-border-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
-            "-fx-border-width: 0 0 0 2; " +
+            "-fx-border-color: #8B91FF; " +
+            "-fx-border-width: 1px; " +
+            "-fx-border-radius: 5px; " +
             "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, -5, 0);"
         );
     }
@@ -209,7 +211,7 @@ public class DetailPanel extends VBox {
     /**
      * Met à jour le contenu du volet avec les données d'un item
      */
-    public void updateContent(String title, String subtitle, Image mainImage, Node qrCodeNode, VBox infoContent) {
+    public void updateContent(String title, String subtitle, Image mainImage, String qrCodeData, VBox infoContent) {
         titleLabel.setText(title != null ? title : "");
         subtitleLabel.setText(subtitle != null ? subtitle : "");
         
@@ -225,16 +227,15 @@ public class DetailPanel extends VBox {
             imageSection.setManaged(true);
         }
         
-        // QR Code
-        if (qrCodeNode instanceof ImageView) {
-            qrCodeView.setImage(((ImageView) qrCodeNode).getImage());
+        // QR Code - N'afficher que si les données ne sont pas vides
+        if (qrCodeData != null && !qrCodeData.trim().isEmpty()) {
+            qrCodeView.setImage(generateDefaultQRCode(qrCodeData));
             qrCodeSection.setVisible(true);
             qrCodeSection.setManaged(true);
         } else {
-            // Générer QR Code par défaut
-            qrCodeView.setImage(generateDefaultQRCode(title));
-            qrCodeSection.setVisible(true);
-            qrCodeSection.setManaged(true);
+            // Pas de QR Code - masquer la section
+            qrCodeSection.setVisible(false);
+            qrCodeSection.setManaged(false);
         }
         
         // Informations dynamiques
@@ -244,6 +245,37 @@ public class DetailPanel extends VBox {
         }
     }
     
+    /**
+     * Met à jour le contenu avec animation bidirectionnelle (sortie + entrée depuis la droite)
+     */
+    public void updateContentWithAnimation(String title, String subtitle, Image mainImage, String qrCodeData, VBox infoContent) {
+        if (!isVisible) {
+            // Si le volet n'est pas visible, l'afficher directement avec le nouveau contenu
+            updateContent(title, subtitle, mainImage, qrCodeData, infoContent);
+            show();
+            return;
+        }
+        
+        // Animation de sortie vers la droite
+        TranslateTransition slideOut = new TranslateTransition(ANIMATION_DURATION, this);
+        slideOut.setFromX(0);
+        slideOut.setToX(PANEL_WIDTH);
+        
+        // Animation d'entrée depuis la droite
+        TranslateTransition slideIn = new TranslateTransition(ANIMATION_DURATION, this);
+        slideIn.setFromX(PANEL_WIDTH);
+        slideIn.setToX(0);
+        
+        // Entre les deux animations, mettre à jour le contenu
+        slideOut.setOnFinished(e -> {
+            updateContent(title, subtitle, mainImage, qrCodeData, infoContent);
+            slideIn.play();
+        });
+        
+        // Lancer l'animation de sortie
+        slideOut.play();
+    }
+
     /**
      * Crée une image par défaut si aucune image n'est fournie
      */

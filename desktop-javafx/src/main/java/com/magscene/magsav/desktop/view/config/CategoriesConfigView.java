@@ -13,6 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.FileChooser;
 
 import java.util.List;
 
@@ -115,12 +116,7 @@ public class CategoriesConfigView extends VBox {
         this.setSpacing(10);
         this.setPadding(new Insets(5));
         
-        // === TITRE PRINCIPAL ===
-        Label titleLabel = new Label("🗂️ Catégories");
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
-        titleLabel.setTextFill(Color.web("#2c3e50"));
-        
-        // === SECTION 1: GESTION DES CATÉGORIES ===
+        // Plus de titre principal ici - déjà affiché dans l'onglet; // === SECTION 1: GESTION DES CATÉGORIES ===
         VBox categoriesSection = createCategoriesManagementSection();
         
         // === SECTION 2: ATTRIBUTION ÉQUIPEMENT ===
@@ -130,8 +126,6 @@ public class CategoriesConfigView extends VBox {
         HBox globalActions = createGlobalActionsBar();
         
         this.getChildren().addAll(
-            titleLabel,
-            new Separator(),
             categoriesSection,
             new Separator(),
             assignmentSection,
@@ -475,8 +469,7 @@ public class CategoriesConfigView extends VBox {
     private void loadEquipmentForCategory() {
         String selectedCategory = categorySelector.getValue();
         if (selectedCategory != null) {
-            // TODO: Charger l'équipement depuis l'ApiService
-            // Pour l'instant, on simule avec des données de test
+            // TODO: Charger l'équipement depuis l'ApiService; // Pour l'instant, on simule avec des données de test
             loadEquipmentLists(selectedCategory);
         }
     }
@@ -543,13 +536,265 @@ public class CategoriesConfigView extends VBox {
     }
     
     private void importCategories() {
-        // TODO: Implémenter l'import depuis un fichier
-        showInfoAlert("Import", "Fonctionnalité d'import en développement.");
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Importer Configuration des Catégories");
+        fileChooser.setInitialFileName("categories_config.json");
+        
+        // Filtres d'extension
+        FileChooser.ExtensionFilter jsonFilter = 
+            new FileChooser.ExtensionFilter("Fichiers JSON (*.json)", "*.json");
+        FileChooser.ExtensionFilter allFilesFilter = 
+            new FileChooser.ExtensionFilter("Tous les fichiers (*.*)", "*.*");
+        fileChooser.getExtensionFilters().addAll(jsonFilter, allFilesFilter);
+        
+        // Obtenir le stage parent
+        javafx.stage.Stage ownerStage = (javafx.stage.Stage) this.getScene().getWindow();
+        java.io.File file = fileChooser.showOpenDialog(ownerStage);
+        
+        if (file != null) {
+            importCategoriesFromFile(file);
+        }
     }
     
     private void exportCategories() {
-        // TODO: Implémenter l'export vers un fichier
-        showInfoAlert("Export", "Fonctionnalité d'export en développement.");
+        if (categoriesTree.getRoot() == null || categoriesTree.getRoot().getChildren().isEmpty()) {
+            showWarningAlert("Export Impossible", "Aucune catégorie à exporter", 
+                           "La configuration des catégories est vide. Ajoutez des catégories avant d'exporter.");
+            return;
+        }
+        
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exporter Configuration des Catégories");
+        fileChooser.setInitialFileName("categories_config_" + 
+            java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".json");
+        
+        // Filtres d'extension
+        FileChooser.ExtensionFilter jsonFilter = 
+            new FileChooser.ExtensionFilter("Fichiers JSON (*.json)", "*.json");
+        FileChooser.ExtensionFilter allFilesFilter = 
+            new FileChooser.ExtensionFilter("Tous les fichiers (*.*)", "*.*");
+        fileChooser.getExtensionFilters().addAll(jsonFilter, allFilesFilter);
+        
+        // Obtenir le stage parent
+        javafx.stage.Stage ownerStage = (javafx.stage.Stage) this.getScene().getWindow();
+        java.io.File file = fileChooser.showSaveDialog(ownerStage);
+        
+        if (file != null) {
+            exportCategoriesToFile(file);
+        }
+    }
+
+    /**
+     * Importe les catégories depuis un fichier JSON
+     */
+    private void importCategoriesFromFile(java.io.File file) {
+        try {
+            // Lire le contenu du fichier
+            String content = java.nio.file.Files.readString(file.toPath());
+            
+            // Parser le JSON manuellement (simple format)
+            java.util.Map<String, Object> configData = parseJsonConfig(content);
+            
+            if (configData.containsKey("categories")) {
+                // Confirmer l'import
+                Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+                confirmAlert.setTitle("Confirmer l'Import");
+                confirmAlert.setHeaderText("Remplacer la configuration actuelle ?");
+                confirmAlert.setContentText("Cette action remplacera toutes les catégories actuelles par celles du fichier.\nCette action est irréversible.");
+                
+                java.util.Optional<ButtonType> result = confirmAlert.showAndWait();
+                if (result.isPresent() && result.get() == ButtonType.OK) {
+                    
+                    // Importer les données
+                    @SuppressWarnings("unchecked")
+                    java.util.List<java.util.Map<String, Object>> categoriesList = 
+                        (java.util.List<java.util.Map<String, Object>>) configData.get("categories");
+                    
+                    importCategoriesFromList(categoriesList);
+                    
+                    // Rafraîchir l'affichage
+                    loadData();
+                    
+                    // Sauvegarder la nouvelle configuration
+                    configManager.saveConfiguration();
+                    
+                    showSuccessAlert("Import Réussi", 
+                                   String.format("✅ %d catégories importées depuis:\n%s", 
+                                               categoriesList.size(), file.getName()));
+                }
+            } else {
+                showErrorAlert("Format Invalide", 
+                             "Le fichier ne contient pas de données de catégories valides.\n" +
+                             "Vérifiez que le fichier est au bon format JSON.");
+            }
+            
+        } catch (Exception e) {
+            showErrorAlert("Erreur d'Import", 
+                         "Impossible d'importer le fichier:\n" + e.getMessage());
+        }
+    }
+
+    /**
+     * Exporte les catégories vers un fichier JSON
+     */
+    private void exportCategoriesToFile(java.io.File file) {
+        try {
+            // Collecter toutes les catégories
+            java.util.List<CategoriesConfigManager.CategoryItem> allCategories = configManager.getAllCategories();
+            
+            // Construire le JSON manuellement
+            StringBuilder json = new StringBuilder();
+            json.append("{\n");
+            json.append("  \"exportDate\": \"").append(java.time.LocalDateTime.now().toString()).append("\",\n");
+            json.append("  \"version\": \"MAGSAV-3.0\",\n");
+            json.append("  \"totalCategories\": ").append(allCategories.size()).append(",\n");
+            json.append("  \"categories\": [\n");
+            
+            for (int i = 0; i < allCategories.size(); i++) {
+                CategoriesConfigManager.CategoryItem category = allCategories.get(i);
+                json.append("    {\n");
+                json.append("      \"name\": \"").append(escapeJson(category.getName())).append("\",\n");
+                json.append("      \"color\": \"").append(escapeJson(category.getColor())).append("\",\n");
+                json.append("      \"icon\": \"").append(escapeJson(category.getIcon())).append("\",\n");
+                json.append("      \"parentId\": null,\n"); // Simplifié pour l'instant
+                json.append("      \"displayOrder\": ").append(category.getDisplayOrder()).append(",\n");
+                json.append("      \"id\": \"").append(escapeJson(category.getName())).append("\"\n"); // Utilise le nom comme ID
+                json.append("    }");
+                
+                if (i < allCategories.size() - 1) {
+                    json.append(",");
+                }
+                json.append("\n");
+            }
+            
+            json.append("  ]\n");
+            json.append("}");
+            
+            // Écrire dans le fichier
+            java.nio.file.Files.writeString(file.toPath(), json.toString());
+            
+            showSuccessAlert("Export Réussi", 
+                           String.format("✅ %d catégories exportées vers:\n%s", 
+                                       allCategories.size(), file.getName()));
+            
+        } catch (Exception e) {
+            showErrorAlert("Erreur d'Export", 
+                         "Impossible d'exporter vers le fichier:\n" + e.getMessage());
+        }
+    }
+
+    /**
+     * Parse un JSON simple manuellement (pour éviter les dépendances)
+     */
+    private java.util.Map<String, Object> parseJsonConfig(String json) {
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        
+        // Parser basique pour notre format spécifique
+        if (json.contains("\"categories\"")) {
+            java.util.List<java.util.Map<String, Object>> categories = new java.util.ArrayList<>();
+            
+            // Extraire les objets catégories
+            String[] parts = json.split("\\{");
+            for (String part : parts) {
+                if (part.contains("\"name\"")) {
+                    java.util.Map<String, Object> category = new java.util.HashMap<>();
+                    
+                    // Extraire les champs
+                    extractJsonField(part, "name", category);
+                    extractJsonField(part, "color", category);
+                    extractJsonField(part, "icon", category);
+                    extractJsonField(part, "parentId", category);
+                    extractJsonField(part, "id", category);
+                    extractJsonNumberField(part, "displayOrder", category);
+                    
+                    if (!category.isEmpty()) {
+                        categories.add(category);
+                    }
+                }
+            }
+            
+            result.put("categories", categories);
+        }
+        
+        return result;
+    }
+
+    /**
+     * Extrait un champ JSON string
+     */
+    private void extractJsonField(String json, String fieldName, java.util.Map<String, Object> target) {
+        String pattern = "\"" + fieldName + "\"\\s*:\\s*\"([^\"]+)\"";
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
+        java.util.regex.Matcher m = p.matcher(json);
+        if (m.find()) {
+            target.put(fieldName, m.group(1));
+        }
+    }
+
+    /**
+     * Extrait un champ JSON numérique
+     */
+    private void extractJsonNumberField(String json, String fieldName, java.util.Map<String, Object> target) {
+        String pattern = "\"" + fieldName + "\"\\s*:\\s*(\\d+)";
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(pattern);
+        java.util.regex.Matcher m = p.matcher(json);
+        if (m.find()) {
+            target.put(fieldName, Integer.parseInt(m.group(1)));
+        }
+    }
+
+    /**
+     * Importe les catégories depuis une liste de Maps
+     */
+    private void importCategoriesFromList(java.util.List<java.util.Map<String, Object>> categoriesList) {
+        // Supprimer toutes les catégories existantes
+        clearAllCategories();
+        
+        // Ajouter chaque catégorie
+        for (java.util.Map<String, Object> categoryData : categoriesList) {
+            String name = (String) categoryData.get("name");
+            String color = (String) categoryData.get("color");
+            String icon = (String) categoryData.get("icon");
+            String parentId = (String) categoryData.get("parentId");
+            
+            if (name != null && !name.trim().isEmpty()) {
+                // Pour l'instant, on ajoute tout comme catégories racines; // TODO: Gérer la hiérarchie parent/enfant dans une version future
+                configManager.addRootCategory(name.trim(), color != null ? color : "#3498db", icon != null ? icon : "📦");
+            }
+        }
+    }
+
+    /**
+     * Supprime toutes les catégories existantes
+     */
+    private void clearAllCategories() {
+        java.util.List<CategoriesConfigManager.CategoryItem> allCategories = 
+            new java.util.ArrayList<>(configManager.getAllCategories());
+        
+        // Supprimer toutes les catégories racines (cela supprime aussi leurs sous-catégories)
+        for (CategoriesConfigManager.CategoryItem category : allCategories) {
+            if (isRootCategory(category)) {
+                configManager.removeCategory(category);
+            }
+        }
+    }
+
+    /**
+     * Vérifie si une catégorie est une catégorie racine
+     */
+    private boolean isRootCategory(CategoriesConfigManager.CategoryItem category) {
+        return configManager.getRootCategories().contains(category);
+    }
+
+    /**
+     * Échappe les caractères spéciaux pour JSON
+     */
+    private String escapeJson(String input) {
+        if (input == null) return "";
+        return input.replace("\\", "\\\\")
+                   .replace("\"", "\\\"")
+                   .replace("\n", "\\n")
+                   .replace("\r", "\\r");
     }
     
     private void saveConfiguration() {
@@ -612,6 +857,14 @@ public class CategoriesConfigView extends VBox {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    
+    private void showWarningAlert(String title, String header, String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
         alert.setContentText(message);
         alert.showAndWait();
     }

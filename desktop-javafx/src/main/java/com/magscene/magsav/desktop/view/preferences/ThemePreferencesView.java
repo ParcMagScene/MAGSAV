@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.view.preferences;
 
 import com.magscene.magsav.desktop.theme.Theme;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.StandardColors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -16,7 +17,6 @@ import javafx.scene.text.FontWeight;
 public class ThemePreferencesView extends VBox {
     
     private final ThemeManager themeManager = ThemeManager.getInstance();
-    private ComboBox<Theme> themeSelector;
     private VBox themePreviewContainer;
     
     public ThemePreferencesView() {
@@ -29,54 +29,40 @@ public class ThemePreferencesView extends VBox {
         setSpacing(20);
         setPadding(new Insets(20));
         
-        // Titre
-        Label titleLabel = new Label("🎨 Gestion des Thèmes");
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
-        titleLabel.setTextFill(Color.web("#2c3e50"));
-        
-        // Description
-        Label descLabel = new Label("Personnalisez l'apparence de MAGSAV-3.0 selon vos préférences");
+        // Plus de titre ici - déjà affiché dans l'onglet; // Description
+        Label descLabel = new Label("Sélectionnez un thème en cliquant directement sur l'aperçu");
         descLabel.setFont(Font.font("System", 14));
-        descLabel.setTextFill(Color.web("#7f8c8d"));
+        descLabel.setTextFill(Color.web(StandardColors.NEUTRAL_GRAY));
         
-        // Sélecteur de thème
-        VBox selectorSection = createThemeSelectorSection();
+        // Thème actuel
+        Label currentThemeSection = createCurrentThemeSection();
         
-        // Aperçu des thèmes
+        // Aperçu des thèmes (section principale)
         VBox previewSection = createThemePreviewSection();
         
-        // Actions
+        // Actions supplémentaires
         HBox actionsSection = createActionsSection();
         
         getChildren().addAll(
-            titleLabel,
             descLabel,
             new Separator(),
-            selectorSection,
-            new Separator(),
+            currentThemeSection,
+            new Separator(), 
             previewSection,
             new Separator(),
             actionsSection
         );
     }
     
-    private VBox createThemeSelectorSection() {
-        VBox section = new VBox(10);
+    private Label createCurrentThemeSection() {
+        Theme currentTheme = themeManager.getTheme(themeManager.getCurrentTheme());
+        Label currentThemeLabel = new Label("✅ Thème actuel: " + 
+            (currentTheme != null ? currentTheme.getDisplayName() : "Inconnu"));
+        currentThemeLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
+        currentThemeLabel.setTextFill(Color.web(StandardColors.SUCCESS_GREEN));
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
-        Label sectionTitle = new Label("📋 Sélection du Thème");
-        sectionTitle.setFont(Font.font("System", FontWeight.BOLD, 16));
-        
-        themeSelector = new ComboBox<>();
-        themeSelector.setPrefWidth(300);
-        themeSelector.setPromptText("Choisissez un thème...");
-        
-        Label currentThemeLabel = new Label("Thème actuel: " + 
-            themeManager.getTheme(themeManager.getCurrentTheme()).getDisplayName());
-        currentThemeLabel.setFont(Font.font("System", 12));
-        currentThemeLabel.setTextFill(Color.web("#27ae60"));
-        
-        section.getChildren().addAll(sectionTitle, themeSelector, currentThemeLabel);
-        return section;
+        return currentThemeLabel;
     }
     
     private VBox createThemePreviewSection() {
@@ -99,37 +85,27 @@ public class ThemePreferencesView extends VBox {
         HBox section = new HBox(15);
         section.setAlignment(Pos.CENTER_LEFT);
         
-        Button applyButton = new Button("✅ Appliquer le Thème");
-        applyButton.getStyleClass().add("button");
-        applyButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white;");
-        applyButton.setOnAction(e -> applySelectedTheme());
+        Button refreshButton = new Button("🔄 Actualiser");
+        refreshButton.getStyleClass().add("button");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        refreshButton.setOnAction(e -> loadThemes());
         
         Button resetButton = new Button("🔄 Thème par Défaut");
         resetButton.getStyleClass().add("button");
-        resetButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         resetButton.setOnAction(e -> resetToDefaultTheme());
         
         Button customButton = new Button("🎨 Créer un Thème Personnalisé");
         customButton.getStyleClass().add("button");
-        customButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         customButton.setOnAction(e -> createCustomTheme());
         
-        section.getChildren().addAll(applyButton, resetButton, customButton);
+        section.getChildren().addAll(refreshButton, resetButton, customButton);
         return section;
     }
     
     private void loadThemes() {
-        themeSelector.getItems().clear();
-        themeSelector.getItems().addAll(themeManager.getAvailableThemes());
-        
-        // Sélectionne le thème actuel
-        String currentThemeId = themeManager.getCurrentTheme();
-        Theme currentTheme = themeManager.getTheme(currentThemeId);
-        if (currentTheme != null) {
-            themeSelector.setValue(currentTheme);
-        }
-        
-        // Charge les aperçus
+        // Charge uniquement les aperçus
         loadThemePreviews();
     }
     
@@ -156,7 +132,7 @@ public class ThemePreferencesView extends VBox {
         
         Label descLabel = new Label(theme.getDescription());
         descLabel.setFont(Font.font("System", 12));
-        descLabel.setTextFill(Color.web("#7f8c8d"));
+        descLabel.setTextFill(Color.web(StandardColors.NEUTRAL_GRAY));
         
         infoBox.getChildren().addAll(nameLabel, descLabel);
         
@@ -165,15 +141,13 @@ public class ThemePreferencesView extends VBox {
         
         // Bouton sélectionner
         Button selectButton = new Button("Sélectionner");
-        selectButton.setOnAction(e -> {
-            themeSelector.setValue(theme);
-            applySelectedTheme();
-        });
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        selectButton.setOnAction(e -> applyTheme(theme));
         
         // Indicateur thème actuel
         if (theme.getId().equals(themeManager.getCurrentTheme())) {
             Label currentLabel = new Label("✅ ACTUEL");
-            currentLabel.setTextFill(Color.web("#27ae60"));
+            currentLabel.setTextFill(Color.web(StandardColors.SUCCESS_GREEN));
             currentLabel.setFont(Font.font("System", FontWeight.BOLD, 10));
             card.getChildren().add(currentLabel);
         }
@@ -205,19 +179,12 @@ public class ThemePreferencesView extends VBox {
     }
     
     private void setupEventHandlers() {
-        themeSelector.setOnAction(e -> {
-            // Aperçu en temps réel optionnel
-            // Theme selected = themeSelector.getValue();
-            // if (selected != null) {
-            //     themeManager.applyTheme(selected.getId());
-            // }
-        });
+        // Plus de gestionnaires nécessaires pour la ComboBox
     }
     
-    private void applySelectedTheme() {
-        Theme selectedTheme = themeSelector.getValue();
-        if (selectedTheme != null) {
-            themeManager.applyTheme(selectedTheme.getId());
+    private void applyTheme(Theme theme) {
+        if (theme != null) {
+            themeManager.applyTheme(theme.getId());
             
             // Actualise l'affichage
             loadThemes();
@@ -226,21 +193,16 @@ public class ThemePreferencesView extends VBox {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Thème Appliqué");
             alert.setHeaderText("Succès !");
-            alert.setContentText("Le thème \"" + selectedTheme.getDisplayName() + "\" a été appliqué avec succès.");
+            alert.setContentText("Le thème \"" + theme.getDisplayName() + "\" a été appliqué avec succès.");
             alert.showAndWait();
         }
     }
     
     private void resetToDefaultTheme() {
-        themeManager.applyTheme("light");
-        themeSelector.setValue(themeManager.getTheme("light"));
-        loadThemes();
-        
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Thème Réinitialisé");
-        alert.setHeaderText("Succès !");
-        alert.setContentText("Le thème par défaut a été restauré.");
-        alert.showAndWait();
+        Theme defaultTheme = themeManager.getTheme("light");
+        if (defaultTheme != null) {
+            applyTheme(defaultTheme);
+        }
     }
     
     private void createCustomTheme() {

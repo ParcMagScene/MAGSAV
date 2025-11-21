@@ -3,6 +3,8 @@ package com.magscene.magsav.desktop.dialog;
 import com.magscene.magsav.desktop.model.Client;
 import com.magscene.magsav.desktop.model.Contract;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
@@ -29,6 +31,7 @@ public class ContractDialog extends Dialog<Contract> {
     
     private final ApiService apiService;
     private final boolean isEditing;
+    private boolean isReadOnlyMode;
     private final Contract originalContract;
     
     // Onglet 1: Informations Générales
@@ -65,79 +68,168 @@ public class ContractDialog extends Dialog<Contract> {
     private ProgressIndicator progressIndicator;
     
     public ContractDialog(ApiService apiService) {
-        this(apiService, null);
+        this(apiService, null, false);
     }
     
     public ContractDialog(ApiService apiService, Contract contract) {
+        this(apiService, contract, false);
+    }
+
+    public ContractDialog(ApiService apiService, Contract contract, boolean readOnlyMode) {
         this.apiService = apiService;
         this.originalContract = contract;
-        this.isEditing = contract != null;
+        this.isEditing = contract != null && !readOnlyMode;
+        this.isReadOnlyMode = readOnlyMode;
         
         setupDialog();
         createUI();
         setupValidation();
         loadClients();
         
-        if (isEditing) {
+        // Désactiver les champs en mode lecture seule
+        if (isReadOnlyMode) {
+            setFieldsReadOnly();
+        }
+        
+        if (originalContract != null) {
             loadContractData();
         }
     }
     
     private void setupDialog() {
-        setTitle(isEditing ? "Modifier le contrat" : "Nouveau contrat");
-        setHeaderText(isEditing ? 
-            "Modification du contrat : " + originalContract.getTitle() :
-            "Créer un nouveau contrat");
-        
-        // Icône
-        setGraphic(new Label(isEditing ? "📝" : "📄"));
+        // Configuration des titres (suppression des doublons d'intitulés)
+        if (isReadOnlyMode) {
+            setTitle("Détails du contrat");
+        } else {
+            setTitle(isEditing ? "Modifier le contrat" : "Nouveau contrat");
+        }
         
         // Taille de la fenêtre
         getDialogPane().setPrefSize(800, 700);
         
-        // Boutons
-        getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        
-        saveButton = (Button) getDialogPane().lookupButton(ButtonType.OK);
-        saveButton.setText(isEditing ? "Mettre à jour" : "Créer");
-        saveButton.setDisable(true);
-        
-        // Converter pour récupérer les données
-        setResultConverter(dialogButton -> {
-            if (dialogButton == ButtonType.OK) {
-                return createContractFromFields();
-            }
-            return null;
-        });
+        // L'interface sera créée avec createUI() comme avant; // mais nous ajouterons les boutons personnalisés après
+        createUI();
     }
     
     private void createUI() {
-        TabPane tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        // Utiliser CustomTabPane au lieu de TabPane JavaFX pour style unifié
+        com.magscene.magsav.desktop.component.CustomTabPane tabPane = 
+            new com.magscene.magsav.desktop.component.CustomTabPane();
         
         // Onglet 1: Informations Générales
-        Tab generalTab = new Tab("📄 Général");
-        generalTab.setContent(createGeneralPane());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab generalTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Général", createGeneralPane(), "📄");
+        tabPane.addTab(generalTab);
         
         // Onglet 2: Dates et durée
-        Tab datesTab = new Tab("📅 Dates");
-        datesTab.setContent(createDatesPane());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab datesTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Dates", createDatesPane(), "📅");
+        tabPane.addTab(datesTab);
         
         // Onglet 3: Financier
-        Tab financialTab = new Tab("💰 Financier");
-        financialTab.setContent(createFinancialPane());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab financialTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Financier", createFinancialPane(), "💰");
+        tabPane.addTab(financialTab);
         
         // Onglet 4: Détails
-        Tab detailsTab = new Tab("📝 Détails");
-        detailsTab.setContent(createDetailsPane());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab detailsTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Détails", createDetailsPane(), "📝");
+        tabPane.addTab(detailsTab);
         
-        tabPane.getTabs().addAll(generalTab, datesTab, financialTab, detailsTab);
+        // Sélectionner le premier onglet
+        tabPane.selectTab(0);
         
-        // Barre de statut
+        // Barre de statut et boutons personnalisés
         VBox mainContainer = new VBox(10);
         mainContainer.getChildren().addAll(tabPane, createStatusBar());
         
+        // Ajouter la barre de boutons standardisée
+        HBox buttonBar = createStandardButtons();
+        mainContainer.getChildren().add(buttonBar);
+        
         getDialogPane().setContent(mainContainer);
+        
+        // Appliquer le thème dark au dialogue
+        ThemeManager.getInstance().applyThemeToDialog(getDialogPane());
+    }
+    
+    private HBox createStandardButtons() {
+        if (isReadOnlyMode) {
+            // Mode lecture seule : boutons Modifier et Fermer
+            return ViewUtils.createDialogButtonBar(
+                () -> {
+                    // Action Modifier : ouvrir en mode édition
+                    if (originalContract != null) {
+                        ContractDialog editDialog = new ContractDialog(apiService, originalContract, false);
+                        editDialog.showAndWait().ifPresent(result -> {
+                            // Propager le résultat vers le parent si nécessaire
+                            setResult(result);
+                        });
+                    }
+                    forceClose();
+                },
+                this::forceClose,
+                null
+            );
+        } else {
+            // Mode édition : boutons Enregistrer et Annuler
+            return ViewUtils.createDialogButtonBar(
+                this::handleSave,
+                this::forceClose,
+                null
+            );
+        }
+    }
+    
+    private void handleSave() {
+        if (validateFormForSave()) {
+            Contract result = createContractFromFields();
+            setResult(result);
+            forceClose();
+        }
+    }
+    
+    private boolean validateFormForSave() {
+        StringBuilder errors = new StringBuilder();
+        
+        if (titleField.getText().trim().isEmpty()) {
+            errors.append("- Le titre du contrat est obligatoire\n");
+        }
+        
+        if (typeCombo.getValue() == null) {
+            errors.append("- Le type de contrat est obligatoire\n");
+        }
+        
+        if (statusCombo.getValue() == null) {
+            errors.append("- Le statut du contrat est obligatoire\n");
+        }
+        
+        if (clientCombo.getValue() == null) {
+            errors.append("- Le client est obligatoire\n");
+        }
+        
+        if (errors.length() > 0) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreurs de validation");
+            alert.setHeaderText("Veuillez corriger les erreurs suivantes :");
+            alert.setContentText(errors.toString());
+            alert.showAndWait();
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Force la fermeture du dialog même avec des boutons personnalisés
+     */
+    private void forceClose() {
+        getDialogPane().getButtonTypes().clear();
+        close();
+        
+        if (getDialogPane().getScene() != null && getDialogPane().getScene().getWindow() != null) {
+            getDialogPane().getScene().getWindow().hide();
+        }
     }
     
     private Node createGeneralPane() {
@@ -394,10 +486,10 @@ public class ContractDialog extends Dialog<Contract> {
         HBox statusBar = new HBox(10);
         statusBar.setAlignment(Pos.CENTER_LEFT);
         statusBar.setPadding(new Insets(10));
-        statusBar.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #d0d0d0; -fx-border-width: 1px 0 0 0;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         statusLabel = new Label("Remplissez les champs obligatoires (*)");
-        statusLabel.setStyle("-fx-text-fill: #666666;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         progressIndicator = new ProgressIndicator();
         progressIndicator.setPrefSize(16, 16);
@@ -447,14 +539,14 @@ public class ContractDialog extends Dialog<Contract> {
         startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && endDatePicker.getValue() != null && newVal.isAfter(endDatePicker.getValue())) {
                 statusLabel.setText("⚠️ La date de début ne peut pas être après la date de fin");
-                statusLabel.setStyle("-fx-text-fill: red;");
+                // $varName supprimÃ© - Style gÃ©rÃ© par CSS
             }
         });
         
         endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && startDatePicker.getValue() != null && newVal.isBefore(startDatePicker.getValue())) {
                 statusLabel.setText("⚠️ La date de fin ne peut pas être avant la date de début");
-                statusLabel.setStyle("-fx-text-fill: red;");
+                // $varName supprimÃ© - Style gÃ©rÃ© par CSS
             }
         });
     }
@@ -477,13 +569,13 @@ public class ContractDialog extends Dialog<Contract> {
         
         if (isValid && datesValid) {
             statusLabel.setText("✅ Formulaire valide");
-            statusLabel.setStyle("-fx-text-fill: green;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         } else if (!datesValid) {
             statusLabel.setText("⚠️ Vérifiez les dates");
-            statusLabel.setStyle("-fx-text-fill: red;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         } else {
             statusLabel.setText("Remplissez les champs obligatoires (*)");
-            statusLabel.setStyle("-fx-text-fill: #666666;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         }
     }
     
@@ -517,8 +609,7 @@ public class ContractDialog extends Dialog<Contract> {
         billingFrequencyCombo.setValue(originalContract.getBillingFrequency());
         paymentTermsCombo.setValue(originalContract.getPaymentTerms());
         
-        // Pour les champs non disponibles dans le modèle actuel, nous les laissons vides
-        // discountPercentageField.setText("");
+        // Pour les champs non disponibles dans le modèle actuel, nous les laissons vides; // discountPercentageField.setText("");
         // penaltyClauseField.setText("");
         termsConditionsArea.setText(originalContract.getTermsAndConditions() != null ? originalContract.getTermsAndConditions() : "");
         notesArea.setText(originalContract.getNotes() != null ? originalContract.getNotes() : "");
@@ -574,8 +665,7 @@ public class ContractDialog extends Dialog<Contract> {
         contract.setBillingFrequency(billingFrequencyCombo.getValue());
         contract.setPaymentTerms(paymentTermsCombo.getValue());
         
-        // Les champs discount et penalty ne sont pas dans le modèle actuel
-        // Nous ne les assignons pas pour l'instant
+        // Les champs discount et penalty ne sont pas dans le modèle actuel; // Nous ne les assignons pas pour l'instant
         
         contract.setTermsAndConditions(termsConditionsArea.getText().trim());
         contract.setNotes(notesArea.getText().trim());
@@ -599,8 +689,7 @@ public class ContractDialog extends Dialog<Contract> {
                 // Conversion temporaire pour éviter les erreurs de compilation
                 clientCombo.getItems().clear();
                 
-                // TODO: Traitement des clients - pour l'instant on laisse vide
-                // La logique métier sera implémentée plus tard avec les bons types
+                // TODO: Traitement des clients - pour l'instant on laisse vide; // La logique métier sera implémentée plus tard avec les bons types
                 
             } catch (Exception e) {
                 // En cas d'erreur, laisser le ComboBox vide avec un message
@@ -612,6 +701,32 @@ public class ContractDialog extends Dialog<Contract> {
             System.err.println("Erreur lors du chargement des clients: " + throwable.getMessage());
             return null;
         });
+    }
+
+    /**
+     * Désactive tous les champs pour le mode lecture seule
+     */
+    private void setFieldsReadOnly() {
+        if (titleField != null) titleField.setDisable(true);
+        if (typeCombo != null) typeCombo.setDisable(true);
+        if (statusCombo != null) statusCombo.setDisable(true);
+        if (clientCombo != null) clientCombo.setDisable(true);
+        if (contractNumberField != null) contractNumberField.setDisable(true);
+        if (descriptionArea != null) descriptionArea.setDisable(true);
+        if (startDatePicker != null) startDatePicker.setDisable(true);
+        if (endDatePicker != null) endDatePicker.setDisable(true);
+        if (signatureDatePicker != null) signatureDatePicker.setDisable(true);
+        if (durationMonthsField != null) durationMonthsField.setDisable(true);
+        if (autoRenewalCheckBox != null) autoRenewalCheckBox.setDisable(true);
+        if (renewalNoticeDaysField != null) renewalNoticeDaysField.setDisable(true);
+        if (totalAmountField != null) totalAmountField.setDisable(true);
+        if (billingFrequencyCombo != null) billingFrequencyCombo.setDisable(true);
+        if (paymentTermsCombo != null) paymentTermsCombo.setDisable(true);
+        if (discountPercentageField != null) discountPercentageField.setDisable(true);
+        if (penaltyClauseField != null) penaltyClauseField.setDisable(true);
+        if (termsConditionsArea != null) termsConditionsArea.setDisable(true);
+        if (notesArea != null) notesArea.setDisable(true);
+        if (assignedManagerField != null) assignedManagerField.setDisable(true);
     }
 }
 

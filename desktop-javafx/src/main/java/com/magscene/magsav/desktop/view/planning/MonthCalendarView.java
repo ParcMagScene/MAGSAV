@@ -1,21 +1,22 @@
 package com.magscene.magsav.desktop.view.planning;
 
+import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.StandardColors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
- * Vue calendaire mensuelle avec grille de jours
+ * Vue calendaire mensuelle - Style cohérent avec WeekCalendarView
+ * Affiche un calendrier mensuel avec les événements
  */
 public class MonthCalendarView extends VBox {
     
@@ -24,10 +25,9 @@ public class MonthCalendarView extends VBox {
     };
     
     private YearMonth currentMonth;
-    private final GridPane calendarGrid;
-    private final Label monthLabel;
-    private final Map<LocalDate, DayCell> dayCells;
-    private final List<Event> events;
+    private GridPane monthGrid;
+    private final Map<LocalDate, DayCell> dayCells = new HashMap<>();
+    private final List<Event> events = new ArrayList<>();
     private BiConsumer<LocalDateTime, LocalDateTime> onDaySelected;
     
     // Classe pour représenter un événement
@@ -50,318 +50,258 @@ public class MonthCalendarView extends VBox {
         private final LocalDate date;
         private final Label dayLabel;
         private final VBox eventsContainer;
-        private final List<Event> dayEvents;
-        private boolean isCurrentMonth;
-        private boolean isToday;
-        private boolean selected;
+        private final boolean isCurrentMonth;
         
-        public DayCell(LocalDate date, boolean isCurrentMonth) {
+        DayCell(LocalDate date, boolean isCurrentMonth) {
             this.date = date;
             this.isCurrentMonth = isCurrentMonth;
-            this.isToday = date.equals(LocalDate.now());
-            this.dayEvents = new ArrayList<>();
             
             getStyleClass().add("day-cell");
-            if (!isCurrentMonth) {
-                getStyleClass().add("other-month");
-            }
-            if (isToday) {
-                getStyleClass().add("today");
-            }
+            setMinHeight(80);
+            setPrefHeight(Region.USE_COMPUTED_SIZE);
+            setMaxHeight(Double.MAX_VALUE);
+            setMinWidth(120);
+            setPrefWidth(Region.USE_COMPUTED_SIZE);
+            setMaxWidth(Double.MAX_VALUE);
             
-            this.setPrefSize(120, 100);
-            this.setMinSize(100, 80);
-            this.setPadding(new Insets(2));
+            // Style de base
+            String backgroundColor = isCurrentMonth ? ThemeManager.getInstance().getCurrentBackgroundColor() : ThemeManager.getInstance().getCurrentSecondaryColor();
+            String borderColor = ThemeManager.getInstance().getCurrentSecondaryColor();
+            setStyle("-fx-background-color: " + backgroundColor + "; " +
+                    "-fx-border-color: " + borderColor + "; " +
+                    "-fx-border-width: 0.5; " +
+                    "-fx-padding: 2;");
             
-            // Label du numéro du jour
+            // Label du jour
             dayLabel = new Label(String.valueOf(date.getDayOfMonth()));
             dayLabel.getStyleClass().add("day-number");
-            if (isToday) {
-                dayLabel.getStyleClass().add("today-number");
+            String textColor = isCurrentMonth ? StandardColors.SECONDARY_BLUE : StandardColors.NEUTRAL_GRAY;
+            if (date.equals(LocalDate.now())) {
+                textColor = StandardColors.LIGHT_BACKGROUND;
+                dayLabel.setStyle("-fx-text-fill: " + textColor + "; -fx-font-weight: bold; " +
+                                "-fx-background-color: " + StandardColors.SECONDARY_BLUE + "; -fx-background-radius: 12; " +
+                                "-fx-padding: 2 6;");
+            } else {
+                dayLabel.setStyle("-fx-text-fill: " + textColor + "; -fx-font-size: 12px;");
             }
+            dayLabel.setAlignment(Pos.CENTER);
             
             // Container pour les événements
             eventsContainer = new VBox(1);
-            eventsContainer.getStyleClass().add("day-events");
-            eventsContainer.setFillWidth(true);
+            eventsContainer.setAlignment(Pos.TOP_LEFT);
+            eventsContainer.setPrefHeight(Region.USE_COMPUTED_SIZE);
             
+            getChildren().addAll(dayLabel, eventsContainer);
             VBox.setVgrow(eventsContainer, Priority.ALWAYS);
             
-            this.getChildren().addAll(dayLabel, eventsContainer);
-            
-            setupMouseHandlers();
+            setupInteraction();
         }
         
-        private void setupMouseHandlers() {
-            this.setOnMouseEntered(e -> {
-                if (!selected && isCurrentMonth) {
-                    this.getStyleClass().add("day-cell-hover");
+        private void setupInteraction() {
+            setOnMouseEntered(e -> {
+                if (isCurrentMonth) {
+                    setStyle(getStyle() + "; -fx-background-color: " + StandardColors.DARK_SECONDARY + ";");
                 }
             });
             
-            this.setOnMouseExited(e -> {
-                this.getStyleClass().remove("day-cell-hover");
+            setOnMouseExited(e -> {
+                String backgroundColor = isCurrentMonth ? ThemeManager.getInstance().getCurrentBackgroundColor() : ThemeManager.getInstance().getCurrentSecondaryColor();
+                setStyle(getStyle().replaceAll("; -fx-background-color: " + StandardColors.DARK_SECONDARY, "") + 
+                        "; -fx-background-color: " + backgroundColor + ";");
             });
         }
         
-        public void addEvent(Event event) {
-            if (dayEvents.size() >= 3) {
-                // Afficher un indicateur "plus d'événements"
-                if (dayEvents.size() == 3) {
-                    Label moreLabel = new Label("+" + (dayEvents.size() - 2) + " autres");
-                    moreLabel.getStyleClass().addAll("event-indicator", "more-events");
-                    eventsContainer.getChildren().add(moreLabel);
-                } else {
-                    // Mettre à jour le compteur
-                    Label moreLabel = (Label) eventsContainer.getChildren().get(eventsContainer.getChildren().size() - 1);
-                    moreLabel.setText("+" + (dayEvents.size() - 2) + " autres");
-                }
-            } else {
-                // Afficher l'événement
+        void addEvent(Event event) {
+            if (eventsContainer.getChildren().size() < 3) { // Limite à 3 événements visibles
                 Label eventLabel = new Label(event.title);
-                eventLabel.getStyleClass().addAll("event-indicator", "event-" + event.category);
+                eventLabel.getStyleClass().add("month-event");
+                eventLabel.setStyle("-fx-background-color: " + StandardColors.INFO_BLUE + "; -fx-text-fill: white; " +
+                                  "-fx-background-radius: 3; -fx-padding: 1 4; -fx-font-size: 9px;");
                 eventLabel.setMaxWidth(Double.MAX_VALUE);
-                eventLabel.setWrapText(false);
-                
-                // Tooltip avec plus d'informations
-                String tooltipText = event.title + "\\n" + 
-                                   event.startTime.format(DateTimeFormatter.ofPattern("HH:mm")) + 
-                                   " - " + 
-                                   event.endTime.format(DateTimeFormatter.ofPattern("HH:mm"));
-                javafx.scene.control.Tooltip tooltip = new javafx.scene.control.Tooltip(tooltipText);
-                javafx.scene.control.Tooltip.install(eventLabel, tooltip);
-                
                 eventsContainer.getChildren().add(eventLabel);
+            } else if (eventsContainer.getChildren().size() == 3) {
+                // Ajouter indicateur "Plus d'événements"
+                Label moreLabel = new Label("...");
+                // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                eventsContainer.getChildren().add(moreLabel);
             }
-            
-            dayEvents.add(event);
         }
         
-        public void clearEvents() {
-            dayEvents.clear();
+        void clearEvents() {
             eventsContainer.getChildren().clear();
         }
         
-        public LocalDate getDate() {
+        @SuppressWarnings("unused")
+        LocalDate getDate() {
             return date;
         }
-        
-        public void setSelected(boolean selected) {
-            this.selected = selected;
-            if (selected) {
-                this.getStyleClass().add("day-cell-selected");
-            } else {
-                this.getStyleClass().remove("day-cell-selected");
-            }
-        }
-        
-        public boolean isCurrentMonth() {
-            return isCurrentMonth;
-        }
-        
-        public List<Event> getEvents() {
-            return new ArrayList<>(dayEvents);
-        }
     }
     
-    public MonthCalendarView(YearMonth month) {
-        this.currentMonth = month;
-        this.dayCells = new HashMap<>();
-        this.events = new ArrayList<>();
+    public MonthCalendarView() {
+        this.currentMonth = YearMonth.now();
+        initializeView();
+    }
+    
+    private void initializeView() {
+        getStyleClass().add("month-calendar");
+        setStyle("-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-radius: 8; " +
+                "-fx-pref-height: -1; -fx-max-height: -1; -fx-min-height: -1;"); // CSS d'expansion forcée comme WeekCalendarView; // Forcer l'expansion totale sur la largeur et la hauteur - cohérent avec WeekCalendarView
+        setMinWidth(600);
+        setPrefWidth(Region.USE_COMPUTED_SIZE);
+        setMaxWidth(Double.MAX_VALUE);
+        setPrefHeight(Region.USE_COMPUTED_SIZE);
+        setMaxHeight(Double.MAX_VALUE);
         
-        getStyleClass().add("month-calendar-view");
+        // Forcer l'expansion verticale et supprimer tous les paddings/espacements - comme WeekCalendarView
+        this.setFillWidth(true);
+        this.setSpacing(0);
+        this.setPadding(new Insets(0));
+        
+        createMonthView();
+    }
+    
+    private void createMonthView() {
+        getChildren().clear();
         
         // En-tête du mois
-        monthLabel = new Label();
-        monthLabel.getStyleClass().add("month-header");
-        updateMonthLabel();
+        createMonthHeader();
         
-        // En-têtes des jours de la semaine
-        HBox daysHeader = createDaysHeader();
+        // En-tête des jours de la semaine
+        createWeekHeader();
         
-        // Grille du calendrier
-        calendarGrid = new GridPane();
-        calendarGrid.getStyleClass().add("month-grid");
-        calendarGrid.setHgap(1);
-        calendarGrid.setVgap(1);
+        // Grille des jours
+        createDaysGrid();
         
-        VBox.setVgrow(calendarGrid, Priority.ALWAYS);
-        
-        this.getChildren().addAll(monthLabel, daysHeader, calendarGrid);
-        
-        createCalendarGrid();
+        VBox.setVgrow(monthGrid, Priority.ALWAYS);
     }
     
-    private HBox createDaysHeader() {
-        HBox header = new HBox();
-        header.getStyleClass().add("days-header");
-        header.setAlignment(Pos.CENTER);
+    private void createMonthHeader() {
+        Label monthLabel = new Label(currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")));
+        monthLabel.getStyleClass().add("month-header");
+        monthLabel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; -fx-text-fill: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+                          "-fx-font-size: 18px; -fx-font-weight: bold; " +
+                          "-fx-alignment: center; -fx-padding: 12;");
+        monthLabel.setAlignment(Pos.CENTER);
+        monthLabel.setMaxWidth(Double.MAX_VALUE);
         
-        for (String day : DAYS_OF_WEEK) {
-            Label dayLabel = new Label(day);
-            dayLabel.getStyleClass().add("day-header");
-            dayLabel.setPrefWidth(120);
+        getChildren().add(monthLabel);
+    }
+    
+    private void createWeekHeader() {
+        HBox weekHeader = new HBox();
+        weekHeader.getStyleClass().add("week-header");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        
+        for (String dayName : DAYS_OF_WEEK) {
+            Label dayLabel = new Label(dayName);
+            dayLabel.getStyleClass().add("week-day-header");
+            dayLabel.setStyle("-fx-text-fill: " + StandardColors.SECONDARY_BLUE + "; -fx-font-size: 11px; " +
+                            "-fx-font-weight: bold; -fx-alignment: center;");
             dayLabel.setAlignment(Pos.CENTER);
-            header.getChildren().add(dayLabel);
+            dayLabel.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(dayLabel, Priority.ALWAYS);
+            
+            weekHeader.getChildren().add(dayLabel);
         }
         
-        return header;
+        getChildren().add(weekHeader);
     }
     
-    private void createCalendarGrid() {
-        calendarGrid.getChildren().clear();
+    private void createDaysGrid() {
+        monthGrid = new GridPane();
+        monthGrid.getStyleClass().add("month-grid");
+        monthGrid.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+                         "-fx-pref-height: -1; -fx-max-height: -1; -fx-min-height: -1;"); // CSS d'expansion forcée
+        
         dayCells.clear();
         
-        // Première date à afficher (lundi de la première semaine)
-        LocalDate firstDayOfMonth = currentMonth.atDay(1);
-        LocalDate startDate = firstDayOfMonth.with(WeekFields.of(Locale.FRANCE).dayOfWeek(), 1);
+        // Calculer le premier jour à afficher (peut être du mois précédent)
+        LocalDate firstOfMonth = currentMonth.atDay(1);
+        LocalDate startDate = firstOfMonth.minusDays(firstOfMonth.getDayOfWeek().getValue() - 1);
         
-        // Dernière date à afficher
-        LocalDate lastDayOfMonth = currentMonth.atEndOfMonth();
-        LocalDate endDate = lastDayOfMonth.with(WeekFields.of(Locale.FRANCE).dayOfWeek(), 7);
-        
-        LocalDate date = startDate;
-        int row = 0;
-        
-        while (!date.isAfter(endDate)) {
-            for (int col = 0; col < 7; col++) {
-                boolean isCurrentMonth = YearMonth.from(date).equals(currentMonth);
-                DayCell dayCell = new DayCell(date, isCurrentMonth);
+        // Créer 6 semaines (42 jours) pour couvrir tous les cas
+        for (int week = 0; week < 6; week++) {
+            for (int day = 0; day < 7; day++) {
+                LocalDate cellDate = startDate.plusDays(week * 7 + day);
+                boolean isCurrentMonth = cellDate.getMonth() == currentMonth.getMonth();
                 
-                dayCell.setOnMouseClicked(this::handleDayClick);
+                DayCell dayCell = new DayCell(cellDate, isCurrentMonth);
+                dayCells.put(cellDate, dayCell);
                 
-                dayCells.put(date, dayCell);
-                calendarGrid.add(dayCell, col, row);
+                // Configuration de l'interaction
+                dayCell.setOnMousePressed(e -> {
+                    if (onDaySelected != null) {
+                        LocalDateTime startTime = cellDate.atStartOfDay();
+                        LocalDateTime endTime = startTime.plusDays(1);
+                        onDaySelected.accept(startTime, endTime);
+                    }
+                    System.out.println("📅 Jour sélectionné: " + cellDate);
+                });
                 
-                // Configurer les contraintes de colonne
-                if (row == 0) {
-                    ColumnConstraints colConstraints = new ColumnConstraints();
-                    colConstraints.setHgrow(Priority.ALWAYS);
-                    colConstraints.setFillWidth(true);
-                    colConstraints.setMinWidth(100);
-                    calendarGrid.getColumnConstraints().add(colConstraints);
-                }
-                
-                date = date.plusDays(1);
-            }
-            
-            // Configurer les contraintes de ligne
-            RowConstraints rowConstraints = new RowConstraints();
-            rowConstraints.setVgrow(Priority.ALWAYS);
-            rowConstraints.setFillHeight(true);
-            rowConstraints.setMinHeight(80);
-            calendarGrid.getRowConstraints().add(rowConstraints);
-            
-            row++;
-        }
-        
-        refreshEvents();
-    }
-    
-    private void handleDayClick(MouseEvent event) {
-        if (event.getSource() instanceof DayCell dayCell) {
-            LocalDateTime startTime = dayCell.getDate().atTime(9, 0); // Heure par défaut
-            LocalDateTime endTime = startTime.plusHours(1);
-            
-            // Désélectionner les autres cellules
-            dayCells.values().forEach(cell -> cell.setSelected(false));
-            
-            // Sélectionner cette cellule
-            dayCell.setSelected(true);
-            
-            if (onDaySelected != null) {
-                onDaySelected.accept(startTime, endTime);
+                monthGrid.add(dayCell, day, week);
+                GridPane.setHgrow(dayCell, Priority.ALWAYS);
+                GridPane.setVgrow(dayCell, Priority.ALWAYS);
+                GridPane.setFillWidth(dayCell, true);
+                GridPane.setFillHeight(dayCell, true);
             }
         }
+        
+        getChildren().add(monthGrid);
     }
     
-    private void updateMonthLabel() {
-        monthLabel.setText(currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")));
-    }
+    // === MÉTHODES PUBLIQUES ===
     
     public void setCurrentMonth(YearMonth month) {
-        this.currentMonth = month;
-        updateMonthLabel();
-        createCalendarGrid();
+        if (!month.equals(this.currentMonth)) {
+            this.currentMonth = month;
+            refresh();
+        }
     }
     
     public YearMonth getCurrentMonth() {
         return currentMonth;
     }
     
+    public void setOnDaySelected(BiConsumer<LocalDateTime, LocalDateTime> callback) {
+        this.onDaySelected = callback;
+    }
+    
     public void addEvent(String title, LocalDateTime startTime, LocalDateTime endTime, String category) {
+        LocalDate eventDate = startTime.toLocalDate();
+        if (!eventDate.getMonth().equals(currentMonth.getMonth())) {
+            return; // Événement pas dans ce mois
+        }
+        
         Event event = new Event(title, startTime, endTime, category);
         events.add(event);
         
-        // Ajouter l'événement aux cellules concernées
-        LocalDate startDate = startTime.toLocalDate();
-        LocalDate endDate = endTime.toLocalDate();
-        
-        LocalDate date = startDate;
-        while (!date.isAfter(endDate)) {
-            DayCell dayCell = dayCells.get(date);
-            if (dayCell != null) {
-                dayCell.addEvent(event);
-            }
-            date = date.plusDays(1);
+        // Ajouter l'événement à la cellule correspondante
+        DayCell dayCell = dayCells.get(eventDate);
+        if (dayCell != null) {
+            dayCell.addEvent(event);
         }
     }
     
     public void clearEvents() {
         events.clear();
-        dayCells.values().forEach(DayCell::clearEvents);
-    }
-    
-    private void refreshEvents() {
-        // Nettoyer les événements existants
-        dayCells.values().forEach(DayCell::clearEvents);
-        
-        // Ré-ajouter tous les événements
-        for (Event event : events) {
-            LocalDate startDate = event.startTime.toLocalDate();
-            LocalDate endDate = event.endTime.toLocalDate();
-            
-            LocalDate date = startDate;
-            while (!date.isAfter(endDate)) {
-                DayCell dayCell = dayCells.get(date);
-                if (dayCell != null) {
-                    dayCell.addEvent(event);
-                }
-                date = date.plusDays(1);
-            }
+        // Effacer les événements de toutes les cellules
+        for (DayCell dayCell : dayCells.values()) {
+            dayCell.clearEvents();
         }
     }
     
-    public void setOnDaySelected(BiConsumer<LocalDateTime, LocalDateTime> callback) {
-        this.onDaySelected = callback;
-    }
-    
-    // Méthodes utilitaires
-    public void goToPreviousMonth() {
-        setCurrentMonth(currentMonth.minusMonths(1));
-    }
-    
-    public void goToNextMonth() {
-        setCurrentMonth(currentMonth.plusMonths(1));
-    }
-    
-    public void goToToday() {
-        YearMonth today = YearMonth.now();
-        if (!today.equals(currentMonth)) {
-            setCurrentMonth(today);
+    public void refresh() {
+        createMonthView();
+        
+        // Recharger les événements
+        List<Event> tempEvents = new ArrayList<>(events);
+        events.clear();
+        for (Event event : tempEvents) {
+            addEvent(event.title, event.startTime, event.endTime, event.category);
         }
         
-        // Sélectionner aujourd'hui
-        LocalDate todayDate = LocalDate.now();
-        DayCell todayCell = dayCells.get(todayDate);
-        if (todayCell != null) {
-            dayCells.values().forEach(cell -> cell.setSelected(false));
-            todayCell.setSelected(true);
-        }
-    }
-    
-    public List<Event> getEventsForDate(LocalDate date) {
-        DayCell dayCell = dayCells.get(date);
-        return dayCell != null ? dayCell.getEvents() : new ArrayList<>();
+        System.out.println("🔄 Vue Mois rafraîchie pour: " + currentMonth);
     }
 }

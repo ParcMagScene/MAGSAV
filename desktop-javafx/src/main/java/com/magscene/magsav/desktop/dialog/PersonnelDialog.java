@@ -2,11 +2,14 @@ package com.magscene.magsav.desktop.dialog;
 
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.config.SpecialtiesConfigManager;
+import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
@@ -23,6 +26,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
     private final ApiService apiService;
     private final Map<String, Object> existingPersonnel;
     private final boolean isEditMode;
+    private boolean isReadOnlyMode;
     
     // Champs du formulaire
     private TextField firstNameField;
@@ -77,46 +81,100 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
     }
     
     public PersonnelDialog(Map<String, Object> existingPersonnel, ApiService apiService) {
+        this(existingPersonnel, apiService, false);
+    }
+
+    public PersonnelDialog(Map<String, Object> existingPersonnel, ApiService apiService, boolean readOnlyMode) {
         this.apiService = apiService;
         this.existingPersonnel = existingPersonnel;
-        this.isEditMode = (existingPersonnel != null);
+        this.isEditMode = (existingPersonnel != null && !readOnlyMode);
+        this.isReadOnlyMode = readOnlyMode;
         this.specialtiesManager = SpecialtiesConfigManager.getInstance();
         
-        setTitle(isEditMode ? "Modifier le personnel" : "Nouveau personnel");
-        setHeaderText(isEditMode ? "Modification d'un membre du personnel" : "Creation d'un nouveau membre du personnel");
+        if (isReadOnlyMode) {
+            setTitle("Détails du personnel");
+        } else {
+            setTitle(isEditMode ? "Modifier le personnel" : "Nouveau personnel");
+        }
         
-        // Configuration des boutons
-        ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
-        getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        // Creation du contenu avec boutons personnalisés
+        VBox mainContainer = new VBox();
+        mainContainer.getChildren().add(createContent());
         
-        // Creation du contenu
-        createContent();
+        if (isReadOnlyMode) {
+            mainContainer.getChildren().add(createReadOnlyButtonBar());
+        } else {
+            mainContainer.getChildren().add(createCustomButtonBar());
+        }
         
-        // Validation et conversion du resultat
-        Button saveButton = (Button) getDialogPane().lookupButton(saveButtonType);
-        saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
-            if (!validateForm()) {
-                event.consume(); // Empeche la fermeture si validation echoue
-            }
-        });
+        getDialogPane().setContent(mainContainer);
         
-        setResultConverter(dialogButton -> {
-            if (dialogButton == saveButtonType) {
-                return createPersonnelFromFields();
-            }
-            return null;
-        });
+        // Désactiver les champs en mode lecture seule
+        if (isReadOnlyMode) {
+            setFieldsReadOnly();
+        }
         
         // Chargement des donnees existantes
-        if (isEditMode) {
+        if (existingPersonnel != null) {
             loadExistingData();
         }
         
         // Focus initial
-        Platform.runLater(() -> firstNameField.requestFocus());
+        if (!isReadOnlyMode) {
+            Platform.runLater(() -> firstNameField.requestFocus());
+        }
     }
     
-    private void createContent() {
+    private HBox createReadOnlyButtonBar() {
+        return ViewUtils.createDialogButtonBar(
+            () -> {
+                // Action Modifier : ouvrir en mode édition puis fermer ce dialog
+                PersonnelDialog editDialog = new PersonnelDialog(existingPersonnel, apiService, false);
+                editDialog.showAndWait().ifPresent(result -> {
+                    // Propager le résultat vers le parent si nécessaire
+                    setResult(result);
+                });
+                close();
+            },
+            this::close,
+            null
+        );
+    }
+    
+    private HBox createCustomButtonBar() {
+        return ViewUtils.createDialogButtonBar(
+            this::handleSave,
+            this::close,
+            null
+        );
+    }
+    
+    private void handleSave() {
+        if (validateForm()) {
+            Map<String, Object> result = createPersonnelFromFields();
+            setResult(result);
+            close();
+        }
+    }
+    
+    /**
+     * Désactive tous les champs pour le mode lecture seule
+     */
+    private void setFieldsReadOnly() {
+        if (firstNameField != null) firstNameField.setDisable(true);
+        if (lastNameField != null) lastNameField.setDisable(true);
+        if (emailField != null) emailField.setDisable(true);
+        if (phoneField != null) phoneField.setDisable(true);
+        if (typeCombo != null) typeCombo.setDisable(true);
+        if (statusCombo != null) statusCombo.setDisable(true);
+        if (jobTitleField != null) jobTitleField.setDisable(true);
+        if (departmentField != null) departmentField.setDisable(true);
+        if (hireDatePicker != null) hireDatePicker.setDisable(true);
+        if (notesArea != null) notesArea.setDisable(true);
+        if (specialtiesContainer != null) specialtiesContainer.setDisable(true);
+    }
+    
+    private ScrollPane createContent() {
         VBox content = new VBox(15);
         content.setPadding(new Insets(20));
         
@@ -135,7 +193,10 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefSize(500, 600);
         
-        getDialogPane().setContent(scrollPane);
+        // Appliquer le thème dark au dialogue
+        ThemeManager.getInstance().applyThemeToDialog(getDialogPane());
+        
+        return scrollPane;
     }
     
     private VBox createPersonalInfoSection() {

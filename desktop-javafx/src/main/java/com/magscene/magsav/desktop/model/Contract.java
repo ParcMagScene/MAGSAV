@@ -5,6 +5,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import com.magscene.magsav.desktop.component.DetailPanel;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -233,6 +234,7 @@ public class Contract implements DetailPanelProvider {
         }
         return invoicedAmount.divide(totalAmount, 4, java.math.RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
+                .setScale(1, RoundingMode.HALF_UP)
                 .doubleValue();
     }
 

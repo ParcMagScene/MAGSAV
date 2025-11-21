@@ -106,8 +106,7 @@ public class PlanningConflictService {
             }
         }
         
-        // Conflit de localisation (si même lieu - à implémenter plus tard)
-        // Conflit de priorité (événements critiques vs non critiques)
+        // Conflit de localisation (si même lieu - à implémenter plus tard); // Conflit de priorité (événements critiques vs non critiques)
         
         if (!conflictTypes.isEmpty()) {
             return new ConflictInfo(

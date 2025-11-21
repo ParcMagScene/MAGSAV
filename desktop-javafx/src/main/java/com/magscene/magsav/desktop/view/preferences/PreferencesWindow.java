@@ -11,6 +11,7 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.StandardColors;
 
 /**
  * Fenêtre principale des préférences de l'application
@@ -81,7 +82,7 @@ public class PreferencesWindow extends Stage {
         VBox header = new VBox(10);
         header.setPadding(new Insets(20));
         header.setAlignment(Pos.CENTER);
-        header.setStyle("-fx-background-color: linear-gradient(to bottom, #3498db, #2980b9);");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Label titleLabel = new Label("Préférences MAGSAV-3.0");
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
@@ -89,7 +90,7 @@ public class PreferencesWindow extends Stage {
         
         Label subtitleLabel = new Label("Personnalisez votre expérience utilisateur");
         subtitleLabel.setFont(Font.font("System", 14));
-        subtitleLabel.setTextFill(Color.web("#ecf0f1"));
+        subtitleLabel.setTextFill(Color.web(StandardColors.NEUTRAL_LIGHT));
         
         header.getChildren().addAll(titleLabel, subtitleLabel);
         return header;
@@ -222,7 +223,7 @@ public class PreferencesWindow extends Stage {
         HBox footer = new HBox(15);
         footer.setPadding(new Insets(20));
         footer.setAlignment(Pos.CENTER_RIGHT);
-        footer.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #dee2e6; -fx-border-width: 1 0 0 0;");
+        footer.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: " + StandardColors.getBorderColor() + "; -fx-border-width: 1 0 0 0;");
         
         Button cancelButton = new Button("❌ Annuler");
         cancelButton.setPrefWidth(120);
@@ -230,12 +231,12 @@ public class PreferencesWindow extends Stage {
         
         Button applyButton = new Button("✅ Appliquer");
         applyButton.setPrefWidth(120);
-        applyButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         applyButton.setOnAction(e -> applyPreferences());
         
         Button okButton = new Button("✔️ OK");
         okButton.setPrefWidth(120);
-        okButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         okButton.setOnAction(e -> {
             applyPreferences();
             close();
@@ -246,8 +247,7 @@ public class PreferencesWindow extends Stage {
     }
     
     private void applyPreferences() {
-        // Les préférences des thèmes sont appliquées directement
-        // Ici on pourrait ajouter d'autres applications de préférences
+        // Les préférences des thèmes sont appliquées directement; // Ici on pourrait ajouter d'autres applications de préférences
         
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Préférences");

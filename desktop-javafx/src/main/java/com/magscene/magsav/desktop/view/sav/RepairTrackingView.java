@@ -6,24 +6,27 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 
 import com.magscene.magsav.desktop.model.ServiceRequest;
-// import com.magscene.magsav.desktop.model.Equipment; // Supprimé après refactoring
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.theme.SpacingManager;
 import com.magscene.magsav.desktop.util.AlertUtil;
 import com.magscene.magsav.desktop.dialog.ServiceRequestDialog;
-import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import javafx.stage.FileChooser;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Interface avancée de suivi des réparations et interventions SAV
@@ -31,10 +34,12 @@ import java.util.concurrent.CompletableFuture;
  */
 public class RepairTrackingView extends BorderPane {
     
+    private static final Logger logger = Logger.getLogger(RepairTrackingView.class.getName());
+    private static final DateTimeFormatter CSV_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    
     private final ApiService apiService;
     private final ObservableList<ServiceRequest> serviceRequests;
     private final TableView<ServiceRequest> requestsTable;
-    private final TextArea historyArea;
     private final Label statusSummaryLabel;
     
     // Les filtres et la recherche sont maintenant dans le toolbar parent SAVManagerView
@@ -48,7 +53,6 @@ public class RepairTrackingView extends BorderPane {
         
         // Initialisation des composants principaux
         this.requestsTable = createRequestsTable();
-        this.historyArea = new TextArea();
         this.statusSummaryLabel = new Label();
         
         // Construction de l'interface
@@ -60,108 +64,22 @@ public class RepairTrackingView extends BorderPane {
     }
     
     private void setupInterface() {
-        // En-tête avec titre et résumé
-        HBox headerBox = createHeaderSection();
-        
-        // Section principale avec tableau et détails
-        HBox mainSection = createMainSection();
-        
-        // Layout principal - EXACTEMENT comme Ventes et Installations
-        VBox topContainer = new VBox(headerBox);
-        
-        setTop(topContainer);
-        setCenter(mainSection);
-    }
-    
-    private HBox createHeaderSection() {
-        HBox headerBox = new HBox(SpacingManager.SPACING_NORMAL);
-        headerBox.setAlignment(Pos.CENTER_LEFT);
-        headerBox.setPadding(new Insets(0, 0, 5, 0)); // Padding minimal comme Ventes et Installations
-        
-        // Titre principal
-        Label titleLabel = new Label("🔧 Suivi des Réparations SAV");
-        titleLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
-        
-        // Séparateur
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        // Résumé des statuts
-        statusSummaryLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 8px 12px; -fx-background-radius: 4px;");
-        
-        headerBox.getChildren().addAll(titleLabel, spacer, statusSummaryLabel);
-        return headerBox;
-    }
-    
-
-    
-    private HBox createMainSection() {
-        HBox mainSection = new HBox(15);
-        mainSection.setAlignment(Pos.TOP_LEFT);
-        
-        // Tableau des demandes (70% de la largeur)
-        VBox tableSection = createTableSection();
-        
-        // Panneau de détails et historique (30% de la largeur)
-        VBox detailsSection = createDetailsSection();
-        
-        // Configuration des proportions
-        HBox.setHgrow(tableSection, Priority.ALWAYS);
-        detailsSection.setPrefWidth(350);
-        detailsSection.setMinWidth(300);
-        
-        mainSection.getChildren().addAll(tableSection, detailsSection);
-        return mainSection;
-    }
-    
-    private VBox createTableSection() {
-        VBox tableSection = new VBox(10);
-        tableSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
-        
-        Label tableTitle = new Label("📋 Liste des Interventions");
-        tableTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
-        
-        // Configuration du tableau
+        // STRUCTURE SIMPLIFIÉE - Direct DetailPanelContainer comme vues standardisées; // Plus de containers imbriqués inutiles; // Configuration de la table (déplacée ici depuis createTableSection)
         requestsTable.setPrefHeight(400);
         requestsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
-        requestsTable.setStyle("-fx-background-color: transparent;");
-        
-        // Enveloppement dans DetailPanelContainer pour le volet de détail
+        // requestsTable supprimé - Style géré par CSS
         DetailPanelContainer containerWithDetail = new DetailPanelContainer(requestsTable);
         
-        tableSection.getChildren().addAll(tableTitle, containerWithDetail);
-        VBox.setVgrow(containerWithDetail, Priority.ALWAYS);
-        
-        return tableSection;
+        // Configuration directe dans le BorderPane - INTERFACE ÉPURÉE
+        setCenter(containerWithDetail);
     }
     
-    private VBox createDetailsSection() {
-        VBox detailsSection = new VBox(10);
-        detailsSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
-        
-        Label detailsTitle = new Label("📄 Détails & Historique");
-        detailsTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
-        
-        // Zone d'historique
-        historyArea.setPrefHeight(350);
-        historyArea.setEditable(false);
-        historyArea.setWrapText(true);
-        historyArea.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #dee2e6; -fx-border-radius: 4px; -fx-font-family: 'Courier New'; -fx-font-size: 11px;");
-        historyArea.setPromptText("Sélectionnez une demande pour voir les détails et l'historique...");
-        
-        detailsSection.getChildren().addAll(detailsTitle, historyArea);
-        VBox.setVgrow(historyArea, Priority.ALWAYS);
-        
-        return detailsSection;
-    }
-    
-    // Méthode createActionsBar() supprimée - Les boutons sont maintenant gérés
-    // par la toolbar principale dans SAVManagerView pour éviter les doublons
+    // SUPPRESSION createHeaderSection() - Plus besoin de header avec containers imbriqués; // SUPPRESSION createMainSection() - Plus de containers imbriqués inutiles; // SUPPRESSION createTableSection() - Configuration directe dans setupInterface(); // Méthode createActionsBar() supprimée - Les boutons sont maintenant gérés; // par la toolbar principale dans SAVManagerView pour éviter les doublons
     
     private TableView<ServiceRequest> createRequestsTable() {
         TableView<ServiceRequest> table = new TableView<>();
         table.setItems(serviceRequests);
-        table.getStyleClass().add("interventions-table");
+        table.getStyleClass().add("equipment-table");
         
         // Colonne ID avec indicateur de priorité
         TableColumn<ServiceRequest, String> idCol = new TableColumn<>("ID");
@@ -217,37 +135,73 @@ public class RepairTrackingView extends BorderPane {
             return new javafx.beans.property.SimpleStringProperty("N/A");
         });
         
-        table.getColumns().addAll(idCol, titleCol, typeCol, statusCol, requesterCol, technicianCol, dateCol);
+        // Ajout individuel des colonnes pour éviter les warnings de generic array
+        table.getColumns().add(idCol);
+        table.getColumns().add(titleCol);
+        table.getColumns().add(typeCol);
+        table.getColumns().add(statusCol);
+        table.getColumns().add(requesterCol);
+        table.getColumns().add(technicianCol);
+        table.getColumns().add(dateCol);
         
-        // Style du tableau
+        // Style du tableau et gestion du double-clic
         table.setRowFactory(tv -> {
-            TableRow<ServiceRequest> row = new TableRow<>();
+            TableRow<ServiceRequest> row = new TableRow<ServiceRequest>();
             
-            // Runnable pour mettre à jour le style
+            // Gestion du double-clic pour ouvrir en mode lecture seule
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    openServiceRequestDetails(row.getItem());
+                }
+            });
+            
+            // Méthode pour appliquer le style approprié
             Runnable updateStyle = () -> {
                 if (row.isEmpty() || row.getItem() == null) {
                     row.setStyle("");
-                } else if (row.isSelected()) {
-                    // Style de sélection prioritaire (#142240)
-                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
-                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    return;
+                }
+                
+                // Priorité 1: Si sélectionné, couleur de sélection MAGSAV
+                if (row.isSelected()) {
+                    // Style de sélection plus visible avec bordure
+                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
                                "-fx-border-width: 2px;");
-                } else {
-                    // Style basé sur la priorité et le statut
-                    ServiceRequest item = row.getItem();
-                    String priority = item.getPriority() != null ? item.getPriority().toString() : "MEDIUM";
-                    String status = item.getStatus() != null ? item.getStatus().toString() : "OPEN";
-                    
-                    String backgroundColor = getRowBackgroundColor(priority, status);
-                    row.setStyle(backgroundColor + "; -fx-border-color: #ecf0f1; -fx-border-width: 0 0 1 0;");
+                    return;
+                }
+                
+                // Priorité 2: Couleur selon le statut (seulement si pas sélectionné)
+                ServiceRequest item = row.getItem();
+                String status = item.getStatus() != null ? item.getStatus().toString() : "OPEN";
+                
+                switch (status) {
+                    case "OPEN":
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                        break;
+                    case "IN_PROGRESS":
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                        break;
+                    case "RESOLVED":
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                        break;
+                    case "CLOSED":
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+                        break;
+                    default:
+                        row.setStyle("");
                 }
             };
             
-            // Écouter les changements de sélection et d'item
-            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
-            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            // Mise à jour du style quand l'item change
             row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
+            // Mise à jour du style quand la sélection change
+            row.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> updateStyle.run());
+            
+            // Appel initial pour s'assurer que le style est appliqué
+            updateStyle.run();
             
             return row;
         });
@@ -256,83 +210,14 @@ public class RepairTrackingView extends BorderPane {
     }
     
     private void setupEventHandlers() {
-        // Gestionnaire pour la sélection dans le tableau
-        requestsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                displayServiceRequestDetails(newSelection);
-            }
-        });
-        
-        // Les gestionnaires de filtres sont maintenant dans le toolbar parent SAVManagerView
+        // La gestion de la sélection et l'affichage des détails sont maintenant; // automatiquement gérés par le DetailPanelContainer; // Les gestionnaires de filtres sont maintenant dans le toolbar parent SAVManagerView
     }
     
     private void applyFilters() {
-        // Les filtres sont maintenant dans le toolbar parent SAVManagerView
-        // Cette méthode sera connectée aux filtres du parent quand nécessaire
-        updateStatusSummary();
+        // Les filtres sont maintenant dans le toolbar parent SAVManagerView; // Cette méthode sera connectée aux filtres du parent quand nécessaire; // Plus de mise à jour des statistiques - interface épurée
     }
     
-    private void displayServiceRequestDetails(ServiceRequest request) {
-        StringBuilder details = new StringBuilder();
-        
-        // En-tête avec informations principales
-        details.append("═══ DÉTAILS DE LA DEMANDE SAV ═══\n\n");
-        details.append("🆔 ID: ").append(request.getId()).append("\n");
-        details.append("📝 Titre: ").append(request.getTitle()).append("\n");
-        details.append("📊 Statut: ").append(getStatusIcon(request.getStatus().toString())).append(" ").append(request.getStatus()).append("\n");
-        details.append("⚡ Priorité: ").append(getPriorityIcon(request.getPriority().toString())).append(" ").append(request.getPriority()).append("\n");
-        details.append("🔧 Type: ").append(request.getType()).append("\n\n");
-        
-        // Personnes impliquées
-        details.append("═══ PERSONNES ═══\n");
-        details.append("👤 Demandeur: ").append(request.getRequesterName() != null ? request.getRequesterName() : "N/A").append("\n");
-        details.append("📧 Email: ").append(request.getRequesterEmail() != null ? request.getRequesterEmail() : "N/A").append("\n");
-        details.append("🔨 Technicien: ").append(request.getAssignedTechnician() != null ? request.getAssignedTechnician() : "Non assigné").append("\n\n");
-        
-        // Équipement concerné
-        if (request.getEquipmentName() != null && !request.getEquipmentName().trim().isEmpty()) {
-            details.append("═══ ÉQUIPEMENT ═══\n");
-            details.append("🖥️ Équipement: ").append(request.getEquipmentName()).append("\n\n");
-        }
-        
-        // Description
-        if (request.getDescription() != null && !request.getDescription().trim().isEmpty()) {
-            details.append("═══ DESCRIPTION ═══\n");
-            details.append(request.getDescription()).append("\n\n");
-        }
-        
-        // Coût estimé
-        if (request.getEstimatedCost() != null) {
-            details.append("💰 Coût estimé: ").append(String.format("%.2f €", request.getEstimatedCost())).append("\n\n");
-        }
-        
-        // Notes techniques
-        if (request.getResolutionNotes() != null && !request.getResolutionNotes().trim().isEmpty()) {
-            details.append("═══ NOTES TECHNIQUES ═══\n");
-            details.append(request.getResolutionNotes()).append("\n\n");
-        }
-        
-        // Dates importantes
-        details.append("═══ CHRONOLOGIE ═══\n");
-        if (request.getCreatedAt() != null) {
-            details.append("📅 Créé le: ").append(request.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
-        }
-        if (request.getUpdatedAt() != null) {
-            details.append("🔄 Modifié le: ").append(request.getUpdatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))).append("\n");
-        }
-        
-        historyArea.setText(details.toString());
-    }
-    
-    private void updateStatusSummary() {
-        long total = serviceRequests.size();
-        long open = serviceRequests.stream().mapToLong(r -> 
-            (r.getStatus().toString().equals("OPEN") || r.getStatus().toString().equals("IN_PROGRESS")) ? 1 : 0).sum();
-        long urgent = serviceRequests.stream().mapToLong(r -> 
-            r.getPriority().toString().equals("URGENT") ? 1 : 0).sum();
-        
-        statusSummaryLabel.setText(String.format("📊 Total: %d | 🔓 Ouvertes: %d | 🚨 Urgentes: %d", total, open, urgent));
-    }
+    // L'affichage des détails est maintenant géré par le volet de visualisation; // via l'implémentation DetailPanelProvider de ServiceRequest; // SUPPRESSION de updateStatusSummary() - statistiques supprimées pour interface épurée
     
     private String getPriorityIcon(String priority) {
         switch (priority.toUpperCase()) {
@@ -357,26 +242,25 @@ public class RepairTrackingView extends BorderPane {
     }
     
     private String getRowBackgroundColor(String priority, String status) {
-        // Couleur de fond selon priorité et statut
+        // Couleur de fond selon priorité et statut (compatible thème sombre)
         if (priority.equals("URGENT")) {
-            return "-fx-background-color: #ffebee";
+            return "-fx-background-color: rgba(244, 67, 54, 0.2)"; // Rouge translucide pour urgent
         } else if (status.equals("RESOLVED")) {
-            return "-fx-background-color: #e8f5e8";
+            return "-fx-background-color: rgba(76, 175, 80, 0.2)"; // Vert translucide pour résolu
         } else if (status.equals("IN_PROGRESS")) {
-            return "-fx-background-color: #fff3e0";
+            return "-fx-background-color: rgba(255, 152, 0, 0.2)"; // Orange translucide pour en cours
         }
         return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor();
     }
     
     private void loadServiceRequests() {
-        // Indicateur de chargement
-        statusSummaryLabel.setText("🔄 Chargement en cours...");
+        // Chargement silencieux - plus d'indicateur dans les statistiques
+        System.out.println("� Chargement des demandes SAV...");
         
         Task<List<ServiceRequest>> loadTask = new Task<List<ServiceRequest>>() {
             @Override
             protected List<ServiceRequest> call() throws Exception {
-                // Appel asynchrone à l'API
-                // Simulation de données pour le moment
+                // Appel asynchrone à l'API; // Simulation de données pour le moment
                 return RepairTrackingView.this.createSimulatedServiceRequests();
             }
             
@@ -387,8 +271,11 @@ public class RepairTrackingView extends BorderPane {
                     serviceRequests.clear();
                     if (requests != null) {
                         serviceRequests.addAll(requests);
+                        System.out.println("🔧 SAV: " + requests.size() + " demandes chargées avec succès");
+                    } else {
+                        System.out.println("❌ SAV: Aucune demande reçue");
                     }
-                    updateStatusSummary();
+                    // Plus de mise à jour des statistiques - interface épurée
                     applyFilters(); // Réappliquer les filtres actuels
                 });
             }
@@ -396,7 +283,7 @@ public class RepairTrackingView extends BorderPane {
             @Override
             protected void failed() {
                 Platform.runLater(() -> {
-                    statusSummaryLabel.setText("❌ Erreur de chargement");
+                    // Plus d'affichage des erreurs dans les statistiques - interface épurée
                     AlertUtil.showError("Erreur", "Impossible de charger les demandes SAV: " + 
                         getException().getMessage());
                 });
@@ -408,8 +295,24 @@ public class RepairTrackingView extends BorderPane {
         loadThread.start();
     }
     
+    /**
+     * Ouvre la fiche détaillée d'une demande SAV en mode lecture seule
+     */
+    private void openServiceRequestDetails(ServiceRequest request) {
+        ServiceRequestDialog dialog = new ServiceRequestDialog(request, true); // true = mode lecture seule
+        java.util.Optional<ServiceRequest> result = dialog.showAndWait();
+        
+        if (result.isPresent()) {
+            // Si des modifications ont été apportées, rafraîchir la liste
+            loadServiceRequests();
+        }
+    }
+    
+    /**
+     * Ouvre le dialogue d'édition d'une demande SAV (appelé depuis la toolbar)
+     */
     private void openServiceRequestDialog(ServiceRequest existingRequest) {
-        ServiceRequestDialog dialog = new ServiceRequestDialog(existingRequest);
+        ServiceRequestDialog dialog = new ServiceRequestDialog(existingRequest, false); // false = mode édition
         java.util.Optional<ServiceRequest> result = dialog.showAndWait();
         
         if (result.isPresent()) {
@@ -454,9 +357,185 @@ public class RepairTrackingView extends BorderPane {
         saveThread.start();
     }
     
+    /**
+     * Méthode publique pour exporter les données de réparation (appelée depuis SAVManagerView)
+     */
+    public void exportToCSVPublic() {
+        exportToCSV();
+    }
+    
     private void exportToCSV() {
-        // TODO: Implémenter l'export CSV des demandes filtrées
-        AlertUtil.showInfo("Export", "Fonctionnalité d'export en cours de développement");
+        if (serviceRequests == null || serviceRequests.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Export CSV", "Aucune donnée à exporter", 
+                     "La liste des demandes de réparation est vide.");
+            return;
+        }
+
+        // Configuration du FileChooser
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Sauvegarder l'export CSV - Suivi Réparations");
+        fileChooser.setInitialFileName("repair_tracking_" + 
+            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".csv");
+        
+        // Filtre pour fichiers CSV
+        FileChooser.ExtensionFilter extFilter = 
+            new FileChooser.ExtensionFilter("Fichiers CSV (*.csv)", "*.csv");
+        fileChooser.getExtensionFilters().add(extFilter);
+
+        // Obtenir le Stage parent depuis le Scene de ce VBox
+        javafx.stage.Stage ownerStage = (javafx.stage.Stage) this.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(ownerStage);
+
+        if (file != null) {
+            exportRepairDataToCSV(file);
+        }
+    }
+
+    /**
+     * Effectue l'export des données de réparation vers le fichier CSV spécifié
+     */
+    private void exportRepairDataToCSV(File file) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            // Écriture des en-têtes CSV spécifiques aux réparations
+            String headers = "ID,Titre,Type,Statut,Priorité,Demandeur,Email,Technicien Assigné,Date Création,Date Résolution,Coût Estimé,Coût Réel,Notes Résolution,Équipement,Description";
+            writer.write(headers);
+            writer.newLine();
+
+            // Écriture des données
+            for (ServiceRequest request : serviceRequests) {
+                StringBuilder line = new StringBuilder();
+                
+                // ID
+                line.append(escapeCSVField(request.getId() != null ? request.getId().toString() : ""));
+                line.append(",");
+                
+                // Titre
+                line.append(escapeCSVField(request.getTitle()));
+                line.append(",");
+                
+                // Type
+                line.append(escapeCSVField(request.getType() != null ? request.getType().toString() : ""));
+                line.append(",");
+                
+                // Statut
+                line.append(escapeCSVField(request.getStatus() != null ? request.getStatus().toString() : ""));
+                line.append(",");
+                
+                // Priorité
+                line.append(escapeCSVField(request.getPriority() != null ? request.getPriority().toString() : ""));
+                line.append(",");
+                
+                // Demandeur
+                line.append(escapeCSVField(request.getRequesterName()));
+                line.append(",");
+                
+                // Email
+                line.append(escapeCSVField(request.getRequesterEmail()));
+                line.append(",");
+                
+                // Technicien assigné
+                line.append(escapeCSVField(request.getAssignedTechnician()));
+                line.append(",");
+                
+                // Date de création
+                line.append(escapeCSVField(getFormattedDate(request.getCreatedAt())));
+                line.append(",");
+                
+                // Date de résolution
+                line.append(escapeCSVField(getFormattedDate(request.getResolvedAt())));
+                line.append(",");
+                
+                // Coût estimé
+                line.append(escapeCSVField(getFormattedCost(request.getEstimatedCost())));
+                line.append(",");
+                
+                // Coût réel
+                line.append(escapeCSVField(getFormattedCost(request.getActualCost())));
+                line.append(",");
+                
+                // Notes de résolution
+                line.append(escapeCSVField(request.getResolutionNotes()));
+                line.append(",");
+                
+                // Équipement (si disponible)
+                line.append(escapeCSVField(request.getEquipmentName()));
+                line.append(",");
+                
+                // Description
+                line.append(escapeCSVField(request.getDescription()));
+
+                writer.write(line.toString());
+                writer.newLine();
+            }
+
+            logger.log(Level.INFO, "Export CSV réussi: {0} demandes de réparation exportées vers {1}", 
+                      new Object[]{serviceRequests.size(), file.getAbsolutePath()});
+
+            // Confirmation à l'utilisateur
+            showAlert(Alert.AlertType.INFORMATION, "Export CSV", "Export terminé avec succès", 
+                     String.format("✅ %d demandes de réparation exportées vers:\n%s", serviceRequests.size(), file.getName()));
+
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Erreur lors de l'export CSV vers " + file.getAbsolutePath(), e);
+            showAlert(Alert.AlertType.ERROR, "Erreur d'Export", "Impossible d'exporter les données", 
+                     "Erreur lors de l'écriture du fichier CSV:\n" + e.getMessage());
+        }
+    }
+
+    /**
+     * Échappe les champs CSV en gérant les guillemets et virgules
+     */
+    private String escapeCSVField(String field) {
+        if (field == null || field.isEmpty()) {
+            return "";
+        }
+        
+        // Si le champ contient des guillemets, virgules ou sauts de ligne, on l'entoure de guillemets
+        if (field.contains("\"") || field.contains(",") || field.contains("\n") || field.contains("\r")) {
+            // Échapper les guillemets en les doublant
+            String escaped = field.replace("\"", "\"\"");
+            return "\"" + escaped + "\"";
+        }
+        
+        return field;
+    }
+
+    /**
+     * Formate un coût pour l'affichage CSV
+     */
+    private String getFormattedCost(Double cost) {
+        if (cost == null) return "";
+        
+        try {
+            return String.format("%.2f €", cost);
+        } catch (Exception e) {
+            return cost.toString();
+        }
+    }
+
+    /**
+     * Formate une date pour l'affichage CSV
+     */
+    private String getFormattedDate(LocalDateTime date) {
+        if (date == null) return "";
+        
+        try {
+            return date.format(CSV_DATE_FORMATTER);
+        } catch (Exception e) {
+            // Si le parsing échoue, retourner la valeur brute
+            return date.toString();
+        }
+    }
+
+    /**
+     * Méthode utilitaire pour afficher les alertes
+     */
+    private void showAlert(Alert.AlertType type, String title, String header, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
     
     /**
@@ -491,6 +570,8 @@ public class RepairTrackingView extends BorderPane {
     
     private List<ServiceRequest> createSimulatedServiceRequests() {
         List<ServiceRequest> requests = new java.util.ArrayList<>();
+        
+        System.out.println("🔧 Création de données SAV simulées...");
         
         // Simulation de quelques demandes SAV
         ServiceRequest req1 = new ServiceRequest();
@@ -529,6 +610,58 @@ public class RepairTrackingView extends BorderPane {
         req3.setResolvedAt(java.time.LocalDateTime.now().minusDays(1));
         requests.add(req3);
         
+        System.out.println("✅ " + requests.size() + " demandes SAV simulées créées");
+        
         return requests;
+    }
+
+    /**
+     * Méthode publique appelée depuis la recherche globale pour sélectionner une réparation
+     */
+    public void selectAndViewRepair(String repairName) {
+        System.out.println("🔍 Recherche réparation: " + repairName + " dans " + serviceRequests.size() + " éléments");
+        
+        // Attendre que les données soient chargées si nécessaire
+        if (serviceRequests.isEmpty()) {
+            System.out.println("⏳ Données réparation non chargées, rechargement...");
+            loadServiceRequests();
+            // Programmer une nouvelle tentative après le chargement
+            Platform.runLater(() -> {
+                new Thread(() -> {
+                    try { Thread.sleep(1000); } catch (InterruptedException e) {}
+                    Platform.runLater(() -> selectAndViewRepair(repairName));
+                }).start();
+            });
+            return;
+        }
+        
+        Platform.runLater(() -> {
+            // Rechercher la réparation dans la liste
+            boolean found = false;
+            for (ServiceRequest request : serviceRequests) {
+                if ((request.getTitle() != null && 
+                     request.getTitle().toLowerCase().contains(repairName.toLowerCase())) ||
+                    (request.getDescription() != null && 
+                     request.getDescription().toLowerCase().contains(repairName.toLowerCase())) ||
+                    (request.getRequesterName() != null && 
+                     request.getRequesterName().toLowerCase().contains(repairName.toLowerCase()))) {
+                    
+                    // Sélectionner la réparation dans la table
+                    requestsTable.getSelectionModel().select(request);
+                    requestsTable.scrollTo(request);
+                    
+                    // Afficher le détail dans le panneau
+                    requestsTable.requestFocus();
+                    
+                    found = true;
+                    System.out.println("✅ Réparation trouvée et sélectionnée: " + request.getTitle());
+                    break;
+                }
+            }
+            
+            if (!found) {
+                System.out.println("❌ Réparation non trouvée: " + repairName);
+            }
+        });
     }
 }

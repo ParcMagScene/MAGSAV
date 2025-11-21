@@ -76,6 +76,7 @@ public class QRCodeScannerView extends VBox {
         this.statsLabel = new Label();
         this.sessionTimeLabel = new Label();
         this.quickSearchField = new TextField();
+        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(this.quickSearchField);
         this.categoryFilter = new ComboBox<>();
         this.statusFilter = new ComboBox<>();
         
@@ -171,14 +172,14 @@ public class QRCodeScannerView extends VBox {
         // Boutons de scanning
         VBox buttonsBox = new VBox(8);
         
-        scanButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 6px; -fx-font-weight: bold; -fx-padding: 10px 15px; -fx-font-size: 12px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         scanButton.setPrefWidth(150);
         
-        cameraButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px; -fx-font-size: 11px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         cameraButton.setPrefWidth(150);
         
         Button batchScanBtn = new Button("📋 Scan en lot");
-        batchScanBtn.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px; -fx-font-size: 11px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         batchScanBtn.setPrefWidth(150);
         
         buttonsBox.getChildren().addAll(scanButton, cameraButton, batchScanBtn);
@@ -192,7 +193,7 @@ public class QRCodeScannerView extends VBox {
         cameraStatusLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #e74c3c; -fx-font-weight: bold;");
         
         Button testCameraBtn = new Button("🔍 Test caméra");
-        testCameraBtn.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 10px; -fx-padding: 4px 8px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         statusBox.getChildren().addAll(statusLabel, cameraStatusLabel, testCameraBtn);
         
@@ -217,14 +218,14 @@ public class QRCodeScannerView extends VBox {
         resultsActionsBox.setAlignment(Pos.CENTER_LEFT);
         
         Button clearResultsBtn = new Button("🗑️ Vider");
-        clearResultsBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 10px; -fx-padding: 4px 8px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         clearResultsBtn.setOnAction(e -> scanResultArea.clear());
         
         Button copyResultsBtn = new Button("📋 Copier");
-        copyResultsBtn.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 10px; -fx-padding: 4px 8px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Button exportResultsBtn = new Button("💾 Exporter");
-        exportResultsBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 10px; -fx-padding: 4px 8px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         resultsActionsBox.getChildren().addAll(clearResultsBtn, copyResultsBtn, exportResultsBtn);
         
@@ -234,7 +235,7 @@ public class QRCodeScannerView extends VBox {
     
     private VBox createInstructionsBox() {
         VBox instructionsBox = new VBox(5);
-        instructionsBox.setStyle("-fx-background-color: #e8f8f5; -fx-padding: 10px; -fx-background-radius: 6px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Label instructionsTitle = new Label("💡 Instructions d'utilisation");
         instructionsTitle.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #16a085;");
@@ -299,7 +300,7 @@ public class QRCodeScannerView extends VBox {
         
         // Tableau d'inventaire
         inventoryTable.setPrefHeight(350);
-        inventoryTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        inventoryTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         
         inventorySection.getChildren().addAll(tableHeaderBox, filtersBox, inventoryTable);
         VBox.setVgrow(inventoryTable, Priority.ALWAYS);
@@ -324,7 +325,7 @@ public class QRCodeScannerView extends VBox {
         statusFilter.setStyle("-fx-font-size: 11px; -fx-background-radius: 4px;");
         
         Button resetFiltersBtn = new Button("🔄 Reset");
-        resetFiltersBtn.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 10px; -fx-padding: 4px 8px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         resetFiltersBtn.setOnAction(e -> resetFilters());
         
         filtersBox.getChildren().addAll(
@@ -368,15 +369,15 @@ public class QRCodeScannerView extends VBox {
         VBox actionsBox = new VBox(5);
         
         Button editEquipmentBtn = new Button("✏️ Modifier");
-        editEquipmentBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px; -fx-padding: 6px 12px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         editEquipmentBtn.setPrefWidth(120);
         
         Button printQRBtn = new Button("🖨️ Imprimer QR");
-        printQRBtn.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px; -fx-padding: 6px 12px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         printQRBtn.setPrefWidth(120);
         
         Button moveEquipmentBtn = new Button("📦 Déplacer");
-        moveEquipmentBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px; -fx-padding: 6px 12px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         moveEquipmentBtn.setPrefWidth(120);
         
         actionsBox.getChildren().addAll(editEquipmentBtn, printQRBtn, moveEquipmentBtn);
@@ -393,20 +394,20 @@ public class QRCodeScannerView extends VBox {
         actionsBar.setPadding(new Insets(15, 0, 0, 0));
         
         Button newInventoryBtn = new Button("➕ Ajouter équipement");
-        newInventoryBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 6px; -fx-font-weight: bold; -fx-padding: 10px 15px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Button generateQRBtn = new Button("📱 Générer QR Code");
-        generateQRBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Button exportInventoryBtn = new Button("📊 Exporter inventaire");
-        exportInventoryBtn.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Button syncInventoryBtn = new Button("🔄 Synchroniser");
-        syncInventoryBtn.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         syncInventoryBtn.setOnAction(e -> syncInventoryWithBackend());
         
         Button resetSessionBtn = new Button("🗑️ Nouvelle session");
-        resetSessionBtn.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         resetSessionBtn.setOnAction(e -> resetScanningSession());
         
         actionsBar.getChildren().addAll(newInventoryBtn, generateQRBtn, exportInventoryBtn, syncInventoryBtn, resetSessionBtn);
@@ -469,19 +470,42 @@ public class QRCodeScannerView extends VBox {
             return new javafx.beans.property.SimpleStringProperty(icon + " " + action);
         });
         
-        table.getColumns().addAll(codeCol, nameCol, categoryCol, statusCol, locationCol, updateCol, scanActionCol);
+        // Ajout individuel des colonnes pour éviter les warnings de generic array
+        table.getColumns().add(codeCol);
+        table.getColumns().add(nameCol);
+        table.getColumns().add(categoryCol);
+        table.getColumns().add(statusCol);
+        table.getColumns().add(locationCol);
+        table.getColumns().add(updateCol);
+        table.getColumns().add(scanActionCol);
         
-        // Style conditionnel des lignes
+        // Style conditionnel des lignes avec sélection uniforme
         table.setRowFactory(tv -> {
             TableRow<InventoryItem> row = new TableRow<>();
-            row.itemProperty().addListener((obs, oldItem, newItem) -> {
-                if (newItem == null) {
+            
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty()) {
                     row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection uniforme
+                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                               "-fx-border-width: 2px;");
                 } else {
-                    String backgroundColor = getInventoryRowBackgroundColor(newItem.getScanAction(), newItem.getStatus());
+                    // Style basé sur l'action et le statut
+                    InventoryItem item = row.getItem();
+                    String backgroundColor = getInventoryRowBackgroundColor(item.getScanAction(), item.getStatus());
                     row.setStyle(backgroundColor + "; -fx-border-color: #ecf0f1; -fx-border-width: 0 0 1 0;");
                 }
-            });
+            };
+            
+            // Écouter les changements de sélection
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
             return row;
         });
         
@@ -529,8 +553,7 @@ public class QRCodeScannerView extends VBox {
         Task<InventoryItem> processTask = new Task<InventoryItem>() {
             @Override
             protected InventoryItem call() throws Exception {
-                // Recherche dans l'inventaire existant (simulation)
-                // CompletableFuture<List<Equipment>> searchFuture = apiService.getAllEquipment();
+                // Recherche dans l'inventaire existant (simulation); // CompletableFuture<List<Equipment>> searchFuture = apiService.getAllEquipment();
                 // List<Equipment> allEquipment = searchFuture.get();
                 
                 // Simulation de recherche d'équipement
@@ -725,8 +748,7 @@ public class QRCodeScannerView extends VBox {
     }
     
     private void loadInventoryItems() {
-        // Charger les équipements déjà scannés ou en cours
-        // Cette méthode pourrait charger les données depuis une session précédente
+        // Charger les équipements déjà scannés ou en cours; // Cette méthode pourrait charger les données depuis une session précédente
     }
     
     // Méthodes utilitaires pour les icônes

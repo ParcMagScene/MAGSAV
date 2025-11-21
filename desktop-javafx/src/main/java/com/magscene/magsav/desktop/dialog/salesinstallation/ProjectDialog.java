@@ -7,12 +7,15 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.util.ViewUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Dialogue pour creer/modifier un projet
@@ -60,80 +63,96 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
     private TextArea clientRequirementsArea;
 
     private final Map<String, Object> projectData;
+    private boolean isReadOnlyMode;
 
     public ProjectDialog(String title, Map<String, Object> existingProject) {
-        setTitle(title);
-        setHeaderText("Saisir les informations du projet");
+        this(title, existingProject, false);
+    }
+
+    public ProjectDialog(String title, Map<String, Object> existingProject, boolean readOnlyMode) {
+        this.isReadOnlyMode = readOnlyMode;
+        
+        if (readOnlyMode) {
+            setTitle("Détails du projet");
+            setHeaderText("Consultation des informations du projet");
+        } else {
+            setTitle(title);
+            setHeaderText("Saisir les informations du projet");
+        }
         
         this.projectData = existingProject != null ? new HashMap<>(existingProject) : new HashMap<>();
         
-        // Configuration des boutons
-        ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
-        getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        // Creation de l'interface a onglets avec boutons personnalisés
+        VBox mainContainer = new VBox();
+        com.magscene.magsav.desktop.component.CustomTabPane tabPane = createTabbedInterface();
+        mainContainer.getChildren().add(tabPane);
         
-        // Creation de l'interface a onglets
-        TabPane tabPane = createTabbedInterface();
-        getDialogPane().setContent(tabPane);
+        // Ajouter la barre de boutons standardisée
+        HBox buttonBar = createStandardButtons();
+        mainContainer.getChildren().add(buttonBar);
+        
+        getDialogPane().setContent(mainContainer);
         
         // Remplir les champs si modification
         if (existingProject != null) {
             populateFields();
         }
         
-        // Configuration du resultat
-        setResultConverter(dialogButton -> {
-            if (dialogButton == saveButtonType) {
-                return collectData();
-            }
-            return null;
-        });
+        // Désactiver les champs en mode lecture seule
+        if (isReadOnlyMode) {
+            setFieldsReadOnly();
+        }
         
-        // Validation en temps reel amelioree
-        Node saveButton = getDialogPane().lookupButton(saveButtonType);
-        saveButton.setDisable(true);
-
-        // Configuration CSS pour le bouton
-        saveButton.getStyleClass().add("project-save-button");
-
-        // Ecouter les changements pour validation dynamique
-        setupFormValidation(saveButton);
-
-        // Valider immediatement l'etat du formulaire
-        validateFormWithVisualFeedback(saveButton);
+        // Configuration de la validation pour le mode édition
+        if (!isReadOnlyMode) {
+            // La validation sera gérée dans handleSave()
+        }
         
-        // Style CSS pour le dialogue
+        // Style CSS pour le dialogue avec thème dark
         getDialogPane().getStyleClass().add("project-dialog");
         getDialogPane().setPrefSize(800, 600);
+        
+        // Appliquer le thème dark aux dialogues
+        ThemeManager.getInstance().applyThemeToDialog(getDialogPane());
     }
 
-    private TabPane createTabbedInterface() {
-        TabPane tabPane = new TabPane();
+    private com.magscene.magsav.desktop.component.CustomTabPane createTabbedInterface() {
+        // Utiliser CustomTabPane au lieu de TabPane JavaFX pour style unifié
+        com.magscene.magsav.desktop.component.CustomTabPane tabPane = 
+            new com.magscene.magsav.desktop.component.CustomTabPane();
         
-        // Onglet General
-        Tab generalTab = new Tab("General", createGeneralPane());
-        generalTab.setClosable(false);
+        // Onglet Général
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab generalTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Général", createGeneralPane(), "📋");
+        tabPane.addTab(generalTab);
         
         // Onglet Client
-        Tab clientTab = new Tab("Client", createClientPane());
-        clientTab.setClosable(false);
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab clientTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Client", createClientPane(), "👤");
+        tabPane.addTab(clientTab);
         
         // Onglet Dates et Lieu
-        Tab datesTab = new Tab("Dates & Lieu", createDatesPane());
-        datesTab.setClosable(false);
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab datesTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Dates & Lieu", createDatesPane(), "📅");
+        tabPane.addTab(datesTab);
         
         // Onglet Financier
-        Tab financialTab = new Tab("Financier", createFinancialPane());
-        financialTab.setClosable(false);
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab financialTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Financier", createFinancialPane(), "💰");
+        tabPane.addTab(financialTab);
         
-        // Onglet Equipe
-        Tab teamTab = new Tab("Equipe", createTeamPane());
-        teamTab.setClosable(false);
+        // Onglet Équipe
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab teamTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Équipe", createTeamPane(), "👥");
+        tabPane.addTab(teamTab);
         
         // Onglet Notes
-        Tab notesTab = new Tab("Notes", createNotesPane());
-        notesTab.setClosable(false);
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab notesTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Notes", createNotesPane(), "📝");
+        tabPane.addTab(notesTab);
         
-        tabPane.getTabs().addAll(generalTab, clientTab, datesTab, financialTab, teamTab, notesTab);
+        // Sélectionner le premier onglet
+        tabPane.selectTab(0);
         
         return tabPane;
     }
@@ -614,5 +633,123 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
         } catch (Exception e) {
             remainingAmountField.setText("");
         }
+    }
+
+    private HBox createStandardButtons() {
+        if (isReadOnlyMode) {
+            // Mode lecture seule : boutons Modifier et Fermer
+            return ViewUtils.createDialogButtonBar(
+                () -> {
+                    // Action Modifier : ouvrir en mode édition
+                    ProjectDialog editDialog = new ProjectDialog("Modifier Projet", projectData, false);
+                    editDialog.showAndWait().ifPresent(result -> {
+                        // Propager le résultat vers le parent si nécessaire
+                        setResult(result);
+                    });
+                    forceClose();
+                },
+                this::forceClose,
+                null
+            );
+        } else {
+            // Mode édition : boutons Enregistrer et Annuler
+            return ViewUtils.createDialogButtonBar(
+                this::handleSave,
+                this::forceClose,
+                null
+            );
+        }
+    }
+    
+    /**
+     * Force la fermeture du dialog même avec des boutons personnalisés
+     */
+    private void forceClose() {
+        getDialogPane().getButtonTypes().clear();
+        close();
+        
+        if (getDialogPane().getScene() != null && getDialogPane().getScene().getWindow() != null) {
+            getDialogPane().getScene().getWindow().hide();
+        }
+    }
+
+    private void handleSave() {
+        if (validateForm()) {
+            Map<String, Object> result = collectData();
+            setResult(result);
+            forceClose();
+        }
+    }
+    
+    private boolean validateForm() {
+        StringBuilder errors = new StringBuilder();
+        
+        if (nameField.getText().trim().isEmpty()) {
+            errors.append("- Le nom du projet est obligatoire\n");
+        }
+        
+        if (typeCombo.getValue() == null) {
+            errors.append("- Le type de projet est obligatoire\n");
+        }
+        
+        if (statusCombo.getValue() == null) {
+            errors.append("- Le statut du projet est obligatoire\n");
+        }
+        
+        if (errors.length() > 0) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreurs de validation");
+            alert.setHeaderText("Veuillez corriger les erreurs suivantes :");
+            alert.setContentText(errors.toString());
+            alert.showAndWait();
+            return false;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Désactive tous les champs pour le mode lecture seule
+     */
+    private void setFieldsReadOnly() {
+        // Onglet General
+        if (projectNumberField != null) projectNumberField.setDisable(true);
+        if (nameField != null) nameField.setDisable(true);
+        if (typeCombo != null) typeCombo.setDisable(true);
+        if (statusCombo != null) statusCombo.setDisable(true);
+        if (priorityCombo != null) priorityCombo.setDisable(true);
+        if (descriptionArea != null) descriptionArea.setDisable(true);
+
+        // Onglet Client
+        if (clientNameField != null) clientNameField.setDisable(true);
+        if (clientContactField != null) clientContactField.setDisable(true);
+        if (clientEmailField != null) clientEmailField.setDisable(true);
+        if (clientPhoneField != null) clientPhoneField.setDisable(true);
+        if (clientAddressArea != null) clientAddressArea.setDisable(true);
+
+        // Onglet Dates et Lieu
+        if (startDatePicker != null) startDatePicker.setDisable(true);
+        if (endDatePicker != null) endDatePicker.setDisable(true);
+        if (installationDatePicker != null) installationDatePicker.setDisable(true);
+        if (deliveryDatePicker != null) deliveryDatePicker.setDisable(true);
+        if (venueField != null) venueField.setDisable(true);
+        if (venueAddressArea != null) venueAddressArea.setDisable(true);
+        if (venueContactField != null) venueContactField.setDisable(true);
+
+        // Onglet Financier
+        if (estimatedAmountField != null) estimatedAmountField.setDisable(true);
+        if (finalAmountField != null) finalAmountField.setDisable(true);
+        if (depositAmountField != null) depositAmountField.setDisable(true);
+        if (remainingAmountField != null) remainingAmountField.setDisable(true);
+
+        // Onglet Equipe
+        if (projectManagerField != null) projectManagerField.setDisable(true);
+        if (technicalManagerField != null) technicalManagerField.setDisable(true);
+        if (salesRepresentativeField != null) salesRepresentativeField.setDisable(true);
+
+        // Onglet Notes
+        if (notesArea != null) notesArea.setDisable(true);
+        if (technicalNotesArea != null) technicalNotesArea.setDisable(true);
+        if (clientRequirementsArea != null) clientRequirementsArea.setDisable(true);
     }
 }

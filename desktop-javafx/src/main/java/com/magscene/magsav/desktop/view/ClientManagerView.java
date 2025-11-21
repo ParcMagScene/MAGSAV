@@ -4,6 +4,7 @@ import com.magscene.magsav.desktop.dialog.clients.ClientDialog;
 import com.magscene.magsav.desktop.model.Client;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import java.util.ArrayList;
 import javafx.application.Platform;
@@ -18,7 +19,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 import java.math.BigDecimal;
 import java.util.Locale;
@@ -40,7 +40,6 @@ public class ClientManagerView extends BorderPane {
     private ComboBox<String> typeFilter;
     private ComboBox<String> statusFilter;
     private ComboBox<String> categoryFilter;
-    private Label statsLabel;
     private ProgressIndicator loadingIndicator;
     
     public ClientManagerView(ApiService apiService) {
@@ -57,123 +56,73 @@ public class ClientManagerView extends BorderPane {
         // Zone principale avec tableau - EXACTEMENT comme référence
         createTableContainer();
         
-        // Header avec titre
-        VBox header = createHeader();
-        
         // Toolbar séparée comme dans la référence
         HBox toolbar = createToolbar();
         
         // Footer avec statistiques
         HBox footer = createFooter();
         
-        // Layout principal - EXACTEMENT comme Ventes et Installations
-        VBox topContainer = new VBox(header, toolbar);
-        
-        setTop(topContainer);
+        setTop(toolbar);
         setBottom(footer);
     }
-    
-    private VBox createHeader() {
-        VBox header = new VBox(10); // STANDARD : 10px spacing comme référence
-        header.setPadding(new Insets(0, 0, 20, 0));
-        
-        Label title = new Label("👥 Clients");
-        title.setFont(Font.font("System", FontWeight.BOLD, 24));
-        title.setTextFill(Color.web("#2c3e50"));
-        
-        header.getChildren().add(title);
-        return header;
-    }
-    
+
     private HBox createToolbar() {
-        HBox toolbar = new HBox(15);
-        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme Ventes & Installations
+        HBox toolbar = new HBox(10); // EXACTEMENT comme PersonnelManagerView
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setStyle("-fx-background-color: #142240; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme PersonnelManagerView
+        // toolbar supprimé - Style géré par CSS
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom de l'entreprise, email, SIRET...", text -> filterClients());
+        searchField = (TextField) searchBox.getChildren().get(1);
         
-        // Recherche
-        VBox searchBox = new VBox(5);
-        Label searchLabel = new Label("🔍 Recherche");
-        searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        searchField = new TextField();
-        searchField.setPromptText("Nom de l'entreprise, email, SIRET...");
-        searchField.setPrefWidth(280);
+        // Force des couleurs pour uniformiser l'apparence
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
-        searchField.textProperty().addListener((obs, oldText, newText) -> filterClients());
-        searchBox.getChildren().addAll(searchLabel, searchField);
         
-        // Filtre par type
-        VBox typeBox = new VBox(5);
-        Label typeLabel = new Label("🏢 Type");
-        typeLabel.setStyle("-fx-text-fill: #6B71F2;");
-        typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous", "Entreprise", "Administration", "Association", "Particulier");
-        typeFilter.setValue("Tous");
-        typeFilter.setPrefWidth(150);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
-        typeFilter.setOnAction(e -> filterClients());
-        typeBox.getChildren().addAll(typeLabel, typeFilter);
+        // 🔧 Filtre par type avec ViewUtils
+        VBox typeBox = ViewUtils.createFilterBox("🏢 Type", 
+            new String[]{"Tous", "Entreprise", "Administration", "Association", "Particulier"}, 
+            "Tous", value -> filterClients());
+        // Cast sécurisé avec vérification de type
+        if (typeBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) typeBox.getChildren().get(1);
+            typeFilter = combo;
+        }
         
-        // Filtre par statut
-        VBox statusBox = new VBox(5);
-        Label statusLabel = new Label("📊 Statut");
-        statusLabel.setStyle("-fx-text-fill: #6B71F2;");
-        statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "Prospect", "Suspendu");
-        statusFilter.setValue("Tous");
-        statusFilter.setPrefWidth(120);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
-        statusFilter.setOnAction(e -> filterClients());
-        statusBox.getChildren().addAll(statusLabel, statusFilter);
+        // 🔧 Filtre par statut avec ViewUtils
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut", 
+            new String[]{"Tous", "Actif", "Inactif", "Prospect", "Suspendu"}, 
+            "Tous", value -> filterClients());
+        // Cast sécurisé avec vérification de type
+        if (statusBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) statusBox.getChildren().get(1);
+            statusFilter = combo;
+        }
         
-        // Filtre par categorie
-        VBox categoryBox = new VBox(5);
-        Label categoryLabel = new Label("⭐ Catégorie");
-        categoryLabel.setStyle("-fx-text-fill: #6B71F2;");
-        categoryLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        categoryFilter = new ComboBox<>();
-        categoryFilter.getItems().addAll("Toutes", "Premium", "VIP", "Standard", "Basique");
-        categoryFilter.setValue("Toutes");
-        categoryFilter.setPrefWidth(120);
-        categoryFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
-        categoryFilter.setOnAction(e -> filterClients());
-        categoryBox.getChildren().addAll(categoryLabel, categoryFilter);
+        // 🔧 Filtre par catégorie avec ViewUtils
+        VBox categoryBox = ViewUtils.createFilterBox("⭐ Catégorie", 
+            new String[]{"Toutes", "Premium", "VIP", "Standard", "Basique"}, 
+            "Toutes", value -> filterClients());
+        // Cast sécurisé avec vérification de type
+        if (categoryBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) categoryBox.getChildren().get(1);
+            categoryFilter = combo;
+        }
         
-        // Boutons d'action
-        VBox actionsBox = new VBox(5);
-        Label actionsLabel = new Label("⚡ Actions");
-        actionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
+        // 🔧 Boutons d'action avec ViewUtils
+        Button addButton = ViewUtils.createAddButton("➕ Nouveau client", this::addClient);
+        Button editButton = ViewUtils.createEditButton("✏️ Modifier", this::editClient, 
+            clientTable.getSelectionModel().selectedItemProperty().isNull());
+        Button viewButton = ViewUtils.createDetailsButton("👀 Détails", this::viewClientDetails,
+            clientTable.getSelectionModel().selectedItemProperty().isNull());
+        Button deleteButton = ViewUtils.createDeleteButton("🗑️ Supprimer", this::deleteClient,
+            clientTable.getSelectionModel().selectedItemProperty().isNull());
+        Button refreshButton = ViewUtils.createRefreshButton("🔄 Actualiser", this::refreshData);
         
-        HBox buttonRow = new HBox(10);
-        Button addButton = new Button("➕ Nouveau client");
-        addButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 8 16;");
-        addButton.setOnAction(e -> addClient());
+        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", addButton, editButton, viewButton, deleteButton, refreshButton);
         
-        Button editButton = new Button("✏️ Modifier");
-        editButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 8 16;");
-        editButton.setOnAction(e -> editClient());
-        editButton.disableProperty().bind(clientTable.getSelectionModel().selectedItemProperty().isNull());
-        
-        Button viewButton = new Button("👀 Details");
-        viewButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 8 16;");
-        viewButton.setOnAction(e -> viewClientDetails());
-        viewButton.disableProperty().bind(clientTable.getSelectionModel().selectedItemProperty().isNull());
-        
-        Button deleteButton = new Button("🗑️ Supprimer");
-        deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 8 16;");
-        deleteButton.setOnAction(e -> deleteClient());
-        deleteButton.disableProperty().bind(clientTable.getSelectionModel().selectedItemProperty().isNull());
-        
-        Button refreshButton = new Button("🔄 Actualiser");
-        refreshButton.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4; -fx-padding: 8 16;");
-        refreshButton.setOnAction(e -> refreshData());
-        
-        buttonRow.getChildren().addAll(addButton, editButton, viewButton, deleteButton, refreshButton);
-        actionsBox.getChildren().addAll(actionsLabel, buttonRow);
-        
-        // Spacer
+        // Spacer pour pousser les actions à droite
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
@@ -200,7 +149,7 @@ public class ClientManagerView extends BorderPane {
     @SuppressWarnings("unchecked")
     private TableView<Client> createClientTable() {
         TableView<Client> table = new TableView<>(clientData);
-        table.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-background-radius: 8;");
+        table.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
         table.setPrefHeight(400);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
         
@@ -279,11 +228,11 @@ public class ClientManagerView extends BorderPane {
                 if (row.isEmpty()) {
                     row.setStyle("");
                 } else if (row.isSelected()) {
-                    // Style de sélection prioritaire (#142240)
+                    // Style de sélection uniforme
                     row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
                                "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
                                "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
-                               "-fx-border-width: 2px;");
+                               "-fx-border-width: 1px;");
                 } else {
                     // Style par défaut
                     row.setStyle("");
@@ -297,7 +246,7 @@ public class ClientManagerView extends BorderPane {
             
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    editClient();
+                    openClientDetails();
                 }
             });
             return row;
@@ -312,18 +261,11 @@ public class ClientManagerView extends BorderPane {
         footer.setAlignment(Pos.CENTER_LEFT);
         footer.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
-        statsLabel = new Label("📋 Statistiques : Chargement...");
-        statsLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
-        statsLabel.setTextFill(Color.web("#2c3e50"));
-        
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
         Label helpLabel = new Label("💡 Double-clic pour modifier • Clic droit pour menu contextuel");
         helpLabel.setFont(Font.font("System", 12));
         helpLabel.setTextFill(Color.web("#7f8c8d"));
         
-        footer.getChildren().addAll(statsLabel, spacer, helpLabel);
+        footer.getChildren().add(helpLabel);
         return footer;
     }
     
@@ -355,7 +297,6 @@ public class ClientManagerView extends BorderPane {
             Platform.runLater(() -> {
                 clientData.setAll(task.getValue());
                 filterClients();
-                updateStatistics();
                 setLoading(false);
             });
         });
@@ -416,31 +357,6 @@ public class ClientManagerView extends BorderPane {
         }
         
         clientTable.setItems(filteredData);
-        updateStatistics();
-    }
-    
-    private void updateStatistics() {
-        int totalClients = clientData.size();
-        long activeClients = clientData.stream()
-            .filter(c -> c.getStatus() == Client.ClientStatus.ACTIVE)
-            .count();
-        long prospects = clientData.stream()
-            .filter(c -> c.getStatus() == Client.ClientStatus.PROSPECT)
-            .count();
-        
-        BigDecimal totalOutstanding = clientData.stream()
-            .filter(c -> c.getOutstandingAmount() != null)
-            .map(Client::getOutstandingAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.FRANCE);
-        
-        String stats = String.format(
-            "📋 %d clients • ✅ %d actifs • 🏯 %d prospects • 💰 %s d'encours",
-            totalClients, activeClients, prospects, currencyFormat.format(totalOutstanding)
-        );
-        
-        statsLabel.setText(stats);
     }
     
     private void setLoading(boolean loading) {
@@ -469,7 +385,6 @@ public class ClientManagerView extends BorderPane {
                 if (createdClient != null) {
                     Platform.runLater(() -> {
                         // TODO: Conversion des types - temporairement désactivé
-                        updateStatistics();
                         setLoading(false);
                         showSuccessAlert("Client créé", "Le client a été créé avec succès.");
                     });
@@ -478,10 +393,25 @@ public class ClientManagerView extends BorderPane {
         }
     }
     
+    /**
+     * Ouvre la fiche détaillée d'un client en mode lecture seule
+     */
+    private void openClientDetails() {
+        Client selected = clientTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            ClientDialog dialog = new ClientDialog(apiService, selected, true); // true = mode lecture seule
+            dialog.showAndWait();
+            
+            if (dialog.getResult()) {
+                loadClientData(); // Rafraîchir si des modifications ont été apportées
+            }
+        }
+    }
+
     private void editClient() {
         Client selected = clientTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            ClientDialog dialog = new ClientDialog(apiService, selected);
+            ClientDialog dialog = new ClientDialog(apiService, selected, false); // false = mode édition
             dialog.showAndWait();
             
             if (dialog.getResult()) {
@@ -499,10 +429,8 @@ public class ClientManagerView extends BorderPane {
                 }).thenAccept(updatedClient -> {
                     if (updatedClient != null) {
                         Platform.runLater(() -> {
-                            // Remplacer l'ancien client dans la liste
-                            // TODO: Conversion des types - temporairement désactivé
+                            // Remplacer l'ancien client dans la liste; // TODO: Conversion des types - temporairement désactivé
                             clientTable.refresh();
-                            updateStatistics();
                             setLoading(false);
                             showSuccessAlert("Client modifié", "Le client a été modifié avec succès.");
                         });
@@ -536,7 +464,6 @@ public class ClientManagerView extends BorderPane {
                         apiService.deleteClient(selected.getId());
                         Platform.runLater(() -> {
                             clientData.remove(selected);
-                            updateStatistics();
                             setLoading(false);
                             showSuccessAlert("Client supprimé", "Le client " + selected.getCompanyName() + " a été supprimé avec succès.");
                         });

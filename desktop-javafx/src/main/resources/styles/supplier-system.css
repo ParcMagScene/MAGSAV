@@ -1,0 +1,230 @@
+/* Styles pour les vues du système de fournisseurs */
+
+/* === VUES DE GESTION === */
+.supplier-manager,
+.material-request-manager,
+.grouped-order-manager {
+    -fx-background-color: #f8f9fa;
+    -fx-padding: 10px;
+}
+
+/* === BARRES DE STATISTIQUES === */
+.stats-bar,
+.threshold-dashboard {
+    -fx-background-color: white;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 15px;
+    -fx-spacing: 20px;
+}
+
+.stat-pending { -fx-text-fill: #fd7e14; -fx-font-weight: bold; }
+.stat-approved { -fx-text-fill: #198754; -fx-font-weight: bold; }
+.stat-rejected { -fx-text-fill: #dc3545; -fx-font-weight: bold; }
+.stat-urgent { -fx-text-fill: #dc3545; -fx-font-weight: bold; }
+.stat-ready { -fx-text-fill: #198754; -fx-font-weight: bold; }
+.stat-savings { -fx-text-fill: #6B71F2; -fx-font-weight: bold; }
+.stat-average { -fx-text-fill: #6c757d; -fx-font-weight: bold; }
+
+/* === BARRES DE FILTRES === */
+.filters-bar {
+    -fx-background-color: white;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 10px;
+    -fx-spacing: 15px;
+    -fx-alignment: center-left;
+}
+
+.filters-bar Label {
+    -fx-text-fill: #495057;
+    -fx-font-weight: bold;
+}
+
+.filters-bar TextField {
+    -fx-pref-width: 200px;
+}
+
+.filters-bar ComboBox {
+    -fx-pref-width: 120px;
+}
+
+/* === TABLES DE DONNÉES === */
+.data-table {
+    -fx-background-color: white;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.data-table .column-header {
+    -fx-background-color: #f8f9fa;
+    -fx-text-fill: #495057;
+    -fx-font-weight: bold;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.data-table .table-row-cell:hover {
+    -fx-background-color: #f8f9fa;
+}
+
+.data-table .table-row-cell:selected {
+    -fx-background-color: #6B71F2;
+    -fx-text-fill: white;
+}
+
+.name-column {
+    -fx-font-weight: bold;
+}
+
+/* === VOLETS DE DÉTAILS === */
+.details-pane {
+    -fx-background-color: white;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 0 0 0 1px;
+    -fx-padding: 15px;
+    -fx-spacing: 10px;
+    -fx-min-width: 300px;
+    -fx-max-width: 400px;
+}
+
+.details-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #212529;
+}
+
+/* === SECTIONS D'INFORMATION === */
+.info-section {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1px;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 10px;
+    -fx-spacing: 5px;
+}
+
+.info-section-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: #495057;
+    -fx-font-size: 12px;
+}
+
+.info-section-content {
+    -fx-text-fill: #6c757d;
+    -fx-font-size: 11px;
+    -fx-padding: 2px 0 0 10px;
+}
+
+/* === LIGNES D'ARTICLES ET ALLOCATIONS === */
+.item-row,
+.allocation-row {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e9ecef;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 5px;
+    -fx-spacing: 10px;
+}
+
+.item-row:hover,
+.allocation-row:hover {
+    -fx-background-color: #f8f9fa;
+}
+
+/* === LABELS DE STATUT === */
+.status-label {
+    -fx-padding: 4px 8px;
+    -fx-background-radius: 4px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.status-success {
+    -fx-background-color: #d1e7dd;
+    -fx-text-fill: #0f5132;
+}
+
+.status-warning {
+    -fx-background-color: #fff3cd;
+    -fx-text-fill: #664d03;
+}
+
+.status-error {
+    -fx-background-color: #f8d7da;
+    -fx-text-fill: #842029;
+}
+
+.status-info {
+    -fx-background-color: #d1ecf1;
+    -fx-text-fill: #055160;
+}
+
+.status-pending {
+    -fx-background-color: #fff3cd;
+    -fx-text-fill: #664d03;
+}
+
+/* === BOUTONS SPÉCIALISÉS === */
+.toolbar Button {
+    -fx-padding: 8px 12px;
+    -fx-font-size: 12px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+}
+
+.toolbar Button:hover {
+    -fx-background-color: #e9ecef;
+}
+
+.toolbar Button:pressed {
+    -fx-background-color: #dee2e6;
+}
+
+.toolbar Button:disabled {
+    -fx-opacity: 0.6;
+}
+
+/* Boutons d'action spécifiques */
+.toolbar .button:contains("Approuver") {
+    -fx-background-color: #d1e7dd;
+    -fx-text-fill: #0f5132;
+}
+
+.toolbar .button:contains("Rejeter") {
+    -fx-background-color: #f8d7da;
+    -fx-text-fill: #842029;
+}
+
+.toolbar .button:contains("Valider") {
+    -fx-background-color: #d1e7dd;
+    -fx-text-fill: #0f5132;
+}
+
+.toolbar .button:contains("Envoyer") {
+    -fx-background-color: #d1ecf1;
+    -fx-text-fill: #055160;
+}
+
+/* === RESPONSIVITÉ === */
+@media (max-width: 1200px) {
+    .details-pane {
+        -fx-min-width: 250px;
+        -fx-max-width: 300px;
+    }
+}
+
+@media (max-width: 800px) {
+    .filters-bar {
+        -fx-wrap-text: true;
+    }
+    
+    .filters-bar TextField,
+    .filters-bar ComboBox {
+        -fx-pref-width: 150px;
+    }
+}

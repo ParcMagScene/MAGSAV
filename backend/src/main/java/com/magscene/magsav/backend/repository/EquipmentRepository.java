@@ -42,6 +42,11 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
     Optional<Equipment> findByQrCode(String qrCode);
     
     /**
+     * Vérifier si un QR Code existe déjà
+     */
+    boolean existsByQrCode(String qrCode);
+    
+    /**
      * Recherche par numÃƒÂ©ro de sÃƒÂ©rie
      */
     Optional<Equipment> findBySerialNumber(String serialNumber);

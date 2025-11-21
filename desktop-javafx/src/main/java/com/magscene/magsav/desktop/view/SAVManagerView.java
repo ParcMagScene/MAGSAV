@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.view;
 
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.StandardColors;
 import com.magscene.magsav.desktop.view.sav.RepairTrackingView;
 import com.magscene.magsav.desktop.view.sav.RMAManagementView;
 import com.magscene.magsav.desktop.view.sav.TechnicianPlanningView;
@@ -41,8 +42,7 @@ public class SAVManagerView extends BorderPane {
         repairTrackingView = new RepairTrackingView();
         rmaManagementView = new RMAManagementView();
         technicianPlanningView = new TechnicianPlanningView();
-        // Note: QRCodeScannerView sera réactivé après correction
-        // qrCodeScannerView = new QRCodeScannerView();
+        // Note: QRCodeScannerView sera réactivé après correction; // qrCodeScannerView = new QRCodeScannerView();
     }
     
     private void setupLayout() {
@@ -72,7 +72,7 @@ public class SAVManagerView extends BorderPane {
         
         Label title = new Label("🔧 SAV & Interventions");
         title.setFont(Font.font("System", FontWeight.BOLD, 24));
-        title.setTextFill(Color.web("#2c3e50"));
+        title.setTextFill(Color.web(StandardColors.getTextColor()));
         
         header.getChildren().add(title); // SEUL le titre dans header
         return header;
@@ -82,9 +82,7 @@ public class SAVManagerView extends BorderPane {
         HBox toolbar = new HBox(15);
         toolbar.setPadding(new Insets(10)); // EXACTEMENT comme Ventes & Installations
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setStyle("-fx-background-color: #142240; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
-        
-        // Recherche globale
+        // toolbar supprimé - Style géré par CSS
         VBox searchBox = new VBox(5);
         Label searchLabel = new Label("🔍 Recherche");
         searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
@@ -102,7 +100,7 @@ public class SAVManagerView extends BorderPane {
         statusFilter.getItems().addAll("Tous", "Ouverte", "En cours", "En attente pièces", "Résolue", "Fermée", "Annulée");
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(150);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
         // Filtre par priorité
@@ -113,7 +111,7 @@ public class SAVManagerView extends BorderPane {
         priorityFilter.getItems().addAll("Toutes", "Urgente", "Élevée", "Moyenne", "Faible");
         priorityFilter.setValue("Toutes");
         priorityFilter.setPrefWidth(120);
-        priorityFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         priorityBox.getChildren().addAll(priorityLabel, priorityFilter);
         
         // Filtre par type
@@ -124,7 +122,7 @@ public class SAVManagerView extends BorderPane {
         typeFilter.getItems().addAll("Tous types", "Réparation", "Maintenance", "Installation", "Formation", "RMA", "Garantie");
         typeFilter.setValue("Tous types");
         typeFilter.setPrefWidth(140);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
         // Boutons d'action
@@ -134,23 +132,23 @@ public class SAVManagerView extends BorderPane {
         
         HBox buttonRow = new HBox(10);
         Button newRequestBtn = new Button("📝 Nouvelle Demande");
-        newRequestBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         newRequestBtn.setOnAction(e -> createNewServiceRequest());
         
         Button editBtn = new Button("✏️ Modifier");
-        editBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         editBtn.setOnAction(e -> editSelectedRequest());
         
         Button exportBtn = new Button("📊 Exporter");
-        exportBtn.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         exportBtn.setOnAction(e -> exportData());
         
         Button emergencyBtn = new Button("🚨 Urgente");
-        emergencyBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         emergencyBtn.setOnAction(e -> createEmergencyRequest());
         
         Button refreshBtn = new Button("🔄 Actualiser");
-        refreshBtn.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         refreshBtn.setOnAction(e -> refresh());
         
         buttonRow.getChildren().addAll(newRequestBtn, editBtn, exportBtn, emergencyBtn, refreshBtn);
@@ -184,8 +182,7 @@ public class SAVManagerView extends BorderPane {
         );
         customTabs.addTab(rmaTab);
         
-        // Onglet 3: Scanner QR (temporairement désactivé)
-        // CustomTabPane.CustomTab scannerTab = new CustomTabPane.CustomTab(
+        // Onglet 3: Scanner QR (temporairement désactivé); // CustomTabPane.CustomTab scannerTab = new CustomTabPane.CustomTab(
         //     "Scanner Inventaire", 
         //     qrCodeScannerView, 
         //     "📱"
@@ -199,9 +196,7 @@ public class SAVManagerView extends BorderPane {
         
         return customTabs;
     }
-    
-    
-    
+
     /**
      * Accès aux vues spécialisées pour intégration externe
      */
@@ -212,9 +207,7 @@ public class SAVManagerView extends BorderPane {
     public RMAManagementView getRMAManagementView() {
         return rmaManagementView;
     }
-    
 
-    
     // public QRCodeScannerView getQRCodeScannerView() {
     //     return qrCodeScannerView;
     // }
@@ -285,8 +278,26 @@ public class SAVManagerView extends BorderPane {
      */
     public void refresh() {
         if (repairTrackingView != null) {
-            // Appeler les méthodes de rafraîchissement de chaque vue
-            // Ces méthodes seront ajoutées aux vues individuelles
+            // Appeler les méthodes de rafraîchissement de chaque vue; // Ces méthodes seront ajoutées aux vues individuelles
+        }
+    }
+    
+    /**
+     * Méthode pour sélectionner et afficher une intervention SAV par nom (utilisée par la recherche globale)
+     */
+    public void selectAndViewIntervention(String interventionName) {
+        if (interventionName == null || interventionName.trim().isEmpty()) {
+            return;
+        }
+        
+        // Sélectionner l'onglet "Suivi Réparations" par défaut
+        if (customTabPane != null) {
+            customTabPane.selectTab(0); // Premier onglet = Suivi Réparations
+        }
+        
+        // Déléguer à la vue de suivi des réparations
+        if (repairTrackingView != null) {
+            // TODO: Implémenter la recherche dans RepairTrackingView; // repairTrackingView.selectAndViewIntervention(interventionName);
         }
     }
 }

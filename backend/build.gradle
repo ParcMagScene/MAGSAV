@@ -7,6 +7,9 @@ plugins {
 mainClassName = 'com.magscene.magsav.backend.MagsavApplication'
 
 dependencies {
+    // Common models shared across modules
+    implementation project(':common-models')
+    
     // Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -28,7 +31,21 @@ dependencies {
     implementation 'com.google.zxing:core:3.5.2'
     implementation 'com.google.zxing:javase:3.5.2'
     
+    // Apache POI for Excel import
+    implementation 'org.apache.poi:poi:5.2.4'
+    implementation 'org.apache.poi:poi-ooxml:5.2.4'
+    
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+}
+
+// Configuration UTF-8 spécifique au backend
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test) {
+    systemProperty 'file.encoding', 'UTF-8'
+    useJUnitPlatform()
 }

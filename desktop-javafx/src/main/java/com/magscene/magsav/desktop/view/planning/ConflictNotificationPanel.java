@@ -48,10 +48,10 @@ public class ConflictNotificationPanel extends VBox {
         conflictListView.setCellFactory(createConflictCellFactory());
         
         refreshButton = new Button("🔄 Actualiser");
-        refreshButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         resolveAllButton = new Button("⚡ Résoudre Tout");
-        resolveAllButton.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         resolveAllButton.setDisable(true);
     }
     

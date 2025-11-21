@@ -101,5 +101,10 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
            "LOWER(c.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
            "ORDER BY c.name ASC")
     List<Category> searchCategories(@Param("searchTerm") String searchTerm);
+    
+    // Rechercher une catégorie par nom et parent (pour l'import LOCMAT)
+    @Query("SELECT c FROM Category c WHERE c.name = :name AND " +
+           "(:parent IS NULL AND c.parent IS NULL OR c.parent = :parent)")
+    java.util.Optional<Category> findByNameAndParent(@Param("name") String name, @Param("parent") Category parent);
 }
 

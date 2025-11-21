@@ -4,23 +4,22 @@ import javafx.scene.Scene;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.util.*;
-import java.util.prefs.Preferences;
 
 /**
  * Gestionnaire centralisé des thèmes MAGSAV-3.0
- * Permet la gestion dynamique des thèmes : clair, sombre, colorés et personnalisés
+ * 
+ * @deprecated Cette classe est maintenant un wrapper vers UnifiedThemeManager
+ * pour assurer la compatibilité avec le code existant.
+ * Utilisez directement UnifiedThemeManager pour les nouveaux développements.
  */
+@Deprecated
 public class ThemeManager {
     
     private static ThemeManager instance;
-    private final Preferences prefs = Preferences.userNodeForPackage(ThemeManager.class);
-    private final Map<String, Theme> themes = new LinkedHashMap<>();
-    private String currentTheme = "dark";
-    private Scene currentScene;
+    private final UnifiedThemeManager unifiedManager = UnifiedThemeManager.getInstance();
     
     private ThemeManager() {
-        initializeDefaultThemes();
-        loadCurrentThemeFromPrefs();
+        // Délégation vers UnifiedThemeManager
     }
     
     public static ThemeManager getInstance() {
@@ -31,145 +30,88 @@ public class ThemeManager {
     }
     
     /**
-     * Initialise les thèmes par défaut
-     */
-    private void initializeDefaultThemes() {
-        // Thème Clair (basé sur charte graphique authentique)
-        themes.put("light", new Theme(
-            "light", 
-            "Thème Clair", 
-            "Interface claire et moderne selon la charte MAGSAV", 
-            "/styles/theme-light.css"
-        ));
-        
-        // Thème Sombre (basé sur charte graphique authentique)
-        themes.put("dark", new Theme(
-            "dark", 
-            "Thème Sombre", 
-            "Interface sombre authentique SANS BORDURES selon la charte MAGSAV", 
-            "/styles/theme-dark-ultra.css"
-        ));
-        
-        // Pour l'instant, nous gardons seulement les deux thèmes authentiques
-        // D'autres thèmes pourront être ajoutés plus tard selon la charte graphique
-    }
-    
-    /**
      * Applique un thème à la scène courante
+     * @deprecated Utilise UnifiedThemeManager
      */
+    @Deprecated
     public void applyTheme(String themeId) {
-        if (currentScene == null) {
-            System.err.println("Aucune scène définie pour l'application du thème");
-            return;
-        }
-        
-        Theme theme = themes.get(themeId);
-        if (theme == null) {
-            System.err.println("Thème introuvable: " + themeId);
-            return;
-        }
-        
-        try {
-            // Supprime les anciens stylesheets
-            currentScene.getStylesheets().clear();
-            
-            // Charge les nouveaux stylesheets
-            for (String cssFile : theme.getCssFiles()) {
-                String cssUrl = getClass().getResource(cssFile).toExternalForm();
-                currentScene.getStylesheets().add(cssUrl);
-                System.out.println("🎨 CSS chargé: " + cssFile + " -> " + cssUrl);
-            }
-            
-            currentTheme = themeId;
-            saveCurrentThemeToPrefs();
-            
-            System.out.println("✅ Thème appliqué: " + theme.getDisplayName());
-            
-        } catch (Exception e) {
-            System.err.println("❌ Erreur lors de l'application du thème: " + e.getMessage());
-            e.printStackTrace();
-        }
+        unifiedManager.applyTheme(themeId);
     }
     
     /**
      * Définit la scène courante pour l'application des thèmes
+     * @deprecated Utilise UnifiedThemeManager.applyThemeToScene()
      */
+    @Deprecated
     public void setScene(Scene scene) {
-        this.currentScene = scene;
-        // Applique le thème sauvegardé au démarrage
-        applyTheme(currentTheme);
+        unifiedManager.applyThemeToScene(scene);
     }
     
     /**
-     * Réapplique le thème actuel pour forcer l'override des CSS
-     * Utile après le chargement de nouvelles vues qui ajoutent leurs propres CSS
+     * Réapplique le thème actuel
+     * @deprecated Utilise UnifiedThemeManager.applyTheme()
      */
+    @Deprecated
     public void reapplyCurrentTheme() {
-        applyTheme(currentTheme);
+        unifiedManager.applyTheme(unifiedManager.getCurrentTheme());
     }
     
     /**
      * Obtient le thème actuellement actif
      */
     public String getCurrentTheme() {
-        return currentTheme;
+        return unifiedManager.getCurrentTheme();
     }
     
     /**
      * Obtient tous les thèmes disponibles
      */
     public ObservableList<Theme> getAvailableThemes() {
-        return FXCollections.observableArrayList(themes.values());
+        List<Theme> themeList = new ArrayList<>();
+        for (UnifiedThemeManager.Theme uTheme : unifiedManager.getAvailableThemes()) {
+            // Convertit UnifiedThemeManager.Theme vers l'ancien Theme
+            themeList.add(new Theme(
+                uTheme.getId(),
+                uTheme.getDisplayName(),
+                "Thème " + uTheme.getDisplayName(),
+                uTheme.getCssFile()
+            ));
+        }
+        return FXCollections.observableArrayList(themeList);
     }
     
     /**
      * Obtient un thème par son ID
      */
     public Theme getTheme(String themeId) {
-        return themes.get(themeId);
-    }
-    
-    /**
-     * Ajoute un thème personnalisé
-     */
-    public void addCustomTheme(Theme theme) {
-        themes.put(theme.getId(), theme);
-        System.out.println("Thème personnalisé ajouté: " + theme.getDisplayName());
-    }
-    
-    /**
-     * Supprime un thème personnalisé
-     */
-    public boolean removeCustomTheme(String themeId) {
-        // Ne permet pas de supprimer les thèmes par défaut
-        if (Arrays.asList("light", "dark", "ocean-blue", "forest-green").contains(themeId)) {
-            return false;
-        }
-        
-        Theme removed = themes.remove(themeId);
-        if (removed != null) {
-            // Si le thème supprimé était actif, revenir au thème par défaut
-            if (currentTheme.equals(themeId)) {
-                applyTheme("light");
+        for (UnifiedThemeManager.Theme uTheme : unifiedManager.getAvailableThemes()) {
+            if (uTheme.getId().equals(themeId)) {
+                return new Theme(
+                    uTheme.getId(),
+                    uTheme.getDisplayName(),
+                    "Thème " + uTheme.getDisplayName(),
+                    uTheme.getCssFile()
+                );
             }
-            System.out.println("Thème supprimé: " + removed.getDisplayName());
-            return true;
         }
+        return null;
+    }
+    
+    /**
+     * @deprecated Non supporté dans la nouvelle architecture
+     */
+    @Deprecated
+    public void addCustomTheme(Theme theme) {
+        System.err.println("addCustomTheme() n'est plus supporté - utilisez UnifiedThemeManager");
+    }
+    
+    /**
+     * @deprecated Non supporté dans la nouvelle architecture
+     */
+    @Deprecated
+    public boolean removeCustomTheme(String themeId) {
+        System.err.println("removeCustomTheme() n'est plus supporté - utilisez UnifiedThemeManager");
         return false;
-    }
-    
-    /**
-     * Sauvegarde le thème actuel dans les préférences
-     */
-    private void saveCurrentThemeToPrefs() {
-        prefs.put("currentTheme", currentTheme);
-    }
-    
-    /**
-     * Charge le thème actuel depuis les préférences
-     */
-    private void loadCurrentThemeFromPrefs() {
-        currentTheme = prefs.get("currentTheme", "dark");
     }
     
     /**
@@ -178,11 +120,15 @@ public class ThemeManager {
     public ThemePreview getThemePreview(String themeId) {
         switch (themeId) {
             case "light":
-                return new ThemePreview("#ffffff", "#f8f9fa", "#007bff", "#343a40");
+                return new ThemePreview("#FFFFFF", "#F8F9FA", "#6B71F2", "#212529");
             case "dark":
                 return new ThemePreview("#1e3a5f", "#1a1a1a", "#4a90e2", "#ffffff");
+            case "blue":
+                return new ThemePreview("#E3F2FD", "#BBDEFB", "#2196F3", "#0D47A1");
+            case "green":
+                return new ThemePreview("#E8F5E9", "#C8E6C9", "#4CAF50", "#1B5E20");
             default:
-                return new ThemePreview("#ffffff", "#f8f9fa", "#007bff", "#343a40");
+                return new ThemePreview("#FFFFFF", "#F8F9FA", "#6B71F2", "#212529");
         }
     }
     
@@ -190,28 +136,28 @@ public class ThemeManager {
      * Obtient la couleur de background principale selon le thème actuel
      */
     public String getCurrentBackgroundColor() {
-        return isDarkTheme() ? "#091326" : "#f8f9fa";
+        return isDarkTheme() ? "#1e3a5f" : "#FFFFFF";
     }
     
     /**
      * Obtient la couleur de background secondaire selon le thème actuel
      */
     public String getCurrentSecondaryColor() {
-        return isDarkTheme() ? "#091326" : "#ffffff";
+        return isDarkTheme() ? "#1a1a1a" : "#F8F9FA";
     }
     
     /**
      * Obtient la couleur des éléments UI selon le thème actuel
      */
     public String getCurrentUIColor() {
-        return isDarkTheme() ? "#091326" : "#ffffff";
+        return isDarkTheme() ? "#1e3a5f" : "#FFFFFF";
     }
     
     /**
      * Vérifie si le thème actuel est sombre
      */
     public boolean isDarkTheme() {
-        return "dark".equals(currentTheme);
+        return "dark".equals(unifiedManager.getCurrentTheme());
     }
     
     /**
@@ -246,7 +192,7 @@ public class ThemeManager {
      * Obtient la couleur de sélection selon le thème actuel
      */
     public String getSelectionColor() {
-        return "#091326"; // Couleur de sélection unifiée pour tous les thèmes
+        return "#6B71F2"; // Couleur de sélection unifiée pour tous les thèmes
     }
     
     /**
@@ -261,6 +207,24 @@ public class ThemeManager {
      */
     public String getSelectionBorderColor() {
         return "#6B71F2"; // Couleur de bordure pour les éléments sélectionnés
+    }
+    
+    /**
+     * Applique le thème actuel à un dialogue
+     * @param dialogPane Le DialogPane auquel appliquer le thème
+     */
+    public void applyThemeToDialog(javafx.scene.control.DialogPane dialogPane) {
+        if (dialogPane != null && dialogPane.getScene() != null) {
+            unifiedManager.applyThemeToScene(dialogPane.getScene());
+        }
+    }
+    
+    /**
+     * Applique le thème actuel à une scène spécifique (pour les dialogues personnalisés)
+     * @param scene La Scene à laquelle appliquer le thème
+     */
+    public void applyThemeToScene(Scene scene) {
+        unifiedManager.applyThemeToScene(scene);
     }
     
     /**

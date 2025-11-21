@@ -53,48 +53,37 @@ public class CustomTabPane extends VBox {
     private ScrollPane tabScrollPane;
     
     public CustomTabPane() {
-        // Container principal
+        // Container principal - STRUCTURE SIMPLIFIÉE pour effet dossiers collés
         this.setSpacing(0);
         this.getStyleClass().add("custom-tab-pane");
         
-        // Header des onglets avec navigation
-        VBox headerContainer = new VBox();
-        headerContainer.getStyleClass().add("custom-tab-header-container");
-        
-        // Ligne des boutons de navigation et onglets
-        HBox navigationRow = new HBox();
-        navigationRow.setAlignment(Pos.CENTER_LEFT);
-        navigationRow.getStyleClass().add("custom-tab-navigation-row");
-        
-        // Bouton de navigation gauche
+        // SUPPRESSION containers imbriqués - onglets directement dans la ligne; // Bouton de navigation gauche
         leftNavButton = createNavigationButton("◀", -1);
         leftNavButton.setVisible(false);
         
-        // Zone scrollable pour les onglets
+        // Zone des onglets DIRECTE - plus de ScrollPane pour éviter le padding
         tabHeader = new HBox();
         tabHeader.setAlignment(Pos.CENTER_LEFT);
         tabHeader.getStyleClass().add("custom-tab-header");
-        
-        tabScrollPane = new ScrollPane(tabHeader);
-        tabScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        tabScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        tabScrollPane.setFitToHeight(true);
-        tabScrollPane.getStyleClass().add("custom-tab-scroll-pane");
-        HBox.setHgrow(tabScrollPane, Priority.ALWAYS);
+        tabHeader.setSpacing(0); // AUCUN ESPACEMENT pour effet collé
+        HBox.setHgrow(tabHeader, Priority.ALWAYS);
         
         // Bouton de navigation droite  
         rightNavButton = createNavigationButton("▶", 1);
         rightNavButton.setVisible(false);
         
-        navigationRow.getChildren().addAll(leftNavButton, tabScrollPane, rightNavButton);
-        headerContainer.getChildren().add(navigationRow);
+        // Ligne d'onglets DIRECTE dans le CustomTabPane - plus de containers
+        HBox directTabRow = new HBox();
+        directTabRow.setSpacing(0); // AUCUN ESPACEMENT 
+        directTabRow.setAlignment(Pos.CENTER_LEFT);
+        directTabRow.getChildren().addAll(leftNavButton, tabHeader, rightNavButton);
         
         // Zone de contenu
         contentArea = new VBox();
         contentArea.getStyleClass().add("custom-tab-content-area");
         VBox.setVgrow(contentArea, Priority.ALWAYS);
         
-        this.getChildren().addAll(headerContainer, contentArea);
+        this.getChildren().addAll(directTabRow, contentArea);
         
         // Styles par défaut
         applyDefaultStyles();
@@ -107,8 +96,8 @@ public class CustomTabPane extends VBox {
         Button navButton = new Button(text);
         navButton.getStyleClass().addAll("custom-tab-nav-button", "navigation-button");
         
-        // Style complet avec couleurs MAGSAV
-        String navButtonStyle = "-fx-background-color: #091326; " +
+        // Style complet avec couleurs MAGSAV Light
+        String navButtonStyle = "-fx-background-color: #FFFFFF; " +
                                "-fx-text-fill: #6B71F2; " +
                                "-fx-border-color: #6B71F2; " +
                                "-fx-border-width: 2px; " +
@@ -122,32 +111,25 @@ public class CustomTabPane extends VBox {
         // Effet hover
         navButton.setOnMouseEntered(e -> {
             String hoverStyle = navButtonStyle + 
-                               "-fx-background-color: #142240; " +
-                               "-fx-text-fill: #FFFFFF;";
+                               "-fx-background-color: #F8F9FA; " +
+                               "-fx-text-fill: #6B71F2;";
             navButton.setStyle(hoverStyle);
         });
         
         navButton.setOnMouseExited(e -> navButton.setStyle(navButtonStyle));
         
-        // Action de navigation
-        navButton.setOnAction(e -> scrollTabs(direction));
+        // Plus d'action de navigation - boutons masqués pour interface épurée
+        navButton.setOnAction(e -> {}); // Action vide
         
         return navButton;
     }
     
-    private void scrollTabs(int direction) {
-        double scrollAmount = 100; // pixels
-        double currentValue = tabScrollPane.getHvalue();
-        double newValue = currentValue + (direction * scrollAmount / tabHeader.getWidth());
-        newValue = Math.max(0, Math.min(1, newValue));
-        tabScrollPane.setHvalue(newValue);
-    }
+    // SUPPRESSION scrollTabs() - Plus de ScrollPane, onglets toujours visibles
     
     private void updateNavigationButtons() {
-        // Afficher les boutons de navigation si nécessaire
-        boolean needsNavigation = tabHeader.getWidth() > tabScrollPane.getWidth();
-        leftNavButton.setVisible(needsNavigation);
-        rightNavButton.setVisible(needsNavigation);
+        // SIMPLIFICATION - Navigation désactivée pour interface épurée; // Les onglets sont maintenant toujours visibles directement
+        leftNavButton.setVisible(false);
+        rightNavButton.setVisible(false);
     }
     
     public void addTab(CustomTab tab) {
@@ -173,21 +155,23 @@ public class CustomTabPane extends VBox {
         Button tabButton = new Button(buttonText);
         tabButton.getStyleClass().addAll("custom-tab-button", "tab-button");
         
-        // Style MAGSAV pour onglet non sélectionné
-        String inactiveStyle = "-fx-background-color: #091326; " +
+        // Style MAGSAV Light pour onglet non sélectionné - EFFET DOSSIER
+        String inactiveStyle = "-fx-background-color: #E9ECEF; " +
                               "-fx-text-fill: #6B71F2; " +
-                              "-fx-border-color: #6B71F2; " +
-                              "-fx-border-width: 0 0 2px 0; " +
-                              "-fx-background-radius: 0; " +
+                              "-fx-border-color: #DEE2E6; " +
+                              "-fx-border-width: 1px 1px 0 1px; " +
+                              "-fx-background-radius: 8px 8px 0 0; " +
+                              "-fx-border-radius: 8px 8px 0 0; " +
                               "-fx-padding: 10 15; " +
                               "-fx-font-size: 12px;";
         
-        // Style MAGSAV pour onglet sélectionné
-        String activeStyle = "-fx-background-color: #142240; " +
-                            "-fx-text-fill: #FFFFFF; " +
+        // Style MAGSAV Light pour onglet sélectionné - DOSSIER ACTIF COLLÉ AU CONTENU
+        String activeStyle = "-fx-background-color: #FFFFFF; " +
+                            "-fx-text-fill: #6B71F2; " +
                             "-fx-border-color: #6B71F2; " +
-                            "-fx-border-width: 0 0 3px 0; " +
-                            "-fx-background-radius: 0; " +
+                            "-fx-border-width: 2px 2px 0 2px; " +
+                            "-fx-background-radius: 8px 8px 0 0; " +
+                            "-fx-border-radius: 8px 8px 0 0; " +
                             "-fx-padding: 10 15; " +
                             "-fx-font-size: 12px; " +
                             "-fx-font-weight: bold;";
@@ -197,10 +181,17 @@ public class CustomTabPane extends VBox {
         // Action de sélection
         tabButton.setOnAction(e -> selectTab(tab));
         
-        // Effet hover pour onglets non sélectionnés
+        // Effet hover pour onglets non sélectionnés - DOSSIER ÉCLAIRÉ
         tabButton.setOnMouseEntered(e -> {
             if (selectedTab.get() != tab) {
-                String hoverStyle = inactiveStyle + "-fx-background-color: #1A2B47;";
+                String hoverStyle = "-fx-background-color: #F8F9FA; " +
+                                  "-fx-text-fill: #6B71F2; " +
+                                  "-fx-border-color: #6B71F2; " +
+                                  "-fx-border-width: 1px 1px 0 1px; " +
+                                  "-fx-background-radius: 8px 8px 0 0; " +
+                                  "-fx-border-radius: 8px 8px 0 0; " +
+                                  "-fx-padding: 10 15; " +
+                                  "-fx-font-size: 12px;";
                 tabButton.setStyle(hoverStyle);
             }
         });
@@ -245,23 +236,19 @@ public class CustomTabPane extends VBox {
     }
     
     private void applyDefaultStyles() {
-        // Styles CSS pour le composant
-        String componentStyle = "-fx-background-color: #091326; -fx-spacing: 0;";
+        // Styles CSS Light pour le composant - EFFET DOSSIERS PARFAITEMENT COLLÉS
+        String componentStyle = "-fx-background-color: #FFFFFF; -fx-spacing: 0; -fx-padding: 0;";
         this.setStyle(componentStyle);
         
-        // Style pour le header
-        String headerStyle = "-fx-background-color: #091326; -fx-padding: 0; -fx-spacing: 0;";
+        // Style Light pour le header - AUCUNE MARGE pour coller parfaitement
+        String headerStyle = "-fx-background-color: #F8F9FA; -fx-padding: 0; -fx-spacing: 0;";
         tabHeader.setStyle(headerStyle);
         
-        // Style pour la zone de contenu
-        String contentStyle = "-fx-background-color: #091326; -fx-padding: 10;";
+        // Style Light pour la zone de contenu - AUCUN PADDING pour continuité
+        String contentStyle = "-fx-background-color: #FFFFFF; -fx-padding: 0;";
         contentArea.setStyle(contentStyle);
         
-        // Style pour le ScrollPane
-        String scrollStyle = "-fx-background-color: #091326; " +
-                           "-fx-background: #091326; " +
-                           "-fx-border-color: transparent;";
-        tabScrollPane.setStyle(scrollStyle);
+        // Plus de ScrollPane à styler - interface épurée directe
     }
     
     // Getters
@@ -276,5 +263,20 @@ public class CustomTabPane extends VBox {
         tabHeader.getChildren().clear();
         contentArea.getChildren().clear();
         selectedTab.set(null);
+    }
+    
+    /**
+     * Ajouter une toolbar sous les onglets (nouveau pattern visuel)
+     */
+    public void setIntegratedToolbar(Node toolbar) {
+        // Supprimer l'ancienne toolbar si elle existe
+        if (this.getChildren().size() > 2) {
+            this.getChildren().remove(1); // Retirer l'ancienne toolbar
+        }
+        
+        // Insérer la nouvelle toolbar entre les onglets et le contenu
+        if (toolbar != null) {
+            this.getChildren().add(1, toolbar); // Position 1 : entre onglets et contenu
+        }
     }
 }

@@ -1,710 +1,583 @@
 package com.magscene.magsav.desktop.view;
 
-import com.magscene.magsav.desktop.component.DetailPanelContainer;
-import com.magscene.magsav.desktop.dialog.EquipmentDialog;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
+
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import com.magscene.magsav.desktop.dialog.EquipmentDialog;
+import com.magscene.magsav.desktop.view.dialog.LocmatImportDialog;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * Interface JavaFX complète pour la gestion du parc matériel
- * Fonctionnalités : tableau détaillé, recherche, filtres, CRUD, statistiques
+ * Gestionnaire du parc matériel avec interface complète
+ * - TableView des équipements avec tri et filtrage
+ * - Toolbar avec actions (Ajouter, Modifier, Supprimer, QR codes, etc.)
+ * - Volet de visualisation détaillée
+ * - Filtres par catégorie, statut, recherche textuelle
  */
 public class EquipmentManagerView extends BorderPane {
-    
     private final ApiService apiService;
+    
+    // Composants de l'interface
     private TableView<EquipmentItem> equipmentTable;
-    private ObservableList<EquipmentItem> equipmentData;
+    private ObservableList<EquipmentItem> equipmentList;
+    private FilteredList<EquipmentItem> filteredList;
+    private SortedList<EquipmentItem> sortedList;
+    
+    // Filtres et recherche
     private TextField searchField;
     private ComboBox<String> categoryFilter;
     private ComboBox<String> statusFilter;
-    private Label statsLabel;
-    private ProgressIndicator loadingIndicator;
+    private ComboBox<String> brandFilter;
+    
+    // Conteneur avec volet de détails intégré
+    private DetailPanelContainer tableContainer;
+    
+    // Toolbar standardisée
+    private HBox toolbar;
+    private Button addButton, editButton, deleteButton, duplicateButton, exportButton, importLocmatButton;
     
     public EquipmentManagerView(ApiService apiService) {
         this.apiService = apiService;
-        this.equipmentData = FXCollections.observableArrayList();
-        initializeUI();
+        
+        // Initialiser les données
+        equipmentList = FXCollections.observableArrayList();
+        filteredList = new FilteredList<>(equipmentList, p -> true);
+        sortedList = new SortedList<>(filteredList);
+        
+        initializeComponents();
+        setupLayout();
+        setupEventHandlers();
         loadEquipmentData();
+        
+        // Appliquer les styles CSS
+        getStyleClass().add("equipment-manager");
     }
     
-    private void initializeUI() {
-        // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
-        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+    /**
+     * Initialise tous les composants de l'interface
+     */
+    private void initializeComponents() {
+        // === TABLE DES EQUIPEMENTS ===
+        createEquipmentTable();
         
-        // Table des équipements (créer EN PREMIER pour être disponible dans la toolbar)
-        DetailPanelContainer tableContainer = createTableContainer();
+        // === TOOLBAR STANDARDISÉE ===
+        toolbar = createToolbar();
         
-        // Header avec titre
-        VBox header = createHeader();
-        
-        // Toolbar séparée comme dans la référence
-        HBox toolbar = createToolbar();
-        
-        // Footer avec statistiques
-        HBox footer = createFooter();
-        
-        // Layout principal - EXACTEMENT comme Ventes et Installations
-        VBox topContainer = new VBox(header, toolbar);
-        
-        setTop(topContainer);
-        setCenter(tableContainer);
-        setBottom(footer);
+        // === CONTENEUR AVEC VOLET DE DETAILS INTEGRE ===
+        createTableContainer();
     }
     
-    private VBox createHeader() {
-        VBox header = new VBox(10); // STANDARD : 10px spacing comme référence
-        header.setPadding(new Insets(0, 0, 20, 0)); // STANDARD : padding comme référence
-        
-        Label title = new Label("📦 Parc Matériel");
-        title.setFont(Font.font("System", FontWeight.BOLD, 24));
-        title.setTextFill(Color.web("#2c3e50"));
-        
-        header.getChildren().add(title); // SEUL le titre dans header
-        return header;
-    }
-    
+    /**
+     * Crée la toolbar avec les boutons d'actions - STANDARD ViewUtils
+     */
     private HBox createToolbar() {
-        HBox toolbar = new HBox(10); // EXACTEMENT comme Ventes & Installations
-        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme Ventes & Installations
+        HBox toolbar = new HBox(10); // EXACTEMENT comme PersonnelManagerView
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme PersonnelManagerView
+        // toolbar supprimé - Style géré par CSS
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom, marque, modèle, numéro de série...", text -> updateFilters());
+        searchField = (TextField) searchBox.getChildren().get(1);
         
-        // Recherche
-        VBox searchBox = new VBox(5);
-        Label searchLabel = new Label("🔍 Recherche");
-        searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        searchField = new TextField();
-        searchField.setPromptText("Nom, modèle, numéro de série...");
-        searchField.setPrefWidth(250);
+        // Force des couleurs pour uniformiser l'apparence
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
-        searchField.textProperty().addListener((obs, oldText, newText) -> filterEquipment());
-        searchBox.getChildren().addAll(searchLabel, searchField);
         
-        // Filtre par catégorie
-        VBox categoryBox = new VBox(5);
-        Label categoryLabel = new Label("📁 Catégorie");
-        categoryLabel.setStyle("-fx-text-fill: #6B71F2;");
-        categoryLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        categoryFilter = new ComboBox<>();
-        categoryFilter.getItems().add("Toutes"); // Valeur par défaut, sera mis à jour dynamiquement
-        categoryFilter.setValue("Toutes");
-        categoryFilter.setPrefWidth(150);
-        categoryFilter.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                              "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + ";");
-        categoryFilter.setOnAction(e -> filterEquipment());
-        categoryBox.getChildren().addAll(categoryLabel, categoryFilter);
+        // 🔧 Filtre par catégorie avec ViewUtils
+        VBox categoryBox = ViewUtils.createFilterBox("📂 Catégorie", 
+            new String[]{"Toutes", "Éclairage", "Son", "Vidéo", "Structure", "Électricité", "Accessoires"}, 
+            "Toutes", value -> updateFilters());
+        // Cast sécurisé avec vérification de type
+        if (categoryBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) categoryBox.getChildren().get(1);
+            categoryFilter = combo;
+        }
         
-        // Filtre par statut
-        VBox statusBox = new VBox(5);
-        Label statusLabel = new Label("🔄 Statut");
-        statusLabel.setStyle("-fx-text-fill: #6B71F2;");
-        statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        statusFilter = new ComboBox<>();
-        statusFilter.getItems().add("Tous"); // Valeur par défaut, sera mis à jour dynamiquement
-        statusFilter.setValue("Tous");
-        statusFilter.setPrefWidth(180);
-        statusFilter.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                           "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + ";");
-        statusFilter.setOnAction(e -> filterEquipment());
-        statusBox.getChildren().addAll(statusLabel, statusFilter);
+        // 🔧 Filtre par statut avec ViewUtils
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut", 
+            new String[]{"Tous", "Disponible", "Loué", "En maintenance", "Hors service"}, 
+            "Tous", value -> updateFilters());
+        // Cast sécurisé avec vérification de type
+        if (statusBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) statusBox.getChildren().get(1);
+            statusFilter = combo;
+        }
         
-        // Boutons d'action
+        // 🔧 Filtre par marque avec ViewUtils
+        VBox brandBox = ViewUtils.createFilterBox("🏷️ Marque", 
+            new String[]{"Toutes", "Martin", "Robe", "Ayrton", "Clay Paky", "GLP", "Autres"}, 
+            "Toutes", value -> updateFilters());
+        // Cast sécurisé avec vérification de type
+        if (brandBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) brandBox.getChildren().get(1);
+            brandFilter = combo;
+        }
+        
+        // 🔧 Boutons d'action avec ViewUtils
         VBox actionsBox = new VBox(5);
         Label actionsLabel = new Label("⚡ Actions");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         actionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         
         HBox buttonRow = new HBox(10);
-        Button addButton = new Button("➕ Ajouter");
-        addButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4;");
-        addButton.setOnAction(e -> addEquipment());
+        addButton = ViewUtils.createAddButton("➕ Nouvel équipement", this::addEquipment);
+        editButton = ViewUtils.createEditButton("✏️ Modifier", this::editSelectedEquipment, 
+            equipmentTable.getSelectionModel().selectedItemProperty().isNull());
+        Button viewButton = ViewUtils.createDetailsButton("👀 Détails", () -> {
+            EquipmentItem selected = equipmentTable.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                openEquipmentDetails(selected);
+            }
+        }, equipmentTable.getSelectionModel().selectedItemProperty().isNull());
+        deleteButton = ViewUtils.createDeleteButton("🗑️ Supprimer", this::deleteSelectedEquipment,
+            equipmentTable.getSelectionModel().selectedItemProperty().isNull());
+        // Dupliquer - utiliser un bouton personnalisé
+        duplicateButton = new Button("📋 Dupliquer");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        duplicateButton.setOnAction(e -> duplicateSelectedEquipment());
+        duplicateButton.disableProperty().bind(equipmentTable.getSelectionModel().selectedItemProperty().isNull());
+        // Exporter - utiliser un bouton personnalisé 
+        exportButton = new Button("📊 Exporter");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        exportButton.setOnAction(e -> exportEquipmentList());
         
-        Button editButton = new Button("✏️ Modifier");
-        editButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 4;");
-        editButton.setOnAction(e -> editEquipment());
-        editButton.disableProperty().bind(equipmentTable.getSelectionModel().selectedItemProperty().isNull());
+        // Import LOCMAT - bouton personnalisé avec icône Excel
+        importLocmatButton = new Button("📥 Import LOCMAT");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        importLocmatButton.setOnAction(e -> openLocmatImportDialog());
         
-        Button deleteButton = new Button("🗑️ Supprimer");
-        deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 4;");
-        deleteButton.setOnAction(e -> deleteEquipment());
-        deleteButton.disableProperty().bind(equipmentTable.getSelectionModel().selectedItemProperty().isNull());
-        
-        Button refreshButton = new Button("🔄 Actualiser");
-        refreshButton.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4;");
-        refreshButton.setOnAction(e -> refreshData());
-        
-        buttonRow.getChildren().addAll(addButton, editButton, deleteButton, refreshButton);
+        buttonRow.getChildren().addAll(addButton, editButton, viewButton, deleteButton, duplicateButton, exportButton, importLocmatButton);
         actionsBox.getChildren().addAll(actionsLabel, buttonRow);
         
-        // Spacer
+        // Spacer pour pousser les actions à droite
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        // Loading indicator
-        loadingIndicator = new ProgressIndicator();
-        loadingIndicator.setMaxSize(20, 20);
-        loadingIndicator.setVisible(false);
-        
-        toolbar.getChildren().addAll(searchBox, categoryBox, statusBox, actionsBox, spacer, loadingIndicator);
+        toolbar.getChildren().addAll(searchBox, categoryBox, statusBox, brandBox, spacer, actionsBox);
         return toolbar;
     }
     
-    private DetailPanelContainer createTableContainer() {
-        // Configuration de la table
+    /**
+     * Crée la table des équipements avec les colonnes
+     */
+    @SuppressWarnings("unchecked")
+    private void createEquipmentTable() {
         equipmentTable = new TableView<>();
-        equipmentTable.setItems(equipmentData);
-        // Style appliqué via CSS pour permettre la sélection MAGSAV
         equipmentTable.getStyleClass().add("equipment-table");
-        equipmentTable.setPrefHeight(400);
-        
-        // Colonnes de la table
-        createTableColumns();
-        
-        // Style des lignes avec gestion de la sélection
-        equipmentTable.setRowFactory(tv -> {
-            TableRow<EquipmentItem> row = new TableRow<EquipmentItem>();
-            
-            // Méthode pour appliquer le style approprié
-            Runnable updateStyle = () -> {
-                if (row.isEmpty() || row.getItem() == null) {
-                    row.setStyle("");
-                    return;
-                }
-                
-                // Priorité 1: Si sélectionné, couleur de sélection MAGSAV
-                if (row.isSelected()) {
-                    // Style de sélection plus visible avec bordure
-                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                               "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                               "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
-                               "-fx-border-width: 2px;");
-                    return;
-                }
-                
-                // Priorité 2: Couleur selon le statut (seulement si pas sélectionné)
-                EquipmentItem item = row.getItem();
-                switch (item.getStatus()) {
-                    case "Disponible":
-                        row.setStyle("-fx-background-color: rgba(213, 244, 230, 0.3);");
-                        break;
-                    case "En cours d'utilisation":
-                        row.setStyle("-fx-background-color: rgba(255, 243, 205, 0.3);");
-                        break;
-                    case "En maintenance":
-                        row.setStyle("-fx-background-color: rgba(248, 215, 218, 0.3);");
-                        break;
-                    case "En SAV":
-                        row.setStyle("-fx-background-color: rgba(107, 113, 242, 0.2);");
-                        break;
-                    case "Hors service":
-                        row.setStyle("-fx-background-color: rgba(245, 198, 203, 0.3);");
-                        break;
-                    default:
-                        row.setStyle("");
-                }
-            };
-            
-            // Mise à jour du style quand l'item change
-            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
-            
-            // Mise à jour du style quand la sélection change
-            row.selectedProperty().addListener((obs, wasSelected, isNowSelected) -> updateStyle.run());
-            
-            return row;
-        });
-        
-        // Double-clic pour ouvrir la fiche de modification
-        equipmentTable.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                EquipmentItem selectedEquipment = equipmentTable.getSelectionModel().getSelectedItem();
-                if (selectedEquipment != null) {
-                    editEquipment();
-                }
-            }
-        });
-        
-        // Créer le conteneur avec volet de détails
-        DetailPanelContainer container = DetailPanelContainer.wrapTableView(equipmentTable);
-        
-        return container;
-    }
-    
-    private void createTableColumns() {
-        // Colonne QR Code
-        TableColumn<EquipmentItem, String> qrCol = new TableColumn<>("QR");
-        qrCol.setCellValueFactory(new PropertyValueFactory<>("qrCode"));
-        qrCol.setPrefWidth(60);
+        equipmentTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        // Configuration du tableau avec style moderne uniforme; // Les styles sont gérés automatiquement par CSS; // Colonne ID
+        TableColumn<EquipmentItem, Long> idCol = new TableColumn<>("ID");
+        idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
+        idCol.setPrefWidth(60);
+        idCol.setMinWidth(50);
         
         // Colonne Nom
         TableColumn<EquipmentItem, String> nameCol = new TableColumn<>("Nom");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameCol.setPrefWidth(200);
-        
-        // Colonne Marque/Modèle
-        TableColumn<EquipmentItem, String> brandModelCol = new TableColumn<>("Marque/Modèle");
-        brandModelCol.setCellValueFactory(data -> 
-            new SimpleStringProperty(data.getValue().getBrand() + " " + data.getValue().getModel()));
-        brandModelCol.setPrefWidth(180);
+        nameCol.setMinWidth(150);
         
         // Colonne Catégorie
         TableColumn<EquipmentItem, String> categoryCol = new TableColumn<>("Catégorie");
         categoryCol.setCellValueFactory(new PropertyValueFactory<>("category"));
         categoryCol.setPrefWidth(120);
         
-        // Colonne Statut
+        // Colonne Statut avec cellule colorée
         TableColumn<EquipmentItem, String> statusCol = new TableColumn<>("Statut");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-        statusCol.setPrefWidth(150);
-        statusCol.setCellFactory(column -> new TableCell<EquipmentItem, String>() {
-            @Override
-            protected void updateItem(String status, boolean empty) {
-                super.updateItem(status, empty);
-                if (empty || status == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(status);
-                    switch (status) {
-                        case "Disponible":
-                            setStyle("-fx-text-fill: #27ae60;");
-                            break;
-                        case "En Cours D'utilisation":
-                            setStyle("-fx-text-fill: #f39c12;");
-                            break;
-                        case "En Maintenance":
-                            setStyle("-fx-text-fill: #e74c3c;");
-                            break;
-                        case "Hors Service":
-                            setStyle("-fx-text-fill: #c0392b;");
-                            break;
-                        case "En SAV":
-                            setStyle("-fx-text-fill: #9b59b6;");
-                            break;
-                        case "Retiré Du Service":
-                            setStyle("-fx-text-fill: #7f8c8d;");
-                            break;
-                        default:
-                            setStyle("-fx-text-fill: #34495e;");
-                            break;
+        statusCol.setPrefWidth(120);
+        statusCol.setCellFactory(column -> {
+            return new TableCell<EquipmentItem, String>() {
+                @Override
+                protected void updateItem(String status, boolean empty) {
+                    super.updateItem(status, empty);
+                    if (empty || status == null) {
+                        setText(null);
+                        setStyle("");
+                    } else {
+                        setText(status);
+                        // Appliquer couleur selon le statut
+                        switch (status.toLowerCase()) {
+                            case "disponible":
+                                // Style gere par CSS
+                                break;
+                            case "en maintenance":
+                                // Style gere par CSS
+                                break;
+                            case "hors service":
+                                // Style gere par CSS
+                                break;
+                            case "en sav":
+                                // Style gere par CSS
+                                break;
+                            default:
+                                // Style gere par CSS
+                        }
                     }
                 }
-            }
+            };
         });
         
-        // Colonne Prix
-        TableColumn<EquipmentItem, String> priceCol = new TableColumn<>("Prix");
-        priceCol.setCellValueFactory(data -> 
-            new SimpleStringProperty(String.format("%.0f €", data.getValue().getPurchasePrice())));
-        priceCol.setPrefWidth(100);
+        // Colonne Marque
+        TableColumn<EquipmentItem, String> brandCol = new TableColumn<>("Marque");
+        brandCol.setCellValueFactory(new PropertyValueFactory<>("brand"));
+        brandCol.setPrefWidth(100);
         
-        // Colonne Numéro de série
-        TableColumn<EquipmentItem, String> serialCol = new TableColumn<>("N° Série");
-        serialCol.setCellValueFactory(new PropertyValueFactory<>("serialNumber"));
-        serialCol.setPrefWidth(120);
+        // Colonne Modèle
+        TableColumn<EquipmentItem, String> modelCol = new TableColumn<>("Modèle");
+        modelCol.setCellValueFactory(new PropertyValueFactory<>("model"));
+        modelCol.setPrefWidth(120);
         
-        var columns = equipmentTable.getColumns();
-        columns.add(qrCol);
-        columns.add(nameCol);
-        columns.add(brandModelCol);
-        columns.add(categoryCol);
-        columns.add(statusCol);
-        columns.add(priceCol);
-        columns.add(serialCol);
-    }
-    
-    private HBox createFooter() {
-        HBox footer = new HBox();
-        footer.setPadding(new Insets(15, 0, 0, 0));
-        footer.setAlignment(Pos.CENTER_LEFT);
+        // Colonne Emplacement
+        TableColumn<EquipmentItem, String> locationCol = new TableColumn<>("Emplacement");
+        locationCol.setCellValueFactory(new PropertyValueFactory<>("location"));
+        locationCol.setPrefWidth(150);
         
-        statsLabel = new Label("📊 Chargement des statistiques...");
-        statsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        statsLabel.setTextFill(Color.web("#7f8c8d"));
+        equipmentTable.getColumns().addAll(idCol, nameCol, categoryCol, statusCol, brandCol, modelCol, locationCol);
         
-        footer.getChildren().add(statsLabel);
-        return footer;
-    }
-    
-    private void loadEquipmentData() {
-        loadingIndicator.setVisible(true);
-        statsLabel.setText("📊 Chargement des données...");
+        // Connecter au tri
+        sortedList.comparatorProperty().bind(equipmentTable.comparatorProperty());
+        equipmentTable.setItems(sortedList);
         
-        Task<Void> loadTask = new Task<>() {
-            @Override
-            protected Void call() throws Exception {
-                apiService.getEquipments().thenAccept(equipments -> {
-                    Platform.runLater(() -> {
-                        equipmentData.clear();
-                        for (Object equipmentObj : equipments) {
-                            if (equipmentObj instanceof Map<?, ?> equipmentMap) {
-                                @SuppressWarnings("unchecked")
-                                Map<String, Object> equipment = (Map<String, Object>) equipmentMap;
-                                EquipmentItem item = new EquipmentItem(equipment);
-                                equipmentData.add(item);
-                            }
-                        }
-                        updateCategoryFilter();
-                        updateStatusFilter();
-                        updateStatistics();
-                        loadingIndicator.setVisible(false);
-                    });
-                }).exceptionally(throwable -> {
-                    Platform.runLater(() -> {
-                        // En cas d'échec, charger des données de démo
-                        loadDemoData();
-                        loadingIndicator.setVisible(false);
-                    });
-                    return null;
-                });
-                return null;
-            }
-        };
-        
-        Thread loadThread = new Thread(loadTask);
-        loadThread.setDaemon(true);
-        loadThread.start();
+        // Message si liste vide
+        equipmentTable.setPlaceholder(new Label("Aucun équipement trouvé"));
     }
 
-    private void loadDemoData() {
-        equipmentData.clear();
-        
-        // Données de démonstration pour tester le volet de détails
-        Map<String, Object> demo1 = new java.util.HashMap<>();
-        demo1.put("id", 1L);
-        demo1.put("name", "Projecteur LED 500W");
-        demo1.put("brand", "ARRI");
-        demo1.put("model", "SkyPanel S60-C");
-        demo1.put("serialNumber", "SP60C-2023-001");
-        demo1.put("category", "Éclairage");
-        demo1.put("status", "AVAILABLE");
-        demo1.put("location", "Hangar A - Rack 3");
-        demo1.put("description", "Projecteur LED haute puissance avec contrôle couleur");
-        demo1.put("purchasePrice", 2500.0);
-        demo1.put("notes", "Révision annuelle effectuée");
-        
-        Map<String, Object> demo2 = new java.util.HashMap<>();
-        demo2.put("id", 2L);
-        demo2.put("name", "Console Audio Numérique");
-        demo2.put("brand", "Yamaha");
-        demo2.put("model", "CL5");
-        demo2.put("serialNumber", "CL5-2022-078");
-        demo2.put("category", "Audio");
-        demo2.put("status", "IN_USE");
-        demo2.put("location", "Régie Son - Position 1");
-        demo2.put("description", "Console numérique 72 canaux avec processeurs intégrés");
-        demo2.put("purchasePrice", 15000.0);
-        demo2.put("notes", "En cours d'utilisation pour le concert du 15/11");
-        
-        Map<String, Object> demo3 = new java.util.HashMap<>();
-        demo3.put("id", 3L);
-        demo3.put("name", "Caméra Broadcast 4K");
-        demo3.put("brand", "Sony");
-        demo3.put("model", "PXW-FX9");
-        demo3.put("serialNumber", "FX9-2023-142");
-        demo3.put("category", "Vidéo");
-        demo3.put("status", "MAINTENANCE");
-        demo3.put("location", "Atelier Technique");
-        demo3.put("description", "Caméra professionnelle 4K avec optiques interchangeables");
-        demo3.put("purchasePrice", 8500.0);
-        demo3.put("notes", "Maintenance préventive en cours - Retour prévu le 20/11");
-        
-        equipmentData.add(new EquipmentItem(demo1));
-        equipmentData.add(new EquipmentItem(demo2));
-        equipmentData.add(new EquipmentItem(demo3));
-        
-        updateCategoryFilter();
-        updateStatusFilter();
-        updateStatistics();
+    /**
+     * Crée le conteneur qui intègre automatiquement le volet de détails
+     */
+    private void createTableContainer() {
+        // Utiliser le wrapper automatique qui intègre le DetailPanel
+        tableContainer = DetailPanelContainer.wrapTableView(equipmentTable);
     }
     
-    private void filterEquipment() {
-        String searchText = searchField.getText().toLowerCase();
-        String categoryValue = categoryFilter.getValue();
-        String statusValue = statusFilter.getValue();
+    /**
+     * Organise la disposition des composants
+     */
+    private void setupLayout() {
+        // Top: Toolbar standardisée ViewUtils (contient déjà tous les filtres et actions)
+        setTop(toolbar);
         
-        ObservableList<EquipmentItem> filteredData = FXCollections.observableArrayList();
-        
-        for (EquipmentItem item : equipmentData) {
-            boolean matchesSearch = searchText.isEmpty() || 
-                (item.getName() != null && item.getName().toLowerCase().contains(searchText)) ||
-                (item.getBrand() != null && item.getBrand().toLowerCase().contains(searchText)) ||
-                (item.getModel() != null && item.getModel().toLowerCase().contains(searchText)) ||
-                (item.getSerialNumber() != null && item.getSerialNumber().toLowerCase().contains(searchText));
-                
-            boolean matchesCategory = "Toutes".equals(categoryValue) || 
-                (item.getCategory() != null && item.getCategory().equals(categoryValue));
-                
-            boolean matchesStatus = "Tous".equals(statusValue) || 
-                (item.getStatus() != null && item.getStatus().equals(statusValue));
-                
-            if (matchesSearch && matchesCategory && matchesStatus) {
-                filteredData.add(item);
+        // Center: Directement le tableContainer sans VBox intermédiaire; // pour éviter l'effet de container visible
+        setCenter(tableContainer);
+    }
+    
+    /**
+     * Configure les gestionnaires d'événements
+     */
+    private void setupEventHandlers() {
+        // Sélection dans la table - le DetailPanelContainer gère automatiquement l'affichage
+        equipmentTable.getSelectionModel().selectedItemProperty().addListener(
+            (obs, oldSelection, newSelection) -> {
+                updateButtonStates(newSelection != null);
             }
-        }
+        );
         
-        equipmentTable.setItems(filteredData);
-        updateStatistics();
+        // Style de sélection uniforme avec système de surlignage
+        equipmentTable.setRowFactory(tv -> {
+            TableRow<EquipmentItem> row = new TableRow<>();
+            
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty()) {
+                    row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection uniforme - même système que les autres modules
+                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                               "-fx-border-width: 1px;");
+                } else {
+                    // Style par défaut
+                    row.setStyle("");
+                }
+            };
+            
+            // Écouter les changements de sélection
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+            
+            // Double-clic pour ouvrir la fiche détaillée (conservé)
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    openEquipmentDetails(row.getItem());
+                }
+            });
+            
+            return row;
+        });
+        
+        // Filtres
+        searchField.textProperty().addListener((obs, oldText, newText) -> updateFilters());
+        categoryFilter.valueProperty().addListener((obs, oldValue, newValue) -> updateFilters());
+        statusFilter.valueProperty().addListener((obs, oldValue, newValue) -> updateFilters());
+        brandFilter.valueProperty().addListener((obs, oldValue, newValue) -> updateFilters());
+        
+        // Actions des boutons
+        addButton.setOnAction(e -> addEquipment());
+        editButton.setOnAction(e -> editSelectedEquipment());
+        deleteButton.setOnAction(e -> deleteSelectedEquipment());
+        duplicateButton.setOnAction(e -> duplicateSelectedEquipment());
+        exportButton.setOnAction(e -> exportEquipmentList());
     }
     
     /**
-     * Met à jour dynamiquement le filtre des catégories avec les valeurs réelles
+     * Charge les données d'équipements depuis l'API
      */
-    private void updateCategoryFilter() {
-        String selectedCategory = categoryFilter.getValue();
+    private void loadEquipmentData() {
+        Platform.runLater(() -> {
+            // Mettre à jour la table en indicateur de chargement
+            equipmentTable.setPlaceholder(new Label("Chargement des équipements..."));
+        });
+        
+        CompletableFuture<List<Object>> future = apiService.getEquipments();
+        future.thenAccept(equipmentData -> {
+            Platform.runLater(() -> {
+                equipmentList.clear();
+                for (Object item : equipmentData) {
+                    if (item instanceof Map) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> data = (Map<String, Object>) item;
+                        equipmentList.add(new EquipmentItem(data));
+                    }
+                }
+                
+                updateFilterOptions();
+                updateStatusLabel();
+                equipmentTable.setPlaceholder(new Label("Aucun équipement trouvé"));
+            });
+        }).exceptionally(throwable -> {
+            Platform.runLater(() -> {
+                equipmentTable.setPlaceholder(new Label("Erreur de chargement des équipements"));
+                showErrorAlert("Erreur", "Impossible de charger les équipements: " + throwable.getMessage());
+            });
+            return null;
+        });
+    }
+    
+    /**
+     * Met à jour les options des filtres selon les données chargées
+     */
+    private void updateFilterOptions() {
+        // Mise à jour des catégories
         categoryFilter.getItems().clear();
-        categoryFilter.getItems().add("Toutes");
-        
-        // Récupérer toutes les catégories uniques des données
-        equipmentData.stream()
+        categoryFilter.getItems().add("Toutes catégories");
+        equipmentList.stream()
             .map(EquipmentItem::getCategory)
-            .filter(category -> category != null && !category.trim().isEmpty())
+            .filter(cat -> cat != null && !cat.isEmpty())
             .distinct()
             .sorted()
-            .forEach(category -> categoryFilter.getItems().add(category));
+            .forEach(categoryFilter.getItems()::add);
         
-        // Restaurer la sélection si elle existe toujours
-        if (categoryFilter.getItems().contains(selectedCategory)) {
-            categoryFilter.setValue(selectedCategory);
-        } else {
-            categoryFilter.setValue("Toutes");
-        }
-    }
-    
-    /**
-     * Met à jour dynamiquement le filtre des statuts avec les valeurs réelles
-     */
-    private void updateStatusFilter() {
-        String selectedStatus = statusFilter.getValue();
+        // Mise à jour des statuts
         statusFilter.getItems().clear();
-        statusFilter.getItems().add("Tous");
-        
-        // Récupérer tous les statuts uniques des données (déjà convertis en français)
-        equipmentData.stream()
+        statusFilter.getItems().add("Tous statuts");
+        equipmentList.stream()
             .map(EquipmentItem::getStatus)
-            .filter(status -> status != null && !status.trim().isEmpty())
+            .filter(status -> status != null && !status.isEmpty())
             .distinct()
             .sorted()
-            .forEach(status -> statusFilter.getItems().add(status));
+            .forEach(statusFilter.getItems()::add);
         
-        // Restaurer la sélection si elle existe toujours
-        if (statusFilter.getItems().contains(selectedStatus)) {
-            statusFilter.setValue(selectedStatus);
-        } else {
-            statusFilter.setValue("Tous");
-        }
+        // Mise à jour des marques
+        brandFilter.getItems().clear();
+        brandFilter.getItems().add("Toutes marques");
+        equipmentList.stream()
+            .map(EquipmentItem::getBrand)
+            .filter(brand -> brand != null && !brand.isEmpty())
+            .distinct()
+            .sorted()
+            .forEach(brandFilter.getItems()::add);
     }
     
     /**
-     * Ajouter un nouvel équipement
+     * Met à jour les filtres appliqués à la liste
      */
+    private void updateFilters() {
+        filteredList.setPredicate(equipment -> {
+            // Filtre de recherche textuelle
+            String searchText = searchField.getText();
+            if (searchText != null && !searchText.isEmpty()) {
+                String lowerCaseFilter = searchText.toLowerCase();
+                if (!equipment.getName().toLowerCase().contains(lowerCaseFilter) &&
+                    !equipment.getBrand().toLowerCase().contains(lowerCaseFilter) &&
+                    !equipment.getModel().toLowerCase().contains(lowerCaseFilter) &&
+                    !equipment.getSerialNumber().toLowerCase().contains(lowerCaseFilter)) {
+                    return false;
+                }
+            }
+            
+            // Filtre par catégorie
+            String category = categoryFilter.getValue();
+            if (category != null && !category.equals("Toutes catégories")) {
+                if (!category.equals(equipment.getCategory())) {
+                    return false;
+                }
+            }
+            
+            // Filtre par statut
+            String status = statusFilter.getValue();
+            if (status != null && !status.equals("Tous statuts")) {
+                if (!status.equals(equipment.getStatus())) {
+                    return false;
+                }
+            }
+            
+            // Filtre par marque
+            String brand = brandFilter.getValue();
+            if (brand != null && !brand.equals("Toutes marques")) {
+                if (!brand.equals(equipment.getBrand())) {
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+        
+        updateStatusLabel();
+    }
+    
+    /**
+     * Remet à zéro tous les filtres
+     */
+    private void resetFilters() {
+        searchField.clear();
+        categoryFilter.setValue("Toutes catégories");
+        statusFilter.setValue("Tous statuts");
+        brandFilter.setValue("Toutes marques");
+    }
+    
+    /**
+     * Met à jour le label de statut dans la toolbar
+     */
+    private void updateStatusLabel() {
+        Platform.runLater(() -> {
+            int totalCount = equipmentList.size();
+            int filteredCount = filteredList.size();
+            
+            // Note: Le statut pourra être affiché dans la barre de statut générale si nécessaire; // Pour l'instant, la toolbar est standardisée sans label de statut interne
+            System.out.println(String.format("Équipements affichés: %d / %d", filteredCount, totalCount));
+        });
+    }
+    
+    /**
+     * Met à jour l'état des boutons selon la sélection
+     */
+    private void updateButtonStates(boolean hasSelection) {
+        editButton.setDisable(!hasSelection);
+        deleteButton.setDisable(!hasSelection);
+        duplicateButton.setDisable(!hasSelection);
+    }
+    
+    // La gestion du volet de détails est maintenant automatique via DetailPanelContainer; // === ACTIONS DES BOUTONS ===
+    
     private void addEquipment() {
-        EquipmentDialog dialog = new EquipmentDialog(apiService, null);
-        Optional<Map<String, Object>> result = dialog.showAndWait();
-        
-        if (result.isPresent()) {
-            Map<String, Object> equipmentData = result.get();
-            apiService.createEquipment(equipmentData).thenAccept(response -> {
-                Platform.runLater(() -> {
-                    if (response instanceof Map && ((Map<?, ?>) response).containsKey("error")) {
-                        @SuppressWarnings("unchecked")
-                        Map<String, Object> responseMap = (Map<String, Object>) response;
-                        showError("Erreur", "Impossible de créer l'équipement: " + responseMap.get("error"));
-                    } else {
-                        showInfo("Succès", "Équipement créé avec succès !");
-                        refreshData();
-                    }
-                });
-            }).exceptionally(throwable -> {
-                Platform.runLater(() -> showError("Erreur", "Erreur lors de la création: " + throwable.getMessage()));
-                return null;
-            });
+        // TODO: Ouvrir dialog d'ajout d'équipement
+        showInfoAlert("Action", "Fonctionnalité d'ajout en cours de développement");
+    }
+    
+    private void editSelectedEquipment() {
+        EquipmentItem selected = equipmentTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            // TODO: Ouvrir dialog d'édition
+            showInfoAlert("Action", "Fonctionnalité d'édition en cours de développement pour: " + selected.getName());
         }
     }
     
-    /**
-     * Modifier l'équipement sélectionné
-     */
-    private void editEquipment() {
-        EquipmentItem selectedItem = equipmentTable.getSelectionModel().getSelectedItem();
-        if (selectedItem == null) return;
-        
-        // Récupérer les données complètes de l'équipement
-        Map<String, Object> equipmentData = convertEquipmentItemToMap(selectedItem);
-        
-        EquipmentDialog dialog = new EquipmentDialog(apiService, equipmentData);
-        Optional<Map<String, Object>> result = dialog.showAndWait();
-        
-        if (result.isPresent()) {
-            Map<String, Object> updatedData = result.get();
-            Long equipmentId = Long.valueOf(selectedItem.getId());
+    private void deleteSelectedEquipment() {
+        EquipmentItem selected = equipmentTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            // Confirmation
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirmer la suppression");
+            alert.setHeaderText("Supprimer l'équipement");
+            alert.setContentText("Êtes-vous sûr de vouloir supprimer: " + selected.getName() + " ?");
             
-            apiService.updateEquipment(equipmentId, updatedData).thenAccept(response -> {
-                Platform.runLater(() -> {
-                    if (response instanceof Map && ((Map<?, ?>) response).containsKey("error")) {
-                        @SuppressWarnings("unchecked")
-                        Map<String, Object> responseMap = (Map<String, Object>) response;
-                        showError("Erreur", "Impossible de modifier l'équipement: " + responseMap.get("error"));
-                    } else {
-                        showInfo("Succès", "Équipement modifié avec succès !");
-                        refreshData();
-                    }
-                });
-            }).exceptionally(throwable -> {
-                Platform.runLater(() -> showError("Erreur", "Erreur lors de la modification: " + throwable.getMessage()));
-                return null;
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    // TODO: Appeler API de suppression
+                    showInfoAlert("Action", "Suppression en cours de développement");
+                }
             });
         }
     }
     
+    private void duplicateSelectedEquipment() {
+        EquipmentItem selected = equipmentTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            // TODO: Dupliquer l'équipement
+            showInfoAlert("Action", "Duplication en cours de développement pour: " + selected.getName());
+        }
+    }
+    
+    private void exportEquipmentList() {
+        // TODO: Export Excel/PDF
+        showInfoAlert("Export", "Fonctionnalité d'export en cours de développement");
+    }
+    
     /**
-     * Supprimer l'équipement sélectionné
+     * Ouvre le dialogue d'import LOCMAT
      */
-    private void deleteEquipment() {
-        EquipmentItem selectedItem = equipmentTable.getSelectionModel().getSelectedItem();
-        if (selectedItem == null) return;
-        
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmation.setTitle("Confirmation de suppression");
-        confirmation.setHeaderText("Supprimer l'équipement");
-        confirmation.setContentText("Êtes-vous sûr de vouloir supprimer l'équipement '" + selectedItem.getName() + "' ?\n\nCette action est irréversible.");
-        
-        Optional<ButtonType> result = confirmation.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            Long equipmentId = Long.valueOf(selectedItem.getId());
+    private void openLocmatImportDialog() {
+        try {
+            LocmatImportDialog importDialog = new LocmatImportDialog();
+            importDialog.showAndWait();
             
-            apiService.deleteEquipment(equipmentId).thenAccept(success -> {
-                Platform.runLater(() -> {
-                    if (success) {
-                        showInfo("Succès", "Équipement supprimé avec succès !");
-                        refreshData();
-                    } else {
-                        showError("Erreur", "Impossible de supprimer l'équipement.");
-                    }
-                });
-            }).exceptionally(throwable -> {
-                Platform.runLater(() -> showError("Erreur", "Erreur lors de la suppression: " + throwable.getMessage()));
-                return null;
-            });
+            // Recharger les données après l'import
+            loadEquipmentData();
+            
+        } catch (Exception e) {
+            showErrorAlert("Erreur", "Impossible d'ouvrir le dialogue d'import LOCMAT: " + e.getMessage());
         }
     }
     
     /**
-     * Actualiser les données
-     */
-    private void refreshData() {
-        loadEquipmentData();
-    }
-    
-    /**
-     * Sélectionne un équipement par nom et ouvre sa fiche de modification
-     * Méthode publique appelée depuis la recherche globale
+     * Méthode publique pour rechercher et sélectionner un équipement par nom
+     * Utilisée par la recherche globale
      */
     public void selectAndViewEquipment(String equipmentName) {
-        System.out.println("🔍 Recherche équipement: " + equipmentName + " dans " + equipmentData.size() + " éléments");
-        
-        // Attendre que les données soient chargées si nécessaire
-        if (equipmentData.isEmpty()) {
-            System.out.println("⏳ Données non chargées, attente...");
-            // Programmer une vérification périodique
-            scheduleDataCheck(equipmentName, 0);
+        if (equipmentName == null || equipmentName.trim().isEmpty()) {
             return;
         }
         
-        Platform.runLater(() -> {
-            // Rechercher l'équipement dans la liste
-            boolean found = false;
-            for (EquipmentItem equipment : equipmentData) {
-                if (equipment.getName() != null && 
-                    equipment.getName().toLowerCase().contains(equipmentName.toLowerCase())) {
-                    // Sélectionner l'équipement dans la table
-                    equipmentTable.getSelectionModel().select(equipment);
-                    equipmentTable.scrollTo(equipment);
-                    
-                    System.out.println("✅ Équipement trouvé et sélectionné: " + equipment.getName());
-                    
-                    // Ouvrir automatiquement la fiche de modification avec délai
-                    Platform.runLater(() -> {
-                        try {
-                            Thread.sleep(200); // Petit délai pour la sélection
-                            editEquipment();
-                        } catch (InterruptedException e) {
-                            editEquipment();
-                        }
-                    });
-                    found = true;
-                    break;
-                }
+        // Rechercher dans la liste
+        for (EquipmentItem item : equipmentList) {
+            if (item.getName().toLowerCase().contains(equipmentName.toLowerCase())) {
+                // Sélectionner et faire défiler vers l'élément
+                equipmentTable.getSelectionModel().select(item);
+                equipmentTable.scrollTo(item);
+                
+                // Mettre à jour le filtre de recherche pour montrer le contexte
+                searchField.setText(equipmentName);
+                
+                break;
             }
-            if (!found) {
-                System.out.println("❌ Équipement non trouvé: " + equipmentName);
-            }
-        });
-    }
-    
-    /**
-     * Vérifie périodiquement si les données sont chargées pour la sélection automatique
-     */
-    private void scheduleDataCheck(String equipmentName, int attempt) {
-        if (attempt > 10) { // Maximum 10 tentatives (5 secondes)
-            System.out.println("❌ Timeout: Équipement non trouvé après 10 tentatives: " + equipmentName);
-            return;
         }
-        
-        Platform.runLater(() -> {
-            if (!equipmentData.isEmpty()) {
-                System.out.println("✅ Données chargées, nouvelle tentative de sélection");
-                selectAndViewEquipment(equipmentName);
-            } else {
-                // Réessayer après 500ms
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(500);
-                        scheduleDataCheck(equipmentName, attempt + 1);
-                    } catch (InterruptedException e) {
-                        // Ignore
-                    }
-                }).start();
-            }
-        });
-    }
-
-    /**
-     * Convertir EquipmentItem en Map pour édition
-     */
-    private Map<String, Object> convertEquipmentItemToMap(EquipmentItem item) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", item.getId());
-        map.put("name", item.getName());
-        map.put("brand", item.getBrand());
-        map.put("model", item.getModel());
-        map.put("category", item.getCategory());
-        map.put("status", item.getStatus());
-        map.put("qrCode", item.getQrCode());
-        map.put("serialNumber", item.getSerialNumber());
-        map.put("purchasePrice", item.getPurchasePrice());
-        return map;
     }
     
-    /**
-     * Afficher un message d'erreur
-     */
-    private void showError(String title, String message) {
+    // === MÉTHODES UTILITAIRES ===
+    
+    private void showErrorAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);
@@ -712,10 +585,7 @@ public class EquipmentManagerView extends BorderPane {
         alert.showAndWait();
     }
     
-    /**
-     * Afficher un message d'information
-     */
-    private void showInfo(String title, String message) {
+    private void showInfoAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
@@ -723,23 +593,36 @@ public class EquipmentManagerView extends BorderPane {
         alert.showAndWait();
     }
     
-    private void updateStatistics() {
-        int total = equipmentTable.getItems().size();
-        long available = equipmentTable.getItems().stream()
-            .filter(item -> "Disponible".equals(item.getStatus())).count();
-        long inUse = equipmentTable.getItems().stream()
-            .filter(item -> "En cours d'utilisation".equals(item.getStatus())).count();
-        long maintenance = equipmentTable.getItems().stream()
-            .filter(item -> "En maintenance".equals(item.getStatus())).count();
-        long outOfService = equipmentTable.getItems().stream()
-            .filter(item -> "Hors service".equals(item.getStatus())).count();
-            
-        double totalValue = equipmentTable.getItems().stream()
-            .mapToDouble(EquipmentItem::getPurchasePrice).sum();
+    /**
+     * Ouvre la fiche détaillée d'un équipement en mode lecture seule
+     */
+    private void openEquipmentDetails(EquipmentItem item) {
+        if (item == null) {
+            return;
+        }
         
-        statsLabel.setText(String.format(
-            "📊 Total: %d • ✅ Disponible: %d • 🔄 En cours: %d • 🔧 Maintenance: %d • ❌ HS: %d • 💰 Valeur: %.0f €",
-            total, available, inUse, maintenance, outOfService, totalValue
-        ));
+        // Convertir l'EquipmentItem en Map pour le EquipmentDialog
+        Map<String, Object> equipmentData = new HashMap<>();
+        equipmentData.put("id", item.getId());
+        equipmentData.put("name", item.getName());
+        equipmentData.put("description", item.getDescription());
+        equipmentData.put("category", item.getCategory());
+        equipmentData.put("status", item.getStatus());
+        equipmentData.put("qrCode", item.getQrCode());
+        equipmentData.put("brand", item.getBrand());
+        equipmentData.put("model", item.getModel());
+        equipmentData.put("serialNumber", item.getSerialNumber());
+        equipmentData.put("purchasePrice", item.getPurchasePrice());
+        equipmentData.put("location", item.getLocation());
+        equipmentData.put("notes", item.getNotes());
+        
+        // Ouvrir le dialogue en mode lecture seule
+        EquipmentDialog dialog = new EquipmentDialog(apiService, equipmentData, true); // true = mode lecture seule
+        dialog.showAndWait().ifPresent(result -> {
+            // Si des modifications ont été apportées, rafraîchir la liste
+            if (result != null) {
+                loadEquipmentData(); // Recharger pour refléter les changements
+            }
+        });
     }
 }

@@ -337,6 +337,59 @@ public class ApiService {
     public CompletableFuture<Boolean> deleteServiceRequest(Long id) {
         return CompletableFuture.completedFuture(true);
     }
+
+    // === GESTION DES ÉVÉNEMENTS DE PLANNING ===
+    
+    /**
+     * Crée un nouvel événement de planning
+     */
+    public CompletableFuture<Object> createPlanningEvent(Map<String, Object> eventData) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // Simulation de la création d'événement avec ID généré
+                Map<String, Object> createdEvent = new HashMap<>(eventData);
+                createdEvent.put("id", System.currentTimeMillis()); // ID simulé
+                createdEvent.put("status", "PLANNED");
+                createdEvent.put("createdAt", java.time.LocalDateTime.now().toString());
+                
+                System.out.println("✅ Événement de planning créé: " + createdEvent.get("title"));
+                System.out.println("   - Début: " + createdEvent.get("startDateTime"));
+                System.out.println("   - Fin: " + createdEvent.get("endDateTime"));
+                System.out.println("   - Personnel: " + createdEvent.get("assignedPersonnel"));
+                
+                return createdEvent;
+                
+            } catch (Exception e) {
+                throw new RuntimeException("Erreur lors de la création de l'événement de planning", e);
+            }
+        });
+    }
+
+    /**
+     * Récupère les événements de planning pour une période donnée
+     */
+    public CompletableFuture<List<Object>> getPlanningEvents(String startDate, String endDate) {
+        return CompletableFuture.supplyAsync(() -> {
+            // Simulation de données d'événements
+            List<Object> events = new ArrayList<>();
+            // TODO: Implémenter la récupération depuis l'API backend
+            return events;
+        });
+    }
+
+    /**
+     * Met à jour un événement de planning existant
+     */
+    public CompletableFuture<Object> updatePlanningEvent(Long id, Map<String, Object> eventData) {
+        return CompletableFuture.supplyAsync(() -> {
+            Map<String, Object> updatedEvent = new HashMap<>(eventData);
+            updatedEvent.put("id", id);
+            updatedEvent.put("updatedAt", java.time.LocalDateTime.now().toString());
+            
+            System.out.println("✅ Événement de planning mis à jour: " + id);
+            return updatedEvent;
+        });
+    }
     
     // Methodes pour le personnel
     public CompletableFuture<List<Object>> getAllPersonnel() {
@@ -882,6 +935,158 @@ public class ApiService {
     public List<Map<String, Object>> search(String endpoint, Map<String, String> params) {
         return new ArrayList<>();
     }
+
+    // ====================== GESTION DES MARQUES ======================
+    
+    /**
+     * Récupère toutes les marques
+     */
+    public List<Map<String, Object>> getBrands() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/brands"))
+                .GET()
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                return objectMapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la récupération des marques : " + e.getMessage());
+        }
+
+        // Données simulées en cas d'erreur
+        return getSimulatedBrandsData();
+    }
+
+    /**
+     * Crée une nouvelle marque
+     */
+    public Map<String, Object> createBrand(Map<String, Object> brandData) {
+        try {
+            String json = objectMapper.writeValueAsString(brandData);
+            
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/brands"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 201) {
+                return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+            } else {
+                throw new RuntimeException("Erreur HTTP : " + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la création de la marque : " + e.getMessage());
+            throw new RuntimeException("Impossible de créer la marque : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Met à jour une marque existante
+     */
+    public Map<String, Object> updateBrand(Long id, Map<String, Object> brandData) {
+        try {
+            String json = objectMapper.writeValueAsString(brandData);
+            
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/brands/" + id))
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+            } else {
+                throw new RuntimeException("Erreur HTTP : " + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la mise à jour de la marque : " + e.getMessage());
+            throw new RuntimeException("Impossible de mettre à jour la marque : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Supprime une marque
+     */
+    public void deleteBrand(Long id) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/brands/" + id))
+                .DELETE()
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Erreur HTTP : " + response.statusCode() + " - " + response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la suppression de la marque : " + e.getMessage());
+            throw new RuntimeException("Impossible de supprimer la marque : " + e.getMessage());
+        }
+    }
+
+    /**
+     * Données simulées des marques pour les tests
+     */
+    private List<Map<String, Object>> getSimulatedBrandsData() {
+        List<Map<String, Object>> brands = new ArrayList<>();
+        
+        Map<String, Object> brand1 = new HashMap<>();
+        brand1.put("id", 1L);
+        brand1.put("name", "ARRI");
+        brand1.put("description", "Matériel d'éclairage et caméras professionnelles");
+        brand1.put("country", "Allemagne");
+        brand1.put("website", "https://www.arri.com");
+        brand1.put("active", true);
+        brands.add(brand1);
+        
+        Map<String, Object> brand2 = new HashMap<>();
+        brand2.put("id", 2L);
+        brand2.put("name", "Yamaha");
+        brand2.put("description", "Équipements audio et instruments de musique");
+        brand2.put("country", "Japon");
+        brand2.put("website", "https://www.yamaha.com");
+        brand2.put("active", true);
+        brands.add(brand2);
+        
+        Map<String, Object> brand3 = new HashMap<>();
+        brand3.put("id", 3L);
+        brand3.put("name", "Sony");
+        brand3.put("description", "Caméras et équipements audiovisuels");
+        brand3.put("country", "Japon");
+        brand3.put("website", "https://www.sony.com");
+        brand3.put("active", true);
+        brands.add(brand3);
+        
+        Map<String, Object> brand4 = new HashMap<>();
+        brand4.put("id", 4L);
+        brand4.put("name", "Martin");
+        brand4.put("description", "Éclairage scénique et architectural");
+        brand4.put("country", "Danemark");
+        brand4.put("website", "https://www.martin.com");
+        brand4.put("active", true);
+        brands.add(brand4);
+        
+        Map<String, Object> brand5 = new HashMap<>();
+        brand5.put("id", 5L);
+        brand5.put("name", "Shure");
+        brand5.put("description", "Microphones et systèmes audio");
+        brand5.put("country", "États-Unis");
+        brand5.put("website", "https://www.shure.com");
+        brand5.put("active", false);
+        brands.add(brand5);
+        
+        return brands;
+    }
     
     // Methodes utilitaires
     public CompletableFuture<Boolean> testConnection() {
@@ -890,5 +1095,320 @@ public class ApiService {
     
     public void close() {
         // Stub
+    }
+    
+    /**
+     * Méthode générique pour effectuer des appels API avec différentes méthodes HTTP
+     */
+    public String makeApiCall(String endpoint, String method, String jsonBody) {
+        try {
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + endpoint))
+                .timeout(Duration.ofSeconds(10));
+            
+            // Configurer la méthode HTTP
+            switch (method.toUpperCase()) {
+                case "GET":
+                    requestBuilder.GET();
+                    break;
+                case "POST":
+                    requestBuilder.POST(jsonBody != null ? 
+                        HttpRequest.BodyPublishers.ofString(jsonBody) : 
+                        HttpRequest.BodyPublishers.noBody());
+                    break;
+                case "PUT":
+                    requestBuilder.PUT(jsonBody != null ? 
+                        HttpRequest.BodyPublishers.ofString(jsonBody) : 
+                        HttpRequest.BodyPublishers.noBody());
+                    break;
+                case "DELETE":
+                    requestBuilder.DELETE();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Méthode HTTP non supportée: " + method);
+            }
+            
+            HttpRequest request = requestBuilder.build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                return response.body();
+            } else {
+                throw new RuntimeException("Erreur HTTP " + response.statusCode() + ": " + response.body());
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Erreur lors de l'appel API " + method + " " + endpoint + ": " + e.getMessage());
+            
+            // Données simulées pour la migration selon l'endpoint
+            if (endpoint.contains("/brand-migration/report")) {
+                return getSimulatedMigrationReport();
+            } else if (endpoint.contains("/brand-migration/migrate-brands")) {
+                return "{\"success\": true, \"message\": \"Migration des marques simulée effectuée avec succès\"}";
+            } else if (endpoint.contains("/brand-migration/full-migration")) {
+                return "{\"success\": true, \"message\": \"Migration complète simulée effectuée avec succès\"}";
+            } else if (endpoint.contains("/brand-migration/status")) {
+                return "{\"isReady\": true, \"totalBrandsToMigrate\": 8, \"existingBrandsCount\": 5, \"equipmentBrandsCount\": 6, \"vehicleBrandsCount\": 4}";
+            }
+            
+            throw new RuntimeException("Impossible de contacter le serveur: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Données simulées pour le rapport de migration
+     */
+    private String getSimulatedMigrationReport() {
+        Map<String, Object> report = new HashMap<>();
+        
+        // Marques des équipements simulées
+        List<String> equipmentBrands = Arrays.asList(
+            "Shure", "Yamaha", "Sony", "Martin", "Clay Paky", "Robe"
+        );
+        
+        // Marques des véhicules simulées
+        List<String> vehicleBrands = Arrays.asList(
+            "Mercedes", "Renault", "Volkswagen", "Iveco"
+        );
+        
+        // Marques existantes
+        List<String> existingBrands = Arrays.asList(
+            "Shure", "Yamaha", "Sony", "Martin", "Clay Paky"
+        );
+        
+        // Toutes les marques uniques
+        Set<String> allUnique = new HashSet<>();
+        allUnique.addAll(equipmentBrands);
+        allUnique.addAll(vehicleBrands);
+        List<String> allUniqueList = new ArrayList<>(allUnique);
+        
+        report.put("equipmentBrands", equipmentBrands);
+        report.put("vehicleBrands", vehicleBrands);
+        report.put("existingBrands", existingBrands);
+        report.put("equipmentBrandCount", equipmentBrands.size());
+        report.put("vehicleBrandCount", vehicleBrands.size());
+        report.put("existingBrandCount", existingBrands.size());
+        report.put("totalUniqueBrands", allUniqueList.size());
+        report.put("allUniqueBrandsList", allUniqueList);
+        
+        try {
+            return objectMapper.writeValueAsString(report);
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la sérialisation du rapport simulé", e);
+        }
+    }
+    
+    // ========================================
+    // MÉTHODES POUR LE SYSTÈME DE FOURNISSEURS
+    // ========================================
+    
+    /**
+     * Récupère la liste des fournisseurs (temporairement comme Map pour compatibilité)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> getSuppliers() {
+        // TODO: Remplacer par un vrai appel API retournant List<Supplier>
+        return (List<Map<String, Object>>) (Object) getSimulatedSuppliers();
+    }
+    
+    /**
+     * Récupère la liste des demandes de matériel (temporairement comme Map pour compatibilité)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> getMaterialRequests() {
+        // TODO: Remplacer par un vrai appel API retournant List<MaterialRequest>
+        return (List<Map<String, Object>>) (Object) getSimulatedMaterialRequests();
+    }
+    
+    /**
+     * Récupère la liste des commandes groupées (temporairement comme Map pour compatibilité)
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> getGroupedOrders() {
+        // TODO: Remplacer par un vrai appel API retournant List<GroupedOrder>
+        return (List<Map<String, Object>>) (Object) getSimulatedGroupedOrders();
+    }
+    
+    /**
+     * Données simulées pour les fournisseurs
+     */
+    private List<Object> getSimulatedSuppliers() {
+        List<Object> suppliers = new ArrayList<>();
+        
+        // Quelques fournisseurs d'exemple
+        Map<String, Object> supplier1 = new HashMap<>();
+        supplier1.put("id", 1L);
+        supplier1.put("name", "SonoMax Pro");
+        supplier1.put("contactPerson", "Jean Dupont");
+        supplier1.put("email", "jean.dupont@sonomax.fr");
+        supplier1.put("phone", "01 23 45 67 89");
+        supplier1.put("hasAfterSalesService", true);
+        supplier1.put("hasRMAService", true);
+        supplier1.put("hasPartsService", true);
+        supplier1.put("hasEquipmentService", true);
+        supplier1.put("freeShippingThreshold", 500.00);
+        supplier1.put("handlingFee", 25.00);
+        supplier1.put("active", true);
+        supplier1.put("catalogs", Arrays.asList());
+        suppliers.add(supplier1);
+        
+        Map<String, Object> supplier2 = new HashMap<>();
+        supplier2.put("id", 2L);
+        supplier2.put("name", "Éclairage Scène");
+        supplier2.put("contactPerson", "Marie Martin");
+        supplier2.put("email", "m.martin@eclairage-scene.com");
+        supplier2.put("phone", "01 98 76 54 32");
+        supplier2.put("hasAfterSalesService", false);
+        supplier2.put("hasRMAService", false);
+        supplier2.put("hasPartsService", true);
+        supplier2.put("hasEquipmentService", true);
+        supplier2.put("freeShippingThreshold", 300.00);
+        supplier2.put("handlingFee", 15.00);
+        supplier2.put("active", true);
+        supplier2.put("catalogs", Arrays.asList());
+        suppliers.add(supplier2);
+        
+        Map<String, Object> supplier3 = new HashMap<>();
+        supplier3.put("id", 3L);
+        supplier3.put("name", "TechService Plus");
+        supplier3.put("contactPerson", "Pierre Durand");
+        supplier3.put("email", "p.durand@techservice.fr");
+        supplier3.put("phone", "02 11 22 33 44");
+        supplier3.put("hasAfterSalesService", true);
+        supplier3.put("hasRMAService", true);
+        supplier3.put("hasPartsService", false);
+        supplier3.put("hasEquipmentService", false);
+        supplier3.put("freeShippingThreshold", 200.00);
+        supplier3.put("handlingFee", 20.00);
+        supplier3.put("active", false);
+        supplier3.put("catalogs", Arrays.asList());
+        suppliers.add(supplier3);
+        
+        return suppliers;
+    }
+    
+    /**
+     * Données simulées pour les demandes de matériel
+     */
+    private List<Object> getSimulatedMaterialRequests() {
+        List<Object> requests = new ArrayList<>();
+        
+        // Demande 1
+        Map<String, Object> request1 = new HashMap<>();
+        request1.put("id", 1L);
+        request1.put("description", "Éclairage pour concert jazz");
+        request1.put("requesterName", "Thomas Bernard");
+        request1.put("priority", "HIGH");
+        request1.put("status", "PENDING");
+        request1.put("requestDate", "2024-01-15T10:30:00");
+        request1.put("neededDate", "2024-01-25T18:00:00");
+        request1.put("justification", "Concert prévu le 25 janvier, éclairage indispensable");
+        request1.put("items", Arrays.asList(
+            Map.of("itemName", "Projecteur LED 100W", "quantity", 4),
+            Map.of("itemName", "Console d'éclairage", "quantity", 1)
+        ));
+        requests.add(request1);
+        
+        // Demande 2
+        Map<String, Object> request2 = new HashMap<>();
+        request2.put("id", 2L);
+        request2.put("description", "Réparation micros sans fil");
+        request2.put("requesterName", "Sophie Lambert");
+        request2.put("priority", "URGENT");
+        request2.put("status", "APPROVED");
+        request2.put("requestDate", "2024-01-14T14:15:00");
+        request2.put("neededDate", "2024-01-18T09:00:00");
+        request2.put("approvalDate", "2024-01-14T16:00:00");
+        request2.put("justification", "Micros défaillants pour spectacle urgent");
+        request2.put("items", Arrays.asList(
+            Map.of("itemName", "Capsule micro HF", "quantity", 2),
+            Map.of("itemName", "Émetteur de poche", "quantity", 1, "allocatedQuantity", 1)
+        ));
+        requests.add(request2);
+        
+        // Demande 3
+        Map<String, Object> request3 = new HashMap<>();
+        request3.put("id", 3L);
+        request3.put("description", "Câblage sonorisation");
+        request3.put("requesterName", "Marc Rousseau");
+        request3.put("priority", "MEDIUM");
+        request3.put("status", "ALLOCATED");
+        request3.put("requestDate", "2024-01-12T09:00:00");
+        request3.put("neededDate", "2024-01-30T12:00:00");
+        request3.put("approvalDate", "2024-01-13T11:30:00");
+        request3.put("justification", "Renouvellement du stock de câbles");
+        request3.put("items", Arrays.asList(
+            Map.of("itemName", "Câble micro XLR 10m", "quantity", 10, "allocatedQuantity", 8),
+            Map.of("itemName", "Câble HP 2x2.5mm 50m", "quantity", 5, "allocatedQuantity", 5)
+        ));
+        requests.add(request3);
+        
+        return requests;
+    }
+    
+    /**
+     * Données simulées pour les commandes groupées
+     */
+    private List<Object> getSimulatedGroupedOrders() {
+        List<Object> orders = new ArrayList<>();
+        
+        // Commande 1
+        Map<String, Object> order1 = new HashMap<>();
+        order1.put("id", 1L);
+        order1.put("totalAmount", 480.50);
+        order1.put("status", "PENDING_VALIDATION");
+        order1.put("createdDate", "2024-01-15T11:00:00");
+        order1.put("supplier", Map.of(
+            "id", 1L,
+            "name", "SonoMax Pro",
+            "freeShippingThreshold", 500.00,
+            "handlingFee", 25.00
+        ));
+        order1.put("allocations", Arrays.asList(
+            Map.of("itemName", "Projecteur LED 100W", "quantity", 4, "unitPrice", 85.00),
+            Map.of("itemName", "Capsule micro HF", "quantity", 2, "unitPrice", 65.25),
+            Map.of("itemName", "Émetteur de poche", "quantity", 1, "unitPrice", 120.00)
+        ));
+        orders.add(order1);
+        
+        // Commande 2
+        Map<String, Object> order2 = new HashMap<>();
+        order2.put("id", 2L);
+        order2.put("totalAmount", 350.00);
+        order2.put("status", "VALIDATED");
+        order2.put("createdDate", "2024-01-14T16:30:00");
+        order2.put("validationDate", "2024-01-15T09:15:00");
+        order2.put("supplier", Map.of(
+            "id", 2L,
+            "name", "Éclairage Scène",
+            "freeShippingThreshold", 300.00,
+            "handlingFee", 15.00
+        ));
+        order2.put("allocations", Arrays.asList(
+            Map.of("itemName", "Console d'éclairage", "quantity", 1, "unitPrice", 350.00)
+        ));
+        orders.add(order2);
+        
+        // Commande 3
+        Map<String, Object> order3 = new HashMap<>();
+        order3.put("id", 3L);
+        order3.put("totalAmount", 245.50);
+        order3.put("status", "SENT");
+        order3.put("createdDate", "2024-01-12T14:00:00");
+        order3.put("validationDate", "2024-01-13T10:00:00");
+        order3.put("sentDate", "2024-01-13T14:30:00");
+        order3.put("supplier", Map.of(
+            "id", 1L,
+            "name", "SonoMax Pro",
+            "freeShippingThreshold", 500.00,
+            "handlingFee", 25.00
+        ));
+        order3.put("allocations", Arrays.asList(
+            Map.of("itemName", "Câble micro XLR 10m", "quantity", 8, "unitPrice", 15.50),
+            Map.of("itemName", "Câble HP 2x2.5mm 50m", "quantity", 5, "unitPrice", 24.70)
+        ));
+        orders.add(order3);
+        
+        return orders;
     }
 }

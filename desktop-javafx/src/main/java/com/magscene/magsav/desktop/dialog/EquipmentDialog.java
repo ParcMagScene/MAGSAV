@@ -25,6 +25,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     
     private final ApiService apiService;
     private final boolean isEditMode;
+    private final boolean isReadOnlyMode;
     private Map<String, Object> equipmentData;
     private final CategoriesConfigManager categoriesManager;
     
@@ -56,64 +57,125 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     private String selectedPhotoPath;
     
     public EquipmentDialog(ApiService apiService, Map<String, Object> equipment) {
+        this(apiService, equipment, false);
+    }
+    
+    public EquipmentDialog(ApiService apiService, Map<String, Object> equipment, boolean readOnlyMode) {
         this.apiService = apiService;
-        this.isEditMode = equipment != null;
+        this.isEditMode = equipment != null && !readOnlyMode;
+        this.isReadOnlyMode = readOnlyMode;
         this.equipmentData = equipment != null ? equipment : new HashMap<>();
         this.categoriesManager = CategoriesConfigManager.getInstance();
         
         setupDialog();
         createFormContent();
-        setupValidation();
         
-        if (isEditMode) {
+        if (equipment != null) {
             populateFields();
         }
     }
     
     private void setupDialog() {
-        setTitle(isEditMode ? "Modifier l'equipement" : "Ajouter un equipement");
-        setHeaderText(isEditMode ? "Modification des informations de l'equipement" : "Saisie d'un nouvel equipement");
-        
-        // Boutons
-        ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButtonType = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
-        getDialogPane().getButtonTypes().addAll(saveButtonType, cancelButtonType);
+        // Configuration des titres (suppression des doublons d'intitulés)
+        if (isReadOnlyMode) {
+            setTitle("Détails de l'équipement");
+            setHeaderText(null); // Suppression du doublon - titre déjà dans la barre de titre
+        } else {
+            setTitle(isEditMode ? "Modifier l'équipement" : "Ajouter un équipement");
+            setHeaderText(null); // Suppression du doublon - titre déjà dans la barre de titre
+        }
         
         // Taille du dialogue
         getDialogPane().setPrefSize(800, 600);
         
         // Application du thème actuel au dialogue
-        String currentTheme = ThemeManager.getInstance().getCurrentTheme();
+        String currentTheme = com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentTheme();
         if ("dark".equals(currentTheme)) {
             getDialogPane().getStylesheets().add(getClass().getResource("/styles/theme-dark-ultra.css").toExternalForm());
         } else {
-            getDialogPane().getStylesheets().add(getClass().getResource("/styles/theme-light.css").toExternalForm());
+            getDialogPane().getStylesheets().add(getClass().getResource("/styles/magsav-light.css").toExternalForm());
         }
     }
     
     private void createFormContent() {
-        TabPane tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        // Utiliser CustomTabPane au lieu de TabPane JavaFX pour style unifié
+        com.magscene.magsav.desktop.component.CustomTabPane tabPane = 
+            new com.magscene.magsav.desktop.component.CustomTabPane();
         
-        // Onglet 1: Informations generales
-        Tab generalTab = new Tab("General");
-        generalTab.setContent(createGeneralForm());
+        // Onglet 1: Informations générales
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab generalTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Général", createGeneralForm(), "📋");
+        tabPane.addTab(generalTab);
         
-        // Onglet 2: Details techniques
-        Tab technicalTab = new Tab("Technique");
-        technicalTab.setContent(createTechnicalForm());
+        // Onglet 2: Détails techniques
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab technicalTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Technique", createTechnicalForm(), "🔧");
+        tabPane.addTab(technicalTab);
         
         // Onglet 3: Maintenance et garantie
-        Tab maintenanceTab = new Tab("Maintenance");
-        maintenanceTab.setContent(createMaintenanceForm());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab maintenanceTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Maintenance", createMaintenanceForm(), "🔨");
+        tabPane.addTab(maintenanceTab);
         
         // Onglet 4: Photo et documents
-        Tab mediaTab = new Tab("Photo");
-        mediaTab.setContent(createMediaForm());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab mediaTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Photo", createMediaForm(), "📷");
+        tabPane.addTab(mediaTab);
         
-        tabPane.getTabs().addAll(generalTab, technicalTab, maintenanceTab, mediaTab);
+        // Sélectionner le premier onglet
+        tabPane.selectTab(0);
         
-        getDialogPane().setContent(tabPane);
+        // Conteneur principal avec barre de boutons personnalisée
+        VBox mainContainer = new VBox();
+        mainContainer.getChildren().add(tabPane);
+        
+        // Ajouter la barre de boutons standardisée
+        HBox buttonBar = createCustomButtonBar();
+        mainContainer.getChildren().add(buttonBar);
+        
+        getDialogPane().setContent(mainContainer);
+        
+        // Appliquer le thème dark au dialogue
+        ThemeManager.getInstance().applyThemeToDialog(getDialogPane());
+        
+        // Désactiver les champs si en mode lecture seule
+        if (isReadOnlyMode) {
+            setFieldsReadOnly();
+        }
+    }
+    
+    /**
+     * Désactive tous les champs de saisie pour le mode lecture seule
+     */
+    private void setFieldsReadOnly() {
+        // Champs généraux
+        if (nameField != null) nameField.setDisable(true);
+        if (descriptionField != null) descriptionField.setDisable(true);
+        if (categoryCombo != null) categoryCombo.setDisable(true);
+        if (statusCombo != null) statusCombo.setDisable(true);
+        if (qrCodeField != null) qrCodeField.setDisable(true);
+        if (locationField != null) locationField.setDisable(true);
+        
+        // Champs techniques
+        if (brandField != null) brandField.setDisable(true);
+        if (modelField != null) modelField.setDisable(true);
+        if (serialNumberField != null) serialNumberField.setDisable(true);
+        if (internalRefField != null) internalRefField.setDisable(true);
+        if (weightField != null) weightField.setDisable(true);
+        if (dimensionsField != null) dimensionsField.setDisable(true);
+        
+        // Champs de maintenance
+        if (purchasePriceField != null) purchasePriceField.setDisable(true);
+        if (purchaseDatePicker != null) purchaseDatePicker.setDisable(true);
+        if (supplierField != null) supplierField.setDisable(true);
+        if (insuranceValueField != null) insuranceValueField.setDisable(true);
+        if (warrantyExpirationPicker != null) warrantyExpirationPicker.setDisable(true);
+        if (lastMaintenancePicker != null) lastMaintenancePicker.setDisable(true);
+        if (nextMaintenancePicker != null) nextMaintenancePicker.setDisable(true);
+        if (notesField != null) notesField.setDisable(true);
+        
+        // Boutons de photo
+        if (selectPhotoButton != null) selectPhotoButton.setDisable(true);
     }
     
     private VBox createGeneralForm() {
@@ -479,24 +541,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
             }
         }
     }
-    
-    private void setupValidation() {
-        // Configuration du result converter
-        setResultConverter(buttonType -> {
-            if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                return collectFormData();
-            }
-            return null;
-        });
-        
-        // Validation en temps reel
-        Button saveButton = (Button) getDialogPane().lookupButton(getDialogPane().getButtonTypes().get(0));
-        saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
-            if (!validateForm()) {
-                event.consume();
-            }
-        });
-    }
+
     
     private boolean validateForm() {
         if (nameField.getText().trim().isEmpty()) {
@@ -667,5 +712,59 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    /**
+     * Crée une barre de boutons personnalisée avec les styles ViewUtils
+     */
+    private HBox createCustomButtonBar() {
+        if (isReadOnlyMode) {
+            // Mode lecture seule : boutons Modifier et Fermer
+            return com.magscene.magsav.desktop.util.ViewUtils.createDialogButtonBar(
+                () -> {
+                    // Action Modifier : ouvrir en mode édition
+                    if (equipmentData != null) {
+                        EquipmentDialog editDialog = new EquipmentDialog(apiService, equipmentData, false);
+                        editDialog.showAndWait().ifPresent(result -> {
+                            // Propager le résultat vers le parent si nécessaire
+                            setResult(result);
+                        });
+                    }
+                    forceClose();
+                },
+                () -> {
+                    // Action Fermer
+                    forceClose();
+                },
+                null            );
+        } else {
+            // Mode édition : boutons Enregistrer et Annuler
+            return com.magscene.magsav.desktop.util.ViewUtils.createDialogButtonBar(
+                () -> {
+                    // Action Enregistrer
+                    if (validateForm()) {
+                        setResult(collectFormData());
+                        forceClose();
+                    }
+                },
+                () -> {
+                    // Action Annuler
+                    setResult(null);
+                    forceClose();
+                },
+                null            );
+        }
+    }
+    
+    /**
+     * Force la fermeture du dialog même avec des boutons personnalisés
+     */
+    private void forceClose() {
+        // Méthode robuste pour fermer un Dialog JavaFX
+        getDialogPane().getButtonTypes().clear(); // Vide les boutons natifs si présents
+        close(); // Fermeture standard; // Si la fermeture standard échoue, forcer via la fenêtre
+        if (getDialogPane().getScene() != null && getDialogPane().getScene().getWindow() != null) {
+            getDialogPane().getScene().getWindow().hide();
+        }
     }
 }

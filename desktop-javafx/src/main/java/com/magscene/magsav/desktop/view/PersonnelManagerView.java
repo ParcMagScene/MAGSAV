@@ -6,11 +6,11 @@ import com.magscene.magsav.desktop.component.DetailPanelProvider;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.dialog.PersonnelDialog;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.StandardColors;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -79,12 +79,10 @@ public class PersonnelManagerView extends BorderPane {
     
     private VBox createHeader() {
         VBox header = new VBox(10); // EXACTEMENT comme Ventes et Installations
-        header.setPadding(new Insets(0, 0, 20, 0)); // EXACTEMENT comme Ventes et Installations
-        
-        // Titre principal
+        header.setPadding(new Insets(0, 0, 20, 0)); // EXACTEMENT comme Ventes et Installations; // Titre principal
         Label titleLabel = new Label("👤 Personnel");
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
-        titleLabel.setTextFill(Color.web("#2c3e50"));
+        titleLabel.setTextFill(Color.web(StandardColors.getTextColor()));
         
         header.getChildren().add(titleLabel);
         return header;
@@ -94,17 +92,14 @@ public class PersonnelManagerView extends BorderPane {
         HBox toolbar = new HBox(10); // EXACTEMENT comme Ventes & Installations
         toolbar.setAlignment(Pos.CENTER_LEFT);
         toolbar.setPadding(new Insets(10)); // EXACTEMENT comme Ventes & Installations
-        toolbar.setStyle("-fx-background-color: #142240; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
-        
-        // Recherche
+        // toolbar supprimé - Style géré par CSS
         VBox searchBox = new VBox(5);
         Label searchLabel = new Label("🔍 Recherche");
         searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         searchField = new TextField();
         searchField.setPromptText("Nom, prenom, email...");
         searchField.setPrefWidth(250);
-        // Style supprimé - géré par forceSearchFieldColors
-        // Force agressive des couleurs pour contrer le CSS global
+        // Style supprimé - géré par forceSearchFieldColors; // Force agressive des couleurs pour contrer le CSS global
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchField.textProperty().addListener((obs, oldText, newText) -> filterPersonnelData());
         searchBox.getChildren().addAll(searchLabel, searchField);
@@ -112,39 +107,39 @@ public class PersonnelManagerView extends BorderPane {
         // Filtre par type
         VBox typeBox = new VBox(5);
         Label typeLabel = new Label("👤 Type");
-        typeLabel.setStyle("-fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         typeFilter = new ComboBox<>();
         typeFilter.getItems().addAll("Tous", "Employe", "Freelance", "Stagiaire", "Interimaire", "Intermittent du spectacle");
         typeFilter.setValue("Tous");
         typeFilter.setPrefWidth(150);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         typeFilter.setOnAction(e -> filterPersonnelData());
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
         // Filtre par statut
         VBox statusBox = new VBox(5);
         Label statusLabel = new Label("📊 Statut");
-        statusLabel.setStyle("-fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         statusFilter = new ComboBox<>();
         statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "En conge", "Termine");
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(120);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         statusFilter.setOnAction(e -> filterPersonnelData());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
         // Filtre par département
         VBox deptBox = new VBox(5);
         Label deptLabel = new Label("🏢 Département");
-        deptLabel.setStyle("-fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         deptLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         departmentFilter = new ComboBox<>();
         departmentFilter.getItems().add("Tous");
         departmentFilter.setValue("Tous");
         departmentFilter.setPrefWidth(140);
-        departmentFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         departmentFilter.setOnAction(e -> filterPersonnelData());
         deptBox.getChildren().addAll(deptLabel, departmentFilter);
         
@@ -155,11 +150,11 @@ public class PersonnelManagerView extends BorderPane {
         
         HBox buttonRow = new HBox(10);
         Button addButton = new Button("➕ Ajouter");
-        addButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         addButton.setOnAction(e -> createNewPersonnel());
         
         editButton = new Button("✏️ Modifier");
-        editButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         editButton.setDisable(true);
         editButton.setOnAction(e -> {
             PersonnelItem selected = personnelTable.getSelectionModel().getSelectedItem();
@@ -171,7 +166,7 @@ public class PersonnelManagerView extends BorderPane {
         });
         
         deleteButton = new Button("🗑️ Supprimer");
-        deleteButton.setStyle("-fx-background-color: #F44336; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         deleteButton.setDisable(true);
         deleteButton.setOnAction(e -> {
             PersonnelItem selected = personnelTable.getSelectionModel().getSelectedItem();
@@ -183,7 +178,7 @@ public class PersonnelManagerView extends BorderPane {
         });
         
         Button refreshButton = new Button("🔄 Actualiser");
-        refreshButton.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         refreshButton.setOnAction(e -> loadPersonnelData());
         
         // Activation/désactivation des boutons selon la sélection (sera configurée après création table)
@@ -216,7 +211,7 @@ public class PersonnelManagerView extends BorderPane {
                 if (row.isEmpty()) {
                     row.setStyle("");
                 } else if (row.isSelected()) {
-                    // Style de sélection prioritaire (#142240)
+                    // Style de sélection uniforme
                     row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
                                "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
                                "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
@@ -295,16 +290,16 @@ public class PersonnelManagerView extends BorderPane {
                     // Couleurs selon le type
                     switch (type) {
                         case "Employe":
-                            setStyle("-fx-background-color: #e8f5e8; -fx-text-fill: #2e7d32;");
+                            // Style gere par CSS
                             break;
                         case "Freelance":
-                            setStyle("-fx-background-color: #e3f2fd; -fx-text-fill: #1565c0;");
+                            // Style gere par CSS
                             break;
                         case "Stagiaire":
-                            setStyle("-fx-background-color: #fff3e0; -fx-text-fill: #ef6c00;");
+                            // Style gere par CSS
                             break;
                         case "Interimaire":
-                            setStyle("-fx-background-color: #fce4ec; -fx-text-fill: #ad1457;");
+                            // Style gere par CSS
                             break;
                     }
                 }
@@ -327,16 +322,16 @@ public class PersonnelManagerView extends BorderPane {
                     // Couleurs selon le statut
                     switch (status) {
                         case "Actif":
-                            setStyle("-fx-background-color: #e8f5e8; -fx-text-fill: #2e7d32;");
+                            // Style gere par CSS
                             break;
                         case "Inactif":
-                            setStyle("-fx-background-color: #ffebee; -fx-text-fill: #c62828;");
+                            // Style gere par CSS
                             break;
                         case "En conge":
-                            setStyle("-fx-background-color: #fff3e0; -fx-text-fill: #ef6c00;");
+                            // Style gere par CSS
                             break;
                         case "Termine":
-                            setStyle("-fx-background-color: #f3e5f5; -fx-text-fill: #7b1fa2;");
+                            // Style gere par CSS
                             break;
                     }
                 }
@@ -369,8 +364,7 @@ public class PersonnelManagerView extends BorderPane {
         );
     }
     
-    // Méthode createFooter() supprimée - Les boutons sont maintenant
-    // intégrés dans la toolbar unifiée pour éviter les doublons
+    // Méthode createFooter() supprimée - Les boutons sont maintenant; // intégrés dans la toolbar unifiée pour éviter les doublons
     
     private void loadPersonnelData() {
         loadingIndicator.setVisible(true);
@@ -487,8 +481,7 @@ public class PersonnelManagerView extends BorderPane {
     }
     
     private void updateStatistics() {
-        // Statistiques supprimées du header pour uniformiser l'affichage
-        // avec les autres modules après unification des toolbars
+        // Statistiques supprimées du header pour uniformiser l'affichage; // avec les autres modules après unification des toolbars
     }
     
     private void filterPersonnelData() {
@@ -743,6 +736,30 @@ public class PersonnelManagerView extends BorderPane {
         }
     }
     
+    /**
+     * Méthode pour sélectionner et afficher un personnel par nom (utilisée par la recherche globale)
+     */
+    public void selectAndViewPersonnel(String personnelName) {
+        if (personnelName == null || personnelName.trim().isEmpty()) {
+            return;
+        }
+        
+        // Rechercher dans la liste
+        for (PersonnelItem item : personnelData) {
+            if (item.getFullName().toLowerCase().contains(personnelName.toLowerCase())) {
+                // Sélectionner et faire défiler vers l'élément
+                personnelTable.getSelectionModel().select(item);
+                personnelTable.scrollTo(item);
+                
+                // Mettre à jour le filtre de recherche pour montrer le contexte
+                if (searchField != null) {
+                    searchField.setText(personnelName);
+                }
+                
+                break;
+            }
+        }
+    }
 
 }
 

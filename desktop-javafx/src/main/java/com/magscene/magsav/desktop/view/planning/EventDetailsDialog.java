@@ -9,6 +9,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.StandardColors;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -33,9 +34,7 @@ public class EventDetailsDialog extends Stage {
     private void createLayout() {
         VBox root = new VBox(20);
         root.setPadding(new Insets(20));
-        root.setStyle("-fx-background-color: #fafafa;");
-        
-        // En-tête avec titre et catégorie
+        // root - Style géré par CSS automatiquement - En-tête avec titre et catégorie
         VBox header = createHeader();
         
         // Informations temporelles
@@ -67,7 +66,7 @@ public class EventDetailsDialog extends Stage {
         VBox header = new VBox(10);
         
         Label titleLabel = new Label(eventInfo.getTitle());
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + StandardColors.getTextColor() + ";");
         
         Label categoryLabel = new Label("Catégorie: " + formatCategory(eventInfo.getCategory()));
         categoryLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #7f8c8d; -fx-font-style: italic;");
@@ -159,7 +158,7 @@ public class EventDetailsDialog extends Stage {
             }
         } else {
             Label noPersonnelLabel = new Label("Aucun personnel assigné");
-            noPersonnelLabel.setStyle("-fx-text-fill: #95a5a6; -fx-font-style: italic;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
             section.getChildren().add(noPersonnelLabel);
         }
         
@@ -180,7 +179,7 @@ public class EventDetailsDialog extends Stage {
         nameLabel.setStyle("-fx-font-weight: bold;");
         
         Label roleLabel = new Label(person.getSpecialty());
-        roleLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         infoBox.getChildren().addAll(nameLabel, roleLabel);
         
@@ -194,16 +193,14 @@ public class EventDetailsDialog extends Stage {
         String stars = "★".repeat(person.getProficiencyLevel()) + 
                       "☆".repeat(5 - person.getProficiencyLevel());
         Label skillLabel = new Label(stars);
-        skillLabel.setStyle("-fx-text-fill: #f39c12;");
-        
-        // Statut de disponibilité
+        // skillLabel - Style géré par CSS automatiquement - Statut de disponibilité
         Label availabilityLabel = new Label();
         if (person.isAvailable()) {
             availabilityLabel.setText("✓ Disponible");
-            availabilityLabel.setStyle("-fx-text-fill: #27ae60; -fx-font-size: 10px;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         } else {
             availabilityLabel.setText("✗ Occupé");
-            availabilityLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 10px;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         }
         
         statusBox.getChildren().addAll(skillLabel, availabilityLabel);
@@ -238,14 +235,14 @@ public class EventDetailsDialog extends Stage {
         actionBar.setPadding(new Insets(10, 0, 0, 0));
         
         Button editButton = new Button("Modifier");
-        editButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         editButton.setOnAction(e -> {
             // TODO: Ouvrir dialogue de modification
             close();
         });
         
         Button deleteButton = new Button("Supprimer");
-        deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         deleteButton.setOnAction(e -> {
             // TODO: Confirmer et supprimer l'événement
             close();

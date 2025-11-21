@@ -100,23 +100,19 @@ public class EventCreationDialog extends Stage {
                     nameLabel.setStyle("-fx-font-weight: bold;");
                     
                     Label specialtyLabel = new Label(assignment.getSpecialty());
-                    specialtyLabel.setStyle("-fx-text-fill: #666666; -fx-font-size: 11px;");
-                    
-                    // Indicateur de compétence
+                    // specialtyLabel - Style géré par CSS automatiquement - Indicateur de compétence
                     Label proficiencyLabel = new Label();
                     int proficiency = assignment.getProficiencyLevel();
                     String proficiencyText = "★".repeat(proficiency) + "☆".repeat(5 - proficiency);
                     proficiencyLabel.setText(proficiencyText);
-                    proficiencyLabel.setStyle("-fx-text-fill: #ffa500;");
-                    
-                    // Indicateur de disponibilité
+                    // proficiencyLabel - Style géré par CSS automatiquement - Indicateur de disponibilité
                     Label availabilityLabel = new Label();
                     if (assignment.isAvailable()) {
                         availabilityLabel.setText("✓ Disponible");
-                        availabilityLabel.setStyle("-fx-text-fill: #008000;");
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
                     } else {
                         availabilityLabel.setText("✗ Occupé");
-                        availabilityLabel.setStyle("-fx-text-fill: #ff4444;");
+                        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
                     }
                     
                     VBox leftBox = new VBox(2);
@@ -139,9 +135,7 @@ public class EventCreationDialog extends Stage {
     private void createLayout() {
         VBox root = new VBox(15);
         root.setPadding(new Insets(20));
-        root.setStyle("-fx-background-color: #fafafa;");
-        
-        // Titre
+        // root - Style géré par CSS automatiquement - Titre
         Label headerLabel = new Label("Nouvel Événement");
         headerLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         
@@ -245,7 +239,7 @@ public class EventCreationDialog extends Stage {
         
         Button createButton = new Button("Créer");
         createButton.setPrefWidth(100);
-        createButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         createButton.setOnAction(e -> createEvent());
         
         buttonBar.getChildren().addAll(cancelButton, createButton);

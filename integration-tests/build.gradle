@@ -15,6 +15,7 @@ dependencies {
     
     // Spring Boot Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
     
     // TestContainers pour tests d'intégration
@@ -41,12 +42,18 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest:2.2'
 }
 
+// Configuration UTF-8
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 test {
     useJUnitPlatform()
     
     // Configuration pour tests d'intégration
     systemProperty 'spring.profiles.active', 'test'
     systemProperty 'testcontainers.reuse.enable', 'true'
+    systemProperty 'file.encoding', 'UTF-8'
     
     testLogging {
         events "passed", "skipped", "failed"

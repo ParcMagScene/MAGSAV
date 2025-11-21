@@ -11,7 +11,9 @@ dependencies {
     api 'com.fasterxml.jackson.core:jackson-annotations:2.15.2'
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+// Configuration UTF-8
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
+
+// Java version héritée de la configuration racine

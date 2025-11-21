@@ -1,6 +1,7 @@
 package com.magscene.magsav.desktop.component;
 
 import com.magscene.magsav.desktop.service.GlobalSearchService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.service.GlobalSearchService.SearchResult;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -57,8 +58,8 @@ public class GlobalSearchSuggestions {
         container.setPadding(new Insets(2));
         container.setPrefWidth(380);
         container.setMaxHeight(300);
-        container.setStyle("-fx-background-color: #142240; " +
-                          "-fx-border-color: #6B71F2; " +
+        container.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+                          "-fx-border-color: #8B91FF; " +
                           "-fx-border-width: 0.5; " +
                           "-fx-border-radius: 6; " +
                           "-fx-background-radius: 6; " +
@@ -106,7 +107,7 @@ public class GlobalSearchSuggestions {
         
         if (results.isEmpty()) {
             Label noResults = new Label("Aucun résultat trouvé");
-            noResults.setStyle("-fx-text-fill: #6B71F2; -fx-padding: 10;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
             noResults.setFont(Font.font("System", FontPosture.ITALIC, 12));
             suggestionContainer.getChildren().add(noResults);
         } else {
@@ -134,7 +135,7 @@ public class GlobalSearchSuggestions {
     private Label createTypeHeader(String type) {
         Label header = new Label(type.toUpperCase());
         header.setStyle("-fx-text-fill: #5F65D9; " +
-                       "-fx-background-color: #142240; " +
+                       "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
                        "-fx-padding: 2 6; " +
                        "-fx-font-weight: bold; " +
                        "-fx-border-width: 0;");
@@ -159,18 +160,18 @@ public class GlobalSearchSuggestions {
         // Icône
         Label icon = new Label(result.getIcon());
         icon.setFont(Font.font("System", 14));
-        icon.setStyle("-fx-text-fill: #6B71F2;");
+        icon.getStyleClass().add("search-result-icon");
         
         // Nom et description
         VBox textContent = new VBox(2);
         textContent.setAlignment(Pos.CENTER_LEFT);
         
         Label name = new Label(result.getName());
-        name.setStyle("-fx-text-fill: #F2F2F2; -fx-font-weight: bold;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         name.setFont(Font.font("System", FontWeight.BOLD, 11));
         
         Label description = new Label(result.getDescription());
-        description.setStyle("-fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         description.setFont(Font.font("System", 9));
         
         textContent.getChildren().addAll(name, description);
@@ -196,7 +197,7 @@ public class GlobalSearchSuggestions {
         searchField.setText(result.getName());
         hideSuggestions();
         
-        // TODO: Naviguer vers l'élément sélectionné
+        // Naviguer vers l'élément sélectionné
         navigateToResult(result);
     }
     
@@ -216,8 +217,7 @@ public class GlobalSearchSuggestions {
             double maxHeight = Math.min(250, itemCount * 30); // ~30px par item
             suggestionContainer.setMaxHeight(maxHeight);
             
-            // Utiliser une approche plus fiable pour le positionnement
-            // Attendre que le layout soit terminé
+            // Utiliser une approche plus fiable pour le positionnement; // Attendre que le layout soit terminé
             javafx.application.Platform.runLater(() -> {
                 try {
                     var bounds = searchField.localToScreen(searchField.getBoundsInLocal());

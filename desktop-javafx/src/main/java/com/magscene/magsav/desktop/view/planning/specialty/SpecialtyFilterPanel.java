@@ -11,6 +11,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * Panneau de sélection et filtrage des spécialités pour le planning
@@ -280,8 +281,7 @@ public class SpecialtyFilterPanel extends VBox {
                 for (PersonnelAssignment assignment : personnel) {
                     content.append("• ").append(assignment.getPersonnelName())
                            .append(" (").append(assignment.getPersonnelType()).append(")")
-                           .append(" - Niveau: ").append(assignment.getProficiencyLabel())
-                           .append("\n");
+                           .append(" - Niveau: ").append(assignment.getProficiencyLabel());
                 }
             }
             

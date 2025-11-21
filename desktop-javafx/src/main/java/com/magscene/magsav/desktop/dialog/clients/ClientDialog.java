@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.dialog.clients;
 
 import com.magscene.magsav.desktop.model.Client;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -17,6 +18,7 @@ public class ClientDialog extends Stage {
     private final ApiService apiService;
     private final Client client;
     private final boolean isEdit;
+    private boolean isReadOnlyMode;
     
     // Informations de base
     private TextField companyNameField;
@@ -54,17 +56,31 @@ public class ClientDialog extends Stage {
     private boolean result = false;
     
     public ClientDialog(ApiService apiService, Client client) {
+        this(apiService, client, false);
+    }
+
+    public ClientDialog(ApiService apiService, Client client, boolean readOnlyMode) {
         this.apiService = apiService;
         this.client = client != null ? client : new Client();
-        this.isEdit = client != null;
+        this.isEdit = client != null && !readOnlyMode;
+        this.isReadOnlyMode = readOnlyMode;
         
         initializeDialog();
         createUI();
         populateFields();
+        
+        // Désactiver les champs en mode lecture seule
+        if (isReadOnlyMode) {
+            setFieldsReadOnly();
+        }
     }
     
     private void initializeDialog() {
-        setTitle(isEdit ? "Modifier le client" : "Nouveau client");
+        if (isReadOnlyMode) {
+            setTitle("Détails du client");
+        } else {
+            setTitle(isEdit ? "Modifier le client" : "Nouveau client");
+        }
         initModality(Modality.APPLICATION_MODAL);
         setWidth(800);
         setHeight(650);
@@ -76,43 +92,52 @@ public class ClientDialog extends Stage {
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.TOP_CENTER);
         
-        Label titleLabel = new Label(isEdit ? "Modifier le client" : "Nouveau client");
-        titleLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
+        // Suppression du doublon de titre (déjà dans setTitle())
+        com.magscene.magsav.desktop.component.CustomTabPane tabPane = createTabbedForm();
+        HBox buttonBox = createStandardButtons();
         
-        TabPane tabPane = createTabbedForm();
-        HBox buttonBox = createButtons();
-        
-        root.getChildren().addAll(titleLabel, tabPane, buttonBox);
+        root.getChildren().addAll(tabPane, buttonBox);
         
         Scene scene = new Scene(root);
         setScene(scene);
+        
+        // Appliquer le thème dark au dialogue
+        ThemeManager.getInstance().applyThemeToScene(scene);
     }
     
-    private TabPane createTabbedForm() {
-        TabPane tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+    private com.magscene.magsav.desktop.component.CustomTabPane createTabbedForm() {
+        // Utiliser CustomTabPane au lieu de TabPane JavaFX pour style unifié
+        com.magscene.magsav.desktop.component.CustomTabPane tabPane = 
+            new com.magscene.magsav.desktop.component.CustomTabPane();
         
         // Onglet Informations générales
-        Tab generalTab = new Tab("🏢 Général");
-        generalTab.setContent(createGeneralForm());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab generalTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Général", createGeneralForm(), "🏢");
+        tabPane.addTab(generalTab);
         
         // Onglet Contact
-        Tab contactTab = new Tab("📞 Contact");
-        contactTab.setContent(createContactForm());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab contactTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Contact", createContactForm(), "📞");
+        tabPane.addTab(contactTab);
         
         // Onglet Administratif
-        Tab adminTab = new Tab("📋 Administratif");
-        adminTab.setContent(createAdminForm());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab adminTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Administratif", createAdminForm(), "📋");
+        tabPane.addTab(adminTab);
         
         // Onglet Commercial
-        Tab commercialTab = new Tab("💼 Commercial");
-        commercialTab.setContent(createCommercialForm());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab commercialTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Commercial", createCommercialForm(), "💼");
+        tabPane.addTab(commercialTab);
         
         // Onglet Notes
-        Tab notesTab = new Tab("📝 Notes");
-        notesTab.setContent(createNotesForm());
+        com.magscene.magsav.desktop.component.CustomTabPane.CustomTab notesTab = 
+            new com.magscene.magsav.desktop.component.CustomTabPane.CustomTab("Notes", createNotesForm(), "📝");
+        tabPane.addTab(notesTab);
         
-        tabPane.getTabs().addAll(generalTab, contactTab, adminTab, commercialTab, notesTab);
+        // Sélectionner le premier onglet
+        tabPane.selectTab(0);
+        
         return tabPane;
     }
     
@@ -290,18 +315,40 @@ public class ClientDialog extends Stage {
         return form;
     }
     
-    private HBox createButtons() {
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(Pos.CENTER);
-        
-        Button saveButton = new Button(isEdit ? "Modifier" : "Creer");
-        saveButton.setOnAction(e -> handleSave());
-        
-        Button cancelButton = new Button("Annuler");
-        cancelButton.setOnAction(e -> close());
-        
-        buttonBox.getChildren().addAll(saveButton, cancelButton);
-        return buttonBox;
+    /**
+     * Crée une barre de boutons standardisée avec les styles ViewUtils
+     */
+    private HBox createStandardButtons() {
+        if (isReadOnlyMode) {
+            // Mode lecture seule : boutons Modifier et Fermer
+            return com.magscene.magsav.desktop.util.ViewUtils.createDialogButtonBar(
+                () -> {
+                    // Action Modifier : ouvrir en mode édition
+                    if (isEdit && client != null) {
+                        ClientDialog editDialog = new ClientDialog(apiService, client, false);
+                        editDialog.showAndWait();
+                        // Pas de gestion de résultat car c'est un Stage, pas un Dialog
+                    }
+                    close();
+                },
+                () -> {
+                    // Action Fermer
+                    close();
+                },
+                null            );
+        } else {
+            // Mode édition : boutons Enregistrer et Annuler
+            return com.magscene.magsav.desktop.util.ViewUtils.createDialogButtonBar(
+                () -> {
+                    // Action Enregistrer
+                    handleSave();
+                },
+                () -> {
+                    // Action Annuler
+                    close();
+                },
+                null            );
+        }
     }
     
     private void populateFields() {
@@ -441,6 +488,44 @@ public class ClientDialog extends Stage {
         showAlert("Attention", message);
     }
     
+    /**
+     * Désactive tous les champs pour le mode lecture seule
+     */
+    private void setFieldsReadOnly() {
+        // Informations de base
+        if (companyNameField != null) companyNameField.setDisable(true);
+        if (typeComboBox != null) typeComboBox.setDisable(true);
+        if (statusComboBox != null) statusComboBox.setDisable(true);
+        if (categoryComboBox != null) categoryComboBox.setDisable(true);
+        
+        // Contact
+        if (emailField != null) emailField.setDisable(true);
+        if (phoneField != null) phoneField.setDisable(true);
+        if (faxField != null) faxField.setDisable(true);
+        if (websiteField != null) websiteField.setDisable(true);
+        if (addressField != null) addressField.setDisable(true);
+        if (cityField != null) cityField.setDisable(true);
+        if (postalCodeField != null) postalCodeField.setDisable(true);
+        if (countryField != null) countryField.setDisable(true);
+        
+        // Administratif
+        if (siretField != null) siretField.setDisable(true);
+        if (vatField != null) vatField.setDisable(true);
+        if (sectorField != null) sectorField.setDisable(true);
+        if (employeeCountField != null) employeeCountField.setDisable(true);
+        if (revenueField != null) revenueField.setDisable(true);
+        
+        // Commercial
+        if (salesRepField != null) salesRepField.setDisable(true);
+        if (paymentMethodComboBox != null) paymentMethodComboBox.setDisable(true);
+        if (paymentTermsField != null) paymentTermsField.setDisable(true);
+        if (creditLimitField != null) creditLimitField.setDisable(true);
+        if (outstandingAmountField != null) outstandingAmountField.setDisable(true);
+        
+        // Notes
+        if (notesArea != null) notesArea.setDisable(true);
+    }
+
     public boolean getResult() {
         return result;
     }

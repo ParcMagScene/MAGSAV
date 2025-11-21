@@ -45,15 +45,27 @@ public class ServiceRequestDialog {
     
     private ServiceRequest result;
     private boolean isEdit;
+    private boolean isReadOnlyMode;
     private final ApiService apiService;
 
     public ServiceRequestDialog(ServiceRequest serviceRequest) {
+        this(serviceRequest, false); // Par défaut en mode édition
+    }
+
+    public ServiceRequestDialog(ServiceRequest serviceRequest, boolean readOnlyMode) {
         this.isEdit = serviceRequest != null;
+        this.isReadOnlyMode = readOnlyMode;
         this.apiService = new ApiService();
         this.dialog = new Stage();
         
         // Configuration de base du dialogue
-        dialog.setTitle(isEdit ? "Modifier la demande SAV" : "Nouvelle demande SAV");
+        String title;
+        if (isReadOnlyMode) {
+            title = "Détails de la demande SAV";
+        } else {
+            title = isEdit ? "Modifier la demande SAV" : "Nouvelle demande SAV";
+        }
+        dialog.setTitle(title);
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setResizable(false);
         
@@ -115,12 +127,20 @@ public class ServiceRequestDialog {
             scheduledDatePicker.setValue(LocalDate.now());
         }
         
+        // Désactiver les champs en mode lecture seule
+        if (isReadOnlyMode) {
+            setFieldsReadOnly();
+        }
+        
         // Creation du layout
         VBox mainLayout = createLayout();
         
         // Configuration de la scene
         Scene scene = new Scene(mainLayout, 650, 750);
         dialog.setScene(scene);
+        
+        // Appliquer le thème dark au dialogue
+        ThemeManager.getInstance().applyThemeToScene(scene);
     }
     
     private VBox createLayout() {
@@ -199,31 +219,57 @@ public class ServiceRequestDialog {
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         
-        Button cancelButton = new Button("Annuler");
-        cancelButton.setOnAction(e -> {
-            result = null;
-            dialog.close();
-        });
-        
-        Button saveButton = new Button(isEdit ? "Modifier" : "Creer");
-        saveButton.setDefaultButton(true);
-        saveButton.setOnAction(e -> {
-            if (validateFields()) {
-                result = createServiceRequestFromFields();
+        if (isReadOnlyMode) {
+            // Mode lecture seule : bouton Modifier + Fermer
+            Button closeButton = new Button("Fermer");
+            closeButton.getStyleClass().add("action-button-secondary");
+            closeButton.setOnAction(e -> {
+                result = null;
                 dialog.close();
+            });
+            
+            if (isEdit) {
+                Button editButton = new Button("Modifier");
+                editButton.getStyleClass().add("action-button-primary");
+                editButton.setOnAction(e -> {
+                    // Passer en mode édition
+                    isReadOnlyMode = false;
+                    setFieldsEditable();
+                    
+                    // Reconstruire l'interface
+                    VBox mainLayout = createLayout();
+                    Scene scene = new Scene(mainLayout, 650, 750);
+                    dialog.setScene(scene);
+                    ThemeManager.getInstance().applyThemeToScene(scene);
+                    dialog.setTitle("Modifier la demande SAV");
+                });
+                
+                buttonBox.getChildren().addAll(closeButton, editButton);
+            } else {
+                buttonBox.getChildren().add(closeButton);
             }
-        });
+        } else {
+            // Mode édition : bouton Annuler + Enregistrer
+            Button cancelButton = new Button("Annuler");
+            cancelButton.getStyleClass().add("action-button-secondary");
+            cancelButton.setOnAction(e -> {
+                result = null;
+                dialog.close();
+            });
+            
+            Button saveButton = new Button(isEdit ? "Enregistrer" : "Créer");
+            saveButton.getStyleClass().add("action-button-success");
+            saveButton.setDefaultButton(true);
+            saveButton.setOnAction(e -> {
+                if (validateFields()) {
+                    result = createServiceRequestFromFields();
+                    dialog.close();
+                }
+            });
+            
+            buttonBox.getChildren().addAll(cancelButton, saveButton);
+        }
         
-        // Style des boutons
-        cancelButton.setPrefWidth(80);
-        saveButton.setPrefWidth(80);
-        
-        // Application du thème dynamique pour le bouton de sauvegarde
-        String buttonBgColor = ThemeManager.getInstance().isDarkTheme() ? "#4a90e2" : "#007acc";
-        String buttonTextColor = ThemeManager.getInstance().isDarkTheme() ? "#ffffff" : "#ffffff";
-        saveButton.setStyle("-fx-background-color: " + buttonBgColor + "; -fx-text-fill: " + buttonTextColor + ";");
-        
-        buttonBox.getChildren().addAll(cancelButton, saveButton);
         return buttonBox;
     }
     
@@ -236,16 +282,19 @@ public class ServiceRequestDialog {
         statusCombo.setValue(mapStatusEnumToDisplay(serviceRequest.getStatus()));
         priorityCombo.setValue(mapPriorityEnumToDisplay(serviceRequest.getPriority()));
         
-        // TODO: Selectionner le demandeur dans la ComboBox base sur le nom
-        // TODO: Selectionner le technicien dans la ComboBox base sur le nom
+        // Sélectionner le demandeur dans la ComboBox basé sur le nom
+        selectPersonnelByName(requesterCombo, serviceRequest.getRequesterName());
+        
+        // Sélectionner le technicien dans la ComboBox basé sur le nom
+        selectPersonnelByName(technicianCombo, serviceRequest.getAssignedTechnician());
         
         // Le ServiceRequest n'a pas de scheduledDate, on utilise la date de creation par defaut
         scheduledDatePicker.setValue(LocalDate.now());
         
         notesArea.setText(serviceRequest.getResolutionNotes() != null ? serviceRequest.getResolutionNotes() : "");
         
-        // Ces champs ne sont pas dans le modele actuel, on les laisse vides
-        // TODO: Selectionner l'equipement dans la ComboBox
+        // Sélectionner l'équipement dans la ComboBox
+        selectEquipmentByName(equipmentCombo, serviceRequest.getEquipmentName());
         locationField.setText("");
         contactInfoField.setText(serviceRequest.getRequesterEmail() != null ? serviceRequest.getRequesterEmail() : "");
         
@@ -270,38 +319,38 @@ public class ServiceRequestDialog {
         // Validation titre
         if (getStringOrNull(titleField.getText()) == null) {
             errors.append("• Le titre est obligatoire\n");
-            titleField.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         }
         
         // Validation type
         if (typeCombo.getValue() == null) {
             errors.append("• Le type d'intervention est obligatoire\n");
-            typeCombo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         }
         
         // Validation statut
         if (statusCombo.getValue() == null) {
             errors.append("• Le statut est obligatoire\n");
-            statusCombo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         }
         
         // Validation priorité
         if (priorityCombo.getValue() == null) {
             errors.append("• La priorité est obligatoire\n");
-            priorityCombo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         }
         
         // Validation demandeur
         if (requesterCombo.getValue() == null) {
             errors.append("• Le demandeur est obligatoire\n");
-            requesterCombo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         }
         
         // Validation description (recommandée pour SAV)
         if (getStringOrNull(descriptionArea.getText()) == null || 
             descriptionArea.getText().trim().length() < 10) {
             errors.append("• Une description détaillée (min. 10 caractères) est recommandée pour le SAV\n");
-            descriptionArea.setStyle("-fx-border-color: #ff9800; -fx-border-width: 2px;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         }
         
         // Validation coût si renseigné
@@ -310,11 +359,11 @@ public class ServiceRequestDialog {
                 double cost = Double.parseDouble(costField.getText().trim());
                 if (cost < 0) {
                     errors.append("• Le coût estimé ne peut pas être négatif\n");
-                    costField.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
+                    // $varName supprimÃ© - Style gÃ©rÃ© par CSS
                 }
             } catch (NumberFormatException e) {
                 errors.append("• Le coût doit être un nombre valide (ex: 125.50)\n");
-                costField.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2px;");
+                // $varName supprimÃ© - Style gÃ©rÃ© par CSS
             }
         }
         
@@ -322,7 +371,7 @@ public class ServiceRequestDialog {
         if (scheduledDatePicker.getValue() != null && 
             scheduledDatePicker.getValue().isBefore(LocalDate.now())) {
             errors.append("• La date d'intervention ne peut pas être dans le passé\n");
-            scheduledDatePicker.setStyle("-fx-border-color: #ff9800; -fx-border-width: 2px;");
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         }
         
         if (errors.length() > 0) {
@@ -373,9 +422,8 @@ public class ServiceRequestDialog {
         // Recuperation de l'equipement selectionne
         if (equipmentCombo.getValue() != null) {
             Map<String, Object> selectedEquipment = equipmentCombo.getValue();
-            // Relation équipement simplifiée pour l'API
-            Long equipmentId = ((Number) selectedEquipment.get("id")).longValue();
-            // TODO: Adapter selon l'API ServiceRequest backend
+            // Adapter selon l'API ServiceRequest backend
+            request.setEquipmentName(getEquipmentName(selectedEquipment));
         }
 
         // Les notes vont dans resolutionNotes
@@ -591,6 +639,142 @@ public class ServiceRequestDialog {
             });
             return null;
         });
+    }
+
+    /**
+     * Sélectionne un personnel dans une ComboBox basé sur le nom
+     */
+    private void selectPersonnelByName(ComboBox<Map<String, Object>> comboBox, String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return;
+        }
+        
+        // Attendre que les données soient chargées puis rechercher
+        Platform.runLater(() -> {
+            new Thread(() -> {
+                // Attendre un peu que les données soient chargées
+                try { Thread.sleep(500); } catch (InterruptedException e) {}
+                
+                Platform.runLater(() -> {
+                    ObservableList<Map<String, Object>> items = comboBox.getItems();
+                    if (items != null) {
+                        for (Map<String, Object> personnel : items) {
+                            String fullName = getPersonnelFullName(personnel);
+                            if (fullName != null && fullName.toLowerCase().contains(name.toLowerCase())) {
+                                comboBox.setValue(personnel);
+                                break;
+                            }
+                        }
+                    }
+                });
+            }).start();
+        });
+    }
+
+    /**
+     * Sélectionne un équipement dans une ComboBox basé sur le nom
+     */
+    private void selectEquipmentByName(ComboBox<Map<String, Object>> comboBox, String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return;
+        }
+        
+        // Attendre que les données soient chargées puis rechercher
+        Platform.runLater(() -> {
+            new Thread(() -> {
+                // Attendre un peu que les données soient chargées
+                try { Thread.sleep(500); } catch (InterruptedException e) {}
+                
+                Platform.runLater(() -> {
+                    ObservableList<Map<String, Object>> items = comboBox.getItems();
+                    if (items != null) {
+                        for (Map<String, Object> equipment : items) {
+                            String equipmentName = getEquipmentName(equipment);
+                            if (equipmentName != null && equipmentName.toLowerCase().contains(name.toLowerCase())) {
+                                comboBox.setValue(equipment);
+                                break;
+                            }
+                        }
+                    }
+                });
+            }).start();
+        });
+    }
+
+    /**
+     * Extrait le nom complet d'un objet personnel
+     */
+    private String getPersonnelFullName(Map<String, Object> personnel) {
+        if (personnel == null) return null;
+        
+        String firstName = (String) personnel.get("firstName");
+        String lastName = (String) personnel.get("lastName");
+        String fullName = (String) personnel.get("fullName");
+        
+        if (fullName != null && !fullName.trim().isEmpty()) {
+            return fullName;
+        } else if (firstName != null && lastName != null) {
+            return firstName + " " + lastName;
+        } else if (firstName != null) {
+            return firstName;
+        } else if (lastName != null) {
+            return lastName;
+        }
+        
+        return (String) personnel.get("name"); // fallback
+    }
+
+    /**
+     * Extrait le nom d'un objet équipement
+     */
+    private String getEquipmentName(Map<String, Object> equipment) {
+        if (equipment == null) return null;
+        
+        String name = (String) equipment.get("name");
+        if (name != null) return name;
+        
+        String designation = (String) equipment.get("designation");
+        if (designation != null) return designation;
+        
+        return (String) equipment.get("label"); // fallback
+    }
+
+    /**
+     * Désactive tous les champs pour le mode lecture seule
+     */
+    private void setFieldsReadOnly() {
+        titleField.setDisable(true);
+        descriptionArea.setDisable(true);
+        typeCombo.setDisable(true);
+        statusCombo.setDisable(true);
+        priorityCombo.setDisable(true);
+        requesterCombo.setDisable(true);
+        technicianCombo.setDisable(true);
+        equipmentCombo.setDisable(true);
+        scheduledDatePicker.setDisable(true);
+        notesArea.setDisable(true);
+        locationField.setDisable(true);
+        contactInfoField.setDisable(true);
+        costField.setDisable(true);
+    }
+    
+    /**
+     * Active tous les champs pour le mode éditable
+     */
+    private void setFieldsEditable() {
+        titleField.setDisable(false);
+        descriptionArea.setDisable(false);
+        typeCombo.setDisable(false);
+        statusCombo.setDisable(false);
+        priorityCombo.setDisable(false);
+        requesterCombo.setDisable(false);
+        technicianCombo.setDisable(false);
+        equipmentCombo.setDisable(false);
+        scheduledDatePicker.setDisable(false);
+        notesArea.setDisable(false);
+        locationField.setDisable(false);
+        contactInfoField.setDisable(false);
+        costField.setDisable(false);
     }
 
     public Optional<ServiceRequest> showAndWait() {

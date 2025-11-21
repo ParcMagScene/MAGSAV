@@ -84,7 +84,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         if ("dark".equals(currentTheme)) {
             getDialogPane().getStylesheets().add(getClass().getResource("/styles/theme-dark-ultra.css").toExternalForm());
         } else {
-            getDialogPane().getStylesheets().add(getClass().getResource("/styles/theme-light.css").toExternalForm());
+            getDialogPane().getStylesheets().add(getClass().getResource("/styles/magsav-light.css").toExternalForm());
         }
     }
     

@@ -12,6 +12,7 @@ import javafx.concurrent.Task;
 import com.magscene.magsav.desktop.model.ServiceRequest;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.StandardColors;
 import com.magscene.magsav.desktop.util.AlertUtil;
 
 import java.time.LocalDate;
@@ -110,9 +111,6 @@ public class TechnicianPlanningView extends VBox {
         headerBox.setAlignment(Pos.CENTER_LEFT);
         headerBox.setPadding(new Insets(0, 0, 5, 0)); // Padding minimal
         
-        Label titleLabel = new Label("📅 Planning Intelligent des Techniciens");
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2980b9;");
-        
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
@@ -122,14 +120,14 @@ public class TechnicianPlanningView extends VBox {
         metricsBox.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 8px 12px; -fx-background-radius: 6px;");
         
         Label efficiencyLabel = new Label("🎯 Efficacité tournée: 0%");
-        efficiencyLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #27ae60;");
+        efficiencyLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + StandardColors.SUCCESS_GREEN + ";");
         
         Label distanceLabel = new Label("🚗 Distance totale: 0 km");
-        distanceLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #e74c3c;");
+        distanceLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + StandardColors.DANGER_RED + ";");
         
         metricsBox.getChildren().addAll(efficiencyLabel, distanceLabel);
         
-        headerBox.getChildren().addAll(titleLabel, spacer, metricsBox);
+        headerBox.getChildren().addAll(spacer, metricsBox);
         return headerBox;
     }
     
@@ -138,7 +136,7 @@ public class TechnicianPlanningView extends VBox {
         controlSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(41,128,185,0.3), 6, 0, 0, 2);");
         
         Label controlTitle = new Label("🎛️ Contrôles de Planning");
-        controlTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2980b9;");
+        controlTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + StandardColors.PRIMARY_BLUE + ";");
         
         // Ligne de sélection de date et technicien
         HBox selectionBox = new HBox(20);
@@ -147,29 +145,29 @@ public class TechnicianPlanningView extends VBox {
         // Sélection de date avec navigation rapide
         VBox dateBox = new VBox(3);
         Label dateLabel = new Label("📅 Date de planning :");
-        dateLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #34495e;");
+        dateLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " + StandardColors.getTextColor() + ";");
         
         HBox dateNavBox = new HBox(5);
         dateNavBox.setAlignment(Pos.CENTER_LEFT);
         
         Button prevDayBtn = new Button("◀");
-        prevDayBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 3px; -fx-font-size: 10px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         prevDayBtn.setOnAction(e -> {
             planningDate.setValue(planningDate.getValue().minusDays(1));
             loadTechnicianPlanning();
         });
         
-        planningDate.setStyle("-fx-background-radius: 4px; -fx-border-color: #2980b9; -fx-border-radius: 4px;");
+        planningDate.setStyle("-fx-background-radius: 4px; -fx-border-color: " + StandardColors.PRIMARY_BLUE + "; -fx-border-radius: 4px;");
         
         Button nextDayBtn = new Button("▶");
-        nextDayBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 3px; -fx-font-size: 10px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         nextDayBtn.setOnAction(e -> {
             planningDate.setValue(planningDate.getValue().plusDays(1));
             loadTechnicianPlanning();
         });
         
         Button todayBtn = new Button("Aujourd'hui");
-        todayBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         todayBtn.setOnAction(e -> {
             planningDate.setValue(LocalDate.now());
             loadTechnicianPlanning();
@@ -181,11 +179,11 @@ public class TechnicianPlanningView extends VBox {
         // Filtre par technicien
         VBox technicianBox = new VBox(3);
         Label technicianLabel = new Label("👤 Technicien :");
-        technicianLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #34495e;");
+        technicianLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " + StandardColors.getTextColor() + ";");
         
         technicianFilter.getItems().addAll("Tous les techniciens", "Marc Dupont", "Sophie Martin", "Thomas Leroux", "Julie Moreau", "David Rousseau");
         technicianFilter.setValue("Tous les techniciens");
-        technicianFilter.setStyle("-fx-background-radius: 4px; -fx-border-color: #2980b9; -fx-border-radius: 4px;");
+        technicianFilter.setStyle("-fx-background-radius: 4px; -fx-border-color: " + StandardColors.PRIMARY_BLUE + "; -fx-border-radius: 4px;");
         technicianFilter.setPrefWidth(180);
         
         technicianBox.getChildren().addAll(technicianLabel, technicianFilter);
@@ -193,20 +191,20 @@ public class TechnicianPlanningView extends VBox {
         // Actions d'optimisation
         VBox optimizationBox = new VBox(3);
         Label optimizationLabel = new Label("🚀 Optimisation automatique :");
-        optimizationLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #34495e;");
+        optimizationLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: " + StandardColors.getTextColor() + ";");
         
         HBox optimizationBtns = new HBox(5);
         
         Button optimizeRoutesBtn = new Button("🗺️ Optimiser trajets");
-        optimizeRoutesBtn.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         optimizeRoutesBtn.setOnAction(e -> optimizeRoutes());
         
         Button autoAssignBtn = new Button("🎯 Assignation auto");
-        autoAssignBtn.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         autoAssignBtn.setOnAction(e -> autoAssignTechnicians());
         
         Button balanceWorkloadBtn = new Button("⚖️ Équilibrer charge");
-        balanceWorkloadBtn.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-background-radius: 4px; -fx-font-size: 11px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         balanceWorkloadBtn.setOnAction(e -> balanceWorkload());
         
         optimizationBtns.getChildren().addAll(optimizeRoutesBtn, autoAssignBtn, balanceWorkloadBtn);
@@ -240,10 +238,10 @@ public class TechnicianPlanningView extends VBox {
         tableSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 20px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         Label tableTitle = new Label("📋 Planning du Jour");
-        tableTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
+        tableTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + StandardColors.getTextColor() + ";");
         
         planningTable.setPrefHeight(400);
-        planningTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        planningTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         
         tableSection.getChildren().addAll(tableTitle, planningTable);
         VBox.setVgrow(planningTable, Priority.ALWAYS);
@@ -256,19 +254,19 @@ public class TechnicianPlanningView extends VBox {
         summarySection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(41,128,185,0.3), 6, 0, 0, 2);");
         
         Label summaryTitle = new Label("📊 Analyse & Optimisation");
-        summaryTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2980b9;");
+        summaryTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + StandardColors.PRIMARY_BLUE + ";");
         
         // Indicateurs clés de performance
         GridPane kpiGrid = createKPIGrid();
         
         // Zone de résumé d'optimisation
         Label analysisLabel = new Label("🔍 Analyse des tournées");
-        analysisLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #34495e;");
+        analysisLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + StandardColors.getTextColor() + ";");
         
         optimizationSummaryArea.setPrefHeight(200);
         optimizationSummaryArea.setEditable(false);
         optimizationSummaryArea.setWrapText(true);
-        optimizationSummaryArea.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #2980b9; -fx-border-radius: 4px; -fx-font-family: 'Segoe UI'; -fx-font-size: 11px;");
+        optimizationSummaryArea.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: " + StandardColors.PRIMARY_BLUE + "; -fx-border-radius: 4px; -fx-font-family: 'Segoe UI'; -fx-font-size: 11px;");
         optimizationSummaryArea.setPromptText("Cliquez sur 'Optimiser trajets' pour analyser le planning...");
         
         // Recommandations intelligentes
@@ -284,9 +282,7 @@ public class TechnicianPlanningView extends VBox {
         GridPane kpiGrid = new GridPane();
         kpiGrid.setHgap(10);
         kpiGrid.setVgap(8);
-        kpiGrid.setStyle("-fx-background-color: #ecf0f1; -fx-padding: 10px; -fx-background-radius: 6px;");
-        
-        // KPIs du planning
+        // kpiGrid supprimé - Style géré par CSS
         Label[] kpiLabels = {
             new Label("📍 Interventions:"),
             new Label("🚗 Distance totale:"),
@@ -302,8 +298,8 @@ public class TechnicianPlanningView extends VBox {
         };
         
         for (int i = 0; i < kpiLabels.length; i++) {
-            kpiLabels[i].setStyle("-fx-font-size: 10px; -fx-text-fill: #7f8c8d;");
-            kpiValues[i].setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+            kpiLabels[i].setStyle("-fx-font-size: 10px; -fx-text-fill: " + StandardColors.NEUTRAL_GRAY + ";");
+            kpiValues[i].setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + StandardColors.getTextColor() + ";");
             
             kpiGrid.add(kpiLabels[i], 0, i);
             kpiGrid.add(kpiValues[i], 1, i);
@@ -314,18 +310,18 @@ public class TechnicianPlanningView extends VBox {
     
     private VBox createRecommendationsBox() {
         VBox recommendationsBox = new VBox(5);
-        recommendationsBox.setStyle("-fx-background-color: #e8f5e8; -fx-padding: 8px; -fx-background-radius: 4px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Label recommendationsTitle = new Label("💡 Recommandations");
-        recommendationsTitle.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
+        recommendationsTitle.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: " + StandardColors.SUCCESS_GREEN + ";");
         
         Label recommendation1 = new Label("• Optimiser l'ordre des interventions");
         Label recommendation2 = new Label("• Vérifier les compétences requises");
         Label recommendation3 = new Label("• Considérer le trafic en temps réel");
         
-        recommendation1.setStyle("-fx-font-size: 10px; -fx-text-fill: #2d8659;");
-        recommendation2.setStyle("-fx-font-size: 10px; -fx-text-fill: #2d8659;");
-        recommendation3.setStyle("-fx-font-size: 10px; -fx-text-fill: #2d8659;");
+        recommendation1.setStyle("-fx-font-size: 10px; -fx-text-fill: " + StandardColors.SUCCESS_GREEN + ";");
+        recommendation2.setStyle("-fx-font-size: 10px; -fx-text-fill: " + StandardColors.SUCCESS_GREEN + ";");
+        recommendation3.setStyle("-fx-font-size: 10px; -fx-text-fill: " + StandardColors.SUCCESS_GREEN + ";");
         
         recommendationsBox.getChildren().addAll(recommendationsTitle, recommendation1, recommendation2, recommendation3);
         return recommendationsBox;
@@ -337,19 +333,19 @@ public class TechnicianPlanningView extends VBox {
         actionsBar.setPadding(new Insets(15, 0, 0, 0));
         
         Button scheduleInterventionBtn = new Button("📅 Planifier intervention");
-        scheduleInterventionBtn.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-background-radius: 6px; -fx-font-weight: bold; -fx-padding: 10px 15px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Button manageAvailabilityBtn = new Button("🕐 Gérer disponibilités");
-        manageAvailabilityBtn.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Button exportPlanningBtn = new Button("📋 Exporter planning");
-        exportPlanningBtn.setStyle("-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Button sendNotificationsBtn = new Button("📱 Notifier techniciens");
-        sendNotificationsBtn.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         
         Button refreshBtn = new Button("🔄 Actualiser");
-        refreshBtn.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 8px 15px;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         refreshBtn.setOnAction(e -> loadTechnicianPlanning());
         
         actionsBar.getChildren().addAll(scheduleInterventionBtn, manageAvailabilityBtn, exportPlanningBtn, sendNotificationsBtn, refreshBtn);
@@ -428,7 +424,14 @@ public class TechnicianPlanningView extends VBox {
             return new javafx.beans.property.SimpleStringProperty(matchIcon + " " + matchCount + "/" + required.size());
         });
         
-        table.getColumns().addAll(technicianCol, timeCol, interventionCol, locationCol, durationCol, statusCol, skillsCol);
+        // Ajout individuel des colonnes pour éviter les warnings de generic array
+        table.getColumns().add(technicianCol);
+        table.getColumns().add(timeCol);
+        table.getColumns().add(interventionCol);
+        table.getColumns().add(locationCol);
+        table.getColumns().add(durationCol);
+        table.getColumns().add(statusCol);
+        table.getColumns().add(skillsCol);
         
         // Style conditionnel des lignes
         table.setRowFactory(tv -> {
@@ -439,7 +442,7 @@ public class TechnicianPlanningView extends VBox {
                 if (row.isEmpty() || row.getItem() == null) {
                     row.setStyle("");
                 } else if (row.isSelected()) {
-                    // Style de sélection prioritaire (#142240)
+                    // Style de sélection uniforme
                     row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
                                "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
                                "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
@@ -448,7 +451,7 @@ public class TechnicianPlanningView extends VBox {
                     // Style basé sur le statut et la priorité
                     TechnicianSchedule item = row.getItem();
                     String backgroundColor = getScheduleRowBackgroundColor(item.getStatus(), item.getPriority());
-                    row.setStyle(backgroundColor + "; -fx-border-color: #ecf0f1; -fx-border-width: 0 0 1 0;");
+                    row.setStyle(backgroundColor + "; -fx-border-color: " + StandardColors.NEUTRAL_LIGHT + "; -fx-border-width: 0 0 1 0;");
                 }
             };
             
@@ -489,8 +492,7 @@ public class TechnicianPlanningView extends VBox {
     }
     
     private void displayScheduleDetails(TechnicianSchedule schedule) {
-        // Afficher les détails de l'intervention sélectionnée
-        // Cette méthode pourrait ouvrir un dialogue détaillé ou mettre à jour une zone d'information
+        // Afficher les détails de l'intervention sélectionnée; // Cette méthode pourrait ouvrir un dialogue détaillé ou mettre à jour une zone d'information
     }
     
     private void optimizeRoutes() {
@@ -561,8 +563,7 @@ public class TechnicianPlanningView extends VBox {
     }
     
     private void updatePlanningMetrics() {
-        // Mise à jour des métriques affichées dans l'interface
-        // Cette méthode met à jour les KPIs et indicateurs
+        // Mise à jour des métriques affichées dans l'interface; // Cette méthode met à jour les KPIs et indicateurs
     }
     
     private void loadTechnicianPlanning() {
@@ -626,11 +627,11 @@ public class TechnicianPlanningView extends VBox {
     
     private String getScheduleRowBackgroundColor(String status, String priority) {
         if (priority.equals("Urgente")) {
-            return "-fx-background-color: #ffebee";
+            return "-fx-background-color: " + StandardColors.DANGER_LIGHT;
         } else if (status.equals("En cours")) {
-            return "-fx-background-color: #fff3e0";
+            return "-fx-background-color: " + StandardColors.WARNING_LIGHT;
         } else if (status.equals("Terminé")) {
-            return "-fx-background-color: #e8f5e8";
+            return "-fx-background-color: " + StandardColors.SUCCESS_LIGHT;
         }
         return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor();
     }

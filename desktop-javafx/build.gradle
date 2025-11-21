@@ -11,6 +11,9 @@ javafx {
 }
 
 dependencies {
+    // Common models shared across modules
+    implementation project(':common-models')
+    
     // JavaFX extras
     implementation 'org.controlsfx:controlsfx:11.1.2'
     implementation 'com.dlsc.formsfx:formsfx-core:11.6.0'
@@ -36,4 +39,15 @@ dependencies {
 
 run {
     jvmArgs = ['--add-exports', 'javafx.base/com.sun.javafx.runtime=ALL-UNNAMED']
+}
+
+// Configuration pour afficher les warnings de compilation
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-Xlint:unchecked', '-Xlint:deprecation']
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test) {
+    systemProperty 'file.encoding', 'UTF-8'
+    useJUnitPlatform()
 }

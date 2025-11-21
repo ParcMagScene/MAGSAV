@@ -3,6 +3,8 @@ package com.magscene.magsav.desktop.model;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import com.magscene.magsav.desktop.component.DetailPanel;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -152,18 +154,18 @@ public class ServiceRequest implements DetailPanelProvider {
 
     @Override
     public String getQRCodeData() {
-        StringBuilder qrData = new StringBuilder();
-        qrData.append("SAV|");
-        qrData.append("ID:").append(id != null ? id : "").append("|");
-        qrData.append("TITLE:").append(title != null ? title : "").append("|");
-        qrData.append("TYPE:").append(type != null ? type.name() : "").append("|");
-        qrData.append("STATUS:").append(status != null ? status.name() : "");
-        return qrData.toString();
+        // Les QR codes ne concernent que les équipements, pas les demandes SAV
+        return null;
     }
 
     @Override
     public VBox getDetailInfoContent() {
         VBox content = new VBox(8);
+        
+        // Section informations principales
+        Label mainInfoLabel = new Label("📋 Informations principales");
+        mainInfoLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #2c3e50; -fx-padding: 5 0;");
+        content.getChildren().add(mainInfoLabel);
         
         if (requesterName != null && !requesterName.trim().isEmpty()) {
             content.getChildren().add(DetailPanel.createInfoRow("Demandeur", requesterName));
@@ -171,6 +173,14 @@ public class ServiceRequest implements DetailPanelProvider {
         
         if (requesterEmail != null && !requesterEmail.trim().isEmpty()) {
             content.getChildren().add(DetailPanel.createInfoRow("Email", requesterEmail));
+        }
+        
+        if (assignedTechnician != null && !assignedTechnician.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Technicien assigné", assignedTechnician));
+        }
+        
+        if (equipmentName != null && !equipmentName.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Équipement", equipmentName));
         }
         
         if (description != null && !description.trim().isEmpty()) {
@@ -181,26 +191,53 @@ public class ServiceRequest implements DetailPanelProvider {
             content.getChildren().add(DetailPanel.createInfoRow("Statut", getStatusIcon() + " " + status.name()));
         }
         
-        if (estimatedCost != null && estimatedCost > 0) {
-            content.getChildren().add(DetailPanel.createInfoRow("Coût estimé", String.format("%.2f €", estimatedCost)));
+        // Section coûts
+        if ((estimatedCost != null && estimatedCost > 0) || (actualCost != null && actualCost > 0)) {
+            Label costLabel = new Label("💰 Coûts");
+            costLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #2c3e50; -fx-padding: 10 0 5 0;");
+            content.getChildren().add(costLabel);
+            
+            if (estimatedCost != null && estimatedCost > 0) {
+                content.getChildren().add(DetailPanel.createInfoRow("Coût estimé", String.format("%.2f €", estimatedCost)));
+            }
+            
+            if (actualCost != null && actualCost > 0) {
+                content.getChildren().add(DetailPanel.createInfoRow("Coût réel", String.format("%.2f €", actualCost)));
+            }
         }
         
-        if (actualCost != null && actualCost > 0) {
-            content.getChildren().add(DetailPanel.createInfoRow("Coût réel", String.format("%.2f €", actualCost)));
-        }
+        // Section historique et chronologie
+        Label historyLabel = new Label("📅 Historique & Chronologie");
+        historyLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #2c3e50; -fx-padding: 10 0 5 0;");
+        content.getChildren().add(historyLabel);
         
         if (createdAt != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            content.getChildren().add(DetailPanel.createInfoRow("Créé le", createdAt.format(formatter)));
+            content.getChildren().add(DetailPanel.createInfoRow("📅 Créé le", createdAt.format(formatter)));
+        }
+        
+        if (updatedAt != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            content.getChildren().add(DetailPanel.createInfoRow("🔄 Mis à jour le", updatedAt.format(formatter)));
         }
         
         if (resolvedAt != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            content.getChildren().add(DetailPanel.createInfoRow("Résolu le", resolvedAt.format(formatter)));
+            content.getChildren().add(DetailPanel.createInfoRow("✅ Résolu le", resolvedAt.format(formatter)));
         }
         
         if (resolutionNotes != null && !resolutionNotes.trim().isEmpty()) {
-            content.getChildren().add(DetailPanel.createInfoRow("Notes de résolution", resolutionNotes));
+            Label notesLabel = new Label("📝 Notes techniques");
+            notesLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #2c3e50; -fx-padding: 10 0 5 0;");
+            content.getChildren().add(notesLabel);
+            
+            // Créer une zone de texte pour les notes longues
+            TextArea notesArea = new TextArea(resolutionNotes);
+            notesArea.setPrefRowCount(3);
+            notesArea.setWrapText(true);
+            notesArea.setEditable(false);
+            // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+            content.getChildren().add(notesArea);
         }
         
         return content;

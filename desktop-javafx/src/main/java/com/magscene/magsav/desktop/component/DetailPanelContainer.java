@@ -69,14 +69,14 @@ public class DetailPanelContainer extends StackPane {
     }
     
     private void showDetailPanel(DetailPanelProvider provider) {
-        detailPanel.updateContent(
+        // Utiliser l'animation bidirectionnelle pour un effet de transition fluide
+        detailPanel.updateContentWithAnimation(
             provider.getDetailTitle(),
             provider.getDetailSubtitle(), 
             provider.getDetailImage(),
-            null, // Le QR code sera généré automatiquement
+            provider.getQRCodeData(), // Passer les données QR du provider
             provider.getDetailInfoContent()
         );
-        detailPanel.show();
     }
     
     private void hideDetailPanel() {

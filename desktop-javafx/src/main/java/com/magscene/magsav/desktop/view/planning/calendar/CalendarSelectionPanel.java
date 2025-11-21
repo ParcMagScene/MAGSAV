@@ -12,6 +12,7 @@ import com.magscene.magsav.desktop.theme.ThemeManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Panneau de sélection des calendriers avec cases à cocher colorées
@@ -147,7 +148,7 @@ public class CalendarSelectionPanel extends VBox {
         return calendarCheckBoxes.stream()
                 .filter(cb -> cb.isSelected())
                 .map(CalendarCheckBox::getCalendarItem)
-                .toList();
+                .collect(Collectors.toList());
     }
     
     /**
@@ -156,7 +157,7 @@ public class CalendarSelectionPanel extends VBox {
     public List<CalendarItem> getAllCalendars() {
         return calendarCheckBoxes.stream()
                 .map(CalendarCheckBox::getCalendarItem)
-                .toList();
+                .collect(Collectors.toList());
     }
     
     /**
@@ -194,6 +195,6 @@ public class CalendarSelectionPanel extends VBox {
                 .filter(cb -> cb.getCalendarItem().getName().equals(calendarName))
                 .map(cb -> cb.getCalendarItem().getColor())
                 .findFirst()
-                .orElse(Color.GRAY);
+                .orElse(Color.BLACK);
     }
 }

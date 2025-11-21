@@ -2,7 +2,7 @@
 // Ce fichier ne doit contenir QUE la configuration des plugins et des sous-projets
 
 plugins {
-    id 'org.springframework.boot' version '3.1.12' apply false
+    id 'org.springframework.boot' version '3.3.5' apply false
     id 'io.spring.dependency-management' version '1.1.6' apply false
     id 'org.openjfx.javafxplugin' version '0.1.0' apply false
     id 'com.github.node-gradle.node' version '7.0.1' apply false
@@ -21,9 +21,10 @@ allprojects {
 
 // Versions communes pour tous les sous-projets
 ext {
-    springBootVersion = '3.1.12'
+    springBootVersion = '3.3.5'
     javafxVersion = '21'
     junitVersion = '5.10.0'
+    jacksonVersion = '2.15.2'
 }
 
 // Configuration Java commune (seulement pour modules Java)
@@ -35,9 +36,9 @@ configure(subprojects.findAll { it.name != 'web-frontend' }) {
         targetCompatibility = JavaVersion.VERSION_21
     }
     
+    // Configuration UTF-8 pour toutes les tâches de compilation
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
-        options.compilerArgs += ['-parameters']
     }
 }
 

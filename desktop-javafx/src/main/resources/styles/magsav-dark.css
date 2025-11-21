@@ -1,0 +1,201 @@
+/* MAGSAV 3.0 - Thème Sombre Unifié */
+.theme-dark {
+    /* Couleurs principales */
+    -magsav-primary: #8B91FF;
+    -magsav-secondary: #6B71F2;
+    -magsav-accent: #F26BA6;
+    
+    /* Couleurs de fond */
+    -magsav-bg-primary: #1A1A2E;
+    -magsav-bg-secondary: #16213E;
+    -magsav-bg-tertiary: #0F1419;
+    
+    /* Couleurs de texte */
+    -magsav-text-primary: #FFFFFF;
+    -magsav-text-secondary: #B8BCC8;
+    -magsav-text-muted: #6C7293;
+    
+    /* Couleurs de bordure */
+    -magsav-border-light: #2A2D3A;
+    -magsav-border-medium: #3E4265;
+    -magsav-border-dark: #525B7A;
+    
+    /* Couleurs d'état */
+    -magsav-success: #00D4AA;
+    -magsav-warning: #FFB800;
+    -magsav-danger: #FF6B6B;
+    -magsav-info: #4DABF7;
+    
+    /* Ombres */
+    -magsav-shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+    -magsav-shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+    -magsav-shadow-lg: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+/* Styles de base */
+.theme-dark .root {
+    -fx-background-color: -magsav-bg-primary;
+    -fx-text-fill: -magsav-text-primary;
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+    -fx-font-size: 14px;
+}
+
+/* Navigation */
+.theme-dark .navigation-panel {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-border-light;
+    -fx-border-width: 0 1 0 0;
+}
+
+.theme-dark .nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -magsav-text-primary;
+    -fx-background-radius: 8;
+    -fx-padding: 12 16;
+    -fx-font-size: 13px;
+}
+
+.theme-dark .nav-button:hover {
+    -fx-background-color: -magsav-bg-tertiary;
+}
+
+.theme-dark .nav-button:pressed,
+.theme-dark .nav-button.active {
+    -fx-background-color: -magsav-primary;
+    -fx-text-fill: -magsav-bg-primary;
+}
+
+/* Barre d'outils */
+.theme-dark .user-toolbar {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-border-light;
+    -fx-border-width: 0 0 1 0;
+}
+
+.theme-dark .icon-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -magsav-text-secondary;
+    -fx-background-radius: 6;
+    -fx-padding: 8;
+    -fx-font-size: 16px;
+}
+
+.theme-dark .icon-button:hover {
+    -fx-background-color: -magsav-bg-tertiary;
+    -fx-text-fill: -magsav-primary;
+}
+
+/* Composants de recherche */
+.theme-dark .global-search-field {
+    -fx-background-color: -magsav-bg-tertiary;
+    -fx-border-color: -magsav-border-medium;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-padding: 8 16;
+    -fx-text-fill: -magsav-text-primary;
+}
+
+.theme-dark .global-search-field:focused {
+    -fx-border-color: -magsav-primary;
+    -fx-effect: dropshadow(gaussian, -magsav-primary, 4, 0.5, 0, 0);
+}
+
+/* Tableaux */
+.theme-dark .table-view {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-border-light;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.theme-dark .table-view .column-header {
+    -fx-background-color: -magsav-bg-tertiary;
+    -fx-text-fill: -magsav-text-primary;
+    -fx-font-weight: bold;
+}
+
+.theme-dark .table-row-cell:selected {
+    -fx-background-color: -magsav-primary;
+    -fx-text-fill: -magsav-bg-primary;
+}
+
+.theme-dark .table-row-cell:hover {
+    -fx-background-color: -magsav-bg-tertiary;
+}
+
+/* Boutons */
+.theme-dark .button {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-text-fill: -magsav-text-primary;
+    -fx-border-color: -magsav-border-medium;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 8 16;
+    -fx-font-size: 13px;
+}
+
+.theme-dark .button:hover {
+    -fx-background-color: -magsav-bg-tertiary;
+    -fx-border-color: -magsav-primary;
+}
+
+.theme-dark .button.primary {
+    -fx-background-color: -magsav-primary;
+    -fx-text-fill: -magsav-bg-primary;
+    -fx-border-color: -magsav-primary;
+}
+
+.theme-dark .button.success {
+    -fx-background-color: -magsav-success;
+    -fx-text-fill: -magsav-bg-primary;
+    -fx-border-color: -magsav-success;
+}
+
+.theme-dark .button.warning {
+    -fx-background-color: -magsav-warning;
+    -fx-text-fill: -magsav-bg-primary;
+    -fx-border-color: -magsav-warning;
+}
+
+.theme-dark .button.danger {
+    -fx-background-color: -magsav-danger;
+    -fx-text-fill: white;
+    -fx-border-color: -magsav-danger;
+}
+
+/* Barres d'outils de modules */
+.theme-dark .module-toolbar {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-border-light;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-effect: -magsav-shadow-md;
+    -fx-padding: 12;
+}
+
+/* Filtres */
+.theme-dark .combo-box {
+    -fx-background-color: -magsav-bg-tertiary;
+    -fx-border-color: -magsav-border-medium;
+    -fx-text-fill: -magsav-text-primary;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+/* Statut */
+.theme-dark .status-bar {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-border-light;
+    -fx-border-width: 1 0 0 0;
+    -fx-text-fill: -magsav-text-secondary;
+}
+
+/* Paramètres */
+.theme-dark .settings-section {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-border-light;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-padding: 16;
+    -fx-effect: -magsav-shadow-md;
+}

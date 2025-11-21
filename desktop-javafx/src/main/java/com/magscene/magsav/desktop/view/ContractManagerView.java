@@ -18,11 +18,9 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
-import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.List;
@@ -42,7 +40,6 @@ public class ContractManagerView extends BorderPane {
     private ComboBox<String> typeFilter;
     private ComboBox<String> statusFilter;
     private ComboBox<String> clientFilter;
-    private Label statsLabel;
     private ProgressIndicator loadingIndicator;
     
     private final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.FRANCE);
@@ -61,15 +58,7 @@ public class ContractManagerView extends BorderPane {
         
         // Tableau des contrats (créer EN PREMIER car utilisé dans createSearchAndFilters)
         contractTable = createContractTable();
-        
-        // Header avec zone de recherche intégrée (créer APRÈS la table)
-        VBox header = createHeader();
-        
-        // Statistiques
-        statsLabel = new Label();
-        statsLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
-        statsLabel.setTextFill(Color.DARKGREEN);
-        
+
         // Indicateur de chargement
         loadingIndicator = new ProgressIndicator();
         loadingIndicator.setVisible(false);
@@ -82,42 +71,26 @@ public class ContractManagerView extends BorderPane {
         StackPane tableStack = new StackPane();
         tableStack.getChildren().addAll(containerWithDetail, loadingIndicator);
         
-        // Layout principal - EXACTEMENT comme Ventes et Installations
-        VBox topContainer = new VBox(header, createSearchAndFilters());
-        VBox centerContainer = new VBox(statsLabel, tableStack);
+        // Layout principal - Structure simplifiée sans containers imbriqués
+        HBox toolbar = createSearchAndFilters();
         
-        setTop(topContainer);
-        setCenter(centerContainer);
+        // Center: Directement le tableau avec le volet de détails
+        setTop(toolbar);
+        setCenter(containerWithDetail);
     }
-    
-    private VBox createHeader() {
-        VBox header = new VBox(10); // STANDARD : 10px spacing comme référence
-        header.setPadding(new Insets(0, 0, 20, 0));
-        
-        Label title = new Label("📋 Contrats");
-        title.setFont(Font.font("System", FontWeight.BOLD, 24));
-        title.setTextFill(Color.web("#2c3e50"));
-        
-        header.getChildren().add(title); // SEUL le titre dans header
-        return header;
-    }
-    
-    private VBox createSearchAndFilters() {
-        VBox container = new VBox(15);
-        container.setPadding(new Insets(10)); // EXACTEMENT comme toolbar Ventes & Installations
-        container.setStyle("-fx-background-color: #142240; -fx-background-radius: 8; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
-        
-        // Premiere ligne : recherche et filtres
-        HBox topRow = new HBox(15);
-        topRow.setAlignment(Pos.CENTER_LEFT);
-        
-        // Recherche
+
+    private HBox createSearchAndFilters() {
+        HBox toolbar = new HBox(15);
+        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme ClientManagerView
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        // toolbar supprimé - Style géré par CSS
         VBox searchBox = new VBox(5);
         Label searchLabel = new Label("🔍 Recherche");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         searchField = new TextField();
-        searchField.setPromptText("Rechercher par numero, titre, client...");
-        searchField.setPrefWidth(250);
+        searchField.setPromptText("Numéro, titre, client...");
+        searchField.setPrefWidth(280);
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchField.textProperty().addListener((obs, old, text) -> filterContracts());
         searchBox.getChildren().addAll(searchLabel, searchField);
@@ -125,89 +98,88 @@ public class ContractManagerView extends BorderPane {
         // Filtre par type
         VBox typeBox = new VBox(5);
         Label typeLabel = new Label("📋 Type");
-        typeLabel.setStyle("-fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         typeFilter = new ComboBox<>();
         typeFilter.getItems().addAll("Tous", "Maintenance", "Location", "Prestation de service", "Support technique", "Fourniture materiel", "Mixte");
         typeFilter.setValue("Tous");
         typeFilter.setPrefWidth(150);
-        typeFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         typeFilter.setOnAction(e -> filterContracts());
         typeBox.getChildren().addAll(typeLabel, typeFilter);
         
         // Filtre par statut
         VBox statusBox = new VBox(5);
         Label statusLabel = new Label("📊 Statut");
-        statusLabel.setStyle("-fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         statusFilter = new ComboBox<>();
         statusFilter.getItems().addAll("Tous", "Brouillon", "En attente signature", "Actif", "Suspendu", "Resilie", "Expire", "Termine");
         statusFilter.setValue("Tous");
         statusFilter.setPrefWidth(150);
-        statusFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         statusFilter.setOnAction(e -> filterContracts());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
         
         // Filtre par client
         VBox clientBox = new VBox(5);
         Label clientLabel = new Label("👤 Client");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         clientLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         clientFilter = new ComboBox<>();
         clientFilter.getItems().add("Tous les clients");
         clientFilter.setValue("Tous les clients");
-        clientFilter.setPrefWidth(200);
-        clientFilter.setStyle("-fx-background-color: #142240; -fx-text-fill: #6B71F2;");
+        clientFilter.setPrefWidth(180);
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         clientFilter.setOnAction(e -> filterContracts());
         clientBox.getChildren().addAll(clientLabel, clientFilter);
         
         // Boutons d'action
         VBox actionsBox = new VBox(5);
         Label actionsLabel = new Label("⚡ Actions");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         actionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         
         HBox buttonRow = new HBox(10);
-        Button addButton = new Button("➕ Nouveau");
-        addButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 4;");
+        Button addButton = new Button("➕ Nouveau contrat");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         addButton.setOnAction(e -> addContract());
         
         Button editButton = new Button("✏️ Modifier");
-        editButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         editButton.setOnAction(e -> editContract());
         editButton.disableProperty().bind(contractTable.getSelectionModel().selectedItemProperty().isNull());
         
-        Button viewButton = new Button("👁️ Détails");
-        viewButton.setStyle("-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-background-radius: 4;");
+        Button viewButton = new Button("� Détails");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         viewButton.setOnAction(e -> viewContractDetails());
         viewButton.disableProperty().bind(contractTable.getSelectionModel().selectedItemProperty().isNull());
         
         Button deleteButton = new Button("🗑️ Supprimer");
-        deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         deleteButton.setOnAction(e -> deleteContract());
         deleteButton.disableProperty().bind(contractTable.getSelectionModel().selectedItemProperty().isNull());
         
         Button refreshButton = new Button("🔄 Actualiser");
-        refreshButton.setStyle("-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-background-radius: 4;");
+        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         refreshButton.setOnAction(e -> refreshData());
         
         buttonRow.getChildren().addAll(addButton, editButton, viewButton, deleteButton, refreshButton);
         actionsBox.getChildren().addAll(actionsLabel, buttonRow);
         
-        // Spacer pour pousser les actions à droite
+        // Spacer pour pousser les éléments
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        topRow.getChildren().addAll(searchBox, typeBox, statusBox, clientBox, spacer, actionsBox);
-        
-        container.getChildren().add(topRow);
-        return container;
+        toolbar.getChildren().addAll(searchBox, typeBox, statusBox, clientBox, spacer, actionsBox);
+        return toolbar;
     }
     
     private TableView<Contract> createContractTable() {
         TableView<Contract> table = new TableView<>();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         table.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        
-        // Colonnes du tableau
+        // table supprimé - Style géré par CSS
         TableColumn<Contract, String> statusCol = new TableColumn<>("📋");
         statusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatusIcon()));
         statusCol.setPrefWidth(40);
@@ -259,8 +231,17 @@ public class ContractManagerView extends BorderPane {
         });
         progressCol.setPrefWidth(90);
         
-        table.getColumns().addAll(statusCol, numberCol, titleCol, typeCol, clientCol, 
-            statusNameCol, startDateCol, endDateCol, totalAmountCol, progressCol);
+        // Ajout individuel des colonnes pour éviter les warnings de generic array
+        table.getColumns().add(statusCol);
+        table.getColumns().add(numberCol);
+        table.getColumns().add(titleCol);
+        table.getColumns().add(typeCol);
+        table.getColumns().add(clientCol);
+        table.getColumns().add(statusNameCol);
+        table.getColumns().add(startDateCol);
+        table.getColumns().add(endDateCol);
+        table.getColumns().add(totalAmountCol);
+        table.getColumns().add(progressCol);
         
         // Double-clic pour editer
         table.setRowFactory(tv -> {
@@ -271,11 +252,11 @@ public class ContractManagerView extends BorderPane {
                 if (row.isEmpty()) {
                     row.setStyle("");
                 } else if (row.isSelected()) {
-                    // Style de sélection prioritaire (#142240)
+                    // Style de sélection uniforme
                     row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
                                "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
                                "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
-                               "-fx-border-width: 2px;");
+                               "-fx-border-width: 1px;");
                 } else {
                     // Style par défaut
                     row.setStyle("");
@@ -289,7 +270,7 @@ public class ContractManagerView extends BorderPane {
             
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    editContract();
+                    openContractDetails();
                 }
             });
             return row;
@@ -327,7 +308,6 @@ public class ContractManagerView extends BorderPane {
             Platform.runLater(() -> {
                 contractData.setAll(task.getValue());
                 filterContracts();
-                updateStatistics();
                 setLoading(false);
             });
         });
@@ -387,27 +367,6 @@ public class ContractManagerView extends BorderPane {
         }
         
         contractTable.setItems(filteredData);
-        updateStatistics();
-    }
-    
-    private void updateStatistics() {
-        int totalContracts = contractData.size();
-        long activeContracts = contractData.stream()
-            .filter(c -> c.getStatus() == Contract.ContractStatus.ACTIVE)
-            .count();
-        long expiringContracts = contractData.stream()
-            .filter(Contract::isExpiringSoon)
-            .count();
-        
-        BigDecimal totalValue = contractData.stream()
-            .filter(c -> c.getTotalAmount() != null)
-            .map(Contract::getTotalAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        statsLabel.setText(String.format(
-            "📋 Total: %d contrats | ✅ Actifs: %d | ⚠️ Expirent bientot: %d | 💰 Valeur totale: %s",
-            totalContracts, activeContracts, expiringContracts, currencyFormat.format(totalValue)
-        ));
     }
     
     private void setLoading(boolean loading) {
@@ -439,7 +398,6 @@ public class ContractManagerView extends BorderPane {
                     contractData.add(createdContract);
                     contractTable.getSelectionModel().select(createdContract);
                     contractTable.scrollTo(createdContract);
-                    updateStatistics();
                     showSuccessAlert("Succes", "Le contrat a ete cree avec succes !");
                 });
             });
@@ -459,10 +417,26 @@ public class ContractManagerView extends BorderPane {
         }
     }
     
+    /**
+     * Ouvre la fiche détaillée d'un contrat en mode lecture seule
+     */
+    private void openContractDetails() {
+        Contract selected = contractTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            ContractDialog dialog = new ContractDialog(apiService, selected, true); // true = mode lecture seule
+            dialog.showAndWait().ifPresent(result -> {
+                // Si des modifications ont été apportées, rafraîchir la liste
+                if (result != null) {
+                    loadContractData();
+                }
+            });
+        }
+    }
+
     private void editContract() {
         Contract selected = contractTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            ContractDialog dialog = new ContractDialog(apiService, selected);
+            ContractDialog dialog = new ContractDialog(apiService, selected, false); // false = mode édition
             Optional<Contract> result = dialog.showAndWait();
             
             if (result.isPresent()) {
@@ -489,7 +463,6 @@ public class ContractManagerView extends BorderPane {
                             contractTable.getSelectionModel().select(savedContract);
                         }
                         
-                        updateStatistics();
                         showSuccessAlert("Succes", "Le contrat a ete mis a jour avec succes !");
                     });
                 });
@@ -538,7 +511,6 @@ public class ContractManagerView extends BorderPane {
                         apiService.deleteContract(selected.getId());
                         Platform.runLater(() -> {
                             contractData.remove(selected);
-                            updateStatistics();
                             setLoading(false);
                             showSuccessAlert("Contrat supprime", "Le contrat " + selected.getDisplayName() + " a ete supprime avec succes.");
                         });

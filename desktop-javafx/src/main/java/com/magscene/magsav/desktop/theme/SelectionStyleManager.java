@@ -5,7 +5,7 @@ import javafx.util.Callback;
 
 /**
  * Gestionnaire centralisé des styles de sélection pour TableView et ListView
- * Applique la couleur de sélection #142240 de manière uniforme dans toute l'application
+ * Applique la couleur de sélection de manière uniforme dans toute l'application
  */
 public class SelectionStyleManager {
     
@@ -146,7 +146,6 @@ public class SelectionStyleManager {
                         setText(item.toString());
                     }
                 }
-                
 
             };
             

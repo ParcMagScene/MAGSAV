@@ -166,7 +166,7 @@ public class SpecialtyPlanningService {
     
     private void addAssignment(PersonnelAssignment assignment) {
         specialtyAssignments.computeIfAbsent(assignment.getSpecialty(), k -> new ArrayList<>())
-                          .add(assignment);
+                .add(assignment);
         personnelAssignments.add(assignment);
     }
     
@@ -275,7 +275,7 @@ public class SpecialtyPlanningService {
             .filter(filter -> filter.getSpecialty().equals(specialty))
             .map(SpecialtyFilter::getColor)
             .findFirst()
-            .orElse("#757575");
+            .orElse(null);
     }
     
     /**
@@ -283,8 +283,7 @@ public class SpecialtyPlanningService {
      */
     public boolean hasSchedulingConflicts(String specialty, LocalDateTime startTime, 
                                          LocalDateTime endTime) {
-        // TODO: Implémenter la logique de détection de conflits
-        // Vérifier si le personnel nécessaire est disponible
+        // TODO: Implémenter la logique de détection de conflits; // Vérifier si le personnel nécessaire est disponible
         List<PersonnelAssignment> available = getAvailablePersonnelForSpecialty(specialty, startTime);
         return available.isEmpty();
     }

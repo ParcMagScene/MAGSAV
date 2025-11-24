@@ -6,6 +6,7 @@ import com.magscene.magsav.desktop.core.navigation.Route;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.component.GlobalSearchComponent;
+import com.magscene.magsav.desktop.service.WindowPreferencesService;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -271,12 +272,22 @@ public class MagsavDesktopApplication extends Application {
         primaryStage.setMinWidth(1200);
         primaryStage.setMinHeight(800);
         
-        // Maximiser sur l'écran principal
+        // Service de mémorisation des préférences de fenêtre
+        WindowPreferencesService prefsService = WindowPreferencesService.getInstance();
+        
+        // Restaurer la position et taille sauvegardées, ou utiliser les valeurs par défaut
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        primaryStage.setX(screenBounds.getMinX());
-        primaryStage.setY(screenBounds.getMinY());
-        primaryStage.setWidth(screenBounds.getWidth());
-        primaryStage.setHeight(screenBounds.getHeight());
+        prefsService.restoreWindowBounds(
+            primaryStage, 
+            "main-window",
+            screenBounds.getWidth(),
+            screenBounds.getHeight()
+        );
+        
+        // Activer la sauvegarde automatique lors des changements
+        prefsService.setupAutoSave(primaryStage, "main-window");
+        
+        System.out.println("💾 Mémorisation fenêtre activée");
     }
     
     /**

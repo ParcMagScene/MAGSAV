@@ -49,6 +49,7 @@ if ($fixedCount -gt 0) {
     Write-Host "   git status" -ForegroundColor White
     Write-Host "   git add *.ps1" -ForegroundColor White
     Write-Host "   git commit -m 'fix: Correction encodage UTF-8 BOM scripts PowerShell'" -ForegroundColor White
-} else {
+}
+else {
     Write-Host "✅ Aucune correction nécessaire" -ForegroundColor Green
 }

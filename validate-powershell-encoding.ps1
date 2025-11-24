@@ -18,10 +18,11 @@ foreach ($script in $scriptsPath) {
     if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) {
         Write-Host "✅ $($script.Name)" -ForegroundColor Green
         $validCount++
-    } else {
+    }
+    else {
         Write-Host "❌ $($script.Name) - Pas de BOM UTF-8" -ForegroundColor Red
         $issues += [PSCustomObject]@{
-            File = $script.FullName
+            File  = $script.FullName
             Issue = "Manque BOM UTF-8"
         }
     }
@@ -43,7 +44,8 @@ if ($issues.Count -gt 0) {
     Write-Host "Liste des fichiers à corriger :" -ForegroundColor Yellow
     $issues | ForEach-Object { Write-Host "   - $($_.File)" -ForegroundColor Gray }
     exit 1
-} else {
+}
+else {
     Write-Host ""
     Write-Host "✅ Tous les scripts PowerShell ont le bon encodage !" -ForegroundColor Green
     exit 0

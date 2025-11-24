@@ -135,23 +135,12 @@ public class MagsavDesktopApplication extends Application {
             }
         });
         
-        // Contrats
-        navigationManager.registerView(Route.CONTRACTS, () -> {
-            try {
-                com.magscene.magsav.desktop.service.ApiService apiService = 
-                    new com.magscene.magsav.desktop.service.ApiService();
-                return new com.magscene.magsav.desktop.view.ContractManagerView(apiService);
-            } catch (Exception e) {
-                return createErrorPane("Contrats", e);
-            }
-        });
-        
-        // Ventes & Installations
+        // Ventes & Installations (avec onglets Projets et Contrats)
         navigationManager.registerView(Route.SALES, () -> {
             try {
                 com.magscene.magsav.desktop.service.ApiService apiService = 
                     new com.magscene.magsav.desktop.service.ApiService();
-                return new com.magscene.magsav.desktop.view.salesinstallation.ProjectManagerView(apiService);
+                return new com.magscene.magsav.desktop.view.salesinstallation.SalesInstallationTabsView(apiService);
             } catch (Exception e) {
                 return createErrorPane("Ventes", e);
             }
@@ -346,7 +335,7 @@ public class MagsavDesktopApplication extends Application {
     private Button[] createNavigationButtons() {
         Route[] routes = {
             Route.DASHBOARD, Route.SAV, Route.EQUIPMENT,
-            Route.CLIENTS, Route.CONTRACTS, Route.SALES,
+            Route.CLIENTS, Route.SALES,
             Route.VEHICLES, Route.PERSONNEL, Route.PLANNING,
             Route.SUPPLIERS, Route.MATERIAL_REQUESTS, Route.GROUPED_ORDERS,
             Route.SETTINGS

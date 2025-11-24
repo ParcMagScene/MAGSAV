@@ -1,4 +1,4 @@
-# Script de demarrage automatique de MAGSAV
+﻿# Script de demarrage automatique de MAGSAV
 Write-Host "Demarrage de MAGSAV..." -ForegroundColor Green
 
 # Verifier si le backend est deja en cours d'execution

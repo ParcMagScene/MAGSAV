@@ -1,12 +1,12 @@
-# Script de Test Intégration Backend MAGSAV
-# Démarre backend + frontend pour tester la communication REST
+﻿# Script de Test IntÃ©gration Backend MAGSAV
+# DÃ©marre backend + frontend pour tester la communication REST
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  MAGSAV 3.0 - Test Integration Backend" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Vérifier que nous sommes dans le bon répertoire
+# VÃ©rifier que nous sommes dans le bon rÃ©pertoire
 if (!(Test-Path ".\gradlew.bat")) {
     Write-Host "Erreur: gradlew.bat non trouve" -ForegroundColor Red
     Write-Host "Executez ce script depuis la racine du projet MAGSAV-3.0" -ForegroundColor Yellow
@@ -26,7 +26,7 @@ Write-Host "Etape 2/4 : Demarrage du backend Spring Boot..." -ForegroundColor Gr
 Write-Host "URL: http://localhost:8080" -ForegroundColor Cyan
 Write-Host "Endpoints: /api/material-requests, /api/suppliers, etc." -ForegroundColor Cyan
 
-# Démarrer le backend dans un nouveau terminal
+# DÃ©marrer le backend dans un nouveau terminal
 $backendJob = Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$PWD' ; Write-Host 'MAGSAV Backend' -ForegroundColor Green ; ./gradlew :backend:bootRun" -PassThru
 
 Write-Host "Backend demarre (PID: $($backendJob.Id))" -ForegroundColor Green

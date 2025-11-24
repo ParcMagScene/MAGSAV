@@ -1,4 +1,4 @@
-# MAGSAV 3.0 - Script de Validation Finale
+﻿# MAGSAV 3.0 - Script de Validation Finale
 # Verifie que l'application est prete pour la production
 
 Write-Host "MAGSAV 3.0 - Validation Finale" -ForegroundColor Green

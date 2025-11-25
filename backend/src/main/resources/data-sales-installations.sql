@@ -169,26 +169,26 @@ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 -- Articles de commandes fournisseurs
 INSERT INTO supplier_order_items (
     supplier_order_id, item_reference, item_name, description, quantity, quantity_received,
-    unit, unit_price, total_amount, notes, created_at, updated_at
+    unit, unit_price, total_amount, notes
 ) VALUES
 -- Articles commande Meyer Sound
-(1, 'LEOPARD-M100', 'Meyer Sound LEOPARD M100', 'Enceinte Line Array compacte', 12, 0, 'pcs', 4200.00, 50400.00, 'Enceintes principales', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 'LYON-M', 'Meyer Sound LYON-M', 'Enceinte Line Array moyenne portée', 8, 0, 'pcs', 6800.00, 54400.00, 'Enceintes secondaires', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, 'FLIGHT-CASE', 'Flight case sur mesure', 'Protection transport enceintes', 4, 0, 'pcs', 850.00, 3400.00, 'Protection matériel', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, 'LEOPARD-M100', 'Meyer Sound LEOPARD M100', 'Enceinte Line Array compacte', 12, 0, 'pcs', 4200.00, 50400.00, 'Enceintes principales'),
+(1, 'LYON-M', 'Meyer Sound LYON-M', 'Enceinte Line Array moyenne portée', 8, 0, 'pcs', 6800.00, 54400.00, 'Enceintes secondaires'),
+(1, 'FLIGHT-CASE', 'Flight case sur mesure', 'Protection transport enceintes', 4, 0, 'pcs', 850.00, 3400.00, 'Protection matériel'),
 
 -- Articles commande Robe Lighting  
-(2, 'ROBE-T2-PROFILE', 'Robe T2 Profile', 'Projecteur LED profil haute puissance', 16, 16, 'pcs', 980.00, 15680.00, 'Éclairage principal', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 'ROBE-T1-FRESNEL', 'Robe T1 Fresnel', 'Projecteur LED Fresnel', 8, 8, 'pcs', 750.00, 6000.00, 'Éclairage d''ambiance', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 'ROBE-CASE', 'Case de transport Robe', 'Flight case projecteurs', 6, 6, 'pcs', 320.00, 1920.00, 'Transport sécurisé', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 'ROBE-T2-PROFILE', 'Robe T2 Profile', 'Projecteur LED profil haute puissance', 16, 16, 'pcs', 980.00, 15680.00, 'Éclairage principal'),
+(2, 'ROBE-T1-FRESNEL', 'Robe T1 Fresnel', 'Projecteur LED Fresnel', 8, 8, 'pcs', 750.00, 6000.00, 'Éclairage d''ambiance'),
+(2, 'ROBE-CASE', 'Case de transport Robe', 'Flight case projecteurs', 6, 6, 'pcs', 320.00, 1920.00, 'Transport sécurisé'),
 
 -- Articles commande Thomann
-(3, 'CABLE-XLR-5M', 'Câble XLR 3 broches 5m', 'Câble microphone professionnel', 50, 30, 'pcs', 18.50, 925.00, 'Manque 20 pièces', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 'CABLE-JACK-3M', 'Câble Jack 6.35 mono 3m', 'Câble instrument', 25, 25, 'pcs', 12.00, 300.00, 'Livraison complète', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 'ADAPTATEUR-XLR', 'Adaptateur XLR/Jack', 'Adaptateur connexion', 20, 20, 'pcs', 8.50, 170.00, 'Livraison complète', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 'GAFFER-NOIR', 'Gaffer tape noir 50mm', 'Adhésif professionnel', 10, 10, 'rouleaux', 15.00, 150.00, 'Stock reconstitué', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 'CABLE-XLR-5M', 'Câble XLR 3 broches 5m', 'Câble microphone professionnel', 50, 30, 'pcs', 18.50, 925.00, 'Manque 20 pièces'),
+(3, 'CABLE-JACK-3M', 'Câble Jack 6.35 mono 3m', 'Câble instrument', 25, 25, 'pcs', 12.00, 300.00, 'Livraison complète'),
+(3, 'ADAPTATEUR-XLR', 'Adaptateur XLR/Jack', 'Adaptateur connexion', 20, 20, 'pcs', 8.50, 170.00, 'Livraison complète'),
+(3, 'GAFFER-NOIR', 'Gaffer tape noir 50mm', 'Adhésif professionnel', 10, 10, 'rouleaux', 15.00, 150.00, 'Stock reconstitué'),
 
 -- Articles service maintenance
-(4, 'MAINT-PREV-FULL', 'Maintenance préventive complète', 'Service annuel maintenance', 1, 0, 'contrat', 12000.00, 12000.00, 'Contrat 12 mois', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(4, 'MAINT-PREV-FULL', 'Maintenance préventive complète', 'Service annuel maintenance', 1, 0, 'contrat', 12000.00, 12000.00, 'Contrat 12 mois');
 
 COMMIT;
 

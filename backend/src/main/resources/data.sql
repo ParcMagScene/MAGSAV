@@ -1,12 +1,6 @@
 -- Test data for MAGSAV-3.0 - Categories system
 -- Simple categories without encoding issues
 
--- Import vehicle demo data
--- @import data-vehicles.sql;
-
--- Import clients and contracts demo data
--- @import data-clients-contracts.sql;
-
 -- Root categories
 INSERT INTO categories (name, description, color, icon, display_order, active, created_at, updated_at, parent_id) VALUES
 ('Eclairage', 'Materiel eclairage scenique et architectural', '#FF6B35', 'lightbulb-outline', 1, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL),

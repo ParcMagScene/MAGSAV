@@ -5,22 +5,22 @@
     -magsav-primary: #6B71F2;
     -magsav-secondary: #6B71F2;
     -magsav-accent: #F26BA6;
-    
+
     /* Couleurs de fond */
     -magsav-bg-primary: #FFFFFF;
     -magsav-bg-secondary: #F8F9FA;
     -magsav-bg-tertiary: #E9ECEF;
-    
+
     /* Couleurs de texte */
     -magsav-text-primary: #212529;
     -magsav-text-secondary: #6C757D;
     -magsav-text-muted: #ADB5BD;
-    
+
     /* Couleurs de bordure */
     -magsav-border-light: #DEE2E6;
     -magsav-border-medium: #CED4DA;
     -magsav-border-dark: #ADB5BD;
-    
+
     /* Couleurs d'Ã©tat */
     -magsav-success: #28A745;
     -magsav-warning: #FFC107;
@@ -256,4 +256,211 @@
     -fx-text-fill: -magsav-text-muted;
     -fx-font-size: 11px;
     -fx-font-style: italic;
+}
+
+/* ========================================
+   STYLES POUR TABPANE (Onglets)
+   ======================================== */
+
+/* Container principal du TabPane */
+.tab-pane {
+    -fx-background-color: #FFFFFF;
+    -fx-tab-min-height: 40px;
+    -fx-tab-max-height: 40px;
+}
+
+/* Zone contenant les en-tÃªtes des onglets */
+.tab-pane .tab-header-area {
+    -fx-background-color: #F8F9FA;
+    -fx-padding: 0;
+    -fx-min-height: 40px;
+    -fx-pref-height: 40px;
+    -fx-max-height: 40px;
+}
+
+/* Container des onglets */
+.tab-pane .tab-header-background {
+    -fx-background-color: #F8F9FA;
+}
+
+/* Style des onglets individuels */
+.tab-pane .tab {
+    -fx-background-color: #E9ECEF;
+    -fx-background-radius: 5px 5px 0 0;
+    -fx-background-insets: 0;
+    -fx-padding: 8px 20px;
+    -fx-border-width: 0;
+}
+
+/* Onglet survolÃ© */
+.tab-pane .tab:hover {
+    -fx-background-color: #DEE2E6;
+}
+
+/* Onglet sÃ©lectionnÃ© */
+.tab-pane .tab:selected {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #6B71F2;
+    -fx-border-width: 0 0 3px 0;
+}
+
+/* Label de l'onglet */
+.tab-pane .tab .tab-label {
+    -fx-text-fill: #212529;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+}
+
+/* Label de l'onglet sÃ©lectionnÃ© */
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #6B71F2;
+    -fx-font-weight: 700;
+}
+
+/* Zone de contenu des onglets */
+.tab-pane .tab-content-area {
+    -fx-background-color: #FFFFFF;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+/* Bouton de fermeture (dÃ©sactivÃ© mais au cas oÃ¹) */
+.tab-pane .tab-close-button {
+    -fx-background-color: transparent;
+}
+
+/* Styles spÃ©cifiques pour sales-tabs */
+.sales-tabs {
+    -fx-background-color: #FFFFFF;
+}
+
+.sales-tabs .tab-header-area {
+    -fx-background-color: #F8F9FA;
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.sales-installation-tabs-view {
+    -fx-background-color: #FFFFFF;
+    -fx-padding: 0;
+}
+/* ============================================ */
+/* AMÉLIORATION LISIBILITÉ ONGLETS UNIFORMISÉE */
+/* ============================================ */
+
+/* Tous les TabPane de l'application */
+.tab-pane {
+    -fx-tab-min-width: 120px;
+    -fx-tab-max-width: 200px;
+    -fx-tab-min-height: 45px;
+}
+
+/* En-tête des onglets - Augmentation espace */
+.tab-pane .tab-header-area {
+    -fx-background-color: #F8F9FA !important;
+    -fx-padding: 8px 15px 0 15px !important;
+    -fx-border-color: #DEE2E6 !important;
+    -fx-border-width: 0 0 2px 0 !important;
+}
+
+/* Ligne des onglets */
+.tab-pane .headers-region {
+    -fx-background-color: transparent !important;
+}
+
+.tab-pane .tab-header-background {
+    -fx-background-color: transparent !important;
+}
+
+/* Onglets individuels - Espacement et lisibilité */
+.tab-pane .tab {
+    -fx-background-color: transparent !important;
+    -fx-background-radius: 8px 8px 0 0;
+    -fx-padding: 12px 20px !important;
+    -fx-cursor: hand;
+    -fx-spacing: 5px;
+}
+
+/* Onglet au survol */
+.tab-pane .tab:hover {
+    -fx-background-color: rgba(107, 113, 242, 0.1) !important;
+}
+
+/* Onglet sélectionné - Accentuation */
+.tab-pane .tab:selected {
+    -fx-background-color: #FFFFFF !important;
+    -fx-border-color: #6B71F2 !important;
+    -fx-border-width: 0 0 4px 0 !important;
+    -fx-effect: dropshadow(gaussian, rgba(107, 113, 242, 0.3), 8, 0, 0, 2);
+}
+
+/* Labels des onglets - Taille optimisée */
+.tab-pane .tab .tab-label {
+    -fx-text-fill: #495057 !important;
+    -fx-font-size: 15px !important;
+    -fx-font-weight: 500 !important;
+    -fx-padding: 2px 0;
+}
+
+/* Label onglet sélectionné - Contraste fort */
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #6B71F2 !important;
+    -fx-font-size: 16px !important;
+    -fx-font-weight: 700 !important;
+}
+
+/* Zone de contenu - Padding confortable */
+.tab-pane .tab-content-area {
+    -fx-background-color: #FFFFFF !important;
+    -fx-padding: 20px;
+    -fx-border-width: 0;
+}
+
+/* Planning View - Amélioration lisibilité */
+.planning-view {
+    -fx-background-color: #F8F9FA;
+    -fx-padding: 0;
+}
+
+.planning-view .label {
+    -fx-font-size: 16px !important;
+    -fx-font-weight: 600 !important;
+    -fx-text-fill: #212529 !important;
+}
+
+.planning-view .button {
+    -fx-font-size: 14px !important;
+    -fx-padding: 10px 18px;
+}
+
+.planning-view .combo-box {
+    -fx-font-size: 14px !important;
+    -fx-min-width: 150px;
+}
+
+/* Calendrier Planning - Contraste amélioré */
+.calendar-day-header {
+    -fx-background-color: #E9ECEF;
+    -fx-text-fill: #495057 !important;
+    -fx-font-size: 14px !important;
+    -fx-font-weight: 600 !important;
+    -fx-padding: 12px;
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 1px;
+}
+
+.calendar-day-cell {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #DEE2E6;
+    -fx-border-width: 1px;
+    -fx-padding: 8px;
+    -fx-min-height: 80px;
+}
+
+.calendar-event {
+    -fx-background-color: #6B71F2;
+    -fx-text-fill: #FFFFFF !important;
+    -fx-background-radius: 4px;
+    -fx-padding: 4px 8px;
+    -fx-font-size: 12px !important;
 }

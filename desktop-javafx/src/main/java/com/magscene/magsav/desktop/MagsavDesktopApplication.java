@@ -24,44 +24,45 @@ import javafx.stage.Stage;
  * 
  * Cette version utilise la nouvelle architecture avec :
  * - Injection de dépendances (ApplicationContext)
- * - Navigation centralisée (NavigationManager) 
+ * - Navigation centralisée (NavigationManager)
  * - Configuration centralisée (ApplicationConfig)
  * 
  * @version 3.0.0-refactored
  */
 public class MagsavDesktopApplication extends Application {
-    
+
     private static MagsavDesktopApplication instance;
-    
+
     // Architecture refactorisée
     private ApplicationContext applicationContext;
     private NavigationManager navigationManager;
-    
+
     // UI Components
     private Stage primaryStage;
     private StackPane mainContent;
     private Label statusLabel;
+    private Label pageTitleLabel; // Titre de la page courante dans le header
     private Button[] navigationButtons;
-    
+
     @Override
     public void start(Stage primaryStage) {
         try {
             instance = this;
             this.primaryStage = primaryStage;
-            
+
             System.out.println("Application MAGSAV 3.0 - Démarrage avec architecture refactorisée");
-            
+
             // Initialisation de l'architecture
             initializeArchitecture();
-            
+
             // Construction de l'interface
             buildUserInterface();
-            
+
             // Finalisation
             finalizeApplication();
-            
+
             System.out.println("Application MAGSAV 3.0 - Démarrage réussi");
-            
+
         } catch (Exception e) {
             System.err.println("Erreur lors du démarrage: " + e.getMessage());
             e.printStackTrace();
@@ -69,29 +70,29 @@ public class MagsavDesktopApplication extends Application {
             Platform.exit();
         }
     }
-    
+
     /**
      * Initialisation de l'architecture refactorisée
      */
     private void initializeArchitecture() {
         System.out.println("Initialisation de l'architecture...");
-        
+
         // Initialisation du contexte d'application (DI Container)
         applicationContext = ApplicationContext.getInstance();
         System.out.println("ApplicationContext initialisé");
-        
+
         // Initialisation des données de test
         System.out.println("🧪 Initialisation des données de test...");
         com.magscene.magsav.desktop.service.TestDataService.getInstance().initialize();
-        
+
         // Récupération du NavigationManager via injection
         navigationManager = applicationContext.getInstance(NavigationManager.class);
         System.out.println("NavigationManager récupéré");
-        
+
         // Enregistrement des factories de vues
         registerViewFactories();
     }
-    
+
     /**
      * Enregistrement des factories de vues dans le NavigationManager
      */
@@ -104,7 +105,7 @@ public class MagsavDesktopApplication extends Application {
                 return createErrorPane("Dashboard", e);
             }
         });
-        
+
         // Equipment - Nouvelle vue refactorisée
         navigationManager.registerView(Route.EQUIPMENT, () -> {
             try {
@@ -113,8 +114,8 @@ public class MagsavDesktopApplication extends Application {
                 return createErrorPane("Équipements", e);
             }
         });
-        
-        // SAV - Nouvelle vue refactorisée  
+
+        // SAV - Nouvelle vue refactorisée
         navigationManager.registerView(Route.SAV, () -> {
             try {
                 return new com.magscene.magsav.desktop.view.sav.NewSAVManagerView();
@@ -122,52 +123,49 @@ public class MagsavDesktopApplication extends Application {
                 return createErrorPane("SAV", e);
             }
         });
-        
+
         // Clients
         navigationManager.registerView(Route.CLIENTS, () -> {
             try {
-                // Utilisation temporaire d'un service factice - à remplacer par un vrai service client
-                com.magscene.magsav.desktop.service.ApiService apiService = 
-                    new com.magscene.magsav.desktop.service.ApiService();
+                // Utilisation temporaire d'un service factice - à remplacer par un vrai service
+                // client
+                com.magscene.magsav.desktop.service.ApiService apiService = new com.magscene.magsav.desktop.service.ApiService();
                 return new com.magscene.magsav.desktop.view.ClientManagerView(apiService);
             } catch (Exception e) {
                 return createErrorPane("Clients", e);
             }
         });
-        
+
         // Ventes & Installations (avec onglets Projets et Contrats)
         navigationManager.registerView(Route.SALES, () -> {
             try {
-                com.magscene.magsav.desktop.service.ApiService apiService = 
-                    new com.magscene.magsav.desktop.service.ApiService();
+                com.magscene.magsav.desktop.service.ApiService apiService = new com.magscene.magsav.desktop.service.ApiService();
                 return new com.magscene.magsav.desktop.view.salesinstallation.SalesInstallationTabsView(apiService);
             } catch (Exception e) {
                 return createErrorPane("Ventes", e);
             }
         });
-        
+
         // Véhicules
         navigationManager.registerView(Route.VEHICLES, () -> {
             try {
-                com.magscene.magsav.desktop.service.ApiService apiService = 
-                    new com.magscene.magsav.desktop.service.ApiService();
+                com.magscene.magsav.desktop.service.ApiService apiService = new com.magscene.magsav.desktop.service.ApiService();
                 return new com.magscene.magsav.desktop.view.VehicleManagerView(apiService);
             } catch (Exception e) {
                 return createErrorPane("Véhicules", e);
             }
         });
-        
+
         // Personnel
         navigationManager.registerView(Route.PERSONNEL, () -> {
             try {
-                com.magscene.magsav.desktop.service.ApiService apiService = 
-                    new com.magscene.magsav.desktop.service.ApiService();
+                com.magscene.magsav.desktop.service.ApiService apiService = new com.magscene.magsav.desktop.service.ApiService();
                 return new com.magscene.magsav.desktop.view.PersonnelManagerView(apiService);
             } catch (Exception e) {
                 return createErrorPane("Personnel", e);
             }
         });
-        
+
         // Planning
         navigationManager.registerView(Route.PLANNING, () -> {
             try {
@@ -176,7 +174,7 @@ public class MagsavDesktopApplication extends Application {
                 return createErrorPane("Planning", e);
             }
         });
-        
+
         // Fournisseurs
         navigationManager.registerView(Route.SUPPLIERS, () -> {
             try {
@@ -185,7 +183,7 @@ public class MagsavDesktopApplication extends Application {
                 return createErrorPane("Fournisseurs", e);
             }
         });
-        
+
         // Demandes de matériel
         navigationManager.registerView(Route.MATERIAL_REQUESTS, () -> {
             try {
@@ -194,7 +192,7 @@ public class MagsavDesktopApplication extends Application {
                 return createErrorPane("Demandes Matériel", e);
             }
         });
-        
+
         // Commandes groupées
         navigationManager.registerView(Route.GROUPED_ORDERS, () -> {
             try {
@@ -203,7 +201,7 @@ public class MagsavDesktopApplication extends Application {
                 return createErrorPane("Commandes Groupées", e);
             }
         });
-        
+
         // Paramètres
         navigationManager.registerView(Route.SETTINGS, () -> {
             try {
@@ -212,47 +210,48 @@ public class MagsavDesktopApplication extends Application {
                 return createErrorPane("Paramètres", e);
             }
         });
-        
+
         System.out.println("Factories de vues enregistrées avec système de fournisseurs");
     }
-    
+
     /**
      * Construction de l'interface utilisateur
      */
     private void buildUserInterface() {
         System.out.println("Construction de l'interface...");
-        
+
         // Configuration de la fenêtre principale
         setupMainWindow();
-        
+
         // Création du layout principal
         BorderPane root = createMainLayout();
-        
+
         // Création de la scène
         Scene scene = new Scene(root);
         applyTheme(scene);
-        
+
         // Configuration finale
         primaryStage.setScene(scene);
         primaryStage.show();
-        
+
         // Configuration des hooks de fermeture
         primaryStage.setOnCloseRequest(e -> {
             e.consume();
             showExitConfirmation();
         });
-        
+
         // Navigation initiale vers le dashboard
         Platform.runLater(() -> {
             navigationManager.navigateTo(Route.DASHBOARD);
             if (navigationButtons.length > 0) {
                 updateActiveButton(navigationButtons[0]);
             }
+            updatePageTitle(Route.DASHBOARD.getDisplayName());
         });
-        
+
         System.out.println("Interface utilisateur construite");
     }
-    
+
     /**
      * Configuration de la fenêtre principale
      */
@@ -260,109 +259,110 @@ public class MagsavDesktopApplication extends Application {
         primaryStage.setTitle("MAGSAV 3.0 - Architecture Refactorisée");
         primaryStage.setMinWidth(1200);
         primaryStage.setMinHeight(800);
-        
+
         // Service de mémorisation des préférences de fenêtre
         WindowPreferencesService prefsService = WindowPreferencesService.getInstance();
-        
-        // Restaurer la position et taille sauvegardées, ou utiliser les valeurs par défaut
+
+        // Restaurer la position et taille sauvegardées, ou utiliser les valeurs par
+        // défaut
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
         prefsService.restoreWindowBounds(
-            primaryStage, 
-            "main-window",
-            screenBounds.getWidth(),
-            screenBounds.getHeight()
-        );
-        
+                primaryStage,
+                "main-window",
+                screenBounds.getWidth(),
+                screenBounds.getHeight());
+
         // Activer la sauvegarde automatique lors des changements
         prefsService.setupAutoSave(primaryStage, "main-window");
-        
+
         System.out.println("💾 Mémorisation fenêtre activée");
     }
-    
+
     /**
      * Création du layout principal
      */
     private BorderPane createMainLayout() {
         BorderPane root = new BorderPane();
         root.getStyleClass().add("main-layout");
-        
+
         // Barre d'outils utilisateur en haut
         HBox userToolbar = createUserToolbar();
         root.setTop(userToolbar);
-        
+
         // Panel de navigation à gauche
         VBox navigationPanel = createNavigationPanel();
         root.setLeft(navigationPanel);
-        
+
         // Contenu principal au centre
         mainContent = createMainContent();
         root.setCenter(mainContent);
-        
+
         // Barre de statut en bas
         HBox statusBar = createStatusBar();
         root.setBottom(statusBar);
-        
+
         return root;
     }
-    
+
     /**
      * Création du panel de navigation
      */
     private VBox createNavigationPanel() {
         VBox navPanel = new VBox(10);
         navPanel.getStyleClass().add("navigation-panel");
-        
+
         // Titre
         Label navTitle = new Label("Navigation");
         navTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-        
+
         // Création des boutons de navigation
         navigationButtons = createNavigationButtons();
-        
+
         navPanel.getChildren().add(navTitle);
         navPanel.getChildren().add(new Separator());
-        
+
         for (Button button : navigationButtons) {
             navPanel.getChildren().add(button);
         }
-        
+
         return navPanel;
     }
-    
+
     /**
      * Création des boutons de navigation
      */
     private Button[] createNavigationButtons() {
         Route[] routes = {
-            Route.DASHBOARD, Route.SAV, Route.EQUIPMENT,
-            Route.CLIENTS, Route.SALES,
-            Route.VEHICLES, Route.PERSONNEL, Route.PLANNING,
-            Route.SUPPLIERS, Route.MATERIAL_REQUESTS, Route.GROUPED_ORDERS,
-            Route.SETTINGS
+                Route.DASHBOARD, Route.SAV, Route.EQUIPMENT,
+                Route.CLIENTS, Route.SALES,
+                Route.VEHICLES, Route.PERSONNEL, Route.PLANNING,
+                Route.SUPPLIERS, Route.MATERIAL_REQUESTS, Route.GROUPED_ORDERS,
+                Route.SETTINGS
         };
-        
+
         Button[] buttons = new Button[routes.length];
-        
+
         for (int i = 0; i < routes.length; i++) {
             Route route = routes[i];
             Button button = new Button(route.getDisplayName());
             button.setMaxWidth(Double.MAX_VALUE);
             button.getStyleClass().add("nav-button");
             button.setStyle("-fx-padding: 10px; -fx-font-size: 12px;");
-            
+
             // Navigation via NavigationManager
             button.setOnAction(e -> {
                 updateActiveButton(button);
                 navigationManager.navigateTo(route);
                 updateStatus("Navigation: " + route.getDisplayName());
+                updatePageTitle(route.getDisplayName());
             });
-            
+
             buttons[i] = button;
         }
-        
+
         return buttons;
     }
-    
+
     /**
      * Création du contenu principal
      */
@@ -374,22 +374,22 @@ public class MagsavDesktopApplication extends Application {
             Platform.runLater(() -> {
                 content.getChildren().clear();
                 content.getChildren().add(view);
-                
+
                 // S'assurer que la vue prend tout l'espace disponible
                 if (view instanceof Region) {
                     Region region = (Region) view;
                     region.setPrefSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
                     region.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                 }
-                
+
                 // Forcer un refresh de la mise en page
                 content.layout();
             });
         });
-        
+
         return content;
     }
-    
+
     /**
      * Création de la barre de statut
      */
@@ -399,20 +399,20 @@ public class MagsavDesktopApplication extends Application {
         statusBar.setAlignment(Pos.CENTER_LEFT);
         statusBar.getStyleClass().add("status-bar");
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        
+
         statusLabel = new Label("Prêt - MAGSAV 3.0 (Architecture refactorisée)");
         statusLabel.getStyleClass().add("status-label");
-        
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        
+
         Label versionLabel = new Label("v3.0.0-refactored");
         versionLabel.getStyleClass().add("version-label");
-        
+
         statusBar.getChildren().addAll(statusLabel, spacer, versionLabel);
         return statusBar;
     }
-    
+
     /**
      * Application du thème
      */
@@ -420,56 +420,55 @@ public class MagsavDesktopApplication extends Application {
         // Application du thème unifié
         UnifiedThemeManager themeManager = UnifiedThemeManager.getInstance();
         themeManager.applyThemeToScene(scene);
-        
+
         // Gestionnaire de fermeture
         primaryStage.setOnCloseRequest(e -> {
             e.consume();
             exitApplication();
         });
     }
-    
+
     /**
      * Finalisation de l'application
      */
     private void finalizeApplication() {
         System.out.println("Finalisation de l'application...");
-        
+
         // Test de connectivité backend
         testBackendConnectivity();
-        
+
         // Configuration des hooks de fermeture
         setupShutdownHooks();
-        
+
         System.out.println("Application finalisée");
     }
-    
+
     /**
      * Test de connectivité avec le backend
      */
     private void testBackendConnectivity() {
         try {
             var equipmentService = applicationContext.getInstance(
-                com.magscene.magsav.desktop.service.business.EquipmentService.class
-            );
-            
+                    com.magscene.magsav.desktop.service.business.EquipmentService.class);
+
             equipmentService.testBackendConnection()
-                .thenAccept(connected -> Platform.runLater(() -> {
-                    if (connected) {
-                        updateStatus("Backend connecté");
-                    } else {
-                        updateStatus("Backend non disponible");
-                    }
-                }))
-                .exceptionally(error -> {
-                    Platform.runLater(() -> updateStatus("Erreur backend: " + error.getMessage()));
-                    return null;
-                });
+                    .thenAccept(connected -> Platform.runLater(() -> {
+                        if (connected) {
+                            updateStatus("Backend connecté");
+                        } else {
+                            updateStatus("Backend non disponible");
+                        }
+                    }))
+                    .exceptionally(error -> {
+                        Platform.runLater(() -> updateStatus("Erreur backend: " + error.getMessage()));
+                        return null;
+                    });
         } catch (Exception e) {
             System.err.println("Erreur test backend: " + e.getMessage());
             updateStatus("Test backend échoué");
         }
     }
-    
+
     /**
      * Configuration des hooks de fermeture
      */
@@ -482,9 +481,9 @@ public class MagsavDesktopApplication extends Application {
             System.out.println("Nettoyage terminé");
         }));
     }
-    
+
     // === Méthodes utilitaires === //
-    
+
     /**
      * Met à jour le bouton actif
      */
@@ -492,9 +491,10 @@ public class MagsavDesktopApplication extends Application {
         for (Button button : navigationButtons) {
             button.setStyle("-fx-padding: 10px; -fx-font-size: 12px;");
         }
-        activeButton.setStyle("-fx-padding: 10px; -fx-font-size: 12px; -fx-background-color: #007acc; -fx-text-fill: white;");
+        activeButton.setStyle(
+                "-fx-padding: 10px; -fx-font-size: 12px; -fx-background-color: #007acc; -fx-text-fill: white;");
     }
-    
+
     /**
      * Met à jour le statut
      */
@@ -504,7 +504,16 @@ public class MagsavDesktopApplication extends Application {
         }
         System.out.println("Status: " + message);
     }
-    
+
+    /**
+     * Met à jour le titre de la page dans le header
+     */
+    private void updatePageTitle(String title) {
+        if (pageTitleLabel != null) {
+            Platform.runLater(() -> pageTitleLabel.setText(title));
+        }
+    }
+
     /**
      * Fermeture de l'application
      */
@@ -513,14 +522,14 @@ public class MagsavDesktopApplication extends Application {
         alert.setTitle("Confirmation");
         alert.setHeaderText("Quitter MAGSAV 3.0 ?");
         alert.setContentText("Êtes-vous sûr de vouloir quitter l'application ?");
-        
+
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 Platform.exit();
             }
         });
     }
-    
+
     /**
      * Création de la barre d'outils utilisateur
      */
@@ -529,19 +538,28 @@ public class MagsavDesktopApplication extends Application {
         toolbar.setPadding(new Insets(5, 10, 5, 10));
         toolbar.setAlignment(Pos.CENTER_LEFT);
         toolbar.getStyleClass().add("user-toolbar");
-        
+
         // Logo ou titre de l'application
         Label appTitle = new Label("MAGSAV 3.0");
         appTitle.getStyleClass().add("app-title");
         appTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-        
+
+        // Séparateur vertical
+        Separator separator = new Separator();
+        separator.setOrientation(javafx.geometry.Orientation.VERTICAL);
+
+        // Titre de la page courante
+        pageTitleLabel = new Label("");
+        pageTitleLabel.getStyleClass().add("page-title");
+        pageTitleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
         // Composant de recherche globale
         GlobalSearchComponent globalSearch = new GlobalSearchComponent();
-        
+
         // Spacer pour pousser les boutons à droite
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        
+
         // Bouton paramètres
         Button settingsButton = new Button("⚙️");
         settingsButton.setTooltip(new Tooltip("Paramètres"));
@@ -550,17 +568,18 @@ public class MagsavDesktopApplication extends Application {
             navigationManager.navigateTo(Route.SETTINGS);
             updateStatus("Navigation: Paramètres");
         });
-        
+
         // Bouton quitter
         Button exitButton = new Button("❌");
         exitButton.setTooltip(new Tooltip("Quitter"));
         exitButton.getStyleClass().add("icon-button");
         exitButton.setOnAction(e -> showExitConfirmation());
-        
-        toolbar.getChildren().addAll(appTitle, globalSearch, spacer, settingsButton, exitButton);
+
+        toolbar.getChildren().addAll(appTitle, separator, pageTitleLabel, globalSearch, spacer, settingsButton,
+                exitButton);
         return toolbar;
     }
-    
+
     /**
      * Affiche la confirmation de sortie
      */
@@ -569,14 +588,14 @@ public class MagsavDesktopApplication extends Application {
         alert.setTitle("Confirmation");
         alert.setHeaderText("Quitter MAGSAV 3.0 ?");
         alert.setContentText("Êtes-vous sûr de vouloir quitter l'application ?");
-        
+
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 Platform.exit();
             }
         });
     }
-    
+
     /**
      * Affiche un dialog d'erreur
      */
@@ -589,7 +608,7 @@ public class MagsavDesktopApplication extends Application {
             alert.showAndWait();
         });
     }
-    
+
     /**
      * Crée un panneau d'erreur
      */
@@ -597,18 +616,18 @@ public class MagsavDesktopApplication extends Application {
         VBox errorPane = new VBox(10);
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         errorPane.setAlignment(Pos.CENTER);
-        
+
         Label titleLabel = new Label("Erreur: " + viewName);
         titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #cc0000;");
-        
+
         Label messageLabel = new Label("Impossible de charger la vue: " + error.getMessage());
         messageLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666666;");
         messageLabel.setWrapText(true);
-        
+
         errorPane.getChildren().addAll(titleLabel, messageLabel);
         return errorPane;
     }
-    
+
     /**
      * Crée un panneau par défaut
      */
@@ -616,41 +635,42 @@ public class MagsavDesktopApplication extends Application {
         VBox defaultPane = new VBox(10);
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         defaultPane.setAlignment(Pos.CENTER);
-        
+
         Label titleLabel = new Label(moduleName);
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333333;");
-        
+
         Label messageLabel = new Label("Module en cours de migration vers la nouvelle architecture");
         messageLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666666;");
-        
+
         defaultPane.getChildren().addAll(titleLabel, messageLabel);
         return defaultPane;
     }
-    
+
     // === Méthodes statiques === //
-    
+
     public static MagsavDesktopApplication getInstance() {
         return instance;
     }
-    
+
     /**
      * Méthode utilitaire publique pour forcer les couleurs des TextField
-     * Utilisée par tous les modules pour uniformiser les couleurs des champs de recherche
+     * Utilisée par tous les modules pour uniformiser les couleurs des champs de
+     * recherche
      */
     public static void forceSearchFieldColors(TextField textField) {
         // Style dynamique pour contrer toute surcharge CSS
         String bgColor = ThemeManager.getInstance().getCurrentBackgroundColor();
         String forceStyle = "-fx-base: " + bgColor + " !important; " +
-                           "-fx-background: " + bgColor + " !important; " +
-                           "-fx-background-color: " + bgColor + " !important; " +
-                           "-fx-control-inner-background: " + bgColor + " !important; " +
-                           "-fx-control-inner-background-alt: " + bgColor + " !important; " +
-                           "-fx-text-fill: #8B91FF !important; " +
-                           "-fx-text-base-color: #8B91FF !important; " +
-                           "-fx-prompt-text-fill: #8B91FF !important;";
-        
+                "-fx-background: " + bgColor + " !important; " +
+                "-fx-background-color: " + bgColor + " !important; " +
+                "-fx-control-inner-background: " + bgColor + " !important; " +
+                "-fx-control-inner-background-alt: " + bgColor + " !important; " +
+                "-fx-text-fill: #8B91FF !important; " +
+                "-fx-text-base-color: #8B91FF !important; " +
+                "-fx-prompt-text-fill: #8B91FF !important;";
+
         textField.setStyle(forceStyle);
-        
+
         // Force ABSOLUE sur tous les sous-éléments avec délai pour le rendu
         Platform.runLater(() -> {
             Platform.runLater(() -> { // Double Platform.runLater pour être sûr
@@ -661,7 +681,7 @@ public class MagsavDesktopApplication extends Application {
             });
         });
     }
-    
+
     public static void main(String[] args) {
         System.out.println("🚀 Démarrage MAGSAV 3.0 - Architecture refactorisée");
         launch(args);

@@ -1,0 +1,25 @@
+-- Fournisseurs principaux
+INSERT INTO suppliers (id, name, contact_person, email, phone, address, 
+                       has_after_sales_service, has_rma_service, has_parts_service, has_equipment_service,
+                       free_shipping_threshold, order_protocol, order_email, active, notes)
+VALUES
+(1, 'Algam Entreprises', 'Jean-Marc Dubois', 'commercial@algam.fr', '+33 1 48 63 16 16',
+ '215 avenue Jean Jaures 93300 Aubervilliers France',
+ true, true, true, true, 500.00, 'EMAIL', 'commande@algam.fr', true,
+ 'Distributeur majeur audio pro'),
+(2, 'Freevox SAS', 'Sophie Martin', 'contact@freevox.com', '+33 4 72 81 41 27',
+ '14 rue du Chateau 69009 Lyon France',
+ true, true, true, true, 300.00, 'EMAIL', 'commande@freevox.com', true,
+ 'Specialiste sonorisation professionnelle'),
+(3, 'Thomann GmbH', 'Klaus Becker', 'b2b@thomann.de', '+49 9546 9223 666',
+ 'Hans-Thomann-Strasse 1 96138 Burgebrach Allemagne',
+ true, true, true, true, 1000.00, 'ONLINE', 'b2b@thomann.de', true,
+ 'Plus grand revendeur musical Europe'),
+(4, 'Mobil Tech Events', 'Pierre Lefebvre', 'ventes@mobiltech.fr', '+33 1 64 87 00 29',
+ 'ZA des Reaux 77127 Lieusaint France',
+ true, false, true, true, 800.00, 'EMAIL', 'ventes@mobiltech.fr', true,
+ 'Structure Prolyte et moteurs Chain Master'),
+(5, 'Adam Hall Group', 'Michael Weber', 'sales@adamhall.com', '+49 6024 6080',
+ 'Adam-Hall-Str 1 61267 Neu-Anspach Allemagne',
+ true, true, true, true, 600.00, 'ONLINE', 'sales@adamhall.com', true,
+ 'Cameo LD Systems Gravity Large gamme accessoires');

@@ -26,12 +26,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
 /**
  * Interface JavaFX complete pour la gestion du personnel
  * Fonctionnalites : tableau detaille, recherche, filtres, CRUD, statistiques
  */
 public class PersonnelManagerView extends BorderPane {
-    
+
     private final ApiService apiService;
     private TableView<PersonnelItem> personnelTable;
     private ObservableList<PersonnelItem> personnelData;
@@ -43,51 +44,49 @@ public class PersonnelManagerView extends BorderPane {
     private ProgressIndicator loadingIndicator;
     private Button editButton;
     private Button deleteButton;
-    
+
     public PersonnelManagerView(ApiService apiService) {
         this.apiService = apiService;
         this.personnelData = FXCollections.observableArrayList();
         initializeUI();
         loadPersonnelData();
     }
-    
+
     private void initializeUI() {
         // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
         this.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
-        
+
         // Header avec titre et statistiques
         VBox header = createHeader();
-        
+
         // Barre d'outils avec recherche et filtres
         HBox toolbar = createToolbar();
-        
+
         // Zone principale avec tableau - EXACTEMENT comme référence
         createTableContainer();
-        
+
         // Layout principal avec volet de détail
         VBox topContainer = new VBox(header, toolbar);
-        
+
         setTop(topContainer);
-        
+
         // Intégration du volet de visualisation pour le personnel
         DetailPanelContainer detailContainer = new DetailPanelContainer(personnelTable);
         setCenter(detailContainer);
-        
+
         // Configuration finale après création de tous les composants
         setupButtonActivation();
     }
-    
+
     private VBox createHeader() {
         VBox header = new VBox(10); // EXACTEMENT comme Ventes et Installations
-        header.setPadding(new Insets(0, 0, 20, 0)); // EXACTEMENT comme Ventes et Installations; // Titre principal
-        Label titleLabel = new Label("👤 Personnel");
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 24));
-        titleLabel.setTextFill(Color.web(StandardColors.getTextColor()));
-        
-        header.getChildren().add(titleLabel);
+        header.setPadding(new Insets(0, 0, 20, 0)); // EXACTEMENT comme Ventes et Installations
+
+        // Pas de titre - déjà dans le header principal de l'application
+
         return header;
     }
-    
+
     private HBox createToolbar() {
         HBox toolbar = new HBox(10); // EXACTEMENT comme Ventes & Installations
         toolbar.setAlignment(Pos.CENTER_LEFT);
@@ -99,24 +98,26 @@ public class PersonnelManagerView extends BorderPane {
         searchField = new TextField();
         searchField.setPromptText("Nom, prenom, email...");
         searchField.setPrefWidth(250);
-        // Style supprimé - géré par forceSearchFieldColors; // Force agressive des couleurs pour contrer le CSS global
+        // Style supprimé - géré par forceSearchFieldColors; // Force agressive des
+        // couleurs pour contrer le CSS global
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
         searchField.textProperty().addListener((obs, oldText, newText) -> filterPersonnelData());
         searchBox.getChildren().addAll(searchLabel, searchField);
-        
+
         // Filtre par type
         VBox typeBox = new VBox(5);
         Label typeLabel = new Label("👤 Type");
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous", "Employe", "Freelance", "Stagiaire", "Interimaire", "Intermittent du spectacle");
+        typeFilter.getItems().addAll("Tous", "Employe", "Freelance", "Stagiaire", "Interimaire",
+                "Intermittent du spectacle");
         typeFilter.setValue("Tous");
         typeFilter.setPrefWidth(150);
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         typeFilter.setOnAction(e -> filterPersonnelData());
         typeBox.getChildren().addAll(typeLabel, typeFilter);
-        
+
         // Filtre par statut
         VBox statusBox = new VBox(5);
         Label statusLabel = new Label("📊 Statut");
@@ -129,7 +130,7 @@ public class PersonnelManagerView extends BorderPane {
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         statusFilter.setOnAction(e -> filterPersonnelData());
         statusBox.getChildren().addAll(statusLabel, statusFilter);
-        
+
         // Filtre par département
         VBox deptBox = new VBox(5);
         Label deptLabel = new Label("🏢 Département");
@@ -142,17 +143,17 @@ public class PersonnelManagerView extends BorderPane {
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         departmentFilter.setOnAction(e -> filterPersonnelData());
         deptBox.getChildren().addAll(deptLabel, departmentFilter);
-        
+
         // Boutons d'action
         VBox actionsBox = new VBox(5);
         Label actionsLabel = new Label("⚡ Actions");
         actionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        
+
         HBox buttonRow = new HBox(10);
         Button addButton = new Button("➕ Ajouter");
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         addButton.setOnAction(e -> createNewPersonnel());
-        
+
         editButton = new Button("✏️ Modifier");
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         editButton.setDisable(true);
@@ -164,7 +165,7 @@ public class PersonnelManagerView extends BorderPane {
                 showAlert("Selection requise", "Veuillez selectionner un membre du personnel a modifier.");
             }
         });
-        
+
         deleteButton = new Button("🗑️ Supprimer");
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         deleteButton.setDisable(true);
@@ -176,57 +177,63 @@ public class PersonnelManagerView extends BorderPane {
                 showAlert("Selection requise", "Veuillez selectionner un membre du personnel a supprimer.");
             }
         });
-        
+
         Button refreshButton = new Button("🔄 Actualiser");
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         refreshButton.setOnAction(e -> loadPersonnelData());
-        
-        // Activation/désactivation des boutons selon la sélection (sera configurée après création table)
-        
+
+        // Activation/désactivation des boutons selon la sélection (sera configurée
+        // après création table)
+
         buttonRow.getChildren().addAll(addButton, editButton, deleteButton, refreshButton);
         actionsBox.getChildren().addAll(actionsLabel, buttonRow);
-        
+
         // Spacer pour pousser les actions à droite
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        
+
         toolbar.getChildren().addAll(searchBox, typeBox, statusBox, deptBox, spacer, actionsBox);
         return toolbar;
     }
-    
+
     private void createTableContainer() {
         // Indicateur de chargement
         loadingIndicator = new ProgressIndicator();
         loadingIndicator.setVisible(false);
         loadingIndicator.setPrefSize(50, 50);
-        
+
         // Configuration du tableau
         personnelTable = new TableView<>();
         personnelTable.setItems(personnelData);
         personnelTable.setRowFactory(tv -> {
             TableRow<PersonnelItem> row = new TableRow<>();
-            
+
             // Runnable pour mettre à jour le style
             Runnable updateStyle = () -> {
                 if (row.isEmpty()) {
                     row.setStyle("");
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
-                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
-                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
-                               "-fx-border-width: 2px;");
+                    row.setStyle("-fx-background-color: "
+                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                            "-fx-text-fill: "
+                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor()
+                            + "; " +
+                            "-fx-border-color: "
+                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor()
+                            + "; " +
+                            "-fx-border-width: 2px;");
                 } else {
                     // Style par défaut
                     row.setStyle("");
                 }
             };
-            
+
             // Écouter les changements de sélection
             row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
             row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
             row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
-            
+
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
                     editPersonnel(row.getItem());
@@ -234,16 +241,16 @@ public class PersonnelManagerView extends BorderPane {
             });
             return row;
         });
-        
+
         createTableColumns();
-        
+
         // Style du tableau
         personnelTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         personnelTable.setPrefHeight(400);
-        
+
         // Plus besoin de container - tableau directement dans setCenter
     }
-    
+
     private void setupButtonActivation() {
         // Activation des boutons Modifier et Supprimer basée sur la sélection
         personnelTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -252,28 +259,28 @@ public class PersonnelManagerView extends BorderPane {
             deleteButton.setDisable(!itemSelected);
         });
     }
-    
+
     private void createTableColumns() {
         // Colonne ID
         TableColumn<PersonnelItem, String> idCol = new TableColumn<>("ID");
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         idCol.setPrefWidth(50);
-        
+
         // Colonne Nom complet
         TableColumn<PersonnelItem, String> nameCol = new TableColumn<>("Nom complet");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("fullName"));
         nameCol.setPrefWidth(200);
-        
+
         // Colonne Email
         TableColumn<PersonnelItem, String> emailCol = new TableColumn<>("Email");
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         emailCol.setPrefWidth(200);
-        
+
         // Colonne Telephone
         TableColumn<PersonnelItem, String> phoneCol = new TableColumn<>("Telephone");
         phoneCol.setCellValueFactory(new PropertyValueFactory<>("phone"));
         phoneCol.setPrefWidth(130);
-        
+
         // Colonne Type
         TableColumn<PersonnelItem, String> typeCol = new TableColumn<>("Type");
         typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
@@ -305,7 +312,7 @@ public class PersonnelManagerView extends BorderPane {
                 }
             }
         });
-        
+
         // Colonne Statut
         TableColumn<PersonnelItem, String> statusCol = new TableColumn<>("Statut");
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
@@ -337,44 +344,44 @@ public class PersonnelManagerView extends BorderPane {
                 }
             }
         });
-        
+
         // Colonne Poste
         TableColumn<PersonnelItem, String> jobCol = new TableColumn<>("Poste");
         jobCol.setCellValueFactory(new PropertyValueFactory<>("jobTitle"));
         jobCol.setPrefWidth(150);
-        
+
         // Colonne Departement
         TableColumn<PersonnelItem, String> deptCol = new TableColumn<>("Departement");
         deptCol.setCellValueFactory(new PropertyValueFactory<>("department"));
         deptCol.setPrefWidth(120);
-        
+
         // Colonne Date d'embauche
         TableColumn<PersonnelItem, String> hireDateCol = new TableColumn<>("Embauche");
         hireDateCol.setCellValueFactory(new PropertyValueFactory<>("hireDate"));
         hireDateCol.setPrefWidth(100);
-        
+
         // Colonne Spécialités
         TableColumn<PersonnelItem, String> specialtiesCol = new TableColumn<>("Spécialités");
         specialtiesCol.setCellValueFactory(new PropertyValueFactory<>("specialties"));
         specialtiesCol.setPrefWidth(150);
-        
+
         personnelTable.getColumns().addAll(
-            idCol, nameCol, emailCol, phoneCol, 
-            typeCol, statusCol, jobCol, deptCol, hireDateCol, specialtiesCol
-        );
+                idCol, nameCol, emailCol, phoneCol,
+                typeCol, statusCol, jobCol, deptCol, hireDateCol, specialtiesCol);
     }
-    
-    // Méthode createFooter() supprimée - Les boutons sont maintenant; // intégrés dans la toolbar unifiée pour éviter les doublons
-    
+
+    // Méthode createFooter() supprimée - Les boutons sont maintenant; // intégrés
+    // dans la toolbar unifiée pour éviter les doublons
+
     private void loadPersonnelData() {
         loadingIndicator.setVisible(true);
         personnelTable.setDisable(true);
-        
+
         CompletableFuture<List<Object>> future = apiService.getAllPersonnel();
         future.thenAccept(personnelList -> {
             Platform.runLater(() -> {
                 personnelData.clear();
-                
+
                 for (Object item : personnelList) {
                     if (item instanceof Map) {
                         @SuppressWarnings("unchecked")
@@ -383,7 +390,7 @@ public class PersonnelManagerView extends BorderPane {
                         personnelData.add(personnelItem);
                     }
                 }
-                
+
                 updateDepartmentFilter();
                 updateStatistics();
                 loadingIndicator.setVisible(false);
@@ -393,186 +400,200 @@ public class PersonnelManagerView extends BorderPane {
             Platform.runLater(() -> {
                 loadingIndicator.setVisible(false);
                 personnelTable.setDisable(false);
-                showAlert("Erreur de chargement", 
-                    "Impossible de charger les donnees du personnel : " + throwable.getMessage());
+                showAlert("Erreur de chargement",
+                        "Impossible de charger les donnees du personnel : " + throwable.getMessage());
             });
             return null;
         });
     }
-    
+
     private PersonnelItem createPersonnelItem(Map<String, Object> personnelMap) {
         PersonnelItem item = new PersonnelItem();
-        
+
         item.setId(String.valueOf(personnelMap.get("id")));
         item.setFirstName(getStringValue(personnelMap, "firstName"));
         item.setLastName(getStringValue(personnelMap, "lastName"));
         item.setFullName(item.getFirstName() + " " + item.getLastName());
         item.setEmail(getStringValue(personnelMap, "email"));
         item.setPhone(getStringValue(personnelMap, "phone"));
-        
+
         // Gestion des enumerations
         String type = getStringValue(personnelMap, "type");
         item.setType(convertTypeToDisplay(type));
-        
+
         String status = getStringValue(personnelMap, "status");
         item.setStatus(convertStatusToDisplay(status));
-        
+
         item.setJobTitle(getStringValue(personnelMap, "jobTitle"));
         item.setDepartment(getStringValue(personnelMap, "department"));
-        
+
         // Date d'embauche
         String hireDate = getStringValue(personnelMap, "hireDate");
         if (hireDate != null && !hireDate.isEmpty()) {
             item.setHireDate(hireDate);
         }
-        
+
         item.setNotes(getStringValue(personnelMap, "notes"));
         item.setSpecialties(getStringValue(personnelMap, "specialties"));
-        
+
         // Stockage de la map originale pour les operations
         item.setOriginalData(personnelMap);
-        
+
         return item;
     }
-    
+
     private String getStringValue(Map<String, Object> map, String key) {
         Object value = map.get(key);
         return value != null ? value.toString() : "";
     }
-    
+
     private String convertTypeToDisplay(String type) {
-        if (type == null) return "";
+        if (type == null)
+            return "";
         switch (type.toUpperCase()) {
-            case "EMPLOYEE": return "Employe";
-            case "FREELANCE": return "Freelance";
-            case "INTERN": return "Stagiaire";
-            case "TEMPORARY": return "Interimaire";
-            case "PERFORMER": return "Intermittent du spectacle";
-            default: return type;
+            case "EMPLOYEE":
+                return "Employe";
+            case "FREELANCE":
+                return "Freelance";
+            case "INTERN":
+                return "Stagiaire";
+            case "TEMPORARY":
+                return "Interimaire";
+            case "PERFORMER":
+                return "Intermittent du spectacle";
+            default:
+                return type;
         }
     }
-    
+
     private String convertStatusToDisplay(String status) {
-        if (status == null) return "";
+        if (status == null)
+            return "";
         switch (status.toUpperCase()) {
-            case "ACTIVE": return "Actif";
-            case "INACTIVE": return "Inactif";
-            case "ON_LEAVE": return "En conge";
-            case "TERMINATED": return "Termine";
-            default: return status;
+            case "ACTIVE":
+                return "Actif";
+            case "INACTIVE":
+                return "Inactif";
+            case "ON_LEAVE":
+                return "En conge";
+            case "TERMINATED":
+                return "Termine";
+            default:
+                return status;
         }
     }
-    
+
     private void updateDepartmentFilter() {
         // Recuperer la liste des departements uniques
         departmentFilter.getItems().clear();
         departmentFilter.getItems().add("Tous");
-        
+
         personnelData.stream()
-            .map(PersonnelItem::getDepartment)
-            .filter(dept -> dept != null && !dept.trim().isEmpty())
-            .distinct()
-            .sorted()
-            .forEach(dept -> departmentFilter.getItems().add(dept));
-        
+                .map(PersonnelItem::getDepartment)
+                .filter(dept -> dept != null && !dept.trim().isEmpty())
+                .distinct()
+                .sorted()
+                .forEach(dept -> departmentFilter.getItems().add(dept));
+
         if (!departmentFilter.getItems().contains(departmentFilter.getValue())) {
             departmentFilter.setValue("Tous");
         }
     }
-    
+
     private void updateStatistics() {
-        // Statistiques supprimées du header pour uniformiser l'affichage; // avec les autres modules après unification des toolbars
+        // Statistiques supprimées du header pour uniformiser l'affichage; // avec les
+        // autres modules après unification des toolbars
     }
-    
+
     private void filterPersonnelData() {
         String searchText = searchField.getText().toLowerCase().trim();
         String typeValue = typeFilter.getValue();
         String statusValue = statusFilter.getValue();
         String departmentValue = departmentFilter.getValue();
-        
+
         ObservableList<PersonnelItem> filteredData = FXCollections.observableArrayList();
-        
+
         for (PersonnelItem item : personnelData) {
             // Filtre de recherche
-            boolean matchesSearch = searchText.isEmpty() || 
-                (item.getFullName() != null && item.getFullName().toLowerCase().contains(searchText)) ||
-                (item.getEmail() != null && item.getEmail().toLowerCase().contains(searchText)) ||
-                (item.getPhone() != null && item.getPhone().toLowerCase().contains(searchText)) ||
-                (item.getSpecialties() != null && item.getSpecialties().toLowerCase().contains(searchText));
-                
+            boolean matchesSearch = searchText.isEmpty() ||
+                    (item.getFullName() != null && item.getFullName().toLowerCase().contains(searchText)) ||
+                    (item.getEmail() != null && item.getEmail().toLowerCase().contains(searchText)) ||
+                    (item.getPhone() != null && item.getPhone().toLowerCase().contains(searchText)) ||
+                    (item.getSpecialties() != null && item.getSpecialties().toLowerCase().contains(searchText));
+
             // Filtre par type
-            boolean matchesType = "Tous".equals(typeValue) || 
-                (item.getType() != null && item.getType().equals(typeValue));
-                
-            // Filtre par statut  
-            boolean matchesStatus = "Tous".equals(statusValue) || 
-                (item.getStatus() != null && item.getStatus().equals(statusValue));
-                
+            boolean matchesType = "Tous".equals(typeValue) ||
+                    (item.getType() != null && item.getType().equals(typeValue));
+
+            // Filtre par statut
+            boolean matchesStatus = "Tous".equals(statusValue) ||
+                    (item.getStatus() != null && item.getStatus().equals(statusValue));
+
             // Filtre par département
-            boolean matchesDepartment = "Tous".equals(departmentValue) || 
-                (item.getDepartment() != null && item.getDepartment().equals(departmentValue));
-                
+            boolean matchesDepartment = "Tous".equals(departmentValue) ||
+                    (item.getDepartment() != null && item.getDepartment().equals(departmentValue));
+
             if (matchesSearch && matchesType && matchesStatus && matchesDepartment) {
                 filteredData.add(item);
             }
         }
-        
+
         personnelTable.setItems(filteredData);
         // Mise à jour des statistiques si nécessaire
         if (statsLabel != null) {
             statsLabel.setText("Affichage: " + filteredData.size() + " / " + personnelData.size());
         }
     }
-    
+
     private void createNewPersonnel() {
         PersonnelDialog dialog = new PersonnelDialog(null, apiService);
         Optional<Map<String, Object>> result = dialog.showAndWait();
-        
+
         result.ifPresent(personnelData -> {
             // Rechargement des donnees apres creation
             loadPersonnelData();
         });
     }
-    
+
     private void editPersonnel(PersonnelItem personnel) {
         PersonnelDialog dialog = new PersonnelDialog(personnel.getOriginalData(), apiService);
         Optional<Map<String, Object>> result = dialog.showAndWait();
-        
+
         result.ifPresent(personnelData -> {
             // Rechargement des donnees apres modification
             loadPersonnelData();
         });
     }
-    
+
     private void deletePersonnel(PersonnelItem personnel) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmer la suppression");
         alert.setHeaderText("Supprimer le membre du personnel");
         alert.setContentText("Etes-vous sur de vouloir supprimer " + personnel.getFullName() + " ?");
-        
+
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             Long personnelId = Long.valueOf(personnel.getId());
-            
+
             CompletableFuture<Void> future = apiService.deletePersonnel(personnelId);
             future.thenRun(() -> Platform.runLater(() -> {
                 showAlert("Succes", "Membre du personnel supprime avec succes.");
                 loadPersonnelData();
             })).exceptionally(throwable -> {
-                Platform.runLater(() -> 
-                    showAlert("Erreur", "Erreur lors de la suppression : " + throwable.getMessage()));
+                Platform.runLater(
+                        () -> showAlert("Erreur", "Erreur lors de la suppression : " + throwable.getMessage()));
                 return null;
             });
         }
     }
-    
+
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setContentText(message);
         alert.showAndWait();
     }
-    
+
     // Classe interne pour representer un element du personnel dans le tableau
     public static class PersonnelItem implements DetailPanelProvider {
         private SimpleStringProperty id = new SimpleStringProperty();
@@ -589,50 +610,123 @@ public class PersonnelManagerView extends BorderPane {
         private SimpleStringProperty notes = new SimpleStringProperty();
         private SimpleStringProperty specialties = new SimpleStringProperty();
         private Map<String, Object> originalData;
-        
+
         // Getters et setters
-        public String getId() { return id.get(); }
-        public void setId(String id) { this.id.set(id); }
-        public SimpleStringProperty idProperty() { return id; }
-        
-        public String getFirstName() { return firstName.get(); }
-        public void setFirstName(String firstName) { this.firstName.set(firstName); }
-        
-        public String getLastName() { return lastName.get(); }
-        public void setLastName(String lastName) { this.lastName.set(lastName); }
-        
-        public String getFullName() { return fullName.get(); }
-        public void setFullName(String fullName) { this.fullName.set(fullName); }
-        
-        public String getEmail() { return email.get(); }
-        public void setEmail(String email) { this.email.set(email); }
-        
-        public String getPhone() { return phone.get(); }
-        public void setPhone(String phone) { this.phone.set(phone); }
-        
-        public String getType() { return type.get(); }
-        public void setType(String type) { this.type.set(type); }
-        
-        public String getStatus() { return status.get(); }
-        public void setStatus(String status) { this.status.set(status); }
-        
-        public String getJobTitle() { return jobTitle.get(); }
-        public void setJobTitle(String jobTitle) { this.jobTitle.set(jobTitle); }
-        
-        public String getDepartment() { return department.get(); }
-        public void setDepartment(String department) { this.department.set(department); }
-        
-        public String getHireDate() { return hireDate.get(); }
-        public void setHireDate(String hireDate) { this.hireDate.set(hireDate); }
-        
-        public String getNotes() { return notes.get(); }
-        public void setNotes(String notes) { this.notes.set(notes); }
-        
-        public String getSpecialties() { return specialties.get(); }
-        public void setSpecialties(String specialties) { this.specialties.set(specialties); }
-        
-        public Map<String, Object> getOriginalData() { return originalData; }
-        public void setOriginalData(Map<String, Object> originalData) { this.originalData = originalData; }
+        public String getId() {
+            return id.get();
+        }
+
+        public void setId(String id) {
+            this.id.set(id);
+        }
+
+        public SimpleStringProperty idProperty() {
+            return id;
+        }
+
+        public String getFirstName() {
+            return firstName.get();
+        }
+
+        public void setFirstName(String firstName) {
+            this.firstName.set(firstName);
+        }
+
+        public String getLastName() {
+            return lastName.get();
+        }
+
+        public void setLastName(String lastName) {
+            this.lastName.set(lastName);
+        }
+
+        public String getFullName() {
+            return fullName.get();
+        }
+
+        public void setFullName(String fullName) {
+            this.fullName.set(fullName);
+        }
+
+        public String getEmail() {
+            return email.get();
+        }
+
+        public void setEmail(String email) {
+            this.email.set(email);
+        }
+
+        public String getPhone() {
+            return phone.get();
+        }
+
+        public void setPhone(String phone) {
+            this.phone.set(phone);
+        }
+
+        public String getType() {
+            return type.get();
+        }
+
+        public void setType(String type) {
+            this.type.set(type);
+        }
+
+        public String getStatus() {
+            return status.get();
+        }
+
+        public void setStatus(String status) {
+            this.status.set(status);
+        }
+
+        public String getJobTitle() {
+            return jobTitle.get();
+        }
+
+        public void setJobTitle(String jobTitle) {
+            this.jobTitle.set(jobTitle);
+        }
+
+        public String getDepartment() {
+            return department.get();
+        }
+
+        public void setDepartment(String department) {
+            this.department.set(department);
+        }
+
+        public String getHireDate() {
+            return hireDate.get();
+        }
+
+        public void setHireDate(String hireDate) {
+            this.hireDate.set(hireDate);
+        }
+
+        public String getNotes() {
+            return notes.get();
+        }
+
+        public void setNotes(String notes) {
+            this.notes.set(notes);
+        }
+
+        public String getSpecialties() {
+            return specialties.get();
+        }
+
+        public void setSpecialties(String specialties) {
+            this.specialties.set(specialties);
+        }
+
+        public Map<String, Object> getOriginalData() {
+            return originalData;
+        }
+
+        public void setOriginalData(Map<String, Object> originalData) {
+            this.originalData = originalData;
+        }
 
         // Implémentation de DetailPanelProvider
         @Override
@@ -646,21 +740,21 @@ public class PersonnelManagerView extends BorderPane {
             if (getJobTitle() != null && !getJobTitle().isEmpty()) {
                 subtitle.append(getJobTitle());
             }
-            
+
             if (getDepartment() != null && !getDepartment().isEmpty()) {
                 if (subtitle.length() > 0) {
                     subtitle.append(" • ");
                 }
                 subtitle.append(getDepartment());
             }
-            
+
             if (getType() != null && !getType().isEmpty()) {
                 if (subtitle.length() > 0) {
                     subtitle.append(" • ");
                 }
                 subtitle.append(getType());
             }
-            
+
             return subtitle.toString();
         }
 
@@ -668,13 +762,14 @@ public class PersonnelManagerView extends BorderPane {
         public Image getDetailImage() {
             // Avatar selon le type de personnel
             String avatarType = "default";
-            
+
             // Détermine le type d'avatar selon la fonction/département
             if (getJobTitle() != null) {
                 String jobTitle = getJobTitle().toLowerCase();
                 if (jobTitle.contains("technicien") || jobTitle.contains("ingénieur")) {
                     avatarType = "technician";
-                } else if (jobTitle.contains("manager") || jobTitle.contains("responsable") || jobTitle.contains("chef")) {
+                } else if (jobTitle.contains("manager") || jobTitle.contains("responsable")
+                        || jobTitle.contains("chef")) {
                     avatarType = "manager";
                 } else if (jobTitle.contains("commercial") || jobTitle.contains("vente")) {
                     avatarType = "sales";
@@ -682,7 +777,7 @@ public class PersonnelManagerView extends BorderPane {
                     avatarType = "admin";
                 }
             }
-            
+
             try {
                 return new Image(getClass().getResourceAsStream("/images/avatars/" + avatarType + ".png"));
             } catch (Exception e) {
@@ -702,31 +797,31 @@ public class PersonnelManagerView extends BorderPane {
         @Override
         public VBox getDetailInfoContent() {
             VBox content = new VBox(8);
-            
+
             if (getEmail() != null && !getEmail().trim().isEmpty()) {
                 content.getChildren().add(DetailPanel.createInfoRow("Email", getEmail()));
             }
-            
+
             if (getPhone() != null && !getPhone().trim().isEmpty()) {
                 content.getChildren().add(DetailPanel.createInfoRow("Téléphone", getPhone()));
             }
-            
+
             if (getStatus() != null && !getStatus().trim().isEmpty()) {
                 content.getChildren().add(DetailPanel.createInfoRow("Statut", getStatus()));
             }
-            
+
             if (getHireDate() != null && !getHireDate().trim().isEmpty()) {
                 content.getChildren().add(DetailPanel.createInfoRow("Date d'embauche", getHireDate()));
             }
-            
+
             if (getSpecialties() != null && !getSpecialties().trim().isEmpty()) {
                 content.getChildren().add(DetailPanel.createInfoRow("Spécialités", getSpecialties()));
             }
-            
+
             if (getNotes() != null && !getNotes().trim().isEmpty()) {
                 content.getChildren().add(DetailPanel.createInfoRow("Notes", getNotes()));
             }
-            
+
             return content;
         }
 
@@ -735,31 +830,31 @@ public class PersonnelManagerView extends BorderPane {
             return getId() != null ? getId() : "";
         }
     }
-    
+
     /**
-     * Méthode pour sélectionner et afficher un personnel par nom (utilisée par la recherche globale)
+     * Méthode pour sélectionner et afficher un personnel par nom (utilisée par la
+     * recherche globale)
      */
     public void selectAndViewPersonnel(String personnelName) {
         if (personnelName == null || personnelName.trim().isEmpty()) {
             return;
         }
-        
+
         // Rechercher dans la liste
         for (PersonnelItem item : personnelData) {
             if (item.getFullName().toLowerCase().contains(personnelName.toLowerCase())) {
                 // Sélectionner et faire défiler vers l'élément
                 personnelTable.getSelectionModel().select(item);
                 personnelTable.scrollTo(item);
-                
+
                 // Mettre à jour le filtre de recherche pour montrer le contexte
                 if (searchField != null) {
                     searchField.setText(personnelName);
                 }
-                
+
                 break;
             }
         }
     }
 
 }
-

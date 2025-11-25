@@ -1,8 +1,7 @@
 package com.magscene.magsav.desktop.view.salesinstallation;
 
+import com.magscene.magsav.desktop.component.CustomTabPane;
 import com.magscene.magsav.desktop.service.ApiService;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
@@ -11,55 +10,59 @@ import javafx.scene.layout.VBox;
  * Regroupe les Projets et les Contrats
  */
 public class SalesInstallationTabsView extends VBox {
-    
+
     private final ApiService apiService;
-    private TabPane tabPane;
-    
+    private CustomTabPane tabPane;
+
     public SalesInstallationTabsView(ApiService apiService) {
         this.apiService = apiService;
         initialize();
     }
-    
+
     private void initialize() {
         // Configuration de la vue principale
         this.getStyleClass().add("sales-installation-tabs-view");
-        
-        // Création du TabPane
-        tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        tabPane.getStyleClass().add("sales-tabs");
-        
-        // Onglet Projets (Ventes & Installations)
-        Tab projectsTab = new Tab("💼 Projets");
-        projectsTab.setContent(new ProjectManagerView(apiService));
-        
-        // Onglet Contrats
-        Tab contractsTab = new Tab("📋 Contrats");
-        contractsTab.setContent(new ContractManagerView(apiService));
-        
-        // Ajout des onglets
-        tabPane.getTabs().addAll(projectsTab, contractsTab);
-        
-        // Ajout du TabPane à la vue
+        this.setSpacing(0);
+        this.setFillWidth(true);
+
+        try {
+            // Création du CustomTabPane (comme dans VehicleManagerView)
+            System.out.println("🔨 Création CustomTabPane pour Ventes & Installations...");
+            tabPane = new CustomTabPane();
+            System.out.println("✅ CustomTabPane créé");
+
+            // Onglet Projets (Ventes & Installations)
+            System.out.println("🔨 Création onglet Projets...");
+            ProjectManagerView projectsView = new ProjectManagerView(apiService);
+            CustomTabPane.CustomTab projectsTab = new CustomTabPane.CustomTab("Projets", projectsView, "💼");
+            tabPane.addTab(projectsTab);
+            System.out.println("✅ Onglet Projets ajouté");
+
+            // Onglet Contrats
+            System.out.println("🔨 Création onglet Contrats...");
+            ContractManagerView contractsView = new ContractManagerView(apiService);
+            CustomTabPane.CustomTab contractsTab = new CustomTabPane.CustomTab("Contrats", contractsView, "📋");
+            tabPane.addTab(contractsTab);
+            System.out.println("✅ Onglet Contrats ajouté");
+
+            System.out.println("✅ CustomTabPane configuré avec 2 onglets");
+
+        } catch (Exception e) {
+            System.err.println("❌ ERREUR lors de la création des onglets:");
+            e.printStackTrace();
+        }
+
+        // Ajout du CustomTabPane à la vue
         this.getChildren().add(tabPane);
         VBox.setVgrow(tabPane, Priority.ALWAYS);
-        
-        System.out.println("✅ Vue Ventes et Installations avec onglets créée");
+
+        System.out.println("✅ Vue Ventes et Installations avec onglets CustomTabPane créée");
     }
-    
+
     /**
-     * Sélectionner un onglet spécifique
+     * Obtenir le CustomTabPane pour accès externe si nécessaire
      */
-    public void selectTab(int index) {
-        if (index >= 0 && index < tabPane.getTabs().size()) {
-            tabPane.getSelectionModel().select(index);
-        }
-    }
-    
-    /**
-     * Obtenir l'index de l'onglet sélectionné
-     */
-    public int getSelectedTabIndex() {
-        return tabPane.getSelectionModel().getSelectedIndex();
+    public CustomTabPane getTabPane() {
+        return tabPane;
     }
 }

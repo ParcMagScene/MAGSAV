@@ -375,18 +375,18 @@ INSERT INTO contract_items (
 (
     'Système Son Place Masséna', 'Installation permanente système de sonorisation',
     1, 'Installation', 150000.00, 150000.00,
-    'SUPPLY', 'ACTIVE', 'Résistant aux intempéries avec contrôle à distance',
+    'EQUIPMENT', 'ACTIVE', 'Résistant aux intempéries avec contrôle à distance',
     6
 ),
 (
     'Éclairage Architectural', 'Éclairage LED façades et monuments',
     1, 'Installation', 120000.00, 120000.00,
-    'SUPPLY', 'ACTIVE', 'Programmable avec scénarios pour événements',
+    'EQUIPMENT', 'ACTIVE', 'Programmable avec scénarios pour événements',
     6
 ),
 (
     'Écrans LED Mobiles', 'Écrans haute résolution pour retransmissions',
     4, 'Écrans', 20000.00, 80000.00,
-    'SUPPLY', 'ACTIVE', 'Modulaires et transportables selon les événements',
+    'EQUIPMENT', 'ACTIVE', 'Modulaires et transportables selon les événements',
     6
 );

@@ -5,8 +5,8 @@ import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.dialog.PersonnelDialog;
-import com.magscene.magsav.desktop.theme.ThemeManager;
-import com.magscene.magsav.desktop.theme.StandardColors;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -16,7 +16,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.image.Image;
@@ -54,7 +53,7 @@ public class PersonnelManagerView extends BorderPane {
 
     private void initializeUI() {
         // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
-        this.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        this.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + ";");
 
         // Header avec titre et statistiques
         VBox header = createHeader();
@@ -88,74 +87,62 @@ public class PersonnelManagerView extends BorderPane {
     }
 
     private HBox createToolbar() {
-        HBox toolbar = new HBox(10); // EXACTEMENT comme Ventes & Installations
+        HBox toolbar = new HBox(10);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme Ventes & Installations
-        // toolbar supprimé - Style géré par CSS
-        VBox searchBox = new VBox(5);
-        Label searchLabel = new Label("🔍 Recherche");
-        searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        searchField = new TextField();
-        searchField.setPromptText("Nom, prenom, email...");
-        searchField.setPrefWidth(250);
-        // Style supprimé - géré par forceSearchFieldColors; // Force agressive des
-        // couleurs pour contrer le CSS global
-        com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
-        searchField.textProperty().addListener((obs, oldText, newText) -> filterPersonnelData());
-        searchBox.getChildren().addAll(searchLabel, searchField);
-
-        // Filtre par type
-        VBox typeBox = new VBox(5);
+        toolbar.setPadding(new Insets(10));
+        toolbar.getStyleClass().add("unified-toolbar");
+        
+        // 🔍 Recherche avec ViewUtils
+        Label searchLabel = ViewUtils.createSearchLabel("🔍 Recherche");
+        searchField = ViewUtils.createSearchField("Nom, prénom, email...", text -> filterPersonnelData());
+        VBox searchBox = new VBox(5, searchLabel, searchField);
+        
+        // 👤 Filtre type avec ViewUtils - on doit garder la référence au ComboBox
         Label typeLabel = new Label("👤 Type");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
+        typeLabel.setStyle(com.magscene.magsav.desktop.theme.ThemeConstants.SECONDARY_LABEL_STYLE);
+        typeLabel.setFont(javafx.scene.text.Font.font(com.magscene.magsav.desktop.theme.ThemeConstants.FONT_FAMILY, 
+            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_WEIGHT_TITLE, 
+            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_SIZE_NORMAL));
         typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous", "Employe", "Freelance", "Stagiaire", "Interimaire",
-                "Intermittent du spectacle");
+        typeFilter.getItems().addAll("Tous", "Employé", "Freelance", "Stagiaire", "Intérimaire", "Intermittent du spectacle");
         typeFilter.setValue("Tous");
-        typeFilter.setPrefWidth(150);
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        typeFilter.setStyle(com.magscene.magsav.desktop.theme.ThemeConstants.INPUT_FIELD_STYLE);
+        com.magscene.magsav.desktop.util.ResponsiveUtils.makeComboResponsive(typeFilter);
         typeFilter.setOnAction(e -> filterPersonnelData());
-        typeBox.getChildren().addAll(typeLabel, typeFilter);
-
-        // Filtre par statut
-        VBox statusBox = new VBox(5);
+        VBox typeBox = new VBox(5, typeLabel, typeFilter);
+        
+        // 📊 Filtre statut avec ViewUtils
         Label statusLabel = new Label("📊 Statut");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
+        statusLabel.setStyle(com.magscene.magsav.desktop.theme.ThemeConstants.SECONDARY_LABEL_STYLE);
+        statusLabel.setFont(javafx.scene.text.Font.font(com.magscene.magsav.desktop.theme.ThemeConstants.FONT_FAMILY, 
+            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_WEIGHT_TITLE, 
+            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_SIZE_NORMAL));
         statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "En conge", "Termine");
+        statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "En congé", "Terminé");
         statusFilter.setValue("Tous");
-        statusFilter.setPrefWidth(120);
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        statusFilter.setStyle(com.magscene.magsav.desktop.theme.ThemeConstants.INPUT_FIELD_STYLE);
+        com.magscene.magsav.desktop.util.ResponsiveUtils.makeComboResponsive(statusFilter);
         statusFilter.setOnAction(e -> filterPersonnelData());
-        statusBox.getChildren().addAll(statusLabel, statusFilter);
-
-        // Filtre par département
-        VBox deptBox = new VBox(5);
+        VBox statusBox = new VBox(5, statusLabel, statusFilter);
+        
+        // 🏢 Filtre département avec ViewUtils
         Label deptLabel = new Label("🏢 Département");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        deptLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
+        deptLabel.setStyle(com.magscene.magsav.desktop.theme.ThemeConstants.SECONDARY_LABEL_STYLE);
+        deptLabel.setFont(javafx.scene.text.Font.font(com.magscene.magsav.desktop.theme.ThemeConstants.FONT_FAMILY, 
+            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_WEIGHT_TITLE, 
+            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_SIZE_NORMAL));
         departmentFilter = new ComboBox<>();
         departmentFilter.getItems().add("Tous");
         departmentFilter.setValue("Tous");
-        departmentFilter.setPrefWidth(140);
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        departmentFilter.setStyle(com.magscene.magsav.desktop.theme.ThemeConstants.INPUT_FIELD_STYLE);
+        com.magscene.magsav.desktop.util.ResponsiveUtils.makeComboResponsive(departmentFilter);
         departmentFilter.setOnAction(e -> filterPersonnelData());
-        deptBox.getChildren().addAll(deptLabel, departmentFilter);
-
-        // Boutons d'action
-        VBox actionsBox = new VBox(5);
-        Label actionsLabel = new Label("⚡ Actions");
-        actionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-
-        HBox buttonRow = new HBox(10);
-        Button addButton = new Button("➕ Ajouter");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        addButton.setOnAction(e -> createNewPersonnel());
-
+        VBox deptBox = new VBox(5, deptLabel, departmentFilter);
+        
+        // ⚡ Boutons d'action avec ViewUtils
+        Button addButton = ViewUtils.createAddButton("➕ Ajouter", this::createNewPersonnel);
+        
         editButton = new Button("✏️ Modifier");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         editButton.setDisable(true);
         editButton.setOnAction(e -> {
             PersonnelItem selected = personnelTable.getSelectionModel().getSelectedItem();
@@ -165,9 +152,8 @@ public class PersonnelManagerView extends BorderPane {
                 showAlert("Selection requise", "Veuillez selectionner un membre du personnel a modifier.");
             }
         });
-
+        
         deleteButton = new Button("🗑️ Supprimer");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         deleteButton.setDisable(true);
         deleteButton.setOnAction(e -> {
             PersonnelItem selected = personnelTable.getSelectionModel().getSelectedItem();
@@ -177,21 +163,15 @@ public class PersonnelManagerView extends BorderPane {
                 showAlert("Selection requise", "Veuillez selectionner un membre du personnel a supprimer.");
             }
         });
-
-        Button refreshButton = new Button("🔄 Actualiser");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        refreshButton.setOnAction(e -> loadPersonnelData());
-
-        // Activation/désactivation des boutons selon la sélection (sera configurée
-        // après création table)
-
-        buttonRow.getChildren().addAll(addButton, editButton, deleteButton, refreshButton);
-        actionsBox.getChildren().addAll(actionsLabel, buttonRow);
-
+        
+        Button refreshButton = ViewUtils.createRefreshButton("🔄 Actualiser", this::loadPersonnelData);
+        
+        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", addButton, editButton, deleteButton, refreshButton);
+        
         // Spacer pour pousser les actions à droite
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-
+        
         toolbar.getChildren().addAll(searchBox, typeBox, statusBox, deptBox, spacer, actionsBox);
         return toolbar;
     }
@@ -215,12 +195,12 @@ public class PersonnelManagerView extends BorderPane {
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
                     row.setStyle("-fx-background-color: "
-                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionColor() + "; " +
                             "-fx-text-fill: "
-                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor()
+                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionTextColor()
                             + "; " +
                             "-fx-border-color: "
-                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor()
+                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionBorderColor()
                             + "; " +
                             "-fx-border-width: 2px;");
                 } else {
@@ -858,3 +838,4 @@ public class PersonnelManagerView extends BorderPane {
     }
 
 }
+

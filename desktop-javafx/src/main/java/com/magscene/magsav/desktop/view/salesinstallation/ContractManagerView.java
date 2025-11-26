@@ -1,6 +1,7 @@
 package com.magscene.magsav.desktop.view.salesinstallation;
 
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -47,35 +48,13 @@ public class ContractManagerView extends BaseManagerView<Object> {
         VBox mainContainer = new VBox(10);
         mainContainer.setPadding(new Insets(10));
 
-        // Barre de filtres
-        HBox filterBar = createFilterBar();
-
-        // Tableau des contrats
+        // Tableau des contrats (filtres maintenant dans la toolbar unifiée)
         createContractTable();
 
-        mainContainer.getChildren().addAll(filterBar, contractTable);
+        mainContainer.getChildren().add(contractTable);
         VBox.setVgrow(contractTable, Priority.ALWAYS);
 
         return mainContainer;
-    }
-
-    private HBox createFilterBar() {
-        HBox filterBar = new HBox(10);
-        filterBar.setPadding(new Insets(5));
-
-        Label filterLabel = new Label("Filtrer par type:");
-        ComboBox<String> typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous", "Location", "Maintenance", "Prestation", "Vente");
-        typeFilter.setValue("Tous");
-
-        Label statusLabel = new Label("Statut:");
-        ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll("Tous", "Actif", "En attente", "Expiré", "Résilié");
-        statusFilter.setValue("Tous");
-
-        filterBar.getChildren().addAll(filterLabel, typeFilter, statusLabel, statusFilter);
-
-        return filterBar;
     }
 
     private void createContractTable() {
@@ -211,19 +190,26 @@ public class ContractManagerView extends BaseManagerView<Object> {
     }
 
     @Override
-    protected void addCustomToolbarItems(ToolBar toolbar) {
-        Button renewButton = new Button("🔄 Renouveler");
-        Button exportButton = new Button("📄 Exporter");
-
-        renewButton.setOnAction(e -> {
-            ContractData selected = contractTable.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                updateStatus("Renouvellement du contrat " + selected.getReference());
-                showAlert("Renouvellement", "Fonctionnalité de renouvellement - À implémenter");
-            }
-        });
-
-        toolbar.getItems().addAll(new Separator(), renewButton, exportButton);
+    protected void addCustomToolbarItems(HBox toolbar) {
+        // 🔍 Recherche avec ViewUtils
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Référence, client...", text -> performSearch(text));
+        
+        // 📋 Filtre type avec ViewUtils
+        VBox typeBox = ViewUtils.createFilterBox("📋 Type",
+            new String[]{"Tous types", "Location", "Maintenance", "SAV", "Prestation"},
+            "Tous types", value -> loadContracts());
+        
+        // 📊 Filtre statut avec ViewUtils
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
+            new String[]{"Tous statuts", "Actif", "Expiré", "En attente", "Résilié"},
+            "Tous statuts", value -> loadContracts());
+        
+        toolbar.getChildren().addAll(searchBox, typeBox, statusBox);
+    }
+    
+    private void performSearch(String text) {
+        updateStatus("Recherche: " + text);
+        // TODO: Implémenter recherche
     }
 
     @Override

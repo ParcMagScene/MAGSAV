@@ -2,7 +2,9 @@ package com.magscene.magsav.desktop.view;
 
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.theme.StandardColors;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.sav.RepairTrackingView;
 import com.magscene.magsav.desktop.view.sav.RMAManagementView;
 import com.magscene.magsav.desktop.view.sav.TechnicianPlanningView;
@@ -77,88 +79,56 @@ public class SAVManagerView extends BorderPane {
     }
 
     private HBox createUnifiedToolbar() {
-        HBox toolbar = new HBox(15);
-        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme Ventes & Installations
+        HBox toolbar = new HBox(10);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        // toolbar supprimé - Style géré par CSS
-        VBox searchBox = new VBox(5);
-        Label searchLabel = new Label("🔍 Recherche");
-        searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        TextField searchField = new TextField();
-        searchField.setPromptText("Titre, description, demandeur...");
-        searchField.setPrefWidth(250);
+        toolbar.setPadding(new Insets(10));
+        toolbar.setStyle(
+            "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+            "-fx-background-radius: 8; " +
+            "-fx-border-color: #8B91FF; " +
+            "-fx-border-width: 1px; " +
+            "-fx-border-radius: 8; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 3);");
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Titre, description, demandeur...", text -> {});
+        TextField searchField = (TextField) searchBox.getChildren().get(1);
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
-        searchBox.getChildren().addAll(searchLabel, searchField);
 
         // Filtre par statut
-        VBox statusBox = new VBox(5);
-        Label statusLabel = new Label("📊 Statut");
-        statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll("Tous", "Ouverte", "En cours", "En attente pièces", "Résolue", "Fermée",
-                "Annulée");
-        statusFilter.setValue("Tous");
-        statusFilter.setPrefWidth(150);
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        statusBox.getChildren().addAll(statusLabel, statusFilter);
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut", 
+            new String[]{"Tous", "Ouverte", "En cours", "En attente pièces", "Résolue", "Fermée", "Annulée"}, 
+            "Tous", value -> {});
 
         // Filtre par priorité
-        VBox priorityBox = new VBox(5);
-        Label priorityLabel = new Label("⚡ Priorité");
-        priorityLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        ComboBox<String> priorityFilter = new ComboBox<>();
-        priorityFilter.getItems().addAll("Toutes", "Urgente", "Élevée", "Moyenne", "Faible");
-        priorityFilter.setValue("Toutes");
-        priorityFilter.setPrefWidth(120);
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        priorityBox.getChildren().addAll(priorityLabel, priorityFilter);
+        VBox priorityBox = ViewUtils.createFilterBox("⚡ Priorité", 
+            new String[]{"Toutes", "Urgente", "Élevée", "Moyenne", "Faible"}, 
+            "Toutes", value -> {});
 
         // Filtre par type
-        VBox typeBox = new VBox(5);
-        Label typeLabel = new Label("🔧 Type");
-        typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        ComboBox<String> typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous types", "Réparation", "Maintenance", "Installation", "Formation", "RMA",
-                "Garantie");
-        typeFilter.setValue("Tous types");
-        typeFilter.setPrefWidth(140);
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        typeBox.getChildren().addAll(typeLabel, typeFilter);
+        VBox typeBox = ViewUtils.createFilterBox("🔧 Type", 
+            new String[]{"Tous types", "Réparation", "Maintenance", "Installation", "Formation", "RMA", "Garantie"}, 
+            "Tous types", value -> {});
 
-        // Boutons d'action
-        VBox actionsBox = new VBox(5);
-        Label actionsLabel = new Label("⚡ Actions");
-        actionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-
-        HBox buttonRow = new HBox(10);
-        Button newRequestBtn = new Button("📝 Nouvelle Demande");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        newRequestBtn.setOnAction(e -> createNewServiceRequest());
-
+        // Boutons d'action avec ViewUtils
+        Button newRequestBtn = ViewUtils.createAddButton("📝 Nouvelle Demande", this::createNewServiceRequest);
         Button editBtn = new Button("✏️ Modifier");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        editBtn.getStyleClass().add("btn-edit");
         editBtn.setOnAction(e -> editSelectedRequest());
-
         Button exportBtn = new Button("📊 Exporter");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        exportBtn.getStyleClass().add("btn-secondary");
         exportBtn.setOnAction(e -> exportData());
 
         Button emergencyBtn = new Button("🚨 Urgente");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        emergencyBtn.getStyleClass().add("btn-urgent");
         emergencyBtn.setOnAction(e -> createEmergencyRequest());
 
-        Button refreshBtn = new Button("🔄 Actualiser");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        refreshBtn.setOnAction(e -> refresh());
-
-        buttonRow.getChildren().addAll(newRequestBtn, editBtn, exportBtn, emergencyBtn, refreshBtn);
-        actionsBox.getChildren().addAll(actionsLabel, buttonRow);
+        Button refreshBtn = ViewUtils.createRefreshButton("🔄 Actualiser", this::refresh);
 
         // Spacer pour pousser les actions à droite
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        toolbar.getChildren().addAll(searchBox, statusBox, priorityBox, typeBox, spacer, actionsBox);
+        toolbar.getChildren().addAll(searchBox, statusBox, priorityBox, typeBox, spacer, 
+            newRequestBtn, editBtn, exportBtn, emergencyBtn, refreshBtn);
         return toolbar;
     }
 

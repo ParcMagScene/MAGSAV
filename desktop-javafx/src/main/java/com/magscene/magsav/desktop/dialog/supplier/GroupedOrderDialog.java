@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.List;
 
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 public class GroupedOrderDialog {
     private final Stage dialog;
@@ -71,7 +71,7 @@ public class GroupedOrderDialog {
         VBox mainLayout = createLayout();
         Scene scene = new Scene(mainLayout, 550, 450);
         dialog.setScene(scene);
-        ThemeManager.getInstance().applyThemeToScene(scene);
+        UnifiedThemeManager.getInstance().applyThemeToScene(scene);
     }
     
     private VBox createLayout() {

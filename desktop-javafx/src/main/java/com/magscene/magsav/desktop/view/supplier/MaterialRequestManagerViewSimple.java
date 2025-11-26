@@ -1,6 +1,7 @@
 package com.magscene.magsav.desktop.view.supplier;
 
 import com.magscene.magsav.desktop.service.api.SupplierApiClient;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 import com.magscene.magsav.desktop.view.supplier.dialog.MaterialRequestDialog;
 import com.magsav.entities.MaterialRequest;
@@ -73,31 +74,30 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
     }
 
     @Override
-    protected void addCustomToolbarItems(ToolBar toolbar) {
-        Button newRequestButton = new Button("➕ Nouvelle demande");
-        newRequestButton.getStyleClass().add("btn-primary");
-        newRequestButton.setOnAction(e -> showNewRequestDialog());
-
-        Button editButton = new Button("✏️ Modifier");
-        editButton.setOnAction(e -> showEditRequestDialog());
-
-        Button approveButton = new Button("✅ Approuver");
-        approveButton.setOnAction(e -> approveSelectedRequest());
-
-        Button rejectButton = new Button("❌ Rejeter");
-        rejectButton.setOnAction(e -> rejectSelectedRequest());
-
-        Button allocateButton = new Button("📦 Allouer");
-        allocateButton.setOnAction(e -> allocateSelectedRequest());
-
-        toolbar.getItems().addAll(
-                new Separator(),
-                newRequestButton,
-                editButton,
-                new Separator(),
-                approveButton,
-                rejectButton,
-                allocateButton);
+    protected void addCustomToolbarItems(HBox toolbar) {
+        // 🔍 Recherche avec ViewUtils
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Référence, description...", text -> performSearch(text));
+        
+        // 📊 Filtre statut avec ViewUtils
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
+            new String[]{"Tous statuts", "En attente", "Approuvée", "Rejetée", "Allouée", "Terminée"},
+            "Tous statuts", value -> loadRequests());
+        
+        // ⚡ Filtre priorité avec ViewUtils
+        VBox priorityBox = ViewUtils.createFilterBox("⚡ Priorité",
+            new String[]{"Toutes priorités", "Urgente", "Haute", "Normale", "Basse"},
+            "Toutes priorités", value -> loadRequests());
+        
+        toolbar.getChildren().addAll(searchBox, statusBox, priorityBox);
+    }
+    
+    private void performSearch(String text) {
+        updateStatus("Recherche: " + text);
+        // TODO: Implémenter recherche
+    }
+    
+    private void loadRequests() {
+        loadRequestsFromBackend();
     }
 
     @Override

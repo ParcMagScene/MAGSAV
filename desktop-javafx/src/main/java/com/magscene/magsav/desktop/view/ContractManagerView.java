@@ -4,6 +4,8 @@ import com.magscene.magsav.desktop.dialog.ContractDialog;
 import com.magscene.magsav.desktop.model.Contract;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -80,89 +82,68 @@ public class ContractManagerView extends BorderPane {
     }
 
     private HBox createSearchAndFilters() {
-        HBox toolbar = new HBox(15);
-        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme ClientManagerView
+        HBox toolbar = new HBox(10);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        // toolbar supprimé - Style géré par CSS
-        VBox searchBox = new VBox(5);
-        Label searchLabel = new Label("🔍 Recherche");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        searchLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        searchField = new TextField();
-        searchField.setPromptText("Numéro, titre, client...");
+        toolbar.setPadding(new Insets(10));
+        toolbar.setStyle(
+            "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+            "-fx-background-radius: 8; " +
+            "-fx-border-color: #8B91FF; " +
+            "-fx-border-width: 1px; " +
+            "-fx-border-radius: 8; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 3);");
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Numéro, titre, client...", text -> filterContracts());
+        searchField = (TextField) searchBox.getChildren().get(1);
         searchField.setPrefWidth(280);
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
-        searchField.textProperty().addListener((obs, old, text) -> filterContracts());
-        searchBox.getChildren().addAll(searchLabel, searchField);
         
         // Filtre par type
-        VBox typeBox = new VBox(5);
-        Label typeLabel = new Label("📋 Type");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        typeLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous", "Maintenance", "Location", "Prestation de service", "Support technique", "Fourniture materiel", "Mixte");
-        typeFilter.setValue("Tous");
-        typeFilter.setPrefWidth(150);
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        typeFilter.setOnAction(e -> filterContracts());
-        typeBox.getChildren().addAll(typeLabel, typeFilter);
+        VBox typeBox = ViewUtils.createFilterBox("📋 Type",
+            new String[]{"Tous", "Maintenance", "Location", "Prestation de service", "Support technique", "Fourniture materiel", "Mixte"},
+            "Tous", value -> filterContracts());
+        if (typeBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) typeBox.getChildren().get(1);
+            typeFilter = combo;
+            typeFilter.setPrefWidth(150);
+        }
         
         // Filtre par statut
-        VBox statusBox = new VBox(5);
-        Label statusLabel = new Label("📊 Statut");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        statusLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll("Tous", "Brouillon", "En attente signature", "Actif", "Suspendu", "Resilie", "Expire", "Termine");
-        statusFilter.setValue("Tous");
-        statusFilter.setPrefWidth(150);
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        statusFilter.setOnAction(e -> filterContracts());
-        statusBox.getChildren().addAll(statusLabel, statusFilter);
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
+            new String[]{"Tous", "Brouillon", "En attente signature", "Actif", "Suspendu", "Resilie", "Expire", "Termine"},
+            "Tous", value -> filterContracts());
+        if (statusBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) statusBox.getChildren().get(1);
+            statusFilter = combo;
+            statusFilter.setPrefWidth(150);
+        }
         
         // Filtre par client
-        VBox clientBox = new VBox(5);
-        Label clientLabel = new Label("👤 Client");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        clientLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
-        clientFilter = new ComboBox<>();
-        clientFilter.getItems().add("Tous les clients");
-        clientFilter.setValue("Tous les clients");
-        clientFilter.setPrefWidth(180);
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        clientFilter.setOnAction(e -> filterContracts());
-        clientBox.getChildren().addAll(clientLabel, clientFilter);
+        VBox clientBox = ViewUtils.createFilterBox("👤 Client",
+            new String[]{"Tous les clients"},
+            "Tous les clients", value -> filterContracts());
+        if (clientBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) clientBox.getChildren().get(1);
+            clientFilter = combo;
+            clientFilter.setPrefWidth(180);
+        }
         
         // Boutons d'action
         VBox actionsBox = new VBox(5);
         Label actionsLabel = new Label("⚡ Actions");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         actionsLabel.setFont(Font.font("System", FontWeight.BOLD, 12));
         
         HBox buttonRow = new HBox(10);
-        Button addButton = new Button("➕ Nouveau contrat");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        addButton.setOnAction(e -> addContract());
-        
-        Button editButton = new Button("✏️ Modifier");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        editButton.setOnAction(e -> editContract());
-        editButton.disableProperty().bind(contractTable.getSelectionModel().selectedItemProperty().isNull());
-        
-        Button viewButton = new Button("� Détails");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        viewButton.setOnAction(e -> viewContractDetails());
-        viewButton.disableProperty().bind(contractTable.getSelectionModel().selectedItemProperty().isNull());
-        
-        Button deleteButton = new Button("🗑️ Supprimer");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        deleteButton.setOnAction(e -> deleteContract());
-        deleteButton.disableProperty().bind(contractTable.getSelectionModel().selectedItemProperty().isNull());
-        
-        Button refreshButton = new Button("🔄 Actualiser");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        refreshButton.setOnAction(e -> refreshData());
+        Button addButton = ViewUtils.createAddButton("➕ Nouveau contrat", this::addContract);
+        Button editButton = ViewUtils.createEditButton("✏️ Modifier", this::editContract,
+            contractTable.getSelectionModel().selectedItemProperty().isNull());
+        Button viewButton = ViewUtils.createDetailsButton("👀 Détails", this::viewContractDetails,
+            contractTable.getSelectionModel().selectedItemProperty().isNull());
+        Button deleteButton = ViewUtils.createDeleteButton("🗑️ Supprimer", this::deleteContract,
+            contractTable.getSelectionModel().selectedItemProperty().isNull());
+        Button refreshButton = ViewUtils.createRefreshButton("🔄 Actualiser", this::refreshData);
         
         buttonRow.getChildren().addAll(addButton, editButton, viewButton, deleteButton, refreshButton);
         actionsBox.getChildren().addAll(actionsLabel, buttonRow);

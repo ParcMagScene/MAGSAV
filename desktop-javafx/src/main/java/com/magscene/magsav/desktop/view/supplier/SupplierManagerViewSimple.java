@@ -1,5 +1,6 @@
 package com.magscene.magsav.desktop.view.supplier;
 
+import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -8,8 +9,6 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 /**
  * Vue simplifiée de gestion des fournisseurs pour test Phase 2
@@ -54,16 +53,30 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> {
     }
 
     @Override
-    protected void addCustomToolbarItems(ToolBar toolbar) {
-        Button importButton = new Button("📄 Importer Catalogue");
-        Button servicesButton = new Button("⚙️ Services");
-        Button thresholdButton = new Button("💰 Seuils");
-
-        toolbar.getItems().addAll(
-                new Separator(),
-                importButton,
-                servicesButton,
-                thresholdButton);
+    protected void addCustomToolbarItems(HBox toolbar) {
+        // 🔍 Recherche avec ViewUtils
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom, contact, email...", text -> performSearch(text));
+        
+        // 📦 Filtre services avec ViewUtils
+        VBox servicesBox = ViewUtils.createFilterBox("📦 Services",
+            new String[]{"Tous services", "Location", "Vente", "Maintenance", "SAV"},
+            "Tous services", value -> loadSuppliers());
+        
+        // 📊 Filtre statut avec ViewUtils
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
+            new String[]{"Tous statuts", "Actif", "Inactif", "En attente"},
+            "Tous statuts", value -> loadSuppliers());
+        
+        toolbar.getChildren().addAll(searchBox, servicesBox, statusBox);
+    }
+    
+    private void performSearch(String text) {
+        updateStatus("Recherche: " + text);
+        // TODO: Implémenter recherche
+    }
+    
+    private void loadSuppliers() {
+        loadSuppliersFromBackend();
     }
 
     @Override

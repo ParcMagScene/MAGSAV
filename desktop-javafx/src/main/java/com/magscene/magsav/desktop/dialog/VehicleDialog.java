@@ -8,6 +8,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.service.WindowPreferencesService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -156,6 +157,9 @@ public class VehicleDialog extends Dialog<Map<String, Object>> {
         
         // Taille du dialogue
         getDialogPane().setPrefSize(800, 700);
+        
+        // Mémorisation de la taille et position du dialog
+        WindowPreferencesService.getInstance().setupDialogMemory(getDialogPane(), "vehicle-dialog");
         
         // Application du thème actuel au dialogue
         try {

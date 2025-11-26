@@ -9,7 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.util.Callback;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -30,7 +30,7 @@ public class ConflictNotificationPanel extends VBox {
         
         setSpacing(10);
         setPadding(new Insets(15));
-        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-border-color: #e74c3c; -fx-border-width: 2px; " +
+        setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; -fx-border-color: #e74c3c; -fx-border-width: 2px; " +
                  "-fx-border-radius: 5px; -fx-background-radius: 5px;");
         
         initializeComponents();

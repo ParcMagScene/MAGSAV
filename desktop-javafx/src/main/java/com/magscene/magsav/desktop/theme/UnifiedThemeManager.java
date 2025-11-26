@@ -147,4 +147,92 @@ public class UnifiedThemeManager {
             node.setStyle("");
         }
     }
+    
+    // ========== Méthodes de compatibilité pour migration depuis ThemeManager ==========
+    
+    /**
+     * Vérifie si le thème actuel est sombre
+     */
+    public boolean isDarkTheme() {
+        return "dark".equals(currentTheme);
+    }
+    
+    /**
+     * Obtient la couleur de background principale selon le thème actuel
+     */
+    public String getCurrentBackgroundColor() {
+        return isDarkTheme() ? "#1e3a5f" : "#FFFFFF";
+    }
+    
+    /**
+     * Obtient la couleur de background secondaire selon le thème actuel
+     */
+    public String getCurrentSecondaryColor() {
+        return isDarkTheme() ? "#1a1a1a" : "#F8F9FA";
+    }
+    
+    /**
+     * Obtient la couleur des éléments UI selon le thème actuel
+     */
+    public String getCurrentUIColor() {
+        return isDarkTheme() ? "#1e3a5f" : "#FFFFFF";
+    }
+    
+    /**
+     * Obtient la couleur de sélection selon le thème actuel
+     */
+    public String getSelectionColor() {
+        return "#6B71F2";
+    }
+    
+    /**
+     * Obtient la couleur du texte de sélection selon le thème actuel
+     */
+    public String getSelectionTextColor() {
+        return "#6B71F2";
+    }
+    
+    /**
+     * Obtient la couleur de bordure de sélection selon le thème actuel
+     */
+    public String getSelectionBorderColor() {
+        return "#6B71F2";
+    }
+    
+    /**
+     * Obtient la couleur de statut "Succès" selon le thème actuel
+     */
+    public String getSuccessColor() {
+        return isDarkTheme() ? "#2d5a2d" : "#d5f4e6";
+    }
+    
+    /**
+     * Obtient la couleur de statut "Avertissement" selon le thème actuel
+     */
+    public String getWarningColor() {
+        return isDarkTheme() ? "#5a4d2d" : "#fff3cd";
+    }
+    
+    /**
+     * Obtient la couleur de statut "Erreur" selon le thème actuel
+     */
+    public String getErrorColor() {
+        return isDarkTheme() ? "#5a2d2d" : "#f8d7da";
+    }
+    
+    /**
+     * Obtient la couleur de statut "Info" selon le thème actuel
+     */
+    public String getInfoColor() {
+        return isDarkTheme() ? "#2d3e5a" : "#e3f2fd";
+    }
+    
+    /**
+     * Applique le thème actuel à un dialogue
+     */
+    public void applyThemeToDialog(javafx.scene.control.DialogPane dialogPane) {
+        if (dialogPane != null && dialogPane.getScene() != null) {
+            applyThemeToScene(dialogPane.getScene());
+        }
+    }
 }

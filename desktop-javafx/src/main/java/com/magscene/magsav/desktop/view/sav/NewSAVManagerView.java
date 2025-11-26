@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.view.sav;
 
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 import com.magscene.magsav.desktop.service.business.SAVService;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.collections.FXCollections;
@@ -39,9 +40,6 @@ public class NewSAVManagerView extends BaseManagerView<Object> {
         VBox content = new VBox(10);
         content.setPadding(new Insets(10));
 
-        // Panneau de recherche et filtres
-        HBox searchPanel = createSearchPanel();
-
         // Table des demandes SAV
         savTable = createSAVTable();
 
@@ -52,7 +50,7 @@ public class NewSAVManagerView extends BaseManagerView<Object> {
         SplitPane mainSplitPane = new SplitPane();
         mainSplitPane.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
 
-        VBox leftPanel = new VBox(10, searchPanel, savTable);
+        VBox leftPanel = new VBox(10, savTable);
         VBox.setVgrow(savTable, Priority.ALWAYS);
 
         mainSplitPane.getItems().addAll(leftPanel, detailPanel);
@@ -64,47 +62,24 @@ public class NewSAVManagerView extends BaseManagerView<Object> {
         return content;
     }
 
-    private HBox createSearchPanel() {
-        HBox searchPanel = new HBox(10);
-        searchPanel.setPadding(new Insets(5));
-        searchPanel.getStyleClass().add("sav-search-panel");
-
-        TextField searchField = new TextField();
-        searchField.setPromptText("🔍 Rechercher une demande SAV...");
-        searchField.setPrefWidth(300);
-
-        ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll(
-                "Tous statuts", "Nouveau", "En cours", "En attente pièces",
-                "Réparé", "Irréparable", "Fermé");
-        statusFilter.setValue("Tous statuts");
-
-        ComboBox<String> priorityFilter = new ComboBox<>();
-        priorityFilter.getItems().addAll(
-                "Toutes priorités", "Urgente", "Haute", "Normale", "Basse");
-        priorityFilter.setValue("Toutes priorités");
-
-        DatePicker dateFromPicker = new DatePicker();
-        dateFromPicker.setPromptText("Date début");
+    @Override
+    protected void addCustomToolbarItems(HBox toolbar) {
+        // 🔍 Recherche avec ViewUtils
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "N° SAV, client, équipement...", text -> performSAVSearch(text, null, null));
+        
+        // 📊 Filtre statut avec ViewUtils
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
+            new String[]{"Tous statuts", "Nouveau", "En cours", "En attente pièces", "Réparé", "Irréparable", "Fermé"},
+            "Tous statuts", value -> loadSAVData());
+        
+        // ⚡ Filtre priorité avec ViewUtils
+        VBox priorityBox = ViewUtils.createFilterBox("⚡ Priorité",
+            new String[]{"Toutes priorités", "Urgente", "Haute", "Normale", "Basse"},
+            "Toutes priorités", value -> loadSAVData());
+        
+        toolbar.getChildren().addAll(searchBox, statusBox, priorityBox);
 
         DatePicker dateToPicker = new DatePicker();
-        dateToPicker.setPromptText("Date fin");
-
-        Button btnSearch = new Button("🔍 Rechercher");
-        btnSearch.setOnAction(e -> performSAVSearch(
-                searchField.getText(),
-                statusFilter.getValue(),
-                priorityFilter.getValue()));
-
-        searchPanel.getChildren().addAll(
-                new Label("Recherche:"), searchField,
-                new Label("Statut:"), statusFilter,
-                new Label("Priorité:"), priorityFilter,
-                new Label("Du:"), dateFromPicker,
-                new Label("Au:"), dateToPicker,
-                btnSearch);
-
-        return searchPanel;
     }
 
     private TableView<Object> createSAVTable() {
@@ -412,24 +387,21 @@ public class NewSAVManagerView extends BaseManagerView<Object> {
         return "sav-manager-view";
     }
 
-    @Override
-    protected void addCustomToolbarItems(ToolBar toolbar) {
-        // Boutons spécifiques au SAV
-        Button btnImport = new Button("📥 Import");
-        Button btnExport = new Button("📤 Export");
-        Button btnStatistics = new Button("📊 Statistiques");
-        Button btnReports = new Button("📋 Rapports");
+    // Méthodes de filtrage
+    private void applyFilters(String status, String priority, java.time.LocalDate dateFrom, java.time.LocalDate dateTo) {
+        updateStatus("Application des filtres...");
+        // TODO: Implémenter le filtrage
+        loadSAVData();
+    }
 
-        btnImport.setOnAction(e -> handleImportSAV());
-        btnExport.setOnAction(e -> handleExportSAV());
-        btnStatistics.setOnAction(e -> handleShowStatistics());
-        btnReports.setOnAction(e -> handleGenerateReports());
-
-        toolbar.getItems().addAll(
-                new Separator(),
-                btnImport, btnExport,
-                new Separator(),
-                btnStatistics, btnReports);
+    private void resetFilters(ComboBox<String> statusFilter, ComboBox<String> priorityFilter, 
+                             DatePicker dateFromPicker, DatePicker dateToPicker) {
+        statusFilter.setValue("Tous statuts");
+        priorityFilter.setValue("Toutes priorités");
+        dateFromPicker.setValue(null);
+        dateToPicker.setValue(null);
+        updateStatus("Filtres réinitialisés");
+        loadSAVData();
     }
 
     private void handleImportSAV() {

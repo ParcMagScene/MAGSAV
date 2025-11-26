@@ -3,6 +3,7 @@ package com.magscene.magsav.desktop.view;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -89,10 +90,16 @@ public class EquipmentManagerView extends BorderPane {
      * Crée la toolbar avec les boutons d'actions - STANDARD ViewUtils
      */
     private HBox createToolbar() {
-        HBox toolbar = new HBox(10); // EXACTEMENT comme PersonnelManagerView
+        HBox toolbar = new HBox(10);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme PersonnelManagerView
-        // toolbar supprimé - Style géré par CSS
+        toolbar.setPadding(new Insets(10));
+        toolbar.setStyle(
+            "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+            "-fx-background-radius: 8; " +
+            "-fx-border-color: #8B91FF; " +
+            "-fx-border-width: 1px; " +
+            "-fx-border-radius: 8; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 3);");
         VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom, marque, modèle, numéro de série...", text -> updateFilters());
         searchField = (TextField) searchBox.getChildren().get(1);
         

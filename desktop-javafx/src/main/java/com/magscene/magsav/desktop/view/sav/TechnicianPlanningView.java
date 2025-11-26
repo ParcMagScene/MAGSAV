@@ -14,6 +14,7 @@ import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.theme.StandardColors;
 import com.magscene.magsav.desktop.util.AlertUtil;
+import com.magscene.magsav.desktop.util.ViewUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -91,19 +92,75 @@ public class TechnicianPlanningView extends VBox {
     }
     
     private void setupPlanningInterface() {
-        // En-tête avec planning intelligent
-        HBox headerBox = createPlanningHeaderSection();
-        
-        // Section de contrôle du planning
-        VBox controlSection = createPlanningControlSection();
+        // Toolbar unifiée avec tous les contrôles
+        HBox toolbar = createUnifiedToolbar();
         
         // Section principale avec tableau et optimisation
         HBox mainSection = createPlanningMainSection();
         
-        // Barre d'actions planning
-        HBox actionsBar = createPlanningActionsBar();
+        this.getChildren().addAll(toolbar, mainSection);
+        VBox.setVgrow(mainSection, Priority.ALWAYS);
+    }
+    
+    private HBox createUnifiedToolbar() {
+        HBox toolbar = new HBox(10);
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        toolbar.setPadding(new Insets(10));
+        toolbar.setStyle(
+            "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+            "-fx-background-radius: 8; " +
+            "-fx-border-color: #8B91FF; " +
+            "-fx-border-width: 1px; " +
+            "-fx-border-radius: 8; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 3);");
         
-        this.getChildren().addAll(headerBox, controlSection, mainSection, actionsBar);
+        // Filtre Date avec navigation
+        VBox dateBox = new VBox(3);
+        Label dateLabel = new Label("📅 Date");
+        dateLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: " + StandardColors.getTextColor() + ";");
+        
+        HBox dateNav = new HBox(3);
+        Button prevDay = new Button("◀");
+        prevDay.setOnAction(e -> { planningDate.setValue(planningDate.getValue().minusDays(1)); loadTechnicianPlanning(); });
+        Button today = new Button("Auj.");
+        today.setOnAction(e -> { planningDate.setValue(LocalDate.now()); loadTechnicianPlanning(); });
+        Button nextDay = new Button("▶");
+        nextDay.setOnAction(e -> { planningDate.setValue(planningDate.getValue().plusDays(1)); loadTechnicianPlanning(); });
+        dateNav.getChildren().addAll(prevDay, planningDate, nextDay, today);
+        dateBox.getChildren().addAll(dateLabel, dateNav);
+        
+        // Filtre Technicien
+        VBox techBox = ViewUtils.createFilterBox("👤 Technicien", 
+            new String[]{"Tous les techniciens", "Marc Dupont", "Sophie Martin", "Thomas Leroux", "Julie Moreau", "David Rousseau"}, 
+            "Tous les techniciens", value -> loadTechnicianPlanning());
+        if (techBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) techBox.getChildren().get(1);
+            technicianFilter.getItems().setAll(combo.getItems());
+            technicianFilter.setValue(combo.getValue());
+            combo.valueProperty().bindBidirectional(technicianFilter.valueProperty());
+        }
+        
+        // Boutons d'optimisation
+        Button optimizeBtn = new Button("🗺️ Optimiser trajets");
+        optimizeBtn.getStyleClass().add("btn-primary");
+        optimizeBtn.setOnAction(e -> optimizeRoutes());
+        
+        Button autoAssignBtn = new Button("🎯 Auto-assignation");
+        autoAssignBtn.getStyleClass().add("btn-secondary");
+        autoAssignBtn.setOnAction(e -> autoAssignTechnicians());
+        
+        Button balanceBtn = new Button("⚖️ Équilibrer");
+        balanceBtn.getStyleClass().add("btn-secondary");
+        balanceBtn.setOnAction(e -> balanceWorkload());
+        
+        Button refreshBtn = ViewUtils.createRefreshButton("🔄 Actualiser", this::loadTechnicianPlanning);
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        toolbar.getChildren().addAll(dateBox, techBox, optimizeBtn, autoAssignBtn, balanceBtn, spacer, refreshBtn);
+        return toolbar;
     }
     
     private HBox createPlanningHeaderSection() {

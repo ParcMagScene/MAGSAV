@@ -10,7 +10,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.service.WindowPreferencesService;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -88,8 +89,11 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         // Taille du dialogue
         getDialogPane().setPrefSize(800, 600);
         
+        // Mémorisation de la taille et position du dialog
+        WindowPreferencesService.getInstance().setupDialogMemory(getDialogPane(), "equipment-dialog");
+        
         // Application du thème actuel au dialogue
-        String currentTheme = com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentTheme();
+        String currentTheme = com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getCurrentTheme();
         if ("dark".equals(currentTheme)) {
             getDialogPane().getStylesheets().add(getClass().getResource("/styles/theme-dark-ultra.css").toExternalForm());
         } else {
@@ -136,7 +140,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         getDialogPane().setContent(mainContainer);
         
         // Appliquer le thème dark au dialogue
-        ThemeManager.getInstance().applyThemeToDialog(getDialogPane());
+        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
         
         // Désactiver les champs si en mode lecture seule
         if (isReadOnlyMode) {

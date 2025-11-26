@@ -1,5 +1,6 @@
 package com.magscene.magsav.desktop.view.supplier;
 
+import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 import com.magscene.magsav.desktop.dialog.supplier.GroupedOrderDialog;
 import javafx.application.Platform;
@@ -57,19 +58,30 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
     }
 
     @Override
-    protected void addCustomToolbarItems(ToolBar toolbar) {
-        Button validateButton = new Button("✅ Valider");
-        Button optimizeButton = new Button("⚡ Optimiser");
-        Button sendButton = new Button("📧 Envoyer");
-        Button thresholdButton = new Button("💰 Seuils");
-
-        toolbar.getItems().addAll(
-                new Separator(),
-                validateButton,
-                optimizeButton,
-                sendButton,
-                new Separator(),
-                thresholdButton);
+    protected void addCustomToolbarItems(HBox toolbar) {
+        // 🔍 Recherche avec ViewUtils
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Référence, fournisseur...", text -> performSearch(text));
+        
+        // 📦 Filtre fournisseur avec ViewUtils
+        VBox supplierBox = ViewUtils.createFilterBox("📦 Fournisseur",
+            new String[]{"Tous fournisseurs", "Fournisseur A", "Fournisseur B", "Fournisseur C"},
+            "Tous fournisseurs", value -> loadOrders());
+        
+        // 📊 Filtre statut avec ViewUtils
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
+            new String[]{"Tous statuts", "En préparation", "Validée", "Envoyée", "Livrée"},
+            "Tous statuts", value -> loadOrders());
+        
+        toolbar.getChildren().addAll(searchBox, supplierBox, statusBox);
+    }
+    
+    private void performSearch(String text) {
+        updateStatus("Recherche: " + text);
+        // TODO: Implémenter recherche
+    }
+    
+    private void loadOrders() {
+        loadOrdersFromBackend();
     }
 
     @Override

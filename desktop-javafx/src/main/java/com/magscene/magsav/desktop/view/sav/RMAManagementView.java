@@ -11,6 +11,7 @@ import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.theme.StandardColors;
 import com.magscene.magsav.desktop.util.AlertUtil;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.dialog.sav.RMADialog;
@@ -63,10 +64,14 @@ public class RMAManagementView extends BorderPane {
     }
     
     private void setupRMAInterface() {
-        // STRUCTURE SIMPLIFIÉE - Direct DetailPanelContainer comme RepairTrackingView; // Configuration de la table RMA
+        // Toolbar unifiée avec filtres et actions
+        HBox toolbar = createUnifiedToolbar();
+        setTop(toolbar);
+        
+        // STRUCTURE SIMPLIFIÉE - Direct DetailPanelContainer comme RepairTrackingView
+        // Configuration de la table RMA
         rmaTable.setPrefHeight(400);
         rmaTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
-        // rmaTable supprimé - Style géré par CSS
         DetailPanelContainer containerWithDetail = new DetailPanelContainer(rmaTable);
         
         // Configuration directe - INTERFACE ÉPURÉE
@@ -74,6 +79,73 @@ public class RMAManagementView extends BorderPane {
         
         // Configuration des filtres (logique conservée pour synchronisation toolbar)
         setupRMAFilterComboBoxes();
+    }
+    
+    private HBox createUnifiedToolbar() {
+        HBox toolbar = new HBox(10);
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        toolbar.setPadding(new Insets(10));
+        toolbar.setStyle(
+            "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+            "-fx-background-radius: 8; " +
+            "-fx-border-color: #8B91FF; " +
+            "-fx-border-width: 1px; " +
+            "-fx-border-radius: 8; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 3);");
+        
+        // Recherche
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "N° RMA, équipement...", text -> filterRMARecords());
+        TextField search = (TextField) searchBox.getChildren().get(1);
+        rmaSearchField.textProperty().bindBidirectional(search.textProperty());
+        
+        // Filtre Statut
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut", 
+            new String[]{"Tous statuts", "Initié", "Autorisé", "En transit retour", "Reçu", "En cours d'analyse", "Réparé", "Remplacé", "Remboursé", "Refusé"}, 
+            "Tous statuts", value -> filterRMARecords());
+        if (statusBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) statusBox.getChildren().get(1);
+            rmaStatusFilter.itemsProperty().bind(combo.itemsProperty());
+            rmaStatusFilter.valueProperty().bindBidirectional(combo.valueProperty());
+        }
+        
+        // Filtre Type
+        VBox typeBox = ViewUtils.createFilterBox("📋 Type", 
+            new String[]{"Tous types", "Défaut de fabrication", "Dommage transport", "Non-conformité", "Fin de garantie", "Upgrade", "Erreur commande"}, 
+            "Tous types", value -> filterRMARecords());
+        if (typeBox.getChildren().get(1) instanceof ComboBox) {
+            @SuppressWarnings("unchecked")
+            ComboBox<String> combo = (ComboBox<String>) typeBox.getChildren().get(1);
+            rmaTypeFilter.itemsProperty().bind(combo.itemsProperty());
+            rmaTypeFilter.valueProperty().bindBidirectional(combo.valueProperty());
+        }
+        
+        // Boutons d'action
+        Button addBtn = new Button("➕ Nouveau RMA");
+        addBtn.getStyleClass().add("btn-add");
+        addBtn.setOnAction(e -> createNewRMA());
+        
+        Button editBtn = new Button("✏️ Modifier");
+        editBtn.getStyleClass().add("btn-edit");
+        editBtn.disableProperty().bind(rmaTable.getSelectionModel().selectedItemProperty().isNull());
+        editBtn.setOnAction(e -> editSelectedRMA());
+        
+        Button deleteBtn = new Button("🗑️ Supprimer");
+        deleteBtn.getStyleClass().add("btn-delete");
+        deleteBtn.disableProperty().bind(rmaTable.getSelectionModel().selectedItemProperty().isNull());
+        deleteBtn.setOnAction(e -> deleteSelectedRMA());
+        
+        Button refreshBtn = ViewUtils.createRefreshButton("🔄 Actualiser", this::loadRMARecords);
+        
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        toolbar.getChildren().addAll(searchBox, statusBox, typeBox, spacer, addBtn, editBtn, deleteBtn, refreshBtn);
+        return toolbar;
+    }
+    
+    private void filterRMARecords() {
+        // Filtrage à implémenter
     }
     
     // SUPPRESSION createRMAHeaderSection() - Plus de statistiques comme RepairTrackingView
@@ -265,6 +337,29 @@ public class RMAManagementView extends BorderPane {
             case "RÉPARÉ": case "REMPLACÉ": case "REMBOURSÉ": return "-fx-background-color: rgba(32, 201, 151, 0.2)"; // Teal translucide
             case "REFUSÉ": return "-fx-background-color: rgba(220, 53, 69, 0.2)"; // Rouge translucide
             default: return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor();
+        }
+    }
+    
+    
+    private void createNewRMA() {
+        AlertUtil.showInfo("Nouveau RMA", "Fonctionnalité en cours de développement");
+    }
+    
+    private void editSelectedRMA() {
+        RMARecord selected = rmaTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            AlertUtil.showInfo("Édition RMA", "Édition du RMA: " + selected.getRmaNumber());
+        }
+    }
+    
+    private void deleteSelectedRMA() {
+        RMARecord selected = rmaTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            boolean confirmed = AlertUtil.showConfirmation("Supprimer RMA", 
+                "Voulez-vous vraiment supprimer le RMA " + selected.getRmaNumber() + " ?");
+            if (confirmed) {
+                rmaRecords.remove(selected);
+            }
         }
     }
     

@@ -18,8 +18,6 @@ import javafx.scene.layout.VBox;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Gestionnaire du personnel - VERSION STANDARDISÉE

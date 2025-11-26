@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.view.equipment;
 
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 import com.magscene.magsav.desktop.service.business.EquipmentService;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.collections.FXCollections;
@@ -39,9 +40,6 @@ public class NewEquipmentManagerView extends BaseManagerView<Object> {
         VBox content = new VBox(10);
         content.setPadding(new Insets(10));
 
-        // Panneau de recherche
-        HBox searchPanel = createSearchPanel();
-
         // Table des équipements
         equipmentTable = createEquipmentTable();
 
@@ -51,7 +49,7 @@ public class NewEquipmentManagerView extends BaseManagerView<Object> {
         // Layout principal
         HBox mainLayout = new HBox(10);
         mainLayout.getChildren().addAll(
-                new VBox(10, searchPanel, equipmentTable),
+                new VBox(10, equipmentTable),
                 detailPanel);
 
         HBox.setHgrow(equipmentTable.getParent(), Priority.ALWAYS);
@@ -62,33 +60,22 @@ public class NewEquipmentManagerView extends BaseManagerView<Object> {
         return content;
     }
 
-    private HBox createSearchPanel() {
-        HBox searchPanel = new HBox(10);
-        searchPanel.setPadding(new Insets(5));
-        searchPanel.getStyleClass().add("search-panel");
-
-        TextField searchField = new TextField();
-        searchField.setPromptText("🔍 Rechercher un équipement...");
-        searchField.setPrefWidth(300);
-
-        ComboBox<String> categoryFilter = new ComboBox<>();
-        categoryFilter.getItems().addAll("Toutes catégories", "Audio", "Éclairage", "Vidéo");
-        categoryFilter.setValue("Toutes catégories");
-
-        ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll("Tous statuts", "Disponible", "En location", "Maintenance");
-        statusFilter.setValue("Tous statuts");
-
-        Button btnSearch = new Button("🔍 Rechercher");
-        btnSearch.setOnAction(e -> performSearch(searchField.getText()));
-
-        searchPanel.getChildren().addAll(
-                new Label("Recherche:"), searchField,
-                new Label("Catégorie:"), categoryFilter,
-                new Label("Statut:"), statusFilter,
-                btnSearch);
-
-        return searchPanel;
+    @Override
+    protected void addCustomToolbarItems(HBox toolbar) {
+        // 🔍 Recherche avec ViewUtils
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom, marque, QR code...", text -> performSearch(text));
+        
+        // 🎵 Filtre catégorie avec ViewUtils
+        VBox categoryBox = ViewUtils.createFilterBox("🎵 Catégorie",
+            new String[]{"Toutes catégories", "Audio", "Éclairage", "Vidéo", "Structure"},
+            "Toutes catégories", value -> loadEquipmentData());
+        
+        // 📊 Filtre statut avec ViewUtils
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
+            new String[]{"Tous statuts", "Disponible", "En location", "Maintenance", "Hors service"},
+            "Tous statuts", value -> loadEquipmentData());
+        
+        toolbar.getChildren().addAll(searchBox, categoryBox, statusBox);
     }
 
     private TableView<Object> createEquipmentTable() {
@@ -283,22 +270,6 @@ public class NewEquipmentManagerView extends BaseManagerView<Object> {
     @Override
     protected String getViewCssClass() {
         return "equipment-manager-view";
-    }
-
-    @Override
-    protected void addCustomToolbarItems(ToolBar toolbar) {
-        // Boutons spécifiques aux équipements
-        Button btnImport = new Button("📥 Import LOCMAT");
-        Button btnExport = new Button("📤 Export");
-        Button btnQRCode = new Button("📱 QR Code");
-
-        btnImport.setOnAction(e -> handleImportLocmat());
-        btnExport.setOnAction(e -> handleExport());
-        btnQRCode.setOnAction(e -> handleQRCode());
-
-        toolbar.getItems().addAll(
-                new Separator(),
-                btnImport, btnExport, btnQRCode);
     }
 
     private void handleImportLocmat() {

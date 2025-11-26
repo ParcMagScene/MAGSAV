@@ -13,7 +13,7 @@ import javafx.scene.image.ImageView;
 
 // import com.magscene.magsav.desktop.model.Equipment; // Supprimé après refactoring
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.AlertUtil;
 
 import java.time.LocalDateTime;
@@ -65,7 +65,7 @@ public class QRCodeScannerView extends VBox {
         // Configuration principale
         this.setSpacing(15);
         this.setPadding(new Insets(20));
-        this.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        this.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
         // Initialisation des composants
         this.manualCodeField = new TextField();
@@ -120,7 +120,7 @@ public class QRCodeScannerView extends VBox {
         // Informations de session
         VBox sessionBox = new VBox(3);
         sessionBox.setAlignment(Pos.CENTER_RIGHT);
-        sessionBox.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 8px 12px; -fx-background-radius: 6px;");
+        sessionBox.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 8px 12px; -fx-background-radius: 6px;");
         
         statsLabel.setText(String.format("📊 Scannés: %d | Nouveaux: %d | Erreurs: %d", totalScanned, newItemsFound, errorCount));
         statsLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #2c3e50;");
@@ -136,7 +136,7 @@ public class QRCodeScannerView extends VBox {
     
     private VBox createScanningSection() {
         VBox scanningSection = new VBox(15);
-        scanningSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 20px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(39,174,96,0.3), 8, 0, 0, 2);");
+        scanningSection.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 20px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(39,174,96,0.3), 8, 0, 0, 2);");
         
         Label scanningTitle = new Label("📷 Zone de Scanning");
         scanningTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
@@ -210,7 +210,7 @@ public class QRCodeScannerView extends VBox {
         scanResultArea.setPrefHeight(120);
         scanResultArea.setEditable(false);
         scanResultArea.setWrapText(true);
-        scanResultArea.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #27ae60; -fx-border-radius: 4px; -fx-font-family: 'Courier New'; -fx-font-size: 11px; -fx-padding: 8px;");
+        scanResultArea.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #27ae60; -fx-border-radius: 4px; -fx-font-family: 'Courier New'; -fx-font-size: 11px; -fx-padding: 8px;");
         scanResultArea.setPromptText("Les résultats de scan apparaîtront ici en temps réel...");
         
         // Boutons d'action sur les résultats
@@ -276,7 +276,7 @@ public class QRCodeScannerView extends VBox {
     
     private VBox createInventoryTableSection() {
         VBox inventorySection = new VBox(10);
-        inventorySection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
+        inventorySection.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         // En-tête avec recherche rapide
         HBox tableHeaderBox = new HBox(15);
@@ -339,7 +339,7 @@ public class QRCodeScannerView extends VBox {
     
     private VBox createEquipmentDetailsSection() {
         VBox detailsSection = new VBox(15);
-        detailsSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(39,174,96,0.3), 6, 0, 0, 2);");
+        detailsSection.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; -fx-padding: 15px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(39,174,96,0.3), 6, 0, 0, 2);");
         
         Label detailsTitle = new Label("🔍 Détails Équipement");
         detailsTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #27ae60;");
@@ -353,7 +353,7 @@ public class QRCodeScannerView extends VBox {
         equipmentImageView.setFitWidth(150);
         equipmentImageView.setFitHeight(100);
         equipmentImageView.setPreserveRatio(true);
-        equipmentImageView.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #dee2e6; -fx-border-width: 1;");
+        equipmentImageView.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #dee2e6; -fx-border-width: 1;");
         
         imageBox.getChildren().addAll(imageLabel, equipmentImageView);
         
@@ -362,7 +362,7 @@ public class QRCodeScannerView extends VBox {
         equipmentDetailsArea.setPrefHeight(180);
         equipmentDetailsArea.setEditable(false);
         equipmentDetailsArea.setWrapText(true);
-        equipmentDetailsArea.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #27ae60; -fx-border-radius: 4px; -fx-font-family: 'Segoe UI'; -fx-font-size: 11px;");
+        equipmentDetailsArea.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #27ae60; -fx-border-radius: 4px; -fx-font-family: 'Segoe UI'; -fx-font-size: 11px;");
         equipmentDetailsArea.setPromptText("Sélectionnez un équipement dans le tableau pour voir les détails...");
         
         // Actions sur l'équipement sélectionné
@@ -489,9 +489,9 @@ public class QRCodeScannerView extends VBox {
                     row.setStyle("");
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
-                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
-                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    row.setStyle("-fx-background-color: " + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionBorderColor() + "; " +
                                "-fx-border-width: 2px;");
                 } else {
                     // Style basé sur l'action et le statut
@@ -839,3 +839,4 @@ public class QRCodeScannerView extends VBox {
         public void setCodeType(String codeType) { this.codeType = codeType; }
     }
 }
+

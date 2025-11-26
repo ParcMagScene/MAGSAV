@@ -4,7 +4,6 @@ import com.magscene.magsav.desktop.core.di.ApplicationContext;
 import com.magscene.magsav.desktop.core.navigation.NavigationManager;
 import com.magscene.magsav.desktop.core.navigation.Route;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
-import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.component.GlobalSearchComponent;
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
 
@@ -169,7 +168,8 @@ public class MagsavDesktopApplication extends Application {
         // Planning
         navigationManager.registerView(Route.PLANNING, () -> {
             try {
-                return new com.magscene.magsav.desktop.view.planning.PlanningManagerView();
+                com.magscene.magsav.desktop.service.ApiService apiService = new com.magscene.magsav.desktop.service.ApiService();
+                return new com.magscene.magsav.desktop.view.planning.PlanningManagerView(apiService);
             } catch (Exception e) {
                 return createErrorPane("Planning", e);
             }
@@ -548,17 +548,22 @@ public class MagsavDesktopApplication extends Application {
         Separator separator = new Separator();
         separator.setOrientation(javafx.geometry.Orientation.VERTICAL);
 
-        // Titre de la page courante
-        pageTitleLabel = new Label("");
-        pageTitleLabel.getStyleClass().add("page-title");
-        pageTitleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-
         // Composant de recherche globale
         GlobalSearchComponent globalSearch = new GlobalSearchComponent();
 
+        // Spacer pour centrer le titre après la recherche
+        Region leftSpacer = new Region();
+        HBox.setHgrow(leftSpacer, Priority.ALWAYS);
+
+        // Titre de la page courante (centré)
+        pageTitleLabel = new Label("");
+        pageTitleLabel.getStyleClass().add("page-title");
+        pageTitleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        pageTitleLabel.setAlignment(Pos.CENTER);
+
         // Spacer pour pousser les boutons à droite
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Region rightSpacer = new Region();
+        HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
         // Bouton paramètres
         Button settingsButton = new Button("⚙️");
@@ -575,7 +580,7 @@ public class MagsavDesktopApplication extends Application {
         exitButton.getStyleClass().add("icon-button");
         exitButton.setOnAction(e -> showExitConfirmation());
 
-        toolbar.getChildren().addAll(appTitle, separator, pageTitleLabel, globalSearch, spacer, settingsButton,
+        toolbar.getChildren().addAll(appTitle, separator, globalSearch, leftSpacer, pageTitleLabel, rightSpacer, settingsButton,
                 exitButton);
         return toolbar;
     }
@@ -659,7 +664,7 @@ public class MagsavDesktopApplication extends Application {
      */
     public static void forceSearchFieldColors(TextField textField) {
         // Style dynamique pour contrer toute surcharge CSS
-        String bgColor = ThemeManager.getInstance().getCurrentBackgroundColor();
+        String bgColor = UnifiedThemeManager.getInstance().getCurrentBackgroundColor();
         String forceStyle = "-fx-base: " + bgColor + " !important; " +
                 "-fx-background: " + bgColor + " !important; " +
                 "-fx-background-color: " + bgColor + " !important; " +

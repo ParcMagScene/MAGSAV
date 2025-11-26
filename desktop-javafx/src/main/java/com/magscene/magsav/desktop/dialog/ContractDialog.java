@@ -17,6 +17,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import com.magscene.magsav.desktop.service.WindowPreferencesService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -106,6 +107,9 @@ public class ContractDialog extends Dialog<Contract> {
         
         // Taille de la fenêtre
         getDialogPane().setPrefSize(800, 700);
+        
+        // Mémorisation de la taille et position du dialog
+        WindowPreferencesService.getInstance().setupDialogMemory(getDialogPane(), "contract-dialog");
         
         // L'interface sera créée avec createUI() comme avant; // mais nous ajouterons les boutons personnalisés après
         createUI();

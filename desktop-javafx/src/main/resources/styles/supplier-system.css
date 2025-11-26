@@ -170,6 +170,7 @@
 }
 
 /* === BOUTONS SPÉCIALISÉS === */
+/* DÉSACTIVÉ - Les styles de boutons sont gérés par ViewUtils et les classes CSS spécifiques
 .toolbar Button {
     -fx-padding: 8px 12px;
     -fx-font-size: 12px;
@@ -188,8 +189,9 @@
 .toolbar Button:disabled {
     -fx-opacity: 0.6;
 }
+*/
 
-/* Boutons d'action spécifiques */
+/* Boutons d'action spécifiques - DÉSACTIVÉ car géré par les classes CSS individuelles
 .toolbar .button:contains("Approuver") {
     -fx-background-color: #d1e7dd;
     -fx-text-fill: #0f5132;
@@ -209,6 +211,7 @@
     -fx-background-color: #d1ecf1;
     -fx-text-fill: #055160;
 }
+*/
 
 /* === RESPONSIVITÉ === */
 @media (max-width: 1200px) {

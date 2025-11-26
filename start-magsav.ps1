@@ -20,7 +20,8 @@ if (-not $backendRunning) {
     
     do {
         try {
-            $response = Invoke-WebRequest -Uri "http://localhost:8080/actuator/health" -TimeoutSec 5 -ErrorAction Stop
+            # Tester avec l'endpoint API health correct
+            $response = Invoke-WebRequest -Uri "http://localhost:8080/api/health" -TimeoutSec 5 -ErrorAction Stop
             if ($response.StatusCode -eq 200) {
                 $backendReady = $true
                 Write-Host "Backend demarre avec succes !" -ForegroundColor Green

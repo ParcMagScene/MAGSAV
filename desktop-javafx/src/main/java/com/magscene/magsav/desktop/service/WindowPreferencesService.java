@@ -1,5 +1,7 @@
 package com.magscene.magsav.desktop.service;
 
+import javafx.application.Platform;
+import javafx.scene.control.DialogPane;
 import javafx.stage.Stage;
 
 import java.io.*;
@@ -218,5 +220,76 @@ public class WindowPreferencesService {
     public void clearAllPreferences() {
         properties.clear();
         savePreferences();
+    }
+
+    /**
+     * Configure un Dialog pour qu'il mémorise sa taille et position
+     * @param dialogPane Le DialogPane du Dialog
+     * @param dialogId Identifiant unique du dialog (ex: "vehicle-dialog", "equipment-dialog")
+     */
+    public void setupDialogMemory(DialogPane dialogPane, String dialogId) {
+        if (dialogPane == null || dialogId == null) {
+            return;
+        }
+
+        // Attendre que le dialog soit affiché pour accéder à sa fenêtre
+        dialogPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null && newScene.getWindow() != null) {
+                javafx.stage.Window window = newScene.getWindow();
+                if (window instanceof javafx.stage.Stage) {
+                    javafx.stage.Stage stage = (javafx.stage.Stage) window;
+                    
+                    // Restaurer les dimensions au démarrage
+                    Platform.runLater(() -> {
+                        // Positionner le dialog sur le même écran que le owner
+                        positionDialogOnOwnerScreen(stage);
+                        
+                        restoreWindowBounds(stage, dialogId, stage.getWidth(), stage.getHeight());
+                    });
+                    
+                    // Configuration auto-save
+                    setupAutoSave(stage, dialogId);
+                }
+            }
+        });
+    }
+
+    /**
+     * Positionne un dialog sur le même écran que sa fenêtre owner
+     * @param dialogStage Le stage du dialog à positionner
+     */
+    private void positionDialogOnOwnerScreen(javafx.stage.Stage dialogStage) {
+        javafx.stage.Window owner = dialogStage.getOwner();
+        if (owner == null) {
+            return;
+        }
+
+        // Trouver l'écran contenant le owner
+        double ownerCenterX = owner.getX() + owner.getWidth() / 2;
+        double ownerCenterY = owner.getY() + owner.getHeight() / 2;
+        
+        javafx.stage.Screen ownerScreen = null;
+        for (javafx.stage.Screen screen : javafx.stage.Screen.getScreens()) {
+            javafx.geometry.Rectangle2D bounds = screen.getVisualBounds();
+            if (bounds.contains(ownerCenterX, ownerCenterY)) {
+                ownerScreen = screen;
+                break;
+            }
+        }
+        
+        if (ownerScreen == null) {
+            ownerScreen = javafx.stage.Screen.getPrimary();
+        }
+        
+        // Centrer le dialog sur l'écran du owner
+        javafx.geometry.Rectangle2D screenBounds = ownerScreen.getVisualBounds();
+        double dialogWidth = dialogStage.getWidth() > 0 ? dialogStage.getWidth() : 600;
+        double dialogHeight = dialogStage.getHeight() > 0 ? dialogStage.getHeight() : 400;
+        
+        double centerX = screenBounds.getMinX() + (screenBounds.getWidth() - dialogWidth) / 2;
+        double centerY = screenBounds.getMinY() + (screenBounds.getHeight() - dialogHeight) / 2;
+        
+        dialogStage.setX(centerX);
+        dialogStage.setY(centerY);
     }
 }

@@ -2,8 +2,6 @@ package com.magscene.magsav.desktop.view.sav;
 
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.application.Platform;
@@ -11,9 +9,9 @@ import javafx.concurrent.Task;
 
 import com.magscene.magsav.desktop.model.ServiceRequest;
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
-import com.magscene.magsav.desktop.theme.SpacingManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.AlertUtil;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.dialog.ServiceRequestDialog;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 
@@ -40,7 +38,6 @@ public class RepairTrackingView extends BorderPane {
     private final ApiService apiService;
     private final ObservableList<ServiceRequest> serviceRequests;
     private final TableView<ServiceRequest> requestsTable;
-    private final Label statusSummaryLabel;
     
     // Les filtres et la recherche sont maintenant dans le toolbar parent SAVManagerView
     
@@ -49,11 +46,10 @@ public class RepairTrackingView extends BorderPane {
         this.serviceRequests = FXCollections.observableArrayList();
         
         // Configuration principale - BorderPane n'a pas de setSpacing
-        this.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        this.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
         // Initialisation des composants principaux
         this.requestsTable = createRequestsTable();
-        this.statusSummaryLabel = new Label();
         
         // Construction de l'interface
         setupInterface();
@@ -64,14 +60,67 @@ public class RepairTrackingView extends BorderPane {
     }
     
     private void setupInterface() {
-        // STRUCTURE SIMPLIFIÉE - Direct DetailPanelContainer comme vues standardisées; // Plus de containers imbriqués inutiles; // Configuration de la table (déplacée ici depuis createTableSection)
+        // Toolbar unifiée avec actions
+        HBox toolbar = createUnifiedToolbar();
+        setTop(toolbar);
+        
+        // STRUCTURE SIMPLIFIÉE - Direct DetailPanelContainer comme vues standardisées
+        // Plus de containers imbriqués inutiles
+        // Configuration de la table (déplacée ici depuis createTableSection)
         requestsTable.setPrefHeight(400);
         requestsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
-        // requestsTable supprimé - Style géré par CSS
         DetailPanelContainer containerWithDetail = new DetailPanelContainer(requestsTable);
         
         // Configuration directe dans le BorderPane - INTERFACE ÉPURÉE
         setCenter(containerWithDetail);
+    }
+    
+    private HBox createUnifiedToolbar() {
+        HBox toolbar = new HBox(10);
+        toolbar.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        toolbar.setPadding(new javafx.geometry.Insets(10));
+        toolbar.setStyle(
+            "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+            "-fx-background-radius: 8; " +
+            "-fx-border-color: #8B91FF; " +
+            "-fx-border-width: 1px; " +
+            "-fx-border-radius: 8; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 3);");
+        
+        // Boutons d'action
+        Button addBtn = new Button("➕ Nouvelle demande");
+        addBtn.getStyleClass().add("btn-add");
+        addBtn.setOnAction(e -> openNewServiceRequestDialog());
+        
+        Button editBtn = new Button("✏️ Modifier");
+        editBtn.getStyleClass().add("btn-edit");
+        editBtn.disableProperty().bind(requestsTable.getSelectionModel().selectedItemProperty().isNull());
+        editBtn.setOnAction(e -> openEditServiceRequestDialog());
+        
+        Button viewBtn = new Button("👁️ Détails");
+        viewBtn.getStyleClass().add("btn-details");
+        viewBtn.disableProperty().bind(requestsTable.getSelectionModel().selectedItemProperty().isNull());
+        viewBtn.setOnAction(e -> {
+            ServiceRequest selected = requestsTable.getSelectionModel().getSelectedItem();
+            if (selected != null) openServiceRequestDetails(selected);
+        });
+        
+        Button deleteBtn = new Button("🗑️ Supprimer");
+        deleteBtn.getStyleClass().add("btn-delete");
+        deleteBtn.disableProperty().bind(requestsTable.getSelectionModel().selectedItemProperty().isNull());
+        deleteBtn.setOnAction(e -> deleteServiceRequest());
+        
+        Button refreshBtn = ViewUtils.createRefreshButton("🔄 Actualiser", this::loadServiceRequests);
+        
+        Button exportBtn = new Button("📊 Exporter");
+        exportBtn.getStyleClass().add("btn-secondary");
+        exportBtn.setOnAction(e -> exportToCSV());
+        
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+        
+        toolbar.getChildren().addAll(addBtn, editBtn, viewBtn, deleteBtn, spacer, exportBtn, refreshBtn);
+        return toolbar;
     }
     
     // SUPPRESSION createHeaderSection() - Plus besoin de header avec containers imbriqués; // SUPPRESSION createMainSection() - Plus de containers imbriqués inutiles; // SUPPRESSION createTableSection() - Configuration directe dans setupInterface(); // Méthode createActionsBar() supprimée - Les boutons sont maintenant gérés; // par la toolbar principale dans SAVManagerView pour éviter les doublons
@@ -165,9 +214,9 @@ public class RepairTrackingView extends BorderPane {
                 // Priorité 1: Si sélectionné, couleur de sélection MAGSAV
                 if (row.isSelected()) {
                     // Style de sélection plus visible avec bordure
-                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                               "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                               "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    row.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + UnifiedThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + UnifiedThemeManager.getInstance().getSelectionBorderColor() + "; " +
                                "-fx-border-width: 2px;");
                     return;
                 }
@@ -239,18 +288,6 @@ public class RepairTrackingView extends BorderPane {
             case "CANCELLED": return "❌";
             default: return "❓";
         }
-    }
-    
-    private String getRowBackgroundColor(String priority, String status) {
-        // Couleur de fond selon priorité et statut (compatible thème sombre)
-        if (priority.equals("URGENT")) {
-            return "-fx-background-color: rgba(244, 67, 54, 0.2)"; // Rouge translucide pour urgent
-        } else if (status.equals("RESOLVED")) {
-            return "-fx-background-color: rgba(76, 175, 80, 0.2)"; // Vert translucide pour résolu
-        } else if (status.equals("IN_PROGRESS")) {
-            return "-fx-background-color: rgba(255, 152, 0, 0.2)"; // Orange translucide pour en cours
-        }
-        return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor();
     }
     
     private void loadServiceRequests() {
@@ -565,6 +602,43 @@ public class RepairTrackingView extends BorderPane {
             alert.setHeaderText("Modification impossible");
             alert.setContentText("Veuillez sélectionner une demande SAV à modifier.");
             alert.showAndWait();
+        }
+    }
+    
+    
+    private void openNewServiceRequestDialog() {
+        ServiceRequestDialog dialog = new ServiceRequestDialog(null);
+        dialog.showAndWait();
+        loadServiceRequests();
+    }
+    
+    private void openEditServiceRequestDialog() {
+        ServiceRequest selected = requestsTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            ServiceRequestDialog dialog = new ServiceRequestDialog(selected);
+            dialog.showAndWait();
+            loadServiceRequests();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Aucune sélection");
+            alert.setHeaderText("Modification impossible");
+            alert.setContentText("Veuillez sélectionner une demande SAV à modifier.");
+            alert.showAndWait();
+        }
+    }
+    
+    private void deleteServiceRequest() {
+        ServiceRequest selected = requestsTable.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Supprimer la demande");
+            confirm.setHeaderText("Confirmation de suppression");
+            confirm.setContentText("Voulez-vous vraiment supprimer la demande: " + selected.getTitle() + " ?");
+            confirm.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    serviceRequests.remove(selected);
+                }
+            });
         }
     }
     

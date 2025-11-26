@@ -11,8 +11,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -21,8 +19,6 @@ import java.util.Map;
  * Interface de migration des marques depuis l'application desktop
  */
 public class BrandMigrationView extends VBox {
-    
-    private static final Logger logger = LoggerFactory.getLogger(BrandMigrationView.class);
     
     private final ApiService apiService;
     private final ObjectMapper objectMapper;

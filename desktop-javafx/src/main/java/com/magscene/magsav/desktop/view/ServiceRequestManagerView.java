@@ -198,12 +198,12 @@ public class ServiceRequestManagerView extends VBox {
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
                     row.setStyle("-fx-background-color: "
-                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionColor() + "; " +
                             "-fx-text-fill: "
-                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor()
+                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionTextColor()
                             + "; " +
                             "-fx-border-color: "
-                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor()
+                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionBorderColor()
                             + "; " +
                             "-fx-border-width: 2px;");
                 } else {

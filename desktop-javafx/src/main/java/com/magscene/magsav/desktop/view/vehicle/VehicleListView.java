@@ -3,7 +3,7 @@ package com.magscene.magsav.desktop.view.vehicle;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.dialog.VehicleDialog;
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.theme.StandardColors;
 import com.magscene.magsav.desktop.view.VehicleItem;
 
@@ -70,7 +70,7 @@ public class VehicleListView extends BorderPane {
     }
     
     private void initializeUI() {
-        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
         // Tableau central (sans toolbar - maintenant gérée par VehicleManagerView)
         DetailPanelContainer tableContainer = createTableContainer();
@@ -83,7 +83,7 @@ public class VehicleListView extends BorderPane {
         vehicleTable = new TableView<>();
         vehicleTable.setItems(vehicleData);
         vehicleTable.getStyleClass().add("vehicle-table");
-        vehicleTable.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-border-color: " + StandardColors.getBorderColor() + "; -fx-border-width: 2px; -fx-border-radius: 8px;");
+        vehicleTable.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; -fx-border-color: " + StandardColors.getBorderColor() + "; -fx-border-width: 2px; -fx-border-radius: 8px;");
         
         createTableColumns();
         
@@ -97,9 +97,9 @@ public class VehicleListView extends BorderPane {
                     row.setStyle("");
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
-                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                               "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                               "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    row.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getSelectionColor() + "; " +
+                               "-fx-text-fill: " + UnifiedThemeManager.getInstance().getSelectionTextColor() + "; " +
+                               "-fx-border-color: " + UnifiedThemeManager.getInstance().getSelectionBorderColor() + "; " +
                                "-fx-border-width: 2px;");
                 } else {
                     // Style par défaut

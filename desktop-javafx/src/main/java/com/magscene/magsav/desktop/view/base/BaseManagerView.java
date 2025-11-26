@@ -1,5 +1,6 @@
 package com.magscene.magsav.desktop.view.base;
 
+import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.geometry.Insets;
@@ -10,7 +11,7 @@ import javafx.geometry.Pos;
  * Fournit une structure standard avec toolbar, contenu principal et statusbar
  */
 public abstract class BaseManagerView<T> extends BorderPane {
-    protected ToolBar toolbar;
+    protected HBox toolbar;
     protected Pane mainContent;
     protected HBox statusBar;
     protected Label statusLabel;
@@ -36,31 +37,32 @@ public abstract class BaseManagerView<T> extends BorderPane {
     }
     
     /**
-     * Crée la barre d'outils avec les actions principales
+     * Crée la barre d'outils avec les actions principales (organisation Client)
      */
-    protected ToolBar createToolbar() {
-        ToolBar toolbar = new ToolBar();
-        toolbar.getStyleClass().add("manager-toolbar");
+    protected HBox createToolbar() {
+        HBox toolbar = new HBox(10);
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        toolbar.setPadding(new Insets(10));
+        toolbar.getStyleClass().add("unified-toolbar");
         
-        // Boutons standard
-        Button btnAdd = new Button("➕ Ajouter");
-        Button btnEdit = new Button("✏️ Modifier");
-        Button btnDelete = new Button("🗑️ Supprimer");
-        Button btnRefresh = new Button("🔄 Actualiser");
+        // Boutons d'action avec ViewUtils (comme dans ClientManagerView)
+        Button btnAdd = ViewUtils.createAddButton("➕ Ajouter", this::handleAdd);
+        Button btnEdit = ViewUtils.createEditButton("✏️ Modifier", this::handleEdit, null);
+        Button btnDelete = ViewUtils.createDeleteButton("🗑️ Supprimer", this::handleDelete, null);
+        Button btnRefresh = ViewUtils.createRefreshButton("🔄 Actualiser", this::handleRefresh);
         
-        btnAdd.setOnAction(e -> handleAdd());
-        btnEdit.setOnAction(e -> handleEdit());
-        btnDelete.setOnAction(e -> handleDelete());
-        btnRefresh.setOnAction(e -> handleRefresh());
+        // ActionsBox à droite comme dans ClientManagerView
+        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", btnAdd, btnEdit, btnDelete, btnRefresh);
         
-        toolbar.getItems().addAll(
-            btnAdd, btnEdit, btnDelete,
-            new Separator(),
-            btnRefresh
-        );
+        // Spacer pour pousser les actions à droite
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
         
-        // Ajouter les boutons spécifiques au module
+        // Ajouter les éléments personnalisés au début (filtres, recherche, etc.)
         addCustomToolbarItems(toolbar);
+        
+        // Ajouter spacer et actions à la fin
+        toolbar.getChildren().addAll(spacer, actionsBox);
         
         return toolbar;
     }
@@ -138,9 +140,9 @@ public abstract class BaseManagerView<T> extends BorderPane {
     }
     
     /**
-     * Ajoute des boutons personnalisés à la toolbar
+     * Ajoute des boutons personnalisés à la toolbar (HBox)
      */
-    protected void addCustomToolbarItems(ToolBar toolbar) {
+    protected void addCustomToolbarItems(HBox toolbar) {
         // Implémentation par défaut vide; // Les classes filles peuvent surcharger pour ajouter leurs boutons
     }
     

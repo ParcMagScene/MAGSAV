@@ -1,13 +1,13 @@
 package com.magscene.magsav.desktop.view.vehicle;
 
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.theme.StandardColors;
+import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.collections.ObservableList;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -23,8 +23,6 @@ import java.util.*;
  */
 public class VehicleAvailabilityView extends VBox {
     
-    private final ApiService apiService;
-    
     // Composants UI
     private Label monthLabel;
     private GridPane calendarGrid;
@@ -36,7 +34,6 @@ public class VehicleAvailabilityView extends VBox {
     private final ObservableList<VehicleAvailabilityItem> vehicles = javafx.collections.FXCollections.observableArrayList();
     
     public VehicleAvailabilityView(ApiService apiService) {
-        this.apiService = apiService;
         this.currentMonth = YearMonth.now();
         
         initializeView();
@@ -49,7 +46,7 @@ public class VehicleAvailabilityView extends VBox {
         setSpacing(10);
         setPadding(new Insets(20));
         getStyleClass().add("vehicle-availability-view");
-        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + ";");
     }
     
     private void setupComponents() {
@@ -129,22 +126,25 @@ public class VehicleAvailabilityView extends VBox {
     private HBox createToolbar() {
         HBox toolbar = new HBox(10);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(0, 0, 15, 0));
+        toolbar.setPadding(new Insets(10));
+        toolbar.setStyle(
+            "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+            "-fx-background-radius: 8; " +
+            "-fx-border-color: #8B91FF; " +
+            "-fx-border-width: 1px; " +
+            "-fx-border-radius: 8; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 3);");
         
-        // Boutons d'action
-        Button newAssignmentButton = new Button("📅 Nouvelle Affectation");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        newAssignmentButton.setOnAction(e -> showNewAssignmentDialog());
+        // Boutons d'action avec ViewUtils
+        Button newAssignmentButton = ViewUtils.createAddButton("📅 Nouvelle Affectation", this::showNewAssignmentDialog);
         
         Button editAssignmentButton = new Button("✏️ Modifier");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        editAssignmentButton.getStyleClass().add("btn-edit");
         
         Button deleteAssignmentButton = new Button("🗑️ Supprimer");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
+        deleteAssignmentButton.getStyleClass().add("btn-delete");
         
-        Button refreshButton = new Button("🔄 Actualiser");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        refreshButton.setOnAction(e -> refreshCalendar());
+        Button refreshButton = ViewUtils.createRefreshButton("🔄 Actualiser", this::refreshCalendar);
         
         // Légende
         Region spacer = new Region();
@@ -196,13 +196,13 @@ public class VehicleAvailabilityView extends VBox {
         calendarGrid = new GridPane();
         calendarGrid.setHgap(1);
         calendarGrid.setVgap(1);
-        calendarGrid.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + ";");
+        calendarGrid.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + ";");
         
         ScrollPane scrollPane = new ScrollPane(calendarGrid);
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-        scrollPane.setStyle("-fx-background: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
-                          "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        scrollPane.setStyle("-fx-background: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+                          "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + ";");
         
         return scrollPane;
     }
@@ -247,18 +247,18 @@ public class VehicleAvailabilityView extends VBox {
     private void createCalendarHeader() {
         // Header "Véhicule"
         Label vehicleHeader = new Label("Véhicule");
-        vehicleHeader.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
+        vehicleHeader.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; " +
                              "-fx-text-fill: " + StandardColors.SECONDARY_BLUE + "; -fx-font-weight: bold; " +
-                             "-fx-padding: 10; -fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+                             "-fx-padding: 10; -fx-border-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
                              "-fx-border-width: 1;");
         vehicleHeader.setMaxWidth(Double.MAX_VALUE);
         vehicleHeader.setAlignment(Pos.CENTER);
         
         // Header "Demie-journée"
         Label timeSlotHeader = new Label("Demie-journée");
-        timeSlotHeader.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
+        timeSlotHeader.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; " +
                                "-fx-text-fill: " + StandardColors.getTextColor() + "; -fx-font-weight: bold; " +
-                               "-fx-padding: 10; -fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+                               "-fx-padding: 10; -fx-border-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
                                "-fx-border-width: 1;");
         timeSlotHeader.setMaxWidth(Double.MAX_VALUE);
         timeSlotHeader.setAlignment(Pos.CENTER);
@@ -273,14 +273,14 @@ public class VehicleAvailabilityView extends VBox {
             VBox dayHeader = new VBox(2);
             dayHeader.setAlignment(Pos.CENTER);
             
-            String baseHeaderStyle = "-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
-                                   "-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+            String baseHeaderStyle = "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; " +
+                                   "-fx-border-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
                                    "-fx-border-width: 1; -fx-padding: 5;";
             
             // Highlight weekend
             if (date.getDayOfWeek().getValue() >= 6) {
-                baseHeaderStyle = "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
-                                "-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+                baseHeaderStyle = "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+                                "-fx-border-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
                                 "-fx-border-width: 1; -fx-padding: 5;";
             }
             
@@ -320,8 +320,8 @@ public class VehicleAvailabilityView extends VBox {
         VBox vehicleCell = new VBox();
         vehicleCell.setAlignment(Pos.CENTER);
         vehicleCell.setPadding(new Insets(15, 10, 15, 10));
-        vehicleCell.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
-                           "-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+        vehicleCell.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; " +
+                           "-fx-border-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
                            "-fx-border-width: 1;");
         vehicleCell.setMaxWidth(Double.MAX_VALUE);
         vehicleCell.setPrefHeight(80); // 2 lignes de 40 pixels
@@ -344,8 +344,8 @@ public class VehicleAvailabilityView extends VBox {
         Label periodLabel = new Label(period);
         periodLabel.setAlignment(Pos.CENTER);
         periodLabel.setPadding(new Insets(10));
-        periodLabel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
-                           "-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+        periodLabel.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor() + "; " +
+                           "-fx-border-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
                            "-fx-border-width: 1; -fx-text-fill: " + StandardColors.SECONDARY_BLUE + "; -fx-font-weight: bold; -fx-font-size: 12px;");
         periodLabel.setMaxWidth(Double.MAX_VALUE);
         periodLabel.setMaxHeight(Double.MAX_VALUE);
@@ -373,7 +373,7 @@ public class VehicleAvailabilityView extends VBox {
         String backgroundColor = getStatusColor(status);
         
         cell.setStyle("-fx-background-color: " + backgroundColor + "; " +
-                     "-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+                     "-fx-border-color: " + UnifiedThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
                      "-fx-border-width: 0.5; -fx-cursor: hand;");
         
         // Interaction souris

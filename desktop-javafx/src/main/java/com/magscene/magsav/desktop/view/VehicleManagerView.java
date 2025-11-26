@@ -3,6 +3,7 @@ package com.magscene.magsav.desktop.view;
 import com.magscene.magsav.desktop.component.CustomTabPane;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.vehicle.VehicleAvailabilityView;
 import com.magscene.magsav.desktop.view.vehicle.VehicleListView;
@@ -124,16 +125,14 @@ public class VehicleManagerView extends VBox {
      */
     private HBox createVehicleContextualToolbar() {
         HBox toolbar = new HBox(10);
-        toolbar.setPadding(new Insets(10, 15, 10, 15));
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; -fx-background-radius: 8; " +
-                        "-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-width: 1px; -fx-border-radius: 8; " +
-                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 3);");
+        toolbar.setPadding(new Insets(10));
+        toolbar.getStyleClass().add("unified-toolbar");
         
         // ========== SECTION FILTRES (Gauche) ==========
         
-        // Recherche
-        TextField searchField = ViewUtils.createSearchField("Nom, immatriculation, modèle...", 
+        // Recherche avec ViewUtils
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom, immatriculation, modèle...", 
             text -> {
                 VehicleListView currentView = getCurrentVehicleListView();
                 if (currentView != null) {
@@ -141,29 +140,27 @@ public class VehicleManagerView extends VBox {
                 }
             });
         
-        // Filtre Type
-        ComboBox<String> typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous", "CAMION", "FOURGON", "REMORQUE", "UTILITAIRE");
-        typeFilter.setValue("Tous");
-        typeFilter.setPrefWidth(120);
-        typeFilter.setOnAction(e -> {
-            VehicleListView currentView = getCurrentVehicleListView();
-            if (currentView != null) {
-                currentView.setTypeFilter(typeFilter.getValue());
-            }
-        });
+        // Filtre Type avec ViewUtils
+        VBox typeBox = ViewUtils.createFilterBox("🚗 Type", 
+            new String[]{"Tous", "CAMION", "FOURGON", "REMORQUE", "UTILITAIRE"},
+            "Tous",
+            selectedValue -> {
+                VehicleListView currentView = getCurrentVehicleListView();
+                if (currentView != null) {
+                    currentView.setTypeFilter(selectedValue);
+                }
+            });
         
-        // Filtre Statut
-        ComboBox<String> statusFilter = new ComboBox<>();
-        statusFilter.getItems().addAll("Tous", "Disponible", "En Mission", "En Maintenance", "Hors Service");
-        statusFilter.setValue("Tous");
-        statusFilter.setPrefWidth(120);
-        statusFilter.setOnAction(e -> {
-            VehicleListView currentView = getCurrentVehicleListView();
-            if (currentView != null) {
-                currentView.setStatusFilter(statusFilter.getValue());
-            }
-        });
+        // Filtre Statut avec ViewUtils
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut", 
+            new String[]{"Tous", "Disponible", "En Mission", "En Maintenance", "Hors Service"},
+            "Tous",
+            selectedValue -> {
+                VehicleListView currentView = getCurrentVehicleListView();
+                if (currentView != null) {
+                    currentView.setStatusFilter(selectedValue);
+                }
+            });
         
         // Spacer pour séparer filtres et actions
         Region spacer = new Region();
@@ -203,11 +200,11 @@ public class VehicleManagerView extends VBox {
         exportBtn.getStyleClass().add("action-button-secondary");
         exportBtn.setOnAction(e -> System.out.println("Export véhicules depuis toolbar unifiée"));
         
-        // Assemblage de la toolbar
+        // Assemblage de la toolbar avec VBox pour les filtres
         toolbar.getChildren().addAll(
-            searchField,
-            typeFilter,
-            statusFilter,
+            searchBox,
+            typeBox,
+            statusBox,
             spacer,
             addBtn,
             editBtn, 

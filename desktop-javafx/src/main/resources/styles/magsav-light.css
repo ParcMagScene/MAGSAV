@@ -225,19 +225,21 @@
     -fx-spacing: 8;
 }
 
-.theme-light .manager-toolbar .button {
-    -fx-background-color: -magsav-bg-secondary;
-    -fx-text-fill: -magsav-text-primary;
-    -fx-background-radius: 6;
-    -fx-border-color: -magsav-border-medium;
-    -fx-border-radius: 6;
-    -fx-padding: 6 12;
-}
+/* ========================================
+   TOOLBAR UNIFIÃ‰E - STYLE GLOBAL MAGSAV
+   Bordure violette #8B91FF pour toute l'application
+   ======================================== */
 
-.theme-light .manager-toolbar .button:hover {
-    -fx-background-color: -magsav-primary;
-    -fx-text-fill: white;
-    -fx-border-color: -magsav-primary;
+/* Classe unified-toolbar Ã  appliquer sur toutes les toolbars */
+.theme-light .unified-toolbar {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8;
+    -fx-border-color: #8B91FF;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 3);
 }
 
 .theme-light .manager-statusbar {
@@ -345,7 +347,7 @@
     -fx-padding: 0;
 }
 /* ============================================ */
-/* AMÉLIORATION LISIBILITÉ ONGLETS UNIFORMISÉE */
+/* AMï¿½LIORATION LISIBILITï¿½ ONGLETS UNIFORMISï¿½E */
 /* ============================================ */
 
 /* Tous les TabPane de l'application */
@@ -355,7 +357,7 @@
     -fx-tab-min-height: 45px;
 }
 
-/* En-tête des onglets - Augmentation espace */
+/* En-tï¿½te des onglets - Augmentation espace */
 .tab-pane .tab-header-area {
     -fx-background-color: #F8F9FA !important;
     -fx-padding: 8px 15px 0 15px !important;
@@ -372,7 +374,7 @@
     -fx-background-color: transparent !important;
 }
 
-/* Onglets individuels - Espacement et lisibilité */
+/* Onglets individuels - Espacement et lisibilitï¿½ */
 .tab-pane .tab {
     -fx-background-color: transparent !important;
     -fx-background-radius: 8px 8px 0 0;
@@ -386,7 +388,7 @@
     -fx-background-color: rgba(107, 113, 242, 0.1) !important;
 }
 
-/* Onglet sélectionné - Accentuation */
+/* Onglet sï¿½lectionnï¿½ - Accentuation */
 .tab-pane .tab:selected {
     -fx-background-color: #FFFFFF !important;
     -fx-border-color: #6B71F2 !important;
@@ -394,7 +396,7 @@
     -fx-effect: dropshadow(gaussian, rgba(107, 113, 242, 0.3), 8, 0, 0, 2);
 }
 
-/* Labels des onglets - Taille optimisée */
+/* Labels des onglets - Taille optimisï¿½e */
 .tab-pane .tab .tab-label {
     -fx-text-fill: #495057 !important;
     -fx-font-size: 15px !important;
@@ -402,7 +404,7 @@
     -fx-padding: 2px 0;
 }
 
-/* Label onglet sélectionné - Contraste fort */
+/* Label onglet sï¿½lectionnï¿½ - Contraste fort */
 .tab-pane .tab:selected .tab-label {
     -fx-text-fill: #6B71F2 !important;
     -fx-font-size: 16px !important;
@@ -416,7 +418,7 @@
     -fx-border-width: 0;
 }
 
-/* Planning View - Amélioration lisibilité */
+/* Planning View - Amï¿½lioration lisibilitï¿½ */
 .planning-view {
     -fx-background-color: #F8F9FA;
     -fx-padding: 0;
@@ -438,7 +440,7 @@
     -fx-min-width: 150px;
 }
 
-/* Calendrier Planning - Contraste amélioré */
+/* Calendrier Planning - Contraste amï¿½liorï¿½ */
 .calendar-day-header {
     -fx-background-color: #E9ECEF;
     -fx-text-fill: #495057 !important;

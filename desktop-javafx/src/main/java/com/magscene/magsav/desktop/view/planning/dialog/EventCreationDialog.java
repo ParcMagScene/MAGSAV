@@ -5,6 +5,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import com.magscene.magsav.desktop.service.WindowPreferencesService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -68,6 +69,9 @@ public class EventCreationDialog extends Dialog<EventCreationDialog.EventResult>
         // Configuration du dialog
         getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         getDialogPane().setPrefSize(600, 500);
+        
+        // Mémorisation de la taille et position du dialog
+        WindowPreferencesService.getInstance().setupDialogMemory(getDialogPane(), "event-creation-dialog");
         
         // Contenu du dialog
         GridPane content = createContent();

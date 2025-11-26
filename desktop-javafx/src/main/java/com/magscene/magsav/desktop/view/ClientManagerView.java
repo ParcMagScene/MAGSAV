@@ -4,6 +4,7 @@ import com.magscene.magsav.desktop.dialog.clients.ClientDialog;
 import com.magscene.magsav.desktop.model.Client;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import java.util.ArrayList;
@@ -67,10 +68,10 @@ public class ClientManagerView extends BorderPane {
     }
 
     private HBox createToolbar() {
-        HBox toolbar = new HBox(10); // EXACTEMENT comme PersonnelManagerView
+        HBox toolbar = new HBox(10);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(10)); // EXACTEMENT comme PersonnelManagerView
-        // toolbar supprimé - Style géré par CSS
+        toolbar.setPadding(new Insets(10));
+        toolbar.getStyleClass().add("unified-toolbar");
         VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom de l'entreprise, email, SIRET...", text -> filterClients());
         searchField = (TextField) searchBox.getChildren().get(1);
         

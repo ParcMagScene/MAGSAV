@@ -1,17 +1,27 @@
 package com.magscene.magsav.desktop.view.supplier;
 
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.component.DetailPanelProvider;
+import com.magscene.magsav.desktop.dialog.supplier.GroupedOrderDialog;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
-import com.magscene.magsav.desktop.dialog.supplier.GroupedOrderDialog;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.image.Image;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
 /**
  * Vue simplifiée de gestion des commandes groupées pour test Phase 2
@@ -19,7 +29,7 @@ import javafx.scene.text.FontWeight;
 public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
 
     private TableView<OrderData> orderTable;
-    private ObservableList<OrderData> orderList = FXCollections.observableArrayList();
+    private ObservableList<OrderData> orderList; // Déclaration sans initialisation
     private com.magscene.magsav.desktop.service.ApiService apiService;
 
     public GroupedOrderManagerViewSimple() {
@@ -43,7 +53,6 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
     @Override
     protected Pane createMainContent() {
         VBox mainContainer = new VBox(10);
-        mainContainer.setPadding(new Insets(10));
 
         // Tableau de bord des seuils
         HBox dashboardBar = createDashboard();
@@ -51,8 +60,11 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
         // Table des commandes (pas de titre - déjà dans le header principal)
         createOrderTable();
 
-        mainContainer.getChildren().addAll(dashboardBar, orderTable);
-        VBox.setVgrow(orderTable, Priority.ALWAYS);
+        // Envelopper le tableau dans DetailPanelContainer pour le volet de détail
+        DetailPanelContainer containerWithDetail = new DetailPanelContainer(orderTable);
+
+        mainContainer.getChildren().addAll(dashboardBar, containerWithDetail);
+        VBox.setVgrow(containerWithDetail, Priority.ALWAYS);
 
         return mainContainer;
     }
@@ -60,32 +72,45 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
     @Override
     protected void addCustomToolbarItems(HBox toolbar) {
         // 🔍 Recherche avec ViewUtils
-        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Référence, fournisseur...", text -> performSearch(text));
-        
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Référence, fournisseur...",
+                text -> performSearch(text));
+
         // 📦 Filtre fournisseur avec ViewUtils
         VBox supplierBox = ViewUtils.createFilterBox("📦 Fournisseur",
-            new String[]{"Tous fournisseurs", "Fournisseur A", "Fournisseur B", "Fournisseur C"},
-            "Tous fournisseurs", value -> loadOrders());
-        
+                new String[] { "Tous fournisseurs", "Fournisseur A", "Fournisseur B", "Fournisseur C" },
+                "Tous fournisseurs", value -> loadOrders());
+
         // 📊 Filtre statut avec ViewUtils
         VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
-            new String[]{"Tous statuts", "En préparation", "Validée", "Envoyée", "Livrée"},
-            "Tous statuts", value -> loadOrders());
-        
+                new String[] { "Tous statuts", "En préparation", "Validée", "Envoyée", "Livrée" },
+                "Tous statuts", value -> loadOrders());
+
         toolbar.getChildren().addAll(searchBox, supplierBox, statusBox);
     }
-    
+
     private void performSearch(String text) {
         updateStatus("Recherche: " + text);
         // TODO: Implémenter recherche
     }
-    
+
     private void loadOrders() {
         loadOrdersFromBackend();
     }
 
     @Override
     protected void initializeContent() {
+        // CRITICAL: Initialiser orderList ICI
+        if (orderList == null) {
+            orderList = FXCollections.observableArrayList();
+            System.out.println("✅ orderList initialisé");
+        }
+
+        // Binding du tableau après création
+        if (orderTable != null && orderList != null) {
+            orderTable.setItems(orderList);
+            System.out.println("🔗 Tableau GroupedOrders lié à orderList");
+        }
+
         // Les données seront chargées après l'initialisation par createTestData()
         if (orderList != null && !orderList.isEmpty()) {
             updateStatus(orderList.size() + " commande(s) chargée(s)");
@@ -112,7 +137,9 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
     private void createOrderTable() {
         orderTable = new TableView<>();
         orderTable.setItems(orderList);
-        orderTable.getStyleClass().add("data-table");
+        orderTable.setStyle("-fx-background-color: "
+                + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentUIColor()
+                + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
 
         // Colonne Référence
         TableColumn<OrderData, String> refCol = new TableColumn<>("Référence");
@@ -195,7 +222,7 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
     }
 
     // Classe interne pour les données test
-    public static class OrderData {
+    public static class OrderData implements DetailPanelProvider {
         private String reference;
         private String supplier;
         private String amount;
@@ -242,6 +269,44 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
 
         public String getSavings() {
             return savings;
+        }
+
+        // Implémentation de DetailPanelProvider
+        @Override
+        public String getDetailTitle() {
+            return "Commande " + getReference();
+        }
+
+        @Override
+        public String getDetailSubtitle() {
+            return "Fournisseur: " + getSupplier();
+        }
+
+        @Override
+        public Image getDetailImage() {
+            return null;
+        }
+
+        @Override
+        public String getQRCodeData() {
+            return null; // Les commandes groupées n'ont pas de QR code
+        }
+
+        @Override
+        public String getDetailId() {
+            return getReference();
+        }
+
+        @Override
+        public VBox getDetailInfoContent() {
+            VBox content = new VBox(10);
+            content.getChildren().addAll(
+                    new Label("💰 Montant: " + getAmount()),
+                    new Label("🎯 Seuil: " + getThreshold()),
+                    new Label("📊 Statut: " + getStatus()),
+                    new Label("📅 Date: " + getDate()),
+                    new Label("💸 Économies: " + getSavings()));
+            return content;
         }
     }
 

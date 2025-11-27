@@ -1,18 +1,37 @@
 package com.magscene.magsav.desktop.view.settings;
 
-import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
-import com.magscene.magsav.desktop.core.category.*;
 import com.magscene.magsav.desktop.component.CustomTabPane;
+import com.magscene.magsav.desktop.core.category.Category;
+import com.magscene.magsav.desktop.core.category.CategoryManager;
+import com.magscene.magsav.desktop.core.category.CategoryType;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
+
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ColorPicker;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 /**
  * Vue des paramètres de l'application MAGSAV 3.0 avec onglets
@@ -27,7 +46,7 @@ public class SettingsView extends VBox {
     }
 
     private void initializeView() {
-        setPadding(new Insets(5));
+        setPadding(new Insets(7));
         setSpacing(5);
         getStyleClass().add("settings-view");
 

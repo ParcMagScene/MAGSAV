@@ -1,11 +1,12 @@
 package com.magscene.magsav.desktop;
 
+import com.magscene.magsav.desktop.component.GlobalSearchComponent;
 import com.magscene.magsav.desktop.core.di.ApplicationContext;
 import com.magscene.magsav.desktop.core.navigation.NavigationManager;
 import com.magscene.magsav.desktop.core.navigation.Route;
-import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
-import com.magscene.magsav.desktop.component.GlobalSearchComponent;
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -13,8 +14,20 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -80,9 +93,10 @@ public class MagsavDesktopApplication extends Application {
         applicationContext = ApplicationContext.getInstance();
         System.out.println("ApplicationContext initialisé");
 
-        // Initialisation des données de test
-        System.out.println("🧪 Initialisation des données de test...");
-        com.magscene.magsav.desktop.service.TestDataService.getInstance().initialize();
+        // DESACTIVÉ : Plus de données de test - Utilisation exclusive du backend
+        // System.out.println("🧪 Initialisation des données de test...");
+        // com.magscene.magsav.desktop.service.TestDataService.getInstance().initialize();
+        System.out.println("⚡ Mode BACKEND ONLY - Connexion à http://localhost:8080");
 
         // Récupération du NavigationManager via injection
         navigationManager = applicationContext.getInstance(NavigationManager.class);
@@ -297,10 +311,6 @@ public class MagsavDesktopApplication extends Application {
         mainContent = createMainContent();
         root.setCenter(mainContent);
 
-        // Barre de statut en bas
-        HBox statusBar = createStatusBar();
-        root.setBottom(statusBar);
-
         return root;
     }
 
@@ -311,15 +321,8 @@ public class MagsavDesktopApplication extends Application {
         VBox navPanel = new VBox(10);
         navPanel.getStyleClass().add("navigation-panel");
 
-        // Titre
-        Label navTitle = new Label("Navigation");
-        navTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-
         // Création des boutons de navigation
         navigationButtons = createNavigationButtons();
-
-        navPanel.getChildren().add(navTitle);
-        navPanel.getChildren().add(new Separator());
 
         for (Button button : navigationButtons) {
             navPanel.getChildren().add(button);
@@ -347,7 +350,7 @@ public class MagsavDesktopApplication extends Application {
             Button button = new Button(route.getDisplayName());
             button.setMaxWidth(Double.MAX_VALUE);
             button.getStyleClass().add("nav-button");
-            button.setStyle("-fx-padding: 10px; -fx-font-size: 12px;");
+            button.setStyle(ThemeConstants.BUTTON_STYLE);
 
             // Navigation via NavigationManager
             button.setOnAction(e -> {
@@ -388,29 +391,6 @@ public class MagsavDesktopApplication extends Application {
         });
 
         return content;
-    }
-
-    /**
-     * Création de la barre de statut
-     */
-    private HBox createStatusBar() {
-        HBox statusBar = new HBox(10);
-        statusBar.setPadding(new Insets(5, 10, 5, 10));
-        statusBar.setAlignment(Pos.CENTER_LEFT);
-        statusBar.getStyleClass().add("status-bar");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-
-        statusLabel = new Label("Prêt - MAGSAV 3.0 (Architecture refactorisée)");
-        statusLabel.getStyleClass().add("status-label");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Label versionLabel = new Label("v3.0.0-refactored");
-        versionLabel.getStyleClass().add("version-label");
-
-        statusBar.getChildren().addAll(statusLabel, spacer, versionLabel);
-        return statusBar;
     }
 
     /**
@@ -489,10 +469,10 @@ public class MagsavDesktopApplication extends Application {
      */
     private void updateActiveButton(Button activeButton) {
         for (Button button : navigationButtons) {
-            button.setStyle("-fx-padding: 10px; -fx-font-size: 12px;");
+            button.setStyle(ThemeConstants.BUTTON_STYLE);
         }
         activeButton.setStyle(
-                "-fx-padding: 10px; -fx-font-size: 12px; -fx-background-color: #007acc; -fx-text-fill: white;");
+                ThemeConstants.BUTTON_STYLE + " -fx-background-color: #007acc; -fx-text-fill: white;");
     }
 
     /**
@@ -580,7 +560,8 @@ public class MagsavDesktopApplication extends Application {
         exitButton.getStyleClass().add("icon-button");
         exitButton.setOnAction(e -> showExitConfirmation());
 
-        toolbar.getChildren().addAll(appTitle, separator, globalSearch, leftSpacer, pageTitleLabel, rightSpacer, settingsButton,
+        toolbar.getChildren().addAll(appTitle, separator, globalSearch, leftSpacer, pageTitleLabel, rightSpacer,
+                settingsButton,
                 exitButton);
         return toolbar;
     }
@@ -589,10 +570,24 @@ public class MagsavDesktopApplication extends Application {
      * Affiche la confirmation de sortie
      */
     private void showExitConfirmation() {
+        // Mode développement: sortie immédiate sans confirmation
+        if (com.magscene.magsav.desktop.config.DevModeConfig.shouldAutoApproveExit()) {
+            Platform.exit();
+            return;
+        }
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
         alert.setHeaderText("Quitter MAGSAV 3.0 ?");
         alert.setContentText("Êtes-vous sûr de vouloir quitter l'application ?");
+
+        // Mémoriser la position et taille du dialog de confirmation
+        try {
+            WindowPreferencesService prefsService = applicationContext.getInstance(WindowPreferencesService.class);
+            prefsService.setupDialogMemory(alert.getDialogPane(), "exit-confirmation-dialog");
+        } catch (Exception e) {
+            // Si le service n'est pas disponible, continuer sans mémorisation
+        }
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -623,10 +618,10 @@ public class MagsavDesktopApplication extends Application {
         errorPane.setAlignment(Pos.CENTER);
 
         Label titleLabel = new Label("Erreur: " + viewName);
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #cc0000;");
+        titleLabel.setStyle(ThemeConstants.ERROR_MESSAGE_STYLE);
 
         Label messageLabel = new Label("Impossible de charger la vue: " + error.getMessage());
-        messageLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666666;");
+        messageLabel.setStyle(ThemeConstants.INFO_MESSAGE_STYLE);
         messageLabel.setWrapText(true);
 
         errorPane.getChildren().addAll(titleLabel, messageLabel);
@@ -642,10 +637,10 @@ public class MagsavDesktopApplication extends Application {
         defaultPane.setAlignment(Pos.CENTER);
 
         Label titleLabel = new Label(moduleName);
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #333333;");
+        titleLabel.setStyle(ThemeConstants.LARGE_TITLE_STYLE);
 
         Label messageLabel = new Label("Module en cours de migration vers la nouvelle architecture");
-        messageLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #666666;");
+        messageLabel.setStyle(ThemeConstants.INFO_MESSAGE_STYLE);
 
         defaultPane.getChildren().addAll(titleLabel, messageLabel);
         return defaultPane;

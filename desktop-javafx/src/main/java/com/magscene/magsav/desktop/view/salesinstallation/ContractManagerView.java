@@ -1,21 +1,25 @@
 package com.magscene.magsav.desktop.view.salesinstallation;
 
+import java.util.List;
+import java.util.Map;
+
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Vue de gestion des contrats
@@ -30,7 +34,15 @@ public class ContractManagerView extends BaseManagerView<Object> {
         super();
         this.apiService = apiService;
         this.contractList = FXCollections.observableArrayList();
-        loadContracts(); // Charger depuis backend ou test data
+
+        // Lier la liste à la table maintenant que contractList est initialisé
+        if (contractTable != null) {
+            contractTable.setItems(contractList);
+        }
+
+        // Charger les données de manière asynchrone après la construction complète de
+        // l'UI
+        javafx.application.Platform.runLater(this::loadContracts);
     }
 
     @Override
@@ -45,22 +57,23 @@ public class ContractManagerView extends BaseManagerView<Object> {
 
     @Override
     protected Pane createMainContent() {
-        VBox mainContainer = new VBox(10);
-        mainContainer.setPadding(new Insets(10));
-
         // Tableau des contrats (filtres maintenant dans la toolbar unifiée)
         createContractTable();
 
-        mainContainer.getChildren().add(contractTable);
-        VBox.setVgrow(contractTable, Priority.ALWAYS);
+        // Enveloppement du tableau dans DetailPanelContainer pour le volet de détail
+        DetailPanelContainer containerWithDetail = new DetailPanelContainer(contractTable);
 
-        return mainContainer;
+        return containerWithDetail;
     }
 
     private void createContractTable() {
         contractTable = new TableView<>();
-        contractTable.setItems(contractList);
-        contractTable.getStyleClass().add("data-table");
+        // NE PAS lier ici car contractList n'est pas encore initialisé
+        // Le binding sera fait dans le constructeur après initialisation de
+        // contractList
+        contractTable.setStyle("-fx-background-color: "
+                + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentUIColor()
+                + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
 
         // Colonne Référence
         TableColumn<ContractData, String> refCol = new TableColumn<>("Référence");
@@ -98,6 +111,39 @@ public class ContractManagerView extends BaseManagerView<Object> {
         statusCol.setPrefWidth(100);
 
         contractTable.getColumns().addAll(refCol, clientCol, typeCol, startCol, endCol, amountCol, statusCol);
+
+        // Style de sélection uniforme et double-clic
+        contractTable.setRowFactory(tv -> {
+            TableRow<ContractData> row = new TableRow<>();
+
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty()) {
+                    row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection uniforme
+                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                            "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                            "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                            "-fx-border-width: 1px;");
+                } else {
+                    // Style par défaut
+                    row.setStyle("");
+                }
+            };
+
+            // Écouter les changements de sélection
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    handleEdit();
+                }
+            });
+            return row;
+        });
     }
 
     private void loadContracts() {
@@ -193,20 +239,20 @@ public class ContractManagerView extends BaseManagerView<Object> {
     protected void addCustomToolbarItems(HBox toolbar) {
         // 🔍 Recherche avec ViewUtils
         VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Référence, client...", text -> performSearch(text));
-        
+
         // 📋 Filtre type avec ViewUtils
         VBox typeBox = ViewUtils.createFilterBox("📋 Type",
-            new String[]{"Tous types", "Location", "Maintenance", "SAV", "Prestation"},
-            "Tous types", value -> loadContracts());
-        
+                new String[] { "Tous types", "Location", "Maintenance", "SAV", "Prestation" },
+                "Tous types", value -> loadContracts());
+
         // 📊 Filtre statut avec ViewUtils
         VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
-            new String[]{"Tous statuts", "Actif", "Expiré", "En attente", "Résilié"},
-            "Tous statuts", value -> loadContracts());
-        
+                new String[] { "Tous statuts", "Actif", "Expiré", "En attente", "Résilié" },
+                "Tous statuts", value -> loadContracts());
+
         toolbar.getChildren().addAll(searchBox, typeBox, statusBox);
     }
-    
+
     private void performSearch(String text) {
         updateStatus("Recherche: " + text);
         // TODO: Implémenter recherche
@@ -214,6 +260,17 @@ public class ContractManagerView extends BaseManagerView<Object> {
 
     @Override
     protected void initializeContent() {
+        // ⚠️ Ne rien faire si les champs ne sont pas encore initialisés
+        // (cela arrive car super() appelle cette méthode AVANT que le constructeur de
+        // ContractManagerView finisse)
+        if (contractList == null || apiService == null) {
+            System.out.println("⚠️ initializeContent() appelé trop tôt - champs non initialisés");
+            return;
+        }
+
+        // Charger les données après que la table soit créée
+        loadContracts();
+
         if (contractList != null && contractList.size() > 0) {
             updateStatus(contractList.size() + " contrat(s) chargé(s)");
         } else {
@@ -274,7 +331,7 @@ public class ContractManagerView extends BaseManagerView<Object> {
     }
 
     // Classe interne pour les données de contrat
-    public static class ContractData {
+    public static class ContractData implements com.magscene.magsav.desktop.component.DetailPanelProvider {
         private final String reference;
         private final String clientName;
         private final String type;
@@ -320,6 +377,59 @@ public class ContractManagerView extends BaseManagerView<Object> {
 
         public String getStatus() {
             return status;
+        }
+
+        @Override
+        public String getDetailTitle() {
+            return reference + " - " + clientName;
+        }
+
+        @Override
+        public String getDetailSubtitle() {
+            return type + " • " + startDate + " → " + endDate;
+        }
+
+        @Override
+        public javafx.scene.image.Image getDetailImage() {
+            // Pas d'image pour les contrats
+            return null;
+        }
+
+        @Override
+        public String getDetailId() {
+            return reference;
+        }
+
+        @Override
+        public javafx.scene.layout.VBox getDetailInfoContent() {
+            javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(10);
+            content.setPadding(new javafx.geometry.Insets(10));
+
+            // Grille d'informations
+            javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+            grid.setHgap(15);
+            grid.setVgap(10);
+
+            int row = 0;
+            addDetailRow(grid, row++, "📋 Référence:", reference);
+            addDetailRow(grid, row++, "👤 Client:", clientName);
+            addDetailRow(grid, row++, "📄 Type:", type);
+            addDetailRow(grid, row++, "📅 Début:", startDate);
+            addDetailRow(grid, row++, "📅 Fin:", endDate);
+            addDetailRow(grid, row++, "💰 Montant:", amount);
+            addDetailRow(grid, row++, "🔹 Statut:", status);
+
+            content.getChildren().add(grid);
+            return content;
+        }
+
+        private void addDetailRow(javafx.scene.layout.GridPane grid, int row, String label, String value) {
+            javafx.scene.control.Label labelNode = new javafx.scene.control.Label(label);
+            labelNode.setStyle("-fx-font-weight: bold; -fx-min-width: 100px;");
+            javafx.scene.control.Label valueNode = new javafx.scene.control.Label(value != null ? value : "N/A");
+
+            grid.add(labelNode, 0, row);
+            grid.add(valueNode, 1, row);
         }
     }
 }

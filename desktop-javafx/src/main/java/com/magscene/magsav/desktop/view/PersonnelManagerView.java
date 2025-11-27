@@ -1,30 +1,42 @@
 package com.magscene.magsav.desktop.view;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+
 import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
-import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.dialog.PersonnelDialog;
+import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.image.Image;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface JavaFX complete pour la gestion du personnel
@@ -53,6 +65,7 @@ public class PersonnelManagerView extends BorderPane {
 
     private void initializeUI() {
         // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
+        setPadding(new Insets(7));
         this.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + ";");
 
         // Header avec titre et statistiques
@@ -79,7 +92,7 @@ public class PersonnelManagerView extends BorderPane {
 
     private VBox createHeader() {
         VBox header = new VBox(10); // EXACTEMENT comme Ventes et Installations
-        header.setPadding(new Insets(0, 0, 20, 0)); // EXACTEMENT comme Ventes et Installations
+        header.setPadding(new Insets(0, 0, 10, 0)); // Réduit pour éviter trop d'espace en haut
 
         // Pas de titre - déjà dans le header principal de l'application
 
@@ -91,32 +104,33 @@ public class PersonnelManagerView extends BorderPane {
         toolbar.setAlignment(Pos.CENTER_LEFT);
         toolbar.setPadding(new Insets(10));
         toolbar.getStyleClass().add("unified-toolbar");
-        
+
         // 🔍 Recherche avec ViewUtils
         Label searchLabel = ViewUtils.createSearchLabel("🔍 Recherche");
         searchField = ViewUtils.createSearchField("Nom, prénom, email...", text -> filterPersonnelData());
         VBox searchBox = new VBox(5, searchLabel, searchField);
-        
+
         // 👤 Filtre type avec ViewUtils - on doit garder la référence au ComboBox
         Label typeLabel = new Label("👤 Type");
         typeLabel.setStyle(com.magscene.magsav.desktop.theme.ThemeConstants.SECONDARY_LABEL_STYLE);
-        typeLabel.setFont(javafx.scene.text.Font.font(com.magscene.magsav.desktop.theme.ThemeConstants.FONT_FAMILY, 
-            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_WEIGHT_TITLE, 
-            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_SIZE_NORMAL));
+        typeLabel.setFont(javafx.scene.text.Font.font(com.magscene.magsav.desktop.theme.ThemeConstants.FONT_FAMILY,
+                com.magscene.magsav.desktop.theme.ThemeConstants.FONT_WEIGHT_TITLE,
+                com.magscene.magsav.desktop.theme.ThemeConstants.FONT_SIZE_NORMAL));
         typeFilter = new ComboBox<>();
-        typeFilter.getItems().addAll("Tous", "Employé", "Freelance", "Stagiaire", "Intérimaire", "Intermittent du spectacle");
+        typeFilter.getItems().addAll("Tous", "Employé", "Freelance", "Stagiaire", "Intérimaire",
+                "Intermittent du spectacle");
         typeFilter.setValue("Tous");
         typeFilter.setStyle(com.magscene.magsav.desktop.theme.ThemeConstants.INPUT_FIELD_STYLE);
         com.magscene.magsav.desktop.util.ResponsiveUtils.makeComboResponsive(typeFilter);
         typeFilter.setOnAction(e -> filterPersonnelData());
         VBox typeBox = new VBox(5, typeLabel, typeFilter);
-        
+
         // 📊 Filtre statut avec ViewUtils
         Label statusLabel = new Label("📊 Statut");
         statusLabel.setStyle(com.magscene.magsav.desktop.theme.ThemeConstants.SECONDARY_LABEL_STYLE);
-        statusLabel.setFont(javafx.scene.text.Font.font(com.magscene.magsav.desktop.theme.ThemeConstants.FONT_FAMILY, 
-            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_WEIGHT_TITLE, 
-            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_SIZE_NORMAL));
+        statusLabel.setFont(javafx.scene.text.Font.font(com.magscene.magsav.desktop.theme.ThemeConstants.FONT_FAMILY,
+                com.magscene.magsav.desktop.theme.ThemeConstants.FONT_WEIGHT_TITLE,
+                com.magscene.magsav.desktop.theme.ThemeConstants.FONT_SIZE_NORMAL));
         statusFilter = new ComboBox<>();
         statusFilter.getItems().addAll("Tous", "Actif", "Inactif", "En congé", "Terminé");
         statusFilter.setValue("Tous");
@@ -124,13 +138,13 @@ public class PersonnelManagerView extends BorderPane {
         com.magscene.magsav.desktop.util.ResponsiveUtils.makeComboResponsive(statusFilter);
         statusFilter.setOnAction(e -> filterPersonnelData());
         VBox statusBox = new VBox(5, statusLabel, statusFilter);
-        
+
         // 🏢 Filtre département avec ViewUtils
         Label deptLabel = new Label("🏢 Département");
         deptLabel.setStyle(com.magscene.magsav.desktop.theme.ThemeConstants.SECONDARY_LABEL_STYLE);
-        deptLabel.setFont(javafx.scene.text.Font.font(com.magscene.magsav.desktop.theme.ThemeConstants.FONT_FAMILY, 
-            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_WEIGHT_TITLE, 
-            com.magscene.magsav.desktop.theme.ThemeConstants.FONT_SIZE_NORMAL));
+        deptLabel.setFont(javafx.scene.text.Font.font(com.magscene.magsav.desktop.theme.ThemeConstants.FONT_FAMILY,
+                com.magscene.magsav.desktop.theme.ThemeConstants.FONT_WEIGHT_TITLE,
+                com.magscene.magsav.desktop.theme.ThemeConstants.FONT_SIZE_NORMAL));
         departmentFilter = new ComboBox<>();
         departmentFilter.getItems().add("Tous");
         departmentFilter.setValue("Tous");
@@ -138,10 +152,10 @@ public class PersonnelManagerView extends BorderPane {
         com.magscene.magsav.desktop.util.ResponsiveUtils.makeComboResponsive(departmentFilter);
         departmentFilter.setOnAction(e -> filterPersonnelData());
         VBox deptBox = new VBox(5, deptLabel, departmentFilter);
-        
+
         // ⚡ Boutons d'action avec ViewUtils
         Button addButton = ViewUtils.createAddButton("➕ Ajouter", this::createNewPersonnel);
-        
+
         editButton = new Button("✏️ Modifier");
         editButton.setDisable(true);
         editButton.setOnAction(e -> {
@@ -152,7 +166,7 @@ public class PersonnelManagerView extends BorderPane {
                 showAlert("Selection requise", "Veuillez selectionner un membre du personnel a modifier.");
             }
         });
-        
+
         deleteButton = new Button("🗑️ Supprimer");
         deleteButton.setDisable(true);
         deleteButton.setOnAction(e -> {
@@ -163,15 +177,15 @@ public class PersonnelManagerView extends BorderPane {
                 showAlert("Selection requise", "Veuillez selectionner un membre du personnel a supprimer.");
             }
         });
-        
+
         Button refreshButton = ViewUtils.createRefreshButton("🔄 Actualiser", this::loadPersonnelData);
-        
+
         VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", addButton, editButton, deleteButton, refreshButton);
-        
+
         // Spacer pour pousser les actions à droite
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        
+
         toolbar.getChildren().addAll(searchBox, typeBox, statusBox, deptBox, spacer, actionsBox);
         return toolbar;
     }
@@ -195,12 +209,15 @@ public class PersonnelManagerView extends BorderPane {
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
                     row.setStyle("-fx-background-color: "
-                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionColor() + "; " +
+                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionColor()
+                            + "; " +
                             "-fx-text-fill: "
-                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionTextColor()
+                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance()
+                                    .getSelectionTextColor()
                             + "; " +
                             "-fx-border-color: "
-                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance().getSelectionBorderColor()
+                            + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance()
+                                    .getSelectionBorderColor()
                             + "; " +
                             "-fx-border-width: 2px;");
                 } else {
@@ -224,7 +241,9 @@ public class PersonnelManagerView extends BorderPane {
 
         createTableColumns();
 
-        // Style du tableau
+        // Style du tableau uniforme avec bordures comme Clients
+        personnelTable.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentUIColor()
+                + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
         personnelTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
         personnelTable.setPrefHeight(400);
 
@@ -838,4 +857,3 @@ public class PersonnelManagerView extends BorderPane {
     }
 
 }
-

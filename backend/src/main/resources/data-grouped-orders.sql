@@ -1,31 +1,27 @@
 -- Commandes groupees pour optimiser seuils de franco
-INSERT INTO grouped_order (id, reference, supplier_id, order_date, expected_delivery_date, 
-                           total_amount, shipping_cost, free_shipping_threshold, threshold_percentage,
-                           status, optimized_savings, number_of_requests, created_by, 
-                           validated_by, validation_date, sent_date, received_date, notes)
+INSERT INTO grouped_orders (id, order_number, supplier_id, status, current_amount, threshold_alert_sent, auto_validate_on_threshold, validated_by, validated_at, validation_notes, delivery_address, delivery_date, urgency, notes, created_at, updated_at)
 VALUES
-(1, 'GRP-2025-001', 1, '2025-01-15', '2025-01-22',
- 485.50, 0.00, 500.00, 97.1,
- 'VALIDATED', 25.00, 3, 'Claire Stock', 'Marc Chef Achat', '2025-01-16',
- '2025-01-16', null, 
- 'Commande Algam N ALG-556677 Franco atteint 97%'),
-(2, 'GRP-2025-002', 2, '2025-01-20', '2025-01-27',
- 356.00, 0.00, 300.00, 118.7,
- 'PENDING_VALIDATION', 18.00, 2, 'Kevin Technicien', null, null,
- null, null,
- 'Groupage batteries Seuil depasse 118%'),
-(3, 'GRP-2025-003', 3, '2025-01-12', '2025-02-15',
- 8750.00, 0.00, 1500.00, 583.3,
- 'SENT', 120.00, 1, 'Thomas Chef Lum', 'Sophie Directrice', '2025-01-13',
- '2025-01-14', null,
- 'Commande lyres Delai 4 semaines'),
-(4, 'GRP-2025-004', 5, null, null,
- 87.50, 15.00, 150.00, 58.3,
- 'DRAFT', 0.00, 1, 'Claire Stock', null, null,
- null, null,
- 'Cables Seuil 58% ATTENDRE autres besoins'),
-(5, 'GRP-2025-005', 3, '2025-01-18', '2025-01-25',
- 1020.00, 0.00, 1000.00, 102.0,
- 'VALIDATED', 49.00, 4, 'Marc Chef Technique', 'Marc Chef Achat', '2025-01-19',
- '2025-01-19', null,
- 'Consommables Thomann Seuil atteint 102%');
+(1, 'GRP-2025-001', 1, 'VALIDATED', 485.50, true, false, 'Marc Chef Achat', '2025-01-16', 
+ 'Franco atteint 97% - Commande Algam N ALG-556677',
+ 'Mag Scene - 123 rue Principale 75000 Paris', '2025-01-22', 'NORMAL',
+ 'Regroupement 3 demandes - Optimisation reussie', '2025-01-15 09:00:00', '2025-01-16 10:30:00'),
+
+(2, 'GRP-2025-002', 2, 'THRESHOLD_REACHED', 356.00, true, false, null, null,
+ 'Seuil depasse 118% - Validation en attente',
+ 'Mag Scene - 123 rue Principale 75000 Paris', '2025-01-27', 'NORMAL',
+ 'Groupage batteries - Seuil largement depasse', '2025-01-20 14:15:00', '2025-01-20 14:15:00'),
+
+(3, 'GRP-2025-003', 3, 'ORDERED', 8750.00, true, false, 'Sophie Directrice', '2025-01-13',
+ 'Montant eleve - Validation directrice requise',
+ 'Mag Scene - 123 rue Principale 75000 Paris', '2025-02-15', 'URGENT',
+ 'Commande lyres - Delai 4 semaines - Tracking: TH-889944', '2025-01-12 11:00:00', '2025-01-14 16:00:00'),
+
+(4, 'GRP-2025-004', 5, 'OPEN', 87.50, false, true, null, null,
+ 'Seuil 58% - Attendre autres besoins',
+ 'Mag Scene - 123 rue Principale 75000 Paris', null, 'LOW',
+ 'Cables - ATTENDRE pour optimiser franco', '2025-01-18 08:30:00', '2025-01-18 08:30:00'),
+
+(5, 'GRP-2025-005', 3, 'VALIDATED', 1020.00, true, false, 'Marc Chef Achat', '2025-01-19',
+ 'Seuil atteint 102% - Consommables Thomann',
+ 'Mag Scene - 123 rue Principale 75000 Paris', '2025-01-25', 'NORMAL',
+ 'Regroupement 4 demandes consommables', '2025-01-18 13:45:00', '2025-01-19 09:20:00');

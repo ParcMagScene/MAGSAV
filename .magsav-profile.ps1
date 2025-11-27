@@ -3,13 +3,18 @@
 # Active automatiquement le mode développement rapide
 # ============================================================
 
-# Désactiver toutes les confirmations
+# Désactiver toutes les confirmations - MODE FORCÉ
 $global:ConfirmPreference = "None"
+$ConfirmPreference = "None"
 $global:VerbosePreference = "SilentlyContinue"
 $global:DebugPreference = "SilentlyContinue"
 $global:WarningPreference = "SilentlyContinue"
 $global:ErrorActionPreference = "Continue"
 $global:ProgressPreference = "SilentlyContinue"
+$global:WhatIfPreference = $false
+
+# Désactiver politique d'exécution dans la session
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 
 # Variables d'environnement
 $env:MAGSAV_DEV_MODE = "ENABLED"

@@ -1,22 +1,25 @@
 package com.magscene.magsav.desktop.view;
 
+import com.magscene.magsav.desktop.component.CustomTabPane;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
-import com.magscene.magsav.desktop.theme.StandardColors;
 import com.magscene.magsav.desktop.util.ViewUtils;
-import com.magscene.magsav.desktop.view.sav.RepairTrackingView;
 import com.magscene.magsav.desktop.view.sav.RMAManagementView;
+import com.magscene.magsav.desktop.view.sav.RepairTrackingView;
 import com.magscene.magsav.desktop.view.sav.TechnicianPlanningView;
-import com.magscene.magsav.desktop.component.CustomTabPane;
+
 // import com.magscene.magsav.desktop.view.sav.QRCodeScannerView; // Temporairement désactivé
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 /**
  * Vue principale du module SAV intégrant toutes les fonctionnalités développées
@@ -65,7 +68,7 @@ public class SAVManagerView extends BorderPane {
 
         // Style CSS
         getStyleClass().add("sav-manager-view");
-        setPadding(new Insets(5));
+        setPadding(new Insets(7));
         setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
     }
 
@@ -83,30 +86,34 @@ public class SAVManagerView extends BorderPane {
         toolbar.setAlignment(Pos.CENTER_LEFT);
         toolbar.setPadding(new Insets(10));
         toolbar.setStyle(
-            "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
-            "-fx-background-radius: 8; " +
-            "-fx-border-color: #8B91FF; " +
-            "-fx-border-width: 1px; " +
-            "-fx-border-radius: 8; " +
-            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 3);");
-        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Titre, description, demandeur...", text -> {});
+                "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+                        "-fx-background-radius: 8; " +
+                        "-fx-border-color: #8B91FF; " +
+                        "-fx-border-width: 1px; " +
+                        "-fx-border-radius: 8;");
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Titre, description, demandeur...", text -> {
+        });
         TextField searchField = (TextField) searchBox.getChildren().get(1);
         com.magscene.magsav.desktop.MagsavDesktopApplication.forceSearchFieldColors(searchField);
 
         // Filtre par statut
-        VBox statusBox = ViewUtils.createFilterBox("📊 Statut", 
-            new String[]{"Tous", "Ouverte", "En cours", "En attente pièces", "Résolue", "Fermée", "Annulée"}, 
-            "Tous", value -> {});
+        VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
+                new String[] { "Tous", "Ouverte", "En cours", "En attente pièces", "Résolue", "Fermée", "Annulée" },
+                "Tous", value -> {
+                });
 
         // Filtre par priorité
-        VBox priorityBox = ViewUtils.createFilterBox("⚡ Priorité", 
-            new String[]{"Toutes", "Urgente", "Élevée", "Moyenne", "Faible"}, 
-            "Toutes", value -> {});
+        VBox priorityBox = ViewUtils.createFilterBox("⚡ Priorité",
+                new String[] { "Toutes", "Urgente", "Élevée", "Moyenne", "Faible" },
+                "Toutes", value -> {
+                });
 
         // Filtre par type
-        VBox typeBox = ViewUtils.createFilterBox("🔧 Type", 
-            new String[]{"Tous types", "Réparation", "Maintenance", "Installation", "Formation", "RMA", "Garantie"}, 
-            "Tous types", value -> {});
+        VBox typeBox = ViewUtils.createFilterBox("🔧 Type",
+                new String[] { "Tous types", "Réparation", "Maintenance", "Installation", "Formation", "RMA",
+                        "Garantie" },
+                "Tous types", value -> {
+                });
 
         // Boutons d'action avec ViewUtils
         Button newRequestBtn = ViewUtils.createAddButton("📝 Nouvelle Demande", this::createNewServiceRequest);
@@ -127,8 +134,8 @@ public class SAVManagerView extends BorderPane {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        toolbar.getChildren().addAll(searchBox, statusBox, priorityBox, typeBox, spacer, 
-            newRequestBtn, editBtn, exportBtn, emergencyBtn, refreshBtn);
+        toolbar.getChildren().addAll(searchBox, statusBox, priorityBox, typeBox, spacer,
+                newRequestBtn, editBtn, exportBtn, emergencyBtn, refreshBtn);
         return toolbar;
     }
 

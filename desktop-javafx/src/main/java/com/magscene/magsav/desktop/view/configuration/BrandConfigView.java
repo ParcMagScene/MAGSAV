@@ -1,22 +1,37 @@
 package com.magscene.magsav.desktop.view.configuration;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
-import javafx.beans.property.SimpleStringProperty;
+
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Vue de configuration des marques dans le module Paramètres
@@ -26,12 +41,12 @@ public class BrandConfigView extends BorderPane {
     private final ApiService apiService;
     private TableView<BrandItem> brandsTable;
     private ObservableList<BrandItem> brandsData;
-    
+
     // Contrôles de recherche et filtres
     private TextField searchField;
     private ComboBox<String> statusFilter;
     private ComboBox<String> countryFilter;
-    
+
     // Contrôles d'édition
     private TextField nameField;
     private TextArea descriptionField;
@@ -42,36 +57,36 @@ public class BrandConfigView extends BorderPane {
     private Button saveButton;
     private Button cancelButton;
     private Button deleteButton;
-    
+
     private BrandItem currentEditingItem;
 
     public BrandConfigView(ApiService apiService) {
         this.apiService = apiService;
         this.brandsData = FXCollections.observableArrayList();
-        
+
         initializeUI();
         loadBrandsData();
     }
 
     private void initializeUI() {
         setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
-        
+
         // Header
         VBox header = createHeader();
         setTop(header);
-        
+
         // Content principal
         HBox mainContent = new HBox(10);
         mainContent.setPadding(new Insets(10));
-        
+
         // Panneau gauche - Liste des marques
         VBox leftPanel = createBrandsList();
         leftPanel.setPrefWidth(500);
-        
+
         // Panneau droite - Formulaire d'édition
         VBox rightPanel = createEditPanel();
         rightPanel.setPrefWidth(350);
-        
+
         mainContent.getChildren().addAll(leftPanel, rightPanel);
         setCenter(mainContent);
     }
@@ -97,17 +112,17 @@ public class BrandConfigView extends BorderPane {
         VBox panel = new VBox(10);
         panel.setPadding(new Insets(10));
         panel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
-                      "-fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1; -fx-border-radius: 8;");
+                "-fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1; -fx-border-radius: 8;");
 
         // Toolbar avec recherche et filtres
         HBox toolbar = createToolbar();
-        
+
         // Table des marques
         brandsTable = createBrandsTable();
-        
+
         panel.getChildren().addAll(toolbar, brandsTable);
         VBox.setVgrow(brandsTable, Priority.ALWAYS);
-        
+
         return panel;
     }
 
@@ -152,6 +167,40 @@ public class BrandConfigView extends BorderPane {
             }
         });
 
+        // Style de sélection uniforme
+        table.setRowFactory(tv -> {
+            TableRow<BrandItem> row = new TableRow<>();
+
+            Runnable updateStyle = () -> {
+                if (row.isEmpty()) {
+                    row.setStyle("");
+                } else if (row.isSelected()) {
+                    row.setStyle(
+                            "-fx-background-color: "
+                                    + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance()
+                                            .getSelectionColor()
+                                    + "; " +
+                                    "-fx-text-fill: "
+                                    + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance()
+                                            .getSelectionTextColor()
+                                    + "; " +
+                                    "-fx-border-color: "
+                                    + com.magscene.magsav.desktop.theme.UnifiedThemeManager.getInstance()
+                                            .getSelectionBorderColor()
+                                    + "; " +
+                                    "-fx-border-width: 1px;");
+                } else {
+                    row.setStyle("");
+                }
+            };
+
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+
+            return row;
+        });
+
         // Colonne Actif
         TableColumn<BrandItem, Boolean> activeCol = new TableColumn<>("Actif");
         activeCol.setCellValueFactory(data -> data.getValue().activeProperty());
@@ -176,7 +225,7 @@ public class BrandConfigView extends BorderPane {
 
         table.getColumns().addAll(activeCol, nameCol, descriptionCol, countryCol);
         table.setEditable(true);
-        
+
         return table;
     }
 
@@ -184,7 +233,7 @@ public class BrandConfigView extends BorderPane {
         VBox panel = new VBox(15);
         panel.setPadding(new Insets(15));
         panel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
-                      "-fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1; -fx-border-radius: 8;");
+                "-fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1; -fx-border-radius: 8;");
 
         Label titleLabel = new Label("✏️ Édition de Marque");
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
@@ -223,13 +272,12 @@ public class BrandConfigView extends BorderPane {
         activeCheckBox.setSelected(true);
 
         form.getChildren().addAll(
-            nameLabel, nameField,
-            descLabel, descriptionField,
-            logoLabel, logoUrlField,
-            countryLabel, countryField,
-            websiteLabel, websiteField,
-            activeCheckBox
-        );
+                nameLabel, nameField,
+                descLabel, descriptionField,
+                logoLabel, logoUrlField,
+                countryLabel, countryField,
+                websiteLabel, websiteField,
+                activeCheckBox);
 
         // Boutons d'action
         HBox buttons = new HBox(10);
@@ -249,10 +297,10 @@ public class BrandConfigView extends BorderPane {
         buttons.getChildren().addAll(saveButton, cancelButton, deleteButton);
 
         panel.getChildren().addAll(titleLabel, form, buttons);
-        
+
         // Désactiver les boutons au début
         disableEditControls();
-        
+
         return panel;
     }
 
@@ -260,7 +308,7 @@ public class BrandConfigView extends BorderPane {
         try {
             List<Map<String, Object>> brands = apiService.getBrands();
             brandsData.clear();
-            
+
             for (Map<String, Object> brandData : brands) {
                 BrandItem item = new BrandItem();
                 item.setId(((Number) brandData.get("id")).longValue());
@@ -270,7 +318,7 @@ public class BrandConfigView extends BorderPane {
                 item.setCountry((String) brandData.get("country"));
                 item.setWebsite((String) brandData.get("website"));
                 item.setActive((Boolean) brandData.getOrDefault("active", true));
-                
+
                 brandsData.add(item);
             }
         } catch (Exception e) {
@@ -279,7 +327,8 @@ public class BrandConfigView extends BorderPane {
     }
 
     private void filterBrands() {
-        // Implémentation du filtrage sera ajoutée si nécessaire; // Pour l'instant, on charge toutes les données
+        // Implémentation du filtrage sera ajoutée si nécessaire; // Pour l'instant, on
+        // charge toutes les données
         loadBrandsData();
     }
 
@@ -372,12 +421,14 @@ public class BrandConfigView extends BorderPane {
     }
 
     private void deleteBrand() {
-        if (currentEditingItem.getId() == null) return;
+        if (currentEditingItem.getId() == null)
+            return;
 
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
         confirmation.setTitle("Confirmation");
         confirmation.setHeaderText("Supprimer la marque");
-        confirmation.setContentText("Êtes-vous sûr de vouloir supprimer la marque \"" + currentEditingItem.getName() + "\" ?");
+        confirmation.setContentText(
+                "Êtes-vous sûr de vouloir supprimer la marque \"" + currentEditingItem.getName() + "\" ?");
 
         Optional<ButtonType> result = confirmation.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -428,42 +479,94 @@ public class BrandConfigView extends BorderPane {
         private final SimpleBooleanProperty active = new SimpleBooleanProperty();
 
         // Getters et Setters
-        public Long getId() { return id; }
-        public void setId(Long id) { this.id = id; }
+        public Long getId() {
+            return id;
+        }
 
-        public String getName() { return name.get(); }
-        public void setName(String name) { this.name.set(name); }
-        public SimpleStringProperty nameProperty() { return name; }
+        public void setId(Long id) {
+            this.id = id;
+        }
 
-        public String getDescription() { return description.get(); }
-        public void setDescription(String description) { this.description.set(description); }
-        public SimpleStringProperty descriptionProperty() { return description; }
+        public String getName() {
+            return name.get();
+        }
 
-        public String getLogoUrl() { return logoUrl.get(); }
-        public void setLogoUrl(String logoUrl) { this.logoUrl.set(logoUrl); }
-        public SimpleStringProperty logoUrlProperty() { return logoUrl; }
+        public void setName(String name) {
+            this.name.set(name);
+        }
 
-        public String getCountry() { return country.get(); }
-        public void setCountry(String country) { this.country.set(country); }
-        public SimpleStringProperty countryProperty() { return country; }
+        public SimpleStringProperty nameProperty() {
+            return name;
+        }
 
-        public String getWebsite() { return website.get(); }
-        public void setWebsite(String website) { this.website.set(website); }
-        public SimpleStringProperty websiteProperty() { return website; }
+        public String getDescription() {
+            return description.get();
+        }
 
-        public Boolean getActive() { return active.get(); }
-        public void setActive(Boolean active) { this.active.set(active); }
-        public SimpleBooleanProperty activeProperty() { return active; }
+        public void setDescription(String description) {
+            this.description.set(description);
+        }
+
+        public SimpleStringProperty descriptionProperty() {
+            return description;
+        }
+
+        public String getLogoUrl() {
+            return logoUrl.get();
+        }
+
+        public void setLogoUrl(String logoUrl) {
+            this.logoUrl.set(logoUrl);
+        }
+
+        public SimpleStringProperty logoUrlProperty() {
+            return logoUrl;
+        }
+
+        public String getCountry() {
+            return country.get();
+        }
+
+        public void setCountry(String country) {
+            this.country.set(country);
+        }
+
+        public SimpleStringProperty countryProperty() {
+            return country;
+        }
+
+        public String getWebsite() {
+            return website.get();
+        }
+
+        public void setWebsite(String website) {
+            this.website.set(website);
+        }
+
+        public SimpleStringProperty websiteProperty() {
+            return website;
+        }
+
+        public Boolean getActive() {
+            return active.get();
+        }
+
+        public void setActive(Boolean active) {
+            this.active.set(active);
+        }
+
+        public SimpleBooleanProperty activeProperty() {
+            return active;
+        }
 
         public Map<String, Object> toMap() {
             return Map.of(
-                "name", getName() != null ? getName() : "",
-                "description", getDescription() != null ? getDescription() : "",
-                "logoUrl", getLogoUrl() != null ? getLogoUrl() : "",
-                "country", getCountry() != null ? getCountry() : "",
-                "website", getWebsite() != null ? getWebsite() : "",
-                "active", getActive() != null ? getActive() : true
-            );
+                    "name", getName() != null ? getName() : "",
+                    "description", getDescription() != null ? getDescription() : "",
+                    "logoUrl", getLogoUrl() != null ? getLogoUrl() : "",
+                    "country", getCountry() != null ? getCountry() : "",
+                    "website", getWebsite() != null ? getWebsite() : "",
+                    "active", getActive() != null ? getActive() : true);
         }
     }
 }

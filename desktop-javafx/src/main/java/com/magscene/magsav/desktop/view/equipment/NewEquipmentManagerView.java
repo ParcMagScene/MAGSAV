@@ -1,35 +1,52 @@
 package com.magscene.magsav.desktop.view.equipment;
 
-import com.magscene.magsav.desktop.view.base.BaseManagerView;
-import com.magscene.magsav.desktop.service.business.EquipmentService;
-import com.magscene.magsav.desktop.util.ViewUtils;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
-
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.service.business.EquipmentService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.util.ViewUtils;
+import com.magscene.magsav.desktop.view.base.BaseManagerView;
+
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 /**
  * Gestionnaire d'équipements refactorisé utilisant la nouvelle architecture
  * Remplace EquipmentManagerView et StandardEquipmentManagerView
  */
-public class NewEquipmentManagerView extends BaseManagerView<Object> {
-    private TableView<Object> equipmentTable;
-    private ObservableList<Object> equipmentData;
+public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> {
+    private TableView<EquipmentItem> equipmentTable;
+    private ObservableList<EquipmentItem> equipmentData; // Déclaration sans initialisation
     private EquipmentService equipmentService;
 
     @Override
     protected void initializeContent() {
+        // CRITICAL: Initialiser equipmentData ICI
+        if (equipmentData == null) {
+            equipmentData = FXCollections.observableArrayList();
+            System.out.println("✅ equipmentData initialisé");
+        }
+
         // Injection des dépendances via ApplicationContext
         this.equipmentService = getService(EquipmentService.class);
-        this.equipmentData = FXCollections.observableArrayList();
+
+        // Binding du tableau après création
+        if (equipmentTable != null && equipmentData != null) {
+            equipmentTable.setItems(equipmentData);
+            System.out.println("🔗 Tableau Equipment lié à equipmentData");
+        }
 
         // Chargement initial des données
         loadEquipmentData();
@@ -37,124 +54,57 @@ public class NewEquipmentManagerView extends BaseManagerView<Object> {
 
     @Override
     protected Pane createMainContent() {
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(10));
-
         // Table des équipements
         equipmentTable = createEquipmentTable();
 
-        // Panneau de détails (à droite)
-        Pane detailPanel = createDetailPanel();
+        // Utilisation du DetailPanelContainer pour le volet de détail et mise en
+        // surbrillance
+        DetailPanelContainer containerWithDetail = new DetailPanelContainer(equipmentTable);
 
-        // Layout principal
-        HBox mainLayout = new HBox(10);
-        mainLayout.getChildren().addAll(
-                new VBox(10, equipmentTable),
-                detailPanel);
-
-        HBox.setHgrow(equipmentTable.getParent(), Priority.ALWAYS);
-
-        content.getChildren().add(mainLayout);
-        VBox.setVgrow(mainLayout, Priority.ALWAYS);
-
-        return content;
+        return containerWithDetail;
     }
 
     @Override
     protected void addCustomToolbarItems(HBox toolbar) {
         // 🔍 Recherche avec ViewUtils
-        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom, marque, QR code...", text -> performSearch(text));
-        
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom, marque, QR code...",
+                text -> performSearch(text));
+
         // 🎵 Filtre catégorie avec ViewUtils
         VBox categoryBox = ViewUtils.createFilterBox("🎵 Catégorie",
-            new String[]{"Toutes catégories", "Audio", "Éclairage", "Vidéo", "Structure"},
-            "Toutes catégories", value -> loadEquipmentData());
-        
+                new String[] { "Toutes catégories", "Audio", "Éclairage", "Vidéo", "Structure" },
+                "Toutes catégories", value -> loadEquipmentData());
+
         // 📊 Filtre statut avec ViewUtils
         VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
-            new String[]{"Tous statuts", "Disponible", "En location", "Maintenance", "Hors service"},
-            "Tous statuts", value -> loadEquipmentData());
-        
+                new String[] { "Tous statuts", "Disponible", "En location", "Maintenance", "Hors service" },
+                "Tous statuts", value -> loadEquipmentData());
+
         toolbar.getChildren().addAll(searchBox, categoryBox, statusBox);
     }
 
-    private TableView<Object> createEquipmentTable() {
-        TableView<Object> table = new TableView<>();
+    private TableView<EquipmentItem> createEquipmentTable() {
+        TableView<EquipmentItem> table = new TableView<>();
         table.setItems(equipmentData);
         table.getStyleClass().add("equipment-table");
 
         // Colonnes pour les équipements
-        TableColumn<Object, String> idCol = new TableColumn<>("ID");
-        TableColumn<Object, String> nameCol = new TableColumn<>("Nom");
-        TableColumn<Object, String> brandCol = new TableColumn<>("Marque");
-        TableColumn<Object, String> categoryCol = new TableColumn<>("Catégorie");
-        TableColumn<Object, String> statusCol = new TableColumn<>("Statut");
-        TableColumn<Object, String> qrCol = new TableColumn<>("QR Code");
-        TableColumn<Object, String> locationCol = new TableColumn<>("Emplacement");
+        TableColumn<EquipmentItem, String> idCol = new TableColumn<>("ID");
+        TableColumn<EquipmentItem, String> nameCol = new TableColumn<>("Nom");
+        TableColumn<EquipmentItem, String> brandCol = new TableColumn<>("Marque");
+        TableColumn<EquipmentItem, String> categoryCol = new TableColumn<>("Catégorie");
+        TableColumn<EquipmentItem, String> statusCol = new TableColumn<>("Statut");
+        TableColumn<EquipmentItem, String> qrCol = new TableColumn<>("QR Code");
+        TableColumn<EquipmentItem, String> locationCol = new TableColumn<>("Emplacement");
 
-        // Configuration des cellValueFactories
-        idCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty(String.valueOf(map.get("id")));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        nameCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty((String) map.get("name"));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        brandCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty((String) map.get("brand"));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        categoryCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty((String) map.get("category"));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        statusCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty((String) map.get("status"));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        qrCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty((String) map.get("qrCode"));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        locationCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty((String) map.get("location"));
-            }
-            return new SimpleStringProperty("");
-        });
+        // Configuration des cellValueFactories simplifiées avec les getters du wrapper
+        idCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getId()));
+        nameCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
+        brandCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getBrand()));
+        categoryCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCategory()));
+        statusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus()));
+        qrCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getQrCode()));
+        locationCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getLocation()));
 
         // Configuration des largeurs
         idCol.setPrefWidth(60);
@@ -167,27 +117,31 @@ public class NewEquipmentManagerView extends BaseManagerView<Object> {
 
         table.getColumns().addAll(idCol, nameCol, brandCol, categoryCol, statusCol, qrCol, locationCol);
 
+        // Style de sélection uniforme
+        table.setRowFactory(tv -> {
+            TableRow<EquipmentItem> row = new TableRow<>();
+
+            Runnable updateStyle = () -> {
+                if (row.isEmpty()) {
+                    row.setStyle("");
+                } else if (row.isSelected()) {
+                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                            "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                            "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                            "-fx-border-width: 1px;");
+                } else {
+                    row.setStyle("");
+                }
+            };
+
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+
+            return row;
+        });
+
         return table;
-    }
-
-    private Pane createDetailPanel() {
-        VBox detailPanel = new VBox(10);
-        detailPanel.setPrefWidth(300);
-        detailPanel.setPadding(new Insets(10));
-        detailPanel.getStyleClass().add("detail-panel");
-
-        Label titleLabel = new Label("Détails de l'équipement");
-        titleLabel.getStyleClass().add("detail-title");
-
-        // Zone de détails (sera mise à jour selon la sélection)
-        TextArea detailsArea = new TextArea();
-        detailsArea.setEditable(false);
-        detailsArea.setPrefRowCount(10);
-        detailsArea.setText("Sélectionnez un équipement pour voir ses détails");
-
-        detailPanel.getChildren().addAll(titleLabel, detailsArea);
-
-        return detailPanel;
     }
 
     private void loadEquipmentData() {
@@ -204,7 +158,17 @@ public class NewEquipmentManagerView extends BaseManagerView<Object> {
                             });
 
                     equipmentData.clear();
-                    equipmentData.addAll(equipmentList);
+                    // Wrapper chaque Map dans un EquipmentItem
+                    for (Map<String, Object> map : equipmentList) {
+                        equipmentData.add(new EquipmentItem(map));
+                    }
+
+                    // Forcer le rafraîchissement du tableau
+                    if (equipmentTable != null) {
+                        equipmentTable.refresh();
+                        System.out
+                                .println("🔄 Tableau Equipment rafraîchi - Items: " + equipmentTable.getItems().size());
+                    }
 
                     updateStatus("✅ " + equipmentData.size() + " équipements chargés depuis le backend");
                     System.out.println("✅ " + equipmentData.size() + " équipements chargés et affichés");

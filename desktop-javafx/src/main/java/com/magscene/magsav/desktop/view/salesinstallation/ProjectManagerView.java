@@ -1,13 +1,20 @@
 package com.magscene.magsav.desktop.view.salesinstallation;
 
-import com.magscene.magsav.desktop.view.base.AbstractManagerView;
-import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.service.TestDataService;
-import com.magscene.magsav.desktop.model.Project;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.dialog.salesinstallation.ProjectDialog;
-import com.magscene.magsav.desktop.util.ViewUtils;
+import com.magscene.magsav.desktop.model.Project;
+import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.service.TestDataService;
 import com.magscene.magsav.desktop.util.AlertUtil;
+import com.magscene.magsav.desktop.util.ViewUtils;
+import com.magscene.magsav.desktop.view.base.AbstractManagerView;
+
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -15,15 +22,17 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Gestionnaire des projets (Ventes & Installations) - VERSION STANDARDISÉE
@@ -170,15 +179,44 @@ public class ProjectManagerView extends AbstractManagerView {
     private void createProjectTable() {
         projectTable = new TableView<>();
         projectTable.setItems(sortedData);
-        // projectTable supprimé - Style géré par CSS
+        projectTable.setStyle("-fx-background-color: "
+                + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentUIColor()
+                + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
         sortedData.comparatorProperty().bind(projectTable.comparatorProperty());
 
         // Colonnes de la table
         createTableColumns();
 
-        // Configuration de la table
+        // Configuration de la table avec style de sélection uniforme
         projectTable.setRowFactory(tv -> {
             TableRow<ProjectItem> row = new TableRow<>();
+
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty()) {
+                    row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection uniforme
+                    row.setStyle("-fx-background-color: "
+                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                            "-fx-text-fill: "
+                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor()
+                            + "; " +
+                            "-fx-border-color: "
+                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor()
+                            + "; " +
+                            "-fx-border-width: 1px;");
+                } else {
+                    // Style par défaut
+                    row.setStyle("");
+                }
+            };
+
+            // Écouter les changements de sélection
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
                     viewSelectedProject();
@@ -605,7 +643,7 @@ public class ProjectManagerView extends AbstractManagerView {
 
     // Classe interne pour les données de projet (temporaire, devrait être dans le
     // model)
-    public static class ProjectItem {
+    public static class ProjectItem implements com.magscene.magsav.desktop.component.DetailPanelProvider {
         private String id;
         private String projectNumber;
         private String name;
@@ -691,6 +729,61 @@ public class ProjectManagerView extends AbstractManagerView {
             map.put("endDate", endDate);
             map.put("estimatedAmount", estimatedAmount);
             return map;
+        }
+
+        // Implémentation de DetailPanelProvider pour le volet de visualisation
+        @Override
+        public String getDetailTitle() {
+            return projectNumber + " - " + name;
+        }
+
+        @Override
+        public String getDetailSubtitle() {
+            return type + " • " + client;
+        }
+
+        @Override
+        public javafx.scene.image.Image getDetailImage() {
+            // Pas d'image pour les projets
+            return null;
+        }
+
+        @Override
+        public String getDetailId() {
+            return projectNumber;
+        }
+
+        @Override
+        public javafx.scene.layout.VBox getDetailInfoContent() {
+            javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(10);
+            content.setPadding(new javafx.geometry.Insets(10));
+
+            // Grille d'informations
+            javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+            grid.setHgap(15);
+            grid.setVgap(10);
+
+            int row = 0;
+            addDetailRow(grid, row++, "💼 N° Projet:", projectNumber);
+            addDetailRow(grid, row++, "📝 Nom:", name);
+            addDetailRow(grid, row++, "👤 Client:", client);
+            addDetailRow(grid, row++, "📋 Type:", type);
+            addDetailRow(grid, row++, "🔹 Statut:", status);
+            addDetailRow(grid, row++, "📅 Début:", startDate);
+            addDetailRow(grid, row++, "📅 Fin:", endDate);
+            addDetailRow(grid, row++, "💰 Montant estimé:", estimatedAmount);
+
+            content.getChildren().add(grid);
+            return content;
+        }
+
+        private void addDetailRow(javafx.scene.layout.GridPane grid, int row, String label, String value) {
+            javafx.scene.control.Label labelNode = new javafx.scene.control.Label(label);
+            labelNode.setStyle("-fx-font-weight: bold; -fx-min-width: 120px;");
+            javafx.scene.control.Label valueNode = new javafx.scene.control.Label(value != null ? value : "N/A");
+
+            grid.add(labelNode, 0, row);
+            grid.add(valueNode, 1, row);
         }
     }
 }

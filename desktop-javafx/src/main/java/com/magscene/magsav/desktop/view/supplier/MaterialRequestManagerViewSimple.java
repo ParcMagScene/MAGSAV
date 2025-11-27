@@ -1,27 +1,36 @@
 package com.magscene.magsav.desktop.view.supplier;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import com.magsav.entities.MaterialRequest;
+import com.magsav.enums.RequestStatus;
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.component.DetailPanelProvider;
 import com.magscene.magsav.desktop.service.api.SupplierApiClient;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 import com.magscene.magsav.desktop.view.supplier.dialog.MaterialRequestDialog;
-import com.magsav.entities.MaterialRequest;
-import com.magsav.enums.RequestStatus;
-import com.magsav.enums.RequestContext;
-import com.magsav.enums.RequestUrgency;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
+import javafx.scene.image.Image;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import java.util.Optional;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 /**
  * Vue simplifiée de gestion des demandes de matériel pour test Phase 2
@@ -29,7 +38,7 @@ import java.util.List;
 public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
 
     private TableView<RequestData> requestTable;
-    private ObservableList<RequestData> requestList = FXCollections.observableArrayList();
+    private ObservableList<RequestData> requestList; // Déclaration sans initialisation
     private SupplierApiClient apiClient = new SupplierApiClient();
     private com.magscene.magsav.desktop.service.ApiService apiService;
     private boolean useBackend = true; // Basculer entre backend et données test
@@ -59,7 +68,6 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
     @Override
     protected Pane createMainContent() {
         VBox mainContainer = new VBox(10);
-        mainContainer.setPadding(new Insets(10));
 
         // Statistiques rapides
         HBox statsBar = createStatsBar();
@@ -67,8 +75,11 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
         // Table des demandes (pas de titre - déjà dans le header principal)
         createRequestTable();
 
-        mainContainer.getChildren().addAll(statsBar, requestTable);
-        VBox.setVgrow(requestTable, Priority.ALWAYS);
+        // Envelopper le tableau dans DetailPanelContainer pour le volet de détail
+        DetailPanelContainer containerWithDetail = new DetailPanelContainer(requestTable);
+
+        mainContainer.getChildren().addAll(statsBar, containerWithDetail);
+        VBox.setVgrow(containerWithDetail, Priority.ALWAYS);
 
         return mainContainer;
     }
@@ -76,32 +87,45 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
     @Override
     protected void addCustomToolbarItems(HBox toolbar) {
         // 🔍 Recherche avec ViewUtils
-        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Référence, description...", text -> performSearch(text));
-        
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Référence, description...",
+                text -> performSearch(text));
+
         // 📊 Filtre statut avec ViewUtils
         VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
-            new String[]{"Tous statuts", "En attente", "Approuvée", "Rejetée", "Allouée", "Terminée"},
-            "Tous statuts", value -> loadRequests());
-        
+                new String[] { "Tous statuts", "En attente", "Approuvée", "Rejetée", "Allouée", "Terminée" },
+                "Tous statuts", value -> loadRequests());
+
         // ⚡ Filtre priorité avec ViewUtils
         VBox priorityBox = ViewUtils.createFilterBox("⚡ Priorité",
-            new String[]{"Toutes priorités", "Urgente", "Haute", "Normale", "Basse"},
-            "Toutes priorités", value -> loadRequests());
-        
+                new String[] { "Toutes priorités", "Urgente", "Haute", "Normale", "Basse" },
+                "Toutes priorités", value -> loadRequests());
+
         toolbar.getChildren().addAll(searchBox, statusBox, priorityBox);
     }
-    
+
     private void performSearch(String text) {
         updateStatus("Recherche: " + text);
         // TODO: Implémenter recherche
     }
-    
+
     private void loadRequests() {
         loadRequestsFromBackend();
     }
 
     @Override
     protected void initializeContent() {
+        // CRITICAL: Initialiser requestList ICI
+        if (requestList == null) {
+            requestList = FXCollections.observableArrayList();
+            System.out.println("✅ requestList initialisé");
+        }
+
+        // Binding du tableau après création
+        if (requestTable != null && requestList != null) {
+            requestTable.setItems(requestList);
+            System.out.println("🔗 Tableau MaterialRequests lié à requestList");
+        }
+
         // Les données seront chargées après l'initialisation par
         // loadRequestsFromBackend() ou createTestData()
         if (requestList != null && !requestList.isEmpty()) {
@@ -129,7 +153,9 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
     private void createRequestTable() {
         requestTable = new TableView<>();
         requestTable.setItems(requestList);
-        requestTable.getStyleClass().add("data-table");
+        requestTable.setStyle("-fx-background-color: "
+                + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentUIColor()
+                + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
 
         // Colonne Référence
         TableColumn<RequestData, String> refCol = new TableColumn<>("Réf");
@@ -180,23 +206,52 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
     private void loadRequestsFromBackend() {
         updateStatus("Chargement des demandes depuis le backend...");
 
-        apiClient.getAllRequests().thenAccept(requests -> {
-            Platform.runLater(() -> {
-                requestList.clear();
-                for (MaterialRequest request : requests) {
-                    RequestData data = convertToRequestData(request);
-                    requestList.add(data);
-                }
-                updateStatus(requestList.size() + " demande(s) chargée(s) depuis le backend");
-            });
-        }).exceptionally(ex -> {
-            Platform.runLater(() -> {
-                System.err.println("⚠️ Erreur chargement backend: " + ex.getMessage());
-                updateStatus("Backend indisponible - Utilisation des données de test");
-                createTestData();
-            });
-            return null;
-        });
+        try {
+            List<java.util.Map<String, Object>> backendRequests = apiService.getAll("material-requests");
+
+            if (backendRequests != null && !backendRequests.isEmpty()) {
+                System.out.println("✅ Backend disponible - " + backendRequests.size() + " demandes matériel");
+
+                Platform.runLater(() -> {
+                    requestList.clear();
+
+                    for (java.util.Map<String, Object> reqMap : backendRequests) {
+                        String ref = (String) reqMap.getOrDefault("requestNumber", "N/A");
+                        String desc = (String) reqMap.getOrDefault("description", "N/A");
+                        String requester = (String) reqMap.getOrDefault("requesterName", "N/A");
+
+                        // Priorité basée sur urgency
+                        String urgency = (String) reqMap.getOrDefault("urgency", "NORMAL");
+                        String priority = urgency.equals("HIGH") ? "🔴 Haute"
+                                : urgency.equals("URGENT") ? "🚨 Urgent" : "🟡 Moyenne";
+
+                        // Statut
+                        String status = (String) reqMap.getOrDefault("status", "PENDING");
+                        String statusDisplay = status.contains("PENDING") ? "⏳ En attente"
+                                : status.contains("APPROVED") ? "✅ Approuvée"
+                                        : status.contains("ALLOCATED") ? "📦 Allouée" : status;
+
+                        // Date
+                        String date = (String) reqMap.getOrDefault("submittedAt", "");
+                        if (date != null && date.length() >= 10) {
+                            date = date.substring(0, 10);
+                        }
+
+                        requestList.add(new RequestData(ref, desc, requester, priority, statusDisplay, date));
+                    }
+
+                    updateStatus(requestList.size() + " demande(s) chargée(s) depuis le backend");
+                    System.out.println("✅ " + requestList.size() + " demandes matériel chargées et affichées");
+                });
+            } else {
+                System.out.println("⚠️ Aucune demande matériel dans le backend");
+                Platform.runLater(() -> updateStatus("Aucune demande disponible"));
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Erreur chargement MaterialRequests: " + e.getMessage());
+            e.printStackTrace();
+            Platform.runLater(() -> updateStatus("❌ Erreur de chargement: " + e.getMessage()));
+        }
     }
 
     /**
@@ -264,7 +319,7 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
     }
 
     // Classe interne pour les données test
-    public static class RequestData {
+    public static class RequestData implements DetailPanelProvider {
         private String reference;
         private String description;
         private String requester;
@@ -325,6 +380,43 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
 
         public void setBackendId(Long id) {
             this.backendId = id;
+        }
+
+        // Implémentation de DetailPanelProvider
+        @Override
+        public String getDetailTitle() {
+            return "Demande " + getReference();
+        }
+
+        @Override
+        public String getDetailSubtitle() {
+            return getDescription();
+        }
+
+        @Override
+        public Image getDetailImage() {
+            return null;
+        }
+
+        @Override
+        public String getQRCodeData() {
+            return null; // Les demandes matériel n'ont pas de QR code
+        }
+
+        @Override
+        public String getDetailId() {
+            return getReference();
+        }
+
+        @Override
+        public VBox getDetailInfoContent() {
+            VBox content = new VBox(10);
+            content.getChildren().addAll(
+                    new Label("👤 Demandeur: " + getRequester()),
+                    new Label("⚡ Priorité: " + getPriority()),
+                    new Label("📊 Statut: " + getStatus()),
+                    new Label("📅 Date: " + getDate()));
+            return content;
         }
     }
 

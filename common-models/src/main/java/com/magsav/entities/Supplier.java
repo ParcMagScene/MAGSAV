@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Entité représentant un fournisseur avec ses services et configurations
@@ -80,16 +81,17 @@ public class Supplier {
     private LocalDateTime updatedAt;
     
     // Relations
+    @JsonIgnore
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<SupplierCatalog> catalogs = new HashSet<>();
-    
+
+    @JsonIgnore
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<SupplierProcurementOrder> orders = new HashSet<>();
-    
+
+    @JsonIgnore
     @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<GroupedOrder> groupedOrders = new HashSet<>();
-    
-    // Constructeurs
+    private Set<GroupedOrder> groupedOrders = new HashSet<>();    // Constructeurs
     public Supplier() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();

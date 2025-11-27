@@ -1,169 +1,129 @@
 package com.magscene.magsav.desktop.view.sav;
 
-import com.magscene.magsav.desktop.view.base.BaseManagerView;
-import com.magscene.magsav.desktop.service.business.SAVService;
-import com.magscene.magsav.desktop.util.ViewUtils;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
-
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.service.business.SAVService;
+import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.util.ViewUtils;
+import com.magscene.magsav.desktop.view.base.BaseManagerView;
+
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 
 /**
  * Gestionnaire SAV refactorisé utilisant la nouvelle architecture
  * Remplace SAVManagerView et StandardSAVManagerView
  */
-public class NewSAVManagerView extends BaseManagerView<Object> {
-    private TableView<Object> savTable;
-    private ObservableList<Object> savData;
+public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> {
+    private TableView<SAVRequestItem> savTable;
+    private ObservableList<SAVRequestItem> savData; // Déclaration sans initialisation
     private SAVService savService;
 
     @Override
     protected void initializeContent() {
+        System.out.println("🔧 NewSAVManagerView.initializeContent() - Début");
+
+        // CRITICAL: Initialiser savData ICI, pas au niveau de la classe
+        if (savData == null) {
+            savData = FXCollections.observableArrayList();
+            System.out.println("   ✅ savData initialisé");
+        }
+
+        System.out.println("   savTable: " + (savTable != null ? "NON NULL" : "NULL"));
+        System.out.println("   savData: " + (savData != null ? "NON NULL (size=" + savData.size() + ")" : "NULL"));
+
         // Injection des dépendances via ApplicationContext
         this.savService = getService(SAVService.class);
-        this.savData = FXCollections.observableArrayList();
+
+        // savData déjà initialisé au niveau de la classe
+        // Binding du tableau après création (évite NPE)
+        if (savTable != null && savData != null) {
+            savTable.setItems(savData);
+            System.out.println("   ✅ Tableau SAV lié à savData");
+
+            // Debug : Logger les changements dans la liste
+            savData.addListener((javafx.collections.ListChangeListener<Object>) change -> {
+                System.out.println("🔔 savData modifié - Taille: " + savData.size() + " - Items tableau: "
+                        + savTable.getItems().size());
+            });
+        } else {
+            System.out.println("   ❌ ERREUR: savTable ou savData est NULL !");
+        }
 
         // Chargement initial des données
+        System.out.println("🔧 NewSAVManagerView.initializeContent() - Appel loadSAVData()");
         loadSAVData();
     }
 
     @Override
     protected Pane createMainContent() {
-        VBox content = new VBox(10);
-        content.setPadding(new Insets(10));
-
         // Table des demandes SAV
         savTable = createSAVTable();
 
-        // Panneau de détails et actions
-        Pane detailPanel = createDetailPanel();
+        // Utilisation du DetailPanelContainer comme dans les autres vues
+        DetailPanelContainer containerWithDetail = new DetailPanelContainer(savTable);
 
-        // Layout principal avec splitter
-        SplitPane mainSplitPane = new SplitPane();
-        mainSplitPane.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
-
-        VBox leftPanel = new VBox(10, savTable);
-        VBox.setVgrow(savTable, Priority.ALWAYS);
-
-        mainSplitPane.getItems().addAll(leftPanel, detailPanel);
-        mainSplitPane.setDividerPositions(0.7); // 70% pour la table, 30% pour les détails
-
-        content.getChildren().add(mainSplitPane);
-        VBox.setVgrow(mainSplitPane, Priority.ALWAYS);
-
-        return content;
+        return containerWithDetail;
     }
 
     @Override
     protected void addCustomToolbarItems(HBox toolbar) {
         // 🔍 Recherche avec ViewUtils
-        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "N° SAV, client, équipement...", text -> performSAVSearch(text, null, null));
-        
+        VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "N° SAV, client, équipement...",
+                text -> performSAVSearch(text, null, null));
+
         // 📊 Filtre statut avec ViewUtils
         VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
-            new String[]{"Tous statuts", "Nouveau", "En cours", "En attente pièces", "Réparé", "Irréparable", "Fermé"},
-            "Tous statuts", value -> loadSAVData());
-        
+                new String[] { "Tous statuts", "Nouveau", "En cours", "En attente pièces", "Réparé", "Irréparable",
+                        "Fermé" },
+                "Tous statuts", value -> loadSAVData());
+
         // ⚡ Filtre priorité avec ViewUtils
         VBox priorityBox = ViewUtils.createFilterBox("⚡ Priorité",
-            new String[]{"Toutes priorités", "Urgente", "Haute", "Normale", "Basse"},
-            "Toutes priorités", value -> loadSAVData());
-        
+                new String[] { "Toutes priorités", "Urgente", "Haute", "Normale", "Basse" },
+                "Toutes priorités", value -> loadSAVData());
+
         toolbar.getChildren().addAll(searchBox, statusBox, priorityBox);
 
         DatePicker dateToPicker = new DatePicker();
     }
 
-    private TableView<Object> createSAVTable() {
-        TableView<Object> table = new TableView<>();
+    private TableView<SAVRequestItem> createSAVTable() {
+        TableView<SAVRequestItem> table = new TableView<>();
         table.setItems(savData);
         table.getStyleClass().add("sav-table");
 
         // Colonnes spécifiques au SAV
-        TableColumn<Object, String> idCol = new TableColumn<>("N° SAV");
-        TableColumn<Object, String> titleCol = new TableColumn<>("Titre");
-        TableColumn<Object, String> typeCol = new TableColumn<>("Type");
-        TableColumn<Object, String> statusCol = new TableColumn<>("Statut");
-        TableColumn<Object, String> priorityCol = new TableColumn<>("Priorité");
-        TableColumn<Object, String> dateCol = new TableColumn<>("Date création");
-        TableColumn<Object, String> technicianCol = new TableColumn<>("Technicien");
+        TableColumn<SAVRequestItem, String> idCol = new TableColumn<>("N° SAV");
+        TableColumn<SAVRequestItem, String> titleCol = new TableColumn<>("Titre");
+        TableColumn<SAVRequestItem, String> typeCol = new TableColumn<>("Type");
+        TableColumn<SAVRequestItem, String> statusCol = new TableColumn<>("Statut");
+        TableColumn<SAVRequestItem, String> priorityCol = new TableColumn<>("Priorité");
+        TableColumn<SAVRequestItem, String> dateCol = new TableColumn<>("Date création");
+        TableColumn<SAVRequestItem, String> technicianCol = new TableColumn<>("Technicien");
 
         // Configuration des cellValueFactories
-        idCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty(String.valueOf(map.get("id")));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        titleCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty((String) map.get("title"));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        typeCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty((String) map.get("type"));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        statusCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty((String) map.get("status"));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        priorityCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                return new SimpleStringProperty((String) map.get("priority"));
-            }
-            return new SimpleStringProperty("");
-        });
-
-        dateCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                String date = (String) map.get("createdAt");
-                if (date != null && date.length() >= 10) {
-                    return new SimpleStringProperty(date.substring(0, 10));
-                }
-                return new SimpleStringProperty("");
-            }
-            return new SimpleStringProperty("");
-        });
-
-        technicianCol.setCellValueFactory(data -> {
-            if (data.getValue() instanceof Map) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> map = (Map<String, Object>) data.getValue();
-                String technician = (String) map.get("assignedTechnician");
-                return new SimpleStringProperty(technician != null ? technician : "Non assigné");
-            }
-            return new SimpleStringProperty("");
-        });
+        idCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getId()));
+        titleCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTitle()));
+        typeCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getType()));
+        statusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus()));
+        priorityCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPriority()));
+        dateCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCreatedAt()));
+        technicianCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAssignedTechnician()));
 
         // Configuration des colonnes
         idCol.setPrefWidth(80);
@@ -182,87 +142,40 @@ public class NewSAVManagerView extends BaseManagerView<Object> {
         table.getColumns().add(dateCol);
         table.getColumns().add(technicianCol);
 
-        // Gestion de la sélection
-        table.getSelectionModel().selectedItemProperty().addListener(
-                (obs, oldSelection, newSelection) -> updateDetailPanel(newSelection));
+        // Style de sélection uniforme
+        table.setRowFactory(tv -> {
+            TableRow<SAVRequestItem> row = new TableRow<>();
+
+            // Runnable pour mettre à jour le style
+            Runnable updateStyle = () -> {
+                if (row.isEmpty()) {
+                    row.setStyle("");
+                } else if (row.isSelected()) {
+                    // Style de sélection uniforme
+                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
+                            "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                            "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                            "-fx-border-width: 1px;");
+                } else {
+                    // Style par défaut
+                    row.setStyle("");
+                }
+            };
+
+            // Écouter les changements de sélection
+            row.selectedProperty().addListener((obs, wasSelected, isSelected) -> updateStyle.run());
+            row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
+            row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
+
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    handleEdit();
+                }
+            });
+            return row;
+        });
 
         return table;
-    }
-
-    private Pane createDetailPanel() {
-        VBox detailPanel = new VBox(10);
-        detailPanel.setPrefWidth(400);
-        detailPanel.setPadding(new Insets(10));
-        detailPanel.getStyleClass().add("sav-detail-panel");
-
-        Label titleLabel = new Label("Détails de la demande SAV");
-        titleLabel.getStyleClass().add("detail-title");
-
-        // Zone de détails avec onglets
-        TabPane detailTabs = new TabPane();
-
-        // Onglet Informations générales
-        Tab infoTab = new Tab("Informations");
-        infoTab.setClosable(false);
-        TextArea infoArea = new TextArea();
-        infoArea.setEditable(false);
-        infoArea.setPrefRowCount(8);
-        infoArea.setText("Sélectionnez une demande SAV pour voir ses détails");
-        infoTab.setContent(infoArea);
-
-        // Onglet Historique
-        Tab historyTab = new Tab("Historique");
-        historyTab.setClosable(false);
-        ListView<String> historyList = new ListView<>();
-        historyTab.setContent(historyList);
-
-        // Onglet Actions
-        Tab actionsTab = new Tab("Actions");
-        actionsTab.setClosable(false);
-        VBox actionsBox = createActionsPanel();
-        actionsTab.setContent(actionsBox);
-
-        detailTabs.getTabs().addAll(infoTab, historyTab, actionsTab);
-
-        detailPanel.getChildren().addAll(titleLabel, detailTabs);
-        VBox.setVgrow(detailTabs, Priority.ALWAYS);
-
-        return detailPanel;
-    }
-
-    private VBox createActionsPanel() {
-        VBox actionsBox = new VBox(10);
-        actionsBox.setPadding(new Insets(10));
-
-        // Actions rapides
-        Button btnChangeStatus = new Button("📝 Changer statut");
-        Button btnAssignTechnician = new Button("👤 Assigner technicien");
-        Button btnAddNote = new Button("📝 Ajouter note");
-        Button btnPrintLabel = new Button("🖨️ Imprimer étiquette");
-        Button btnGenerateQuote = new Button("💰 Générer devis");
-
-        btnChangeStatus.setMaxWidth(Double.MAX_VALUE);
-        btnAssignTechnician.setMaxWidth(Double.MAX_VALUE);
-        btnAddNote.setMaxWidth(Double.MAX_VALUE);
-        btnPrintLabel.setMaxWidth(Double.MAX_VALUE);
-        btnGenerateQuote.setMaxWidth(Double.MAX_VALUE);
-
-        btnChangeStatus.setOnAction(e -> handleChangeStatus());
-        btnAssignTechnician.setOnAction(e -> handleAssignTechnician());
-        btnAddNote.setOnAction(e -> handleAddNote());
-        btnPrintLabel.setOnAction(e -> handlePrintLabel());
-        btnGenerateQuote.setOnAction(e -> handleGenerateQuote());
-
-        actionsBox.getChildren().addAll(
-                new Label("Actions rapides:"),
-                btnChangeStatus,
-                btnAssignTechnician,
-                btnAddNote,
-                new Separator(),
-                btnPrintLabel,
-                btnGenerateQuote);
-
-        return actionsBox;
     }
 
     private void loadSAVData() {
@@ -279,7 +192,15 @@ public class NewSAVManagerView extends BaseManagerView<Object> {
                             });
 
                     savData.clear();
-                    savData.addAll(savList);
+                    for (Map<String, Object> map : savList) {
+                        savData.add(new SAVRequestItem(map));
+                    }
+
+                    // Forcer le rafraîchissement du tableau
+                    if (savTable != null) {
+                        savTable.refresh();
+                        System.out.println("🔄 Tableau SAV rafraîchi - Items: " + savTable.getItems().size());
+                    }
 
                     updateStatus("✅ " + savData.size() + " demandes SAV chargées depuis le backend");
                     System.out.println("✅ " + savData.size() + " demandes SAV chargées et affichées");
@@ -304,13 +225,6 @@ public class NewSAVManagerView extends BaseManagerView<Object> {
 
         // TODO: Utiliser savService.searchSAVRequests()
         updateStatus("Recherche SAV effectuée (simulation)");
-    }
-
-    private void updateDetailPanel(Object selectedSAV) {
-        if (selectedSAV != null) {
-            updateStatus("Demande SAV sélectionnée");
-            // TODO: Mettre à jour les détails
-        }
     }
 
     // Actions des boutons
@@ -388,14 +302,15 @@ public class NewSAVManagerView extends BaseManagerView<Object> {
     }
 
     // Méthodes de filtrage
-    private void applyFilters(String status, String priority, java.time.LocalDate dateFrom, java.time.LocalDate dateTo) {
+    private void applyFilters(String status, String priority, java.time.LocalDate dateFrom,
+            java.time.LocalDate dateTo) {
         updateStatus("Application des filtres...");
         // TODO: Implémenter le filtrage
         loadSAVData();
     }
 
-    private void resetFilters(ComboBox<String> statusFilter, ComboBox<String> priorityFilter, 
-                             DatePicker dateFromPicker, DatePicker dateToPicker) {
+    private void resetFilters(ComboBox<String> statusFilter, ComboBox<String> priorityFilter,
+            DatePicker dateFromPicker, DatePicker dateToPicker) {
         statusFilter.setValue("Tous statuts");
         priorityFilter.setValue("Toutes priorités");
         dateFromPicker.setValue(null);
@@ -426,6 +341,6 @@ public class NewSAVManagerView extends BaseManagerView<Object> {
         // TODO: Ouvrir dialog de génération de rapports
     }
 
-    // Méthode redéfinie héritée de BaseManagerView - pas besoin de redéfinition; //
+    // Méthode redéfinie héritée de BaseManagerView - pas besoin de redéfinition
     // La méthode getService() est déjà disponible via BaseManagerView
 }

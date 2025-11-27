@@ -3,10 +3,15 @@ package com.magscene.magsav.desktop.view.planning;
 import com.magscene.magsav.desktop.component.CustomTabPane;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.view.vehicle.VehicleAvailabilityView;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
@@ -14,8 +19,10 @@ import javafx.scene.text.FontWeight;
  * Vue de gestion du planning pour MAGSAV 3.0
  */
 public class PlanningManagerView extends VBox {
-    
+
     private final ApiService apiService;
+    private HBox adaptiveToolbar;
+    private CustomTabPane tabPane;
 
     public PlanningManagerView(ApiService apiService) {
         this.apiService = apiService;
@@ -23,16 +30,75 @@ public class PlanningManagerView extends VBox {
     }
 
     private void initializeView() {
-        setPadding(new Insets(20));
-        setSpacing(15);
+        setPadding(new Insets(7));
+        setSpacing(0);
         getStyleClass().add("planning-manager-view");
 
-        // Contenu principal
-        CustomTabPane mainContent = createMainContent();
-        VBox.setVgrow(mainContent, Priority.ALWAYS);
+        // Toolbar adaptative en haut
+        adaptiveToolbar = new HBox();
+        adaptiveToolbar.setAlignment(Pos.CENTER_LEFT);
+        adaptiveToolbar.setPadding(new Insets(10));
+        adaptiveToolbar.getStyleClass().add("unified-toolbar");
 
-        // Pas de titre - déjà dans le header principal de l'application
-        getChildren().add(mainContent);
+        // Onglets en dessous
+        tabPane = createMainContent();
+        VBox.setVgrow(tabPane, Priority.ALWAYS);
+
+        // Écouter les changements d'onglet
+        tabPane.selectedTabProperty().addListener((obs, oldTab, newTab) -> {
+            updateToolbarForSelectedTab(newTab);
+        });
+
+        // Initialiser la toolbar avec le premier onglet
+        updateToolbarForSelectedTab(tabPane.getSelectedTab());
+
+        // Assemblage : Toolbar adaptative puis TabPane
+        getChildren().addAll(adaptiveToolbar, tabPane);
+    }
+
+    private void updateToolbarForSelectedTab(CustomTabPane.CustomTab selectedTab) {
+        if (selectedTab == null)
+            return;
+
+        adaptiveToolbar.getChildren().clear();
+
+        String tabText = selectedTab.getText();
+        if (tabText.contains("Événements")) {
+            // PlanningView a déjà sa propre toolbar intégrée, on masque celle du manager
+            adaptiveToolbar.setVisible(false);
+            adaptiveToolbar.setManaged(false);
+        } else if (tabText.contains("Véhicules")) {
+            // Réafficher la toolbar pour les autres onglets
+            adaptiveToolbar.setVisible(true);
+            adaptiveToolbar.setManaged(true);
+            // Toolbar simple pour Véhicules
+            HBox toolbar = createSimpleToolbar("Actualiser");
+            adaptiveToolbar.getChildren().add(toolbar);
+            HBox.setHgrow(toolbar, Priority.ALWAYS);
+        } else if (tabText.contains("Personnel")) {
+            // Réafficher la toolbar pour les autres onglets
+            adaptiveToolbar.setVisible(true);
+            adaptiveToolbar.setManaged(true);
+            // Toolbar simple pour Personnel
+            HBox toolbar = createSimpleToolbar("Actualiser");
+            adaptiveToolbar.getChildren().add(toolbar);
+            HBox.setHgrow(toolbar, Priority.ALWAYS);
+        }
+    }
+
+    private HBox createSimpleToolbar(String refreshLabel) {
+        HBox toolbar = new HBox(10);
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+
+        Button refreshBtn = new Button("🔄 " + refreshLabel);
+        refreshBtn.getStyleClass().add("action-button-secondary");
+        refreshBtn.setOnAction(e -> System.out.println(refreshLabel));
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        toolbar.getChildren().addAll(refreshBtn, spacer);
+        return toolbar;
     }
 
     private CustomTabPane createMainContent() {
@@ -62,164 +128,19 @@ public class PlanningManagerView extends VBox {
         return tabPane;
     }
 
-    private ComboBox<String> viewModeCombo;
-    private StackPane calendarContainer;
-    private Label periodLabel;
-    
-    private VBox createEventsView() {
-        VBox eventsView = new VBox(10);
-        eventsView.setPadding(new Insets(15));
+    private PlanningView planningView;
 
-        // Toolbar avec navigation et ComboBox de sélection de vue
-        HBox toolbar = createCalendarToolbar();
-        
-        // Container pour les différentes vues calendaires
-        calendarContainer = new StackPane();
-        VBox.setVgrow(calendarContainer, Priority.ALWAYS);
-        
-        // Afficher la vue Semaine par défaut
-        updateCalendarView("Semaine");
-        
-        eventsView.getChildren().addAll(toolbar, calendarContainer);
-        
+    private VBox createEventsView() {
+        // Utiliser la vraie PlanningView au lieu d'un placeholder
+        planningView = new PlanningView(apiService);
+
+        VBox eventsView = new VBox(0);
+        eventsView.setPadding(new Insets(0));
+        VBox.setVgrow(planningView, Priority.ALWAYS);
+
+        eventsView.getChildren().add(planningView);
+
         return eventsView;
-    }
-    
-    private HBox createCalendarToolbar() {
-        HBox toolbar = new HBox(10);
-        toolbar.setPadding(new Insets(10));
-        toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.getStyleClass().add("unified-toolbar");
-        
-        // Boutons de navigation
-        Button prevButton = new Button("◀");
-        prevButton.setOnAction(e -> System.out.println("Navigation précédent"));
-        
-        periodLabel = new Label("Semaine du 25 Nov 2025");
-        periodLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
-        
-        Button nextButton = new Button("▶");
-        nextButton.setOnAction(e -> System.out.println("Navigation suivant"));
-        
-        Button todayButton = new Button("Aujourd'hui");
-        todayButton.setOnAction(e -> System.out.println("Aller à aujourd'hui"));
-        
-        // ComboBox pour choisir la vue
-        viewModeCombo = new ComboBox<>();
-        viewModeCombo.getItems().addAll("Jour", "Semaine", "Mois", "Année");
-        viewModeCombo.setValue("Semaine");
-        viewModeCombo.setOnAction(e -> updateCalendarView(viewModeCombo.getValue()));
-        
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        // Boutons d'action
-        Button newEventBtn = new Button("➕ Nouvel Événement");
-        newEventBtn.setOnAction(e -> System.out.println("Créer événement"));
-        
-        Button refreshBtn = new Button("🔄 Actualiser");
-        refreshBtn.setOnAction(e -> System.out.println("Actualiser calendrier"));
-        
-        toolbar.getChildren().addAll(
-            prevButton, periodLabel, nextButton, todayButton, viewModeCombo,
-            spacer, 
-            newEventBtn, refreshBtn
-        );
-        
-        return toolbar;
-    }
-    
-    private void updateCalendarView(String viewMode) {
-        VBox view = null;
-        String period = "";
-        
-        switch (viewMode) {
-            case "Jour":
-                view = createDayCalendarPlaceholder();
-                period = "26 Novembre 2025";
-                break;
-            case "Semaine":
-                view = createWeekCalendarPlaceholder();
-                period = "Semaine du 25 Nov 2025";
-                break;
-            case "Mois":
-                view = createMonthCalendarPlaceholder();
-                period = "Novembre 2025";
-                break;
-            case "Année":
-                view = createYearCalendarPlaceholder();
-                period = "Année 2025";
-                break;
-        }
-        
-        if (view != null && calendarContainer != null) {
-            calendarContainer.getChildren().clear();
-            calendarContainer.getChildren().add(view);
-        }
-        
-        if (periodLabel != null) {
-            periodLabel.setText(period);
-        }
-    }
-    
-    private VBox createDayCalendarPlaceholder() {
-        VBox placeholder = new VBox(20);
-        placeholder.setPadding(new Insets(30));
-        placeholder.setAlignment(Pos.CENTER);
-        
-        Label title = new Label("📅 Vue Jour");
-        title.setFont(Font.font("System", FontWeight.BOLD, 18));
-        
-        Label info = new Label("Calendrier journalier avec créneaux horaires");
-        info.setFont(Font.font("System", FontWeight.NORMAL, 14));
-        
-        placeholder.getChildren().addAll(title, info);
-        return placeholder;
-    }
-    
-    private VBox createWeekCalendarPlaceholder() {
-        VBox placeholder = new VBox(20);
-        placeholder.setPadding(new Insets(30));
-        placeholder.setAlignment(Pos.CENTER);
-        
-        Label title = new Label("📆 Vue Semaine");
-        title.setFont(Font.font("System", FontWeight.BOLD, 18));
-        
-        Label info = new Label("Calendrier hebdomadaire avec 7 jours");
-        info.setFont(Font.font("System", FontWeight.NORMAL, 14));
-        
-        placeholder.getChildren().addAll(title, info);
-        return placeholder;
-    }
-    
-    private VBox createMonthCalendarPlaceholder() {
-        VBox placeholder = new VBox(20);
-        placeholder.setPadding(new Insets(30));
-        placeholder.setAlignment(Pos.CENTER);
-        
-        Label title = new Label("🗓️ Vue Mois");
-        title.setFont(Font.font("System", FontWeight.BOLD, 18));
-        
-        Label info = new Label("Calendrier mensuel avec grille complète");
-        info.setFont(Font.font("System", FontWeight.NORMAL, 14));
-        
-        placeholder.getChildren().addAll(title, info);
-        return placeholder;
-    }
-    
-    private VBox createYearCalendarPlaceholder() {
-        VBox placeholder = new VBox(20);
-        placeholder.setPadding(new Insets(30));
-        placeholder.setAlignment(Pos.CENTER);
-        
-        Label title = new Label("📊 Vue Année");
-        title.setFont(Font.font("System", FontWeight.BOLD, 18));
-        
-        Label info = new Label("Vue annuelle avec 12 mois");
-        info.setFont(Font.font("System", FontWeight.NORMAL, 14));
-        
-        placeholder.getChildren().addAll(title, info);
-        return placeholder;
     }
 
     private VBox createPersonnelView() {

@@ -5,17 +5,17 @@ package com.magscene.magsav.desktop.core.navigation;
  */
 public enum Route {
     DASHBOARD("Dashboard", "🏠", "dashboard"),
+    PLANNING("Planning", "📅", "planning"),
     EQUIPMENT("Parc Matériel", "📦", "equipment"),
-    SAV("SAV & Interventions", "🔧", "sav"),
-    CLIENTS("Clients", "👥", "clients"),
-    CONTRACTS("Contrats", "📋", "contracts"),
+    SAV("SAV", "🔧", "sav"),
     SALES("Ventes & Installations", "💼", "sales"),
     VEHICLES("Véhicules", "🚐", "vehicles"),
-    PERSONNEL("Personnel", "👤", "personnel"),
-    PLANNING("Planning", "📅", "planning"),
-    SUPPLIERS("Fournisseurs", "🏪", "suppliers"),
     MATERIAL_REQUESTS("Demandes Matériel", "📝", "material-requests"),
-    GROUPED_ORDERS("Commandes Groupées", "📦", "grouped-orders"),
+    GROUPED_ORDERS("Commandes", "📦", "grouped-orders"),
+    SUPPLIERS("Fournisseurs", "🏪", "suppliers"),
+    CLIENTS("Clients", "👥", "clients"),
+    PERSONNEL("Personnel", "👤", "personnel"),
+    CONTRACTS("Contrats", "📋", "contracts"),
     SETTINGS("Paramètres", "⚙", "settings");
     
     private final String displayName;

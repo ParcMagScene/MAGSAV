@@ -502,7 +502,7 @@ public class PlanningView extends BorderPane {
             logger.log(Level.SEVERE, "Erreur lors du chargement du planning", exception);
         });
 
-        Thread.ofVirtual().name("PlanningDataLoader").start(loadTask);
+        new Thread(loadTask, "PlanningDataLoader").start();
     }
 
     private void addSampleEvents() {
@@ -750,7 +750,7 @@ public class PlanningView extends BorderPane {
             // actualisé");
         });
 
-        Thread.ofVirtual().name("CalendarRefresh").start(refreshTask);
+        new Thread(refreshTask, "CalendarRefresh").start();
     }
 
     /**
@@ -837,7 +837,7 @@ public class PlanningView extends BorderPane {
         // l'événement '" + eventData.getTitle() + "' en cours...");
 
         // Exécution asynchrone
-        Thread.ofVirtual().name("SavePlanningEvent").start(saveTask);
+        new Thread(saveTask, "SavePlanningEvent").start();
     }
 
     /**

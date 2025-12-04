@@ -887,9 +887,79 @@ public class ApiService {
             System.out.println("📦 Chargement de " + getSimulatedProjectData().size() + " projets/affaires simulés");
             return getSimulatedProjectData();
         }
+        
+        // Fallback pour les demandes de matériel
+        if (endpoint.contains("material-request") || endpoint.contains("demande")) {
+            System.out.println("📦 Chargement des demandes de matériel simulées");
+            return getSimulatedMaterialRequestsData();
+        }
 
         System.out.println("⚠️ Aucune donnée disponible pour: " + endpoint);
         return new ArrayList<>();
+    }
+    
+    /**
+     * Données demandes de matériel simulées pour le mode hors-ligne
+     */
+    private List<Map<String, Object>> getSimulatedMaterialRequestsData() {
+        List<Map<String, Object>> requests = new ArrayList<>();
+        
+        Map<String, Object> req1 = new HashMap<>();
+        req1.put("id", 1L);
+        req1.put("requestNumber", "DM-2024-001");
+        req1.put("description", "Éclairage pour concert jazz - Festival été");
+        req1.put("requesterName", "Thomas Bernard");
+        req1.put("urgency", "HIGH");
+        req1.put("status", "PENDING_APPROVAL");
+        req1.put("submittedAt", "2024-11-15T10:30:00");
+        req1.put("justification", "Concert prévu le 25 novembre, éclairage indispensable pour mise en scène");
+        requests.add(req1);
+        
+        Map<String, Object> req2 = new HashMap<>();
+        req2.put("id", 2L);
+        req2.put("requestNumber", "DM-2024-002");
+        req2.put("description", "Réparation micros sans fil HF");
+        req2.put("requesterName", "Sophie Lambert");
+        req2.put("urgency", "URGENT");
+        req2.put("status", "APPROVED");
+        req2.put("submittedAt", "2024-11-14T14:15:00");
+        req2.put("justification", "Micros défaillants pour spectacle urgent samedi prochain");
+        requests.add(req2);
+        
+        Map<String, Object> req3 = new HashMap<>();
+        req3.put("id", 3L);
+        req3.put("requestNumber", "DM-2024-003");
+        req3.put("description", "Câblage sonorisation - Renouvellement stock");
+        req3.put("requesterName", "Marc Rousseau");
+        req3.put("urgency", "NORMAL");
+        req3.put("status", "INTEGRATED");
+        req3.put("submittedAt", "2024-11-12T09:00:00");
+        req3.put("justification", "Renouvellement du stock de câbles XLR et HP");
+        requests.add(req3);
+        
+        Map<String, Object> req4 = new HashMap<>();
+        req4.put("id", 4L);
+        req4.put("requestNumber", "DM-2024-004");
+        req4.put("description", "Projecteurs LED supplémentaires");
+        req4.put("requesterName", "Julie Fontaine");
+        req4.put("urgency", "NORMAL");
+        req4.put("status", "PENDING_APPROVAL");
+        req4.put("submittedAt", "2024-11-18T11:00:00");
+        req4.put("justification", "Installation permanente théâtre municipal");
+        requests.add(req4);
+        
+        Map<String, Object> req5 = new HashMap<>();
+        req5.put("id", 5L);
+        req5.put("requestNumber", "DM-2024-005");
+        req5.put("description", "Pièces de rechange gradateurs");
+        req5.put("requesterName", "Pierre Durand");
+        req5.put("urgency", "LOW");
+        req5.put("status", "APPROVED");
+        req5.put("submittedAt", "2024-11-10T16:30:00");
+        req5.put("justification", "Stock de sécurité pour maintenance préventive");
+        requests.add(req5);
+        
+        return requests;
     }
 
     /**

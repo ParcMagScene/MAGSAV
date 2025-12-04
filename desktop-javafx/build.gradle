@@ -3,7 +3,9 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
-mainClassName = 'com.magscene.magsav.desktop.MagsavDesktopApplication'
+application {
+    mainClass = 'com.magscene.magsav.desktop.MagsavDesktopApplication'
+}
 
 javafx {
     version = '21'

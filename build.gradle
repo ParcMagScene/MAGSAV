@@ -32,8 +32,8 @@ configure(subprojects.findAll { it.name != 'web-frontend' }) {
     apply plugin: 'java'
     
     java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     
     // Configuration UTF-8 pour toutes les tâches de compilation

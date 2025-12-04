@@ -335,11 +335,15 @@ public class MagsavDesktopApplication extends Application {
      * Création des boutons de navigation
      */
     private Button[] createNavigationButtons() {
+        // Ordre des boutons selon la demande utilisateur:
+        // 1 Dashboard, 2 Planning, 3 Parc Matériel, 4 SAV, 5 Ventes et Installations,
+        // 6 Véhicules, 7 Demandes Matériel, 8 Commandes, 9 Fournisseurs,
+        // 10 Clients, 11 Personnel, 12 Paramètres
         Route[] routes = {
-                Route.DASHBOARD, Route.SAV, Route.EQUIPMENT,
-                Route.CLIENTS, Route.SALES,
-                Route.VEHICLES, Route.PERSONNEL, Route.PLANNING,
-                Route.SUPPLIERS, Route.MATERIAL_REQUESTS, Route.GROUPED_ORDERS,
+                Route.DASHBOARD, Route.PLANNING, Route.EQUIPMENT,
+                Route.SAV, Route.SALES,
+                Route.VEHICLES, Route.MATERIAL_REQUESTS, Route.GROUPED_ORDERS,
+                Route.SUPPLIERS, Route.CLIENTS, Route.PERSONNEL,
                 Route.SETTINGS
         };
 

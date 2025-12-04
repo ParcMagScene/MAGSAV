@@ -4,7 +4,9 @@ plugins {
     id 'application'
 }
 
-mainClassName = 'com.magscene.magsav.backend.MagsavApplication'
+application {
+    mainClass = 'com.magscene.magsav.backend.MagsavApplication'
+}
 
 dependencies {
     // Common models shared across modules

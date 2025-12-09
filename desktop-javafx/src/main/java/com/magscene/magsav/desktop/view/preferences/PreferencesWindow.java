@@ -1,5 +1,6 @@
 package com.magscene.magsav.desktop.view.preferences;
 
+import com.magscene.magsav.desktop.config.EquipmentPreferencesManager;
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
 import com.magscene.magsav.desktop.theme.StandardColors;
 import com.magscene.magsav.desktop.theme.ThemeManager;
@@ -189,7 +190,25 @@ public class PreferencesWindow extends Stage {
         fontBox.getChildren().addAll(fontSizeLabel, fontSizeSlider, fontValueLabel);
         fontSection.getChildren().addAll(fontLabel, fontBox);
 
-        content.getChildren().addAll(titleLabel, new Separator(), displaySection, new Separator(), fontSection);
+        // Section Parc Matériel
+        VBox equipmentSection = new VBox(10);
+        Label equipmentLabel = new Label("🏭 Parc Matériel");
+        equipmentLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
+        
+        EquipmentPreferencesManager equipmentPrefs = EquipmentPreferencesManager.getInstance();
+        
+        CheckBox showAllOwnersCheckbox = new CheckBox("Afficher les équipements de tous les propriétaires");
+        showAllOwnersCheckbox.setSelected(equipmentPrefs.isShowAllOwners());
+        showAllOwnersCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            equipmentPrefs.setShowAllOwners(newVal);
+        });
+        
+        Label ownerHint = new Label("    Par défaut, seuls les équipements MAG SCENE sont affichés");
+        ownerHint.setStyle("-fx-text-fill: #888888; -fx-font-size: 11px;");
+        
+        equipmentSection.getChildren().addAll(equipmentLabel, showAllOwnersCheckbox, ownerHint);
+
+        content.getChildren().addAll(titleLabel, new Separator(), displaySection, new Separator(), fontSection, new Separator(), equipmentSection);
         return content;
     }
 

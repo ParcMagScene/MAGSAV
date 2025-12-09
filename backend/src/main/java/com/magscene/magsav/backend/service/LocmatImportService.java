@@ -32,6 +32,8 @@ public class LocmatImportService {
     private CategoryRepository categoryRepository;
     
     // UID basés sur les catégories (3 lettres + 4 chiffres)
+    // Cache pour les compteurs d'UID par préfixe (évite les requêtes répétitives)
+    private Map<String, Integer> uidCounterCache = new HashMap<>();
     
     /**
      * Importer les données depuis le fichier Excel LOCMAT
@@ -39,6 +41,9 @@ public class LocmatImportService {
     public ImportResult importLocmatData(MultipartFile file) throws IOException {
         logger.info("🚀 Début import LOCMAT - Fichier: {}, Taille: {} bytes", file.getOriginalFilename(), file.getSize());
         ImportResult result = new ImportResult();
+        
+        // Réinitialiser le cache des UIDs au début de chaque import
+        uidCounterCache.clear();
         
         try (InputStream inputStream = file.getInputStream();
              XSSFWorkbook workbook = new XSSFWorkbook(inputStream)) {
@@ -220,8 +225,10 @@ public class LocmatImportService {
                                      Category subCategory, Category brandCategory, 
                                      Category ownerCategory, ImportResult result) {
         try {
-            // Générer UID basé sur la catégorie (3 lettres + 4 chiffres)
-            String uid = generateCategoryBasedUID(row.categorie);
+            // Générer UID :
+            // - Pour MAG SCENE : basé sur la catégorie (3 lettres catégorie + 4 chiffres)
+            // - Pour autres propriétaires : basé sur le propriétaire (3 lettres propriétaire + 4 chiffres)
+            String uid = generateUID(row.categorie, row.proprietaire);
             
             // QR Code = UID
             equipment.setQrCode(uid);
@@ -287,19 +294,62 @@ public class LocmatImportService {
     }
     
     /**
-     * Générer un UID basé sur la catégorie (3 lettres + 4 chiffres)
+     * Générer un UID (3 lettres + 4 chiffres)
+     * - Pour MAG SCENE : basé sur la catégorie
+     * - Pour autres propriétaires : basé sur les 3 premières lettres du propriétaire
      */
-    private String generateCategoryBasedUID(String category) {
-        String prefix = getCategoryPrefix(category);
-        String uid;
-        int counter = 1;
+    private String generateUID(String category, String proprietaire) {
+        String prefix;
         
-        do {
-            uid = prefix + String.format("%04d", counter);
-            counter++;
-        } while (equipmentRepository.existsByQrCode(uid));
+        // Vérifier si c'est MAG SCENE ou autre propriétaire
+        boolean isMagScene = proprietaire == null || 
+                            proprietaire.trim().isEmpty() || 
+                            proprietaire.trim().toUpperCase().contains("MAG") ||
+                            proprietaire.trim().toUpperCase().equals("MAG SCENE");
+        
+        if (isMagScene) {
+            // MAG SCENE : préfixe basé sur la catégorie
+            prefix = getCategoryPrefix(category);
+        } else {
+            // Autre propriétaire : préfixe basé sur les 3 premières lettres du propriétaire
+            prefix = getOwnerPrefix(proprietaire);
+        }
+        
+        // Utiliser le cache pour obtenir le prochain numéro
+        if (!uidCounterCache.containsKey(prefix)) {
+            // Première fois pour ce préfixe : récupérer le max depuis la DB
+            Integer maxNum = equipmentRepository.findMaxUidNumberByPrefix(prefix);
+            uidCounterCache.put(prefix, maxNum != null ? maxNum + 1 : 1);
+        }
+        
+        int counter = uidCounterCache.get(prefix);
+        String uid = prefix + String.format("%04d", counter);
+        
+        // Incrémenter le compteur pour le prochain appel
+        uidCounterCache.put(prefix, counter + 1);
         
         return uid;
+    }
+    
+    /**
+     * Obtenir le préfixe de 3 lettres basé sur le propriétaire
+     */
+    private String getOwnerPrefix(String proprietaire) {
+        if (proprietaire == null || proprietaire.trim().isEmpty()) {
+            return "EXT"; // EXTerne par défaut
+        }
+        
+        String owner = proprietaire.trim().toUpperCase()
+                .replaceAll("[^A-Z]", ""); // Garder uniquement les lettres
+        
+        if (owner.length() >= 3) {
+            return owner.substring(0, 3);
+        } else if (owner.length() > 0) {
+            // Compléter avec des X si moins de 3 lettres
+            return (owner + "XXX").substring(0, 3);
+        } else {
+            return "EXT";
+        }
     }
     
     /**

@@ -99,7 +99,7 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
     List<Object[]> getEquipmentCountByCategory();
     
     /**
-     * Ãƒâ€°quipements nÃƒÂ©cessitant une maintenance (exemple: anciens ou en panne)
+     * Équipements nécessitant une maintenance (exemple: anciens ou en panne)
      */
     @Query("""
         SELECT e FROM Equipment e 
@@ -108,5 +108,16 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
         ORDER BY e.updatedAt ASC
         """)
     List<Equipment> findEquipmentNeedingMaintenance();
+    
+    /**
+     * Récupérer tous les QR codes existants avec un préfixe donné (pour optimiser la génération d'UID)
+     */
+    @Query("SELECT e.qrCode FROM Equipment e WHERE e.qrCode LIKE :prefix%")
+    List<String> findQrCodesByPrefix(@Param("prefix") String prefix);
+    
+    /**
+     * Trouver le plus grand numéro d'UID pour un préfixe donné
+     */
+    @Query("SELECT MAX(CAST(SUBSTRING(e.qrCode, 4) AS int)) FROM Equipment e WHERE e.qrCode LIKE :prefix% AND LENGTH(e.qrCode) = 7")
+    Integer findMaxUidNumberByPrefix(@Param("prefix") String prefix);
 }
-

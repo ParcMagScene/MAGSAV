@@ -2,10 +2,12 @@ package com.magscene.magsav.desktop.view.equipment;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.config.EquipmentPreferencesManager;
 import com.magscene.magsav.desktop.service.business.EquipmentService;
 import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
@@ -15,9 +17,13 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -29,13 +35,22 @@ import javafx.scene.layout.VBox;
 public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> {
     private TableView<EquipmentItem> equipmentTable;
     private ObservableList<EquipmentItem> equipmentData; // Déclaration sans initialisation
+    private ObservableList<EquipmentItem> allEquipmentData; // Données complètes pour filtrage local
     private EquipmentService equipmentService;
+    
+    // Références aux filtres pour réinitialisation
+    private TextField searchField;
+    private ComboBox<String> categoryCombo;
+    private ComboBox<String> subCategoryCombo;
+    private ComboBox<String> statusCombo;
+    private ComboBox<String> ownerCombo;
 
     @Override
     protected void initializeContent() {
         // CRITICAL: Initialiser equipmentData ICI
         if (equipmentData == null) {
             equipmentData = FXCollections.observableArrayList();
+            allEquipmentData = FXCollections.observableArrayList();
             System.out.println("✅ equipmentData initialisé");
         }
 
@@ -68,19 +83,160 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> {
     protected void addCustomToolbarItems(HBox toolbar) {
         // 🔍 Recherche avec ViewUtils
         VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom, marque, QR code...",
-                text -> performSearch(text));
+                text -> applyFilters());
+        // Récupérer le TextField de la recherche pour le reset
+        searchField = (TextField) searchBox.getChildren().stream()
+                .filter(n -> n instanceof TextField)
+                .findFirst().orElse(null);
 
-        // 🎵 Filtre catégorie avec ViewUtils
+        // 🎵 Filtre catégorie principale avec ViewUtils
         VBox categoryBox = ViewUtils.createFilterBox("🎵 Catégorie",
-                new String[] { "Toutes catégories", "Audio", "Éclairage", "Vidéo", "Structure" },
-                "Toutes catégories", value -> loadEquipmentData());
+                new String[] { "Toutes catégories", "SONORISATION", "ECLAIRAGE", "VIDEO", "STRUCTURE" },
+                "Toutes catégories", value -> applyFilters());
+        // Récupérer le ComboBox de catégorie pour le reset
+        categoryCombo = (ComboBox<String>) categoryBox.getChildren().stream()
+                .filter(n -> n instanceof ComboBox)
+                .findFirst().orElse(null);
+
+        // 📁 Filtre sous-catégorie avec ViewUtils
+        VBox subCategoryBox = ViewUtils.createFilterBox("📁 Sous-catégorie",
+                new String[] { "Toutes sous-catégories", "ENCEINTE", "ENCEINTES PASSIVES", "AMPLIFICATEUR", 
+                    "CONSOLE", "SYSTEMES HF", "CABLAGE", "DISTRIBUTION", "PERIPHERIQUES", "LECTEURS",
+                    "MICROS DYNAMIQUES", "MICROS STATIQUES", "BACKLINE",
+                    "PROJECTEURS ASSERVIS", "PROJECTEURS TRADITIONNELS", "BLOC DE PUISSANCE", "GRADATEURS",
+                    "ACCROCHES", "MOTEUR", "FLIGHT-CASE", "HABILLAGE",
+                    "ECRANS", "ECRANS LED" },
+                "Toutes sous-catégories", value -> applyFilters());
+        // Récupérer le ComboBox de sous-catégorie pour le reset
+        subCategoryCombo = (ComboBox<String>) subCategoryBox.getChildren().stream()
+                .filter(n -> n instanceof ComboBox)
+                .findFirst().orElse(null);
 
         // 📊 Filtre statut avec ViewUtils
         VBox statusBox = ViewUtils.createFilterBox("📊 Statut",
                 new String[] { "Tous statuts", "Disponible", "En location", "Maintenance", "Hors service" },
-                "Tous statuts", value -> loadEquipmentData());
+                "Tous statuts", value -> applyFilters());
+        // Récupérer le ComboBox de statut pour le reset
+        statusCombo = (ComboBox<String>) statusBox.getChildren().stream()
+                .filter(n -> n instanceof ComboBox)
+                .findFirst().orElse(null);
 
-        toolbar.getChildren().addAll(searchBox, categoryBox, statusBox);
+        // 🏢 Filtre propriétaire avec ViewUtils
+        // Par défaut MAG SCENE, sauf si préférence "Tous propriétaires" activée
+        EquipmentPreferencesManager prefManager = EquipmentPreferencesManager.getInstance();
+        String defaultOwner = prefManager.isShowAllOwners() ? "Tous propriétaires" : "MAG SCENE";
+        VBox ownerBox = ViewUtils.createFilterBox("🏢 Propriétaire",
+                new String[] { "Tous propriétaires", "MAG SCENE", "RENTAL", "NICLEN", "AED RENT" },
+                defaultOwner, value -> applyFilters());
+        // Récupérer le ComboBox de propriétaire pour le reset
+        ownerCombo = (ComboBox<String>) ownerBox.getChildren().stream()
+                .filter(n -> n instanceof ComboBox)
+                .findFirst().orElse(null);
+        
+        // Enregistrer le callback pour rafraîchir quand les préférences changent
+        prefManager.setOnPreferencesChanged(() -> {
+            if (ownerCombo != null) {
+                String newDefault = prefManager.isShowAllOwners() ? "Tous propriétaires" : "MAG SCENE";
+                ownerCombo.setValue(newDefault);
+                applyFilters();
+            }
+        });
+
+        // 🔄 Bouton réinitialiser les filtres
+        Button resetButton = new Button("🔄 Réinitialiser");
+        resetButton.getStyleClass().add("secondary-button");
+        resetButton.setOnAction(e -> resetFilters());
+        VBox resetBox = new VBox(5);
+        resetBox.getChildren().addAll(new Label(" "), resetButton);
+
+        toolbar.getChildren().addAll(searchBox, categoryBox, subCategoryBox, statusBox, ownerBox, resetBox);
+    }
+    
+    /**
+     * Réinitialise tous les filtres à leurs valeurs par défaut
+     */
+    private void resetFilters() {
+        if (searchField != null) {
+            searchField.clear();
+        }
+        if (categoryCombo != null) {
+            categoryCombo.setValue("Toutes catégories");
+        }
+        if (subCategoryCombo != null) {
+            subCategoryCombo.setValue("Toutes sous-catégories");
+        }
+        if (statusCombo != null) {
+            statusCombo.setValue("Tous statuts");
+        }
+        if (ownerCombo != null) {
+            // Remettre au propriétaire par défaut selon les préférences
+            EquipmentPreferencesManager prefManager = EquipmentPreferencesManager.getInstance();
+            String defaultOwner = prefManager.isShowAllOwners() ? "Tous propriétaires" : "MAG SCENE";
+            ownerCombo.setValue(defaultOwner);
+        }
+        // Recharger toutes les données
+        equipmentData.setAll(allEquipmentData);
+        updateStatus("✅ Filtres réinitialisés - " + equipmentData.size() + " équipements");
+    }
+    
+    /**
+     * Applique les filtres de recherche, catégorie et statut
+     */
+    private void applyFilters() {
+        String searchText = (searchField != null) ? searchField.getText().toLowerCase().trim() : "";
+        String selectedCategory = (categoryCombo != null) ? categoryCombo.getValue() : "Toutes catégories";
+        String selectedSubCategory = (subCategoryCombo != null) ? subCategoryCombo.getValue() : "Toutes sous-catégories";
+        String selectedStatus = (statusCombo != null) ? statusCombo.getValue() : "Tous statuts";
+        String selectedOwner = (ownerCombo != null) ? ownerCombo.getValue() : "Tous propriétaires";
+        
+        // Filtrage local sur allEquipmentData
+        List<EquipmentItem> filtered = allEquipmentData.stream()
+                .filter(item -> {
+                    // Filtre recherche
+                    if (!searchText.isEmpty()) {
+                        String name = item.getName() != null ? item.getName().toLowerCase() : "";
+                        String brand = item.getBrand() != null ? item.getBrand().toLowerCase() : "";
+                        String qrCode = item.getQrCode() != null ? item.getQrCode().toLowerCase() : "";
+                        String supplier = item.getSupplier() != null ? item.getSupplier().toLowerCase() : "";
+                        if (!name.contains(searchText) && !brand.contains(searchText) && 
+                            !qrCode.contains(searchText) && !supplier.contains(searchText)) {
+                            return false;
+                        }
+                    }
+                    // Filtre catégorie parente
+                    if (!"Toutes catégories".equals(selectedCategory)) {
+                        String parentCategory = item.getParentCategory() != null ? item.getParentCategory() : "";
+                        if (!parentCategory.equalsIgnoreCase(selectedCategory)) {
+                            return false;
+                        }
+                    }
+                    // Filtre sous-catégorie
+                    if (!"Toutes sous-catégories".equals(selectedSubCategory)) {
+                        String subCategory = item.getCategory() != null ? item.getCategory() : "";
+                        if (!subCategory.equalsIgnoreCase(selectedSubCategory)) {
+                            return false;
+                        }
+                    }
+                    // Filtre statut
+                    if (!"Tous statuts".equals(selectedStatus)) {
+                        String status = item.getStatus() != null ? item.getStatus() : "";
+                        if (!status.equalsIgnoreCase(selectedStatus)) {
+                            return false;
+                        }
+                    }
+                    // Filtre propriétaire
+                    if (!"Tous propriétaires".equals(selectedOwner)) {
+                        String owner = item.getSupplier() != null ? item.getSupplier() : "";
+                        if (!owner.equalsIgnoreCase(selectedOwner)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                .collect(Collectors.toList());
+        
+        equipmentData.setAll(filtered);
+        updateStatus("🔍 " + filtered.size() + " équipements trouvés");
     }
 
     private TableView<EquipmentItem> createEquipmentTable() {
@@ -92,8 +248,10 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> {
         TableColumn<EquipmentItem, String> idCol = new TableColumn<>("ID");
         TableColumn<EquipmentItem, String> nameCol = new TableColumn<>("Nom");
         TableColumn<EquipmentItem, String> brandCol = new TableColumn<>("Marque");
-        TableColumn<EquipmentItem, String> categoryCol = new TableColumn<>("Catégorie");
+        TableColumn<EquipmentItem, String> parentCategoryCol = new TableColumn<>("Catégorie");
+        TableColumn<EquipmentItem, String> categoryCol = new TableColumn<>("Sous-catégorie");
         TableColumn<EquipmentItem, String> statusCol = new TableColumn<>("Statut");
+        TableColumn<EquipmentItem, String> supplierCol = new TableColumn<>("Propriétaire");
         TableColumn<EquipmentItem, String> qrCol = new TableColumn<>("QR Code");
         TableColumn<EquipmentItem, String> locationCol = new TableColumn<>("Emplacement");
 
@@ -101,8 +259,10 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> {
         idCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getId()));
         nameCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
         brandCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getBrand()));
+        parentCategoryCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getParentCategory()));
         categoryCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCategory()));
         statusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus()));
+        supplierCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getSupplier()));
         qrCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getQrCode()));
         locationCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getLocation()));
 
@@ -110,12 +270,14 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> {
         idCol.setPrefWidth(60);
         nameCol.setPrefWidth(200);
         brandCol.setPrefWidth(120);
+        parentCategoryCol.setPrefWidth(120);
         categoryCol.setPrefWidth(150);
-        statusCol.setPrefWidth(120);
-        qrCol.setPrefWidth(120);
-        locationCol.setPrefWidth(150);
+        statusCol.setPrefWidth(100);
+        supplierCol.setPrefWidth(120);
+        qrCol.setPrefWidth(100);
+        locationCol.setPrefWidth(120);
 
-        table.getColumns().addAll(idCol, nameCol, brandCol, categoryCol, statusCol, qrCol, locationCol);
+        table.getColumns().addAll(idCol, nameCol, brandCol, parentCategoryCol, categoryCol, statusCol, supplierCol, qrCol, locationCol);
 
         // Style de sélection uniforme
         table.setRowFactory(tv -> {
@@ -157,10 +319,15 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> {
                             new TypeReference<List<Map<String, Object>>>() {
                             });
 
+                    // Stocker les données complètes pour le filtrage local
+                    allEquipmentData.clear();
                     equipmentData.clear();
+                    
                     // Wrapper chaque Map dans un EquipmentItem
                     for (Map<String, Object> map : equipmentList) {
-                        equipmentData.add(new EquipmentItem(map));
+                        EquipmentItem item = new EquipmentItem(map);
+                        allEquipmentData.add(item);
+                        equipmentData.add(item);
                     }
 
                     // Forcer le rafraîchissement du tableau
@@ -189,8 +356,8 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> {
     }
 
     private void performSearch(String query) {
-        updateStatus("Recherche: " + query);
-        // TODO: Implémenter la recherche
+        // Méthode conservée pour compatibilité, mais applyFilters() est utilisé
+        applyFilters();
     }
 
     @Override

@@ -1,0 +1,17 @@
+[
+    {
+        "key": "ctrl+shift+o",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Optimiser VS Code"
+    },
+    {
+        "key": "ctrl+shift+r",
+        "command": "workbench.action.tasks.runTask", 
+        "args": "Run MAGSAV Desktop"
+    },
+    {
+        "key": "ctrl+shift+b",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Build Desktop JavaFX"
+    }
+]

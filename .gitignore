@@ -5,11 +5,18 @@ target/
 dist/
 
 # IDE files
-.vscode/
 .idea/
 *.iml
 *.iws
 *.ipr
+
+# VS Code - Keep config files but ignore others
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/keybindings.json
 
 # Java
 *.class

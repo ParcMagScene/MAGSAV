@@ -23,8 +23,12 @@ allprojects {
 ext {
     springBootVersion = '3.3.5'
     javafxVersion = '21'
-    junitVersion = '5.10.0'
-    jacksonVersion = '2.15.2'
+    junitVersion = '5.10.3'
+    jacksonVersion = '2.18.2'
+    slf4jVersion = '2.0.16'
+    logbackVersion = '1.5.12'
+    poiVersion = '5.4.0'
+    zxingVersion = '3.5.3'
 }
 
 // Configuration Java commune (seulement pour modules Java)
@@ -34,6 +38,9 @@ configure(subprojects.findAll { it.name != 'web-frontend' }) {
     java {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
     }
     
     // Configuration UTF-8 pour toutes les tâches de compilation

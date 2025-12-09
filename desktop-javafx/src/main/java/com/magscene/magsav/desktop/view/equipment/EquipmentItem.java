@@ -37,6 +37,24 @@ public class EquipmentItem implements DetailPanelProvider {
     public String getCategory() {
         return (String) data.get("category");
     }
+    
+    /**
+     * Récupère la catégorie parente depuis les notes d'import LOCMAT
+     * Format attendu: "Catégorie: SONORISATION\nSous-catégorie: ENCEINTE"
+     */
+    public String getParentCategory() {
+        String notes = getNotes();
+        if (notes != null && notes.contains("Catégorie:")) {
+            // Extraire la catégorie des notes
+            int start = notes.indexOf("Catégorie:") + 10;
+            int end = notes.indexOf("\n", start);
+            if (end > start) {
+                return notes.substring(start, end).trim();
+            }
+        }
+        // Fallback: utiliser la catégorie comme catégorie parente
+        return getCategory();
+    }
 
     public String getStatus() {
         return (String) data.get("status");
@@ -48,6 +66,28 @@ public class EquipmentItem implements DetailPanelProvider {
 
     public String getLocation() {
         return (String) data.get("location");
+    }
+    
+    public String getSupplier() {
+        // D'abord essayer le champ supplier
+        String supplier = (String) data.get("supplier");
+        if (supplier != null && !supplier.isEmpty()) {
+            return supplier;
+        }
+        // Sinon extraire le propriétaire des notes LOCMAT
+        String notes = getNotes();
+        if (notes != null && notes.contains("Propriétaire:")) {
+            int start = notes.indexOf("Propriétaire:") + 13;
+            int end = notes.indexOf("\n", start);
+            if (end > start) {
+                return notes.substring(start, end).trim();
+            }
+        }
+        return null;
+    }
+    
+    public String getNotes() {
+        return (String) data.get("notes");
     }
 
     @Override
@@ -83,8 +123,12 @@ public class EquipmentItem implements DetailPanelProvider {
                 new Label("Marque: " + getBrand()),
                 new Label("Catégorie: " + getCategory()),
                 new Label("Statut: " + getStatus()),
+                new Label("Propriétaire: " + (getSupplier() != null ? getSupplier() : "Non défini")),
                 new Label("QR Code: " + getQrCode()),
                 new Label("Localisation: " + getLocation()));
+        if (getNotes() != null && !getNotes().isEmpty()) {
+            content.getChildren().add(new Label("Notes: " + getNotes()));
+        }
         return content;
     }
 }

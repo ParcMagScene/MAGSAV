@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Backend Start",
+            "type": "shell",
+            "command": "./gradlew.bat :backend:bootRun --console=plain",
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "Desktop Run",
+            "type": "shell", 
+            "command": "./gradlew.bat :desktop-javafx:run --console=plain",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build All",
+            "type": "shell",
+            "command": "./gradlew.bat build -x test --console=plain",
+            "group": {"kind": "build", "isDefault": true},
+            "problemMatcher": ["$gradle"]
+        }
+    ]
+}

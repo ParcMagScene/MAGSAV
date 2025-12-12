@@ -1,6 +1,6 @@
 package com.magscene.magsav.desktop.util;
 
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -21,7 +21,7 @@ public class ToolbarUtils {
     // ========================================
 
     private static String getToolbarStyle() {
-        return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+        return "-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
                 "-fx-background-radius: 8;";
     }
 
@@ -30,7 +30,7 @@ public class ToolbarUtils {
     private static final String ACTION_LABEL_STYLE = "-fx-text-fill: #6B71F2;";
 
     private static String getComboStyle() {
-        return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+        return "-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
                 "-fx-text-fill: #6B71F2; " +
                 "-fx-prompt-text-fill: #6B71F2;";
     }

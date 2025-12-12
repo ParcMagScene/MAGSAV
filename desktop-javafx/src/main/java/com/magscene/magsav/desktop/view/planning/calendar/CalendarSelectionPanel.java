@@ -7,7 +7,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +77,7 @@ public class CalendarSelectionPanel extends VBox {
                 colorIndicator.setFill(calendarItem.getColor());
                 colorIndicator.setOpacity(1.0);
             } else {
-                colorIndicator.setFill(ThemeManager.getInstance().isDarkTheme() ? Color.GRAY : Color.LIGHTGRAY);
+                colorIndicator.setFill(UnifiedThemeManager.getInstance().isDarkTheme() ? Color.GRAY : Color.LIGHTGRAY);
                 colorIndicator.setOpacity(0.5);
             }
         }

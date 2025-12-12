@@ -138,7 +138,7 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
         orderTable = new TableView<>();
         orderTable.setItems(orderList);
         orderTable.setStyle("-fx-background-color: "
-                + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentUIColor()
+                + com.magscene.magsav.desktop.theme.ThemeConstants.BACKGROUND_PRIMARY
                 + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
 
         // Colonne Référence

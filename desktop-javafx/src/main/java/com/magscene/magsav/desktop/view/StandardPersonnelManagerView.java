@@ -46,7 +46,6 @@ public class StandardPersonnelManagerView extends AbstractManagerView {
     private Button addButton;
     private Button editButton;
     private Button deleteButton;
-    private Button refreshButton;
     private Button exportButton;
     
     // ========================================
@@ -123,10 +122,6 @@ public class StandardPersonnelManagerView extends AbstractManagerView {
             getTableSelectionProperty().isNull());
         addActionButton(deleteButton);
         
-        // 🔄 Actualiser données
-        refreshButton = ViewUtils.createRefreshButton("🔄 Actualiser", this::loadPersonnelData);
-        addActionButton(refreshButton);
-        
         // 📊 Exporter liste (bouton personnalisé)
         exportButton = new Button("📊 Exporter");
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
@@ -148,7 +143,6 @@ public class StandardPersonnelManagerView extends AbstractManagerView {
     // ========================================
     // 🔧 CRÉATION DE LA TABLE; // ========================================
     
-    @SuppressWarnings("unchecked")
     private void createPersonnelTable() {
         personnelTable = new TableView<>();
         personnelTable.setItems(sortedData);

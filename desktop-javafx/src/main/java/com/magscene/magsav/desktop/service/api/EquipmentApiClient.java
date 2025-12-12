@@ -53,14 +53,21 @@ public class EquipmentApiClient extends BaseApiClient {
     public CompletableFuture<String> searchEquipments(String query, String category, String status) {
         StringBuilder endpoint = new StringBuilder("/api/equipment/search?");
         
-        if (query != null && !query.trim().isEmpty()) {
-            endpoint.append("q=").append(query).append("&");
-        }
-        if (category != null && !category.equals("Toutes catégories")) {
-            endpoint.append("category=").append(category).append("&");
-        }
-        if (status != null && !status.equals("Tous statuts")) {
-            endpoint.append("status=").append(status).append("&");
+        try {
+            if (query != null && !query.trim().isEmpty()) {
+                String encodedQuery = java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8);
+                endpoint.append("q=").append(encodedQuery).append("&");
+            }
+            if (category != null && !category.equals("Toutes catégories")) {
+                String encodedCategory = java.net.URLEncoder.encode(category, java.nio.charset.StandardCharsets.UTF_8);
+                endpoint.append("category=").append(encodedCategory).append("&");
+            }
+            if (status != null && !status.equals("Tous statuts")) {
+                String encodedStatus = java.net.URLEncoder.encode(status, java.nio.charset.StandardCharsets.UTF_8);
+                endpoint.append("status=").append(encodedStatus).append("&");
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur d'encodage URL: " + e.getMessage());
         }
         
         // Supprimer le dernier & si présent

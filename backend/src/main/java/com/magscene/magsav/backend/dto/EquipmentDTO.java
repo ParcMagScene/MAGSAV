@@ -30,6 +30,7 @@ public class EquipmentDTO {
     private Double insuranceValue;
     private LocalDateTime lastMaintenanceDate;
     private LocalDateTime nextMaintenanceDate;
+    private String photoPath;
     
     // Constructeur vide
     public EquipmentDTO() {}
@@ -59,6 +60,7 @@ public class EquipmentDTO {
         this.insuranceValue = equipment.getInsuranceValue();
         this.lastMaintenanceDate = equipment.getLastMaintenanceDate();
         this.nextMaintenanceDate = equipment.getNextMaintenanceDate();
+        this.photoPath = equipment.getPhotoPath();
     }
 
     // Getters et Setters
@@ -130,4 +132,7 @@ public class EquipmentDTO {
     
     public LocalDateTime getNextMaintenanceDate() { return nextMaintenanceDate; }
     public void setNextMaintenanceDate(LocalDateTime nextMaintenanceDate) { this.nextMaintenanceDate = nextMaintenanceDate; }
+    
+    public String getPhotoPath() { return photoPath; }
+    public void setPhotoPath(String photoPath) { this.photoPath = photoPath; }
 }

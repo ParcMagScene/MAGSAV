@@ -50,9 +50,46 @@ public interface SearchProvider {
     }
     
     /**
+     * Obtient les résultats de la dernière recherche sous forme de liste
+     * Chaque élément contient un titre descriptif du résultat
+     * 
+     * @return liste des résultats (max 5 par défaut)
+     */
+    default java.util.List<SearchResult> getLastResults() {
+        return java.util.Collections.emptyList();
+    }
+    
+    /**
      * Efface les résultats de recherche du module
      */
     default void clearSearchResults() {
         performSearch("");
+    }
+    
+    /**
+     * Classe représentant un résultat de recherche
+     */
+    public static class SearchResult {
+        private final String id;
+        private final String title;
+        private final String subtitle;
+        private final String type;
+        
+        public SearchResult(String id, String title, String subtitle, String type) {
+            this.id = id;
+            this.title = title;
+            this.subtitle = subtitle;
+            this.type = type;
+        }
+        
+        public String getId() { return id; }
+        public String getTitle() { return title; }
+        public String getSubtitle() { return subtitle; }
+        public String getType() { return type; }
+        
+        @Override
+        public String toString() {
+            return title + (subtitle != null && !subtitle.isEmpty() ? " - " + subtitle : "");
+        }
     }
 }

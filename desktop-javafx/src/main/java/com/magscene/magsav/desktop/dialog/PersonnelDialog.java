@@ -8,7 +8,7 @@ import java.util.Map;
 import com.magscene.magsav.desktop.config.SpecialtiesConfigManager;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
 
 import javafx.application.Platform;
@@ -224,7 +224,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         scrollPane.setPrefSize(500, 600);
 
         // Appliquer le thème dark au dialogue
-        ThemeManager.getInstance().applyThemeToDialog(getDialogPane());
+        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
 
         return scrollPane;
     }

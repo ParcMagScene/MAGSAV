@@ -101,28 +101,28 @@ public class StandardColors {
      * Obtient la couleur de fond selon le thème actuel
      */
     public static String getBackgroundColor() {
-        return ThemeManager.getInstance().isDarkTheme() ? DARK_BACKGROUND : LIGHT_BACKGROUND;
+        return UnifiedThemeManager.getInstance().isDarkTheme() ? DARK_BACKGROUND : LIGHT_BACKGROUND;
     }
     
     /**
      * Obtient la couleur de fond secondaire selon le thème actuel
      */
     public static String getSecondaryBackgroundColor() {
-        return ThemeManager.getInstance().isDarkTheme() ? DARK_SECONDARY : LIGHT_SECONDARY;
+        return UnifiedThemeManager.getInstance().isDarkTheme() ? DARK_SECONDARY : LIGHT_SECONDARY;
     }
     
     /**
      * Obtient la couleur de texte selon le thème actuel
      */
     public static String getTextColor() {
-        return ThemeManager.getInstance().isDarkTheme() ? SECONDARY_BLUE : "#2C3E50";
+        return UnifiedThemeManager.getInstance().isDarkTheme() ? SECONDARY_BLUE : "#2C3E50";
     }
     
     /**
      * Obtient la couleur de bordure selon le thème actuel
      */
     public static String getBorderColor() {
-        return ThemeManager.getInstance().isDarkTheme() ? SECONDARY_BLUE : "#DEE2E6";
+        return UnifiedThemeManager.getInstance().isDarkTheme() ? SECONDARY_BLUE : "#DEE2E6";
     }
     
     /**

@@ -1,9 +1,9 @@
 package com.magscene.magsav.desktop.view;
 
 import com.magscene.magsav.desktop.component.CustomTabPane;
+import com.magscene.magsav.desktop.core.navigation.SelectableView;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeConstants;
-import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.vehicle.VehicleAvailabilityView;
 import com.magscene.magsav.desktop.view.vehicle.VehicleListView;
@@ -18,8 +18,9 @@ import javafx.scene.layout.VBox;
 
 /**
  * Vue principale pour la gestion des véhicules avec onglets
+ * Implémente SelectableView pour la sélection depuis la recherche globale
  */
-public class VehicleManagerView extends VBox {
+public class VehicleManagerView extends VBox implements SelectableView {
 
     private final ApiService apiService;
     private CustomTabPane tabPane;
@@ -49,7 +50,7 @@ public class VehicleManagerView extends VBox {
             // ThemeConstants.PADDING_STANDARD
             setSpacing(0);
             setPadding(ThemeConstants.PADDING_STANDARD);
-            setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+            setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + ";");
             System.out.println("🚐 DEBUG: Configuration de base terminée");
 
             // Toolbar adaptative en haut - Utilise ThemeConstants
@@ -108,14 +109,14 @@ public class VehicleManagerView extends VBox {
         toolbar.setAlignment(Pos.CENTER_LEFT);
         // Pas de padding ni de classe CSS ici car déjà présents dans adaptiveToolbar
 
-        Button refreshBtn = ViewUtils.createRefreshButton("Actualiser", () -> {
-            System.out.println("Actualiser disponibilités");
-        });
+        // Toolbar simplifiée pour l'onglet Disponibilités - pas de bouton Actualiser
+        javafx.scene.control.Label label = new javafx.scene.control.Label("📅 Vue des disponibilités");
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: #333;");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        toolbar.getChildren().addAll(refreshBtn, spacer);
+        toolbar.getChildren().addAll(label, spacer);
         return toolbar;
     }
 
@@ -231,13 +232,6 @@ public class VehicleManagerView extends VBox {
             }
         }, Bindings.createBooleanBinding(() -> false));
 
-        Button refreshBtn = ViewUtils.createRefreshButton("Actualiser", () -> {
-            VehicleListView currentView = getCurrentVehicleListView();
-            if (currentView != null) {
-                currentView.handleRefreshData();
-            }
-        });
-
         Button exportBtn = new Button("📊 Export");
         exportBtn.getStyleClass().add("action-button-secondary");
         exportBtn.setOnAction(e -> System.out.println("Export véhicules depuis toolbar unifiée"));
@@ -251,7 +245,6 @@ public class VehicleManagerView extends VBox {
                 addBtn,
                 editBtn,
                 deleteBtn,
-                refreshBtn,
                 exportBtn);
 
         return toolbar;
@@ -268,6 +261,23 @@ public class VehicleManagerView extends VBox {
             }
         }
         return null;
+    }
+    
+    // ===== Implémentation SelectableView =====
+    
+    @Override
+    public boolean selectById(String id) {
+        // Déléguer à VehicleListView
+        if (vehicleListView != null) {
+            return vehicleListView.selectById(id);
+        }
+        System.out.println("⚠️ VehicleListView non disponible pour sélection");
+        return false;
+    }
+    
+    @Override
+    public String getViewName() {
+        return "Véhicules";
     }
 
 }

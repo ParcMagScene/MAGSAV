@@ -8,8 +8,10 @@ import java.util.concurrent.CompletableFuture;
 import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
+import com.magscene.magsav.desktop.core.navigation.SelectableView;
 import com.magscene.magsav.desktop.dialog.PersonnelDialog;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
 
@@ -41,8 +43,9 @@ import javafx.scene.layout.VBox;
 /**
  * Interface JavaFX complete pour la gestion du personnel
  * Fonctionnalites : tableau detaille, recherche, filtres, CRUD, statistiques
+ * Implémente SelectableView pour la sélection depuis la recherche globale
  */
-public class PersonnelManagerView extends BorderPane {
+public class PersonnelManagerView extends BorderPane implements SelectableView {
 
     private final ApiService apiService;
     private TableView<PersonnelItem> personnelTable;
@@ -64,23 +67,18 @@ public class PersonnelManagerView extends BorderPane {
     }
 
     private void initializeUI() {
-        // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
-        setPadding(new Insets(7));
+        // Layout uniforme comme Ventes et Installations - utilise ThemeConstants
+        setPadding(ThemeConstants.PADDING_STANDARD);
         this.setStyle("-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + ";");
 
-        // Header avec titre et statistiques
-        VBox header = createHeader();
-
-        // Barre d'outils avec recherche et filtres
+        // Barre d'outils avec recherche et filtres - directement sans header
         HBox toolbar = createToolbar();
 
         // Zone principale avec tableau - EXACTEMENT comme référence
         createTableContainer();
 
-        // Layout principal avec volet de détail
-        VBox topContainer = new VBox(header, toolbar);
-
-        setTop(topContainer);
+        // Toolbar directement en haut - pas de marges supplémentaires
+        setTop(toolbar);
 
         // Intégration du volet de visualisation pour le personnel
         DetailPanelContainer detailContainer = new DetailPanelContainer(personnelTable);
@@ -90,20 +88,11 @@ public class PersonnelManagerView extends BorderPane {
         setupButtonActivation();
     }
 
-    private VBox createHeader() {
-        VBox header = new VBox(10); // EXACTEMENT comme Ventes et Installations
-        header.setPadding(new Insets(0, 0, 10, 0)); // Réduit pour éviter trop d'espace en haut
-
-        // Pas de titre - déjà dans le header principal de l'application
-
-        return header;
-    }
-
     private HBox createToolbar() {
-        HBox toolbar = new HBox(10);
+        HBox toolbar = new HBox(ThemeConstants.SPACING_MD);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(10));
-        toolbar.getStyleClass().add("unified-toolbar");
+        toolbar.setPadding(ThemeConstants.TOOLBAR_PADDING);
+        toolbar.getStyleClass().add(ThemeConstants.UNIFIED_TOOLBAR_CLASS);
 
         // 🔍 Recherche avec ViewUtils
         Label searchLabel = ViewUtils.createSearchLabel("🔍 Recherche");
@@ -178,9 +167,7 @@ public class PersonnelManagerView extends BorderPane {
             }
         });
 
-        Button refreshButton = ViewUtils.createRefreshButton("🔄 Actualiser", this::loadPersonnelData);
-
-        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", addButton, editButton, deleteButton, refreshButton);
+        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", addButton, editButton, deleteButton);
 
         // Spacer pour pousser les actions à droite
         Region spacer = new Region();
@@ -854,6 +841,40 @@ public class PersonnelManagerView extends BorderPane {
                 break;
             }
         }
+    }
+    
+    // ===== Implémentation SelectableView =====
+    
+    @Override
+    public boolean selectById(String id) {
+        if (id == null || id.isEmpty() || personnelData == null) {
+            return false;
+        }
+        
+        // Réinitialiser les filtres
+        if (searchField != null) searchField.clear();
+        if (typeFilter != null) typeFilter.getSelectionModel().selectFirst();
+        if (statusFilter != null) statusFilter.getSelectionModel().selectFirst();
+        if (departmentFilter != null) departmentFilter.getSelectionModel().selectFirst();
+        
+        for (PersonnelItem personnel : personnelData) {
+            if (id.equals(String.valueOf(personnel.getId()))) {
+                Platform.runLater(() -> {
+                    personnelTable.getSelectionModel().select(personnel);
+                    personnelTable.scrollTo(personnel);
+                    System.out.println("✅ Personnel sélectionné: " + personnel.getFullName() + " (ID: " + id + ")");
+                });
+                return true;
+            }
+        }
+        
+        System.out.println("⚠️ Personnel non trouvé avec ID: " + id);
+        return false;
+    }
+    
+    @Override
+    public String getViewName() {
+        return "Personnel";
     }
 
 }

@@ -1,6 +1,6 @@
 package com.magscene.magsav.desktop.view.planning;
 
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.theme.StandardColors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -62,8 +62,8 @@ public class YearCalendarView extends VBox {
             setMaxWidth(Double.MAX_VALUE);
 
             // Style de base
-            setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
-                    "-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+            setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
+                    "-fx-border-color: " + ThemeConstants.BACKGROUND_SECONDARY + "; " +
                     "-fx-border-width: 1; " +
                     "-fx-border-radius: 5; " +
                     "-fx-background-radius: 5;");
@@ -106,7 +106,7 @@ public class YearCalendarView extends VBox {
 
             // Effet hover
             setOnMouseEntered(e -> {
-                setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+                setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_SECONDARY + "; " +
                         "-fx-border-color: " + StandardColors.SECONDARY_BLUE + "; " +
                         "-fx-border-width: 2; " +
                         "-fx-border-radius: 5; " +
@@ -115,8 +115,8 @@ public class YearCalendarView extends VBox {
             });
 
             setOnMouseExited(e -> {
-                setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
-                        "-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+                setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
+                        "-fx-border-color: " + ThemeConstants.BACKGROUND_SECONDARY + "; " +
                         "-fx-border-width: 1; " +
                         "-fx-border-radius: 5; " +
                         "-fx-background-radius: 5;");
@@ -206,7 +206,7 @@ public class YearCalendarView extends VBox {
         setAlignment(Pos.TOP_CENTER);
 
         // Style de base
-        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + ";");
 
         // Permettre le scroll si nécessaire
         setMaxWidth(Double.MAX_VALUE);

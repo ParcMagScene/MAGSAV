@@ -1,5 +1,7 @@
 package com.magscene.magsav.desktop.component;
 
+import com.magscene.magsav.desktop.view.equipment.EquipmentItem;
+
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
@@ -10,6 +12,7 @@ import javafx.scene.layout.StackPane;
 /**
  * Conteneur qui intègre automatiquement un volet de détails
  * à une TableView ou ListView existante
+ * Supporte l'affichage des photos et logos de marques
  */
 public class DetailPanelContainer extends StackPane {
 
@@ -78,13 +81,28 @@ public class DetailPanelContainer extends StackPane {
     }
 
     private void showDetailPanel(DetailPanelProvider provider) {
-        // Utiliser l'animation bidirectionnelle pour un effet de transition fluide
-        detailPanel.updateContentWithAnimation(
-                provider.getDetailTitle(),
-                provider.getDetailSubtitle(),
-                provider.getDetailImage(),
-                provider.getQRCodeData(), // Passer les données QR du provider
-                provider.getDetailInfoContent());
+        // Si c'est un EquipmentItem, utiliser les informations de photo et logo
+        if (provider instanceof EquipmentItem) {
+            EquipmentItem item = (EquipmentItem) provider;
+            // Utiliser l'animation bidirectionnelle pour un effet de transition fluide
+            detailPanel.updateContentWithAnimation(
+                    provider.getDetailTitle(),
+                    provider.getDetailSubtitle(),
+                    provider.getDetailImage(),
+                    provider.getQRCodeData(),
+                    provider.getDetailInfoContent(),
+                    item.getPhotoPath(),
+                    item.getBrand(),
+                    item.getEquipmentImage());
+        } else {
+            // Utiliser l'animation bidirectionnelle pour un effet de transition fluide
+            detailPanel.updateContentWithAnimation(
+                    provider.getDetailTitle(),
+                    provider.getDetailSubtitle(),
+                    provider.getDetailImage(),
+                    provider.getQRCodeData(),
+                    provider.getDetailInfoContent());
+        }
     }
 
     private void hideDetailPanel() {

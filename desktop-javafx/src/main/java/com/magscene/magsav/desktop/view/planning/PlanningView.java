@@ -14,7 +14,8 @@ import java.util.logging.Logger;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.service.planning.SpecialtyPlanningService;
 import com.magscene.magsav.desktop.theme.StandardColors;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.view.planning.calendar.WeekCalendarView;
 
 import javafx.animation.Interpolator;
@@ -176,10 +177,6 @@ public class PlanningView extends BorderPane {
         Button deleteButton = new Button("Supprimer");
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
 
-        Button refreshButton = new Button("Actualiser");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        refreshButton.setOnAction(e -> refreshCalendar());
-
         // Navigation temporelle simplifiée
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -202,7 +199,7 @@ public class PlanningView extends BorderPane {
         navControls.getChildren().addAll(prevButton, currentPeriodLabel, nextButton, todayButton, viewModeCombo);
 
         // Inversion : sélecteurs de mode à gauche, boutons d'action à droite
-        toolbar.getChildren().addAll(navControls, spacer, newEventButton, editButton, deleteButton, refreshButton);
+        toolbar.getChildren().addAll(navControls, spacer, newEventButton, editButton, deleteButton);
         return toolbar;
     }
 
@@ -297,7 +294,7 @@ public class PlanningView extends BorderPane {
         toggleCol.setAlignment(Pos.CENTER);
         toggleCol.setPadding(new Insets(0));
         toggleCol.setStyle("-fx-background-color: " + StandardColors.DARK_SECONDARY + "; -fx-border-color: "
-                + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-width: 0 1 0 1;");
+                + ThemeConstants.BACKGROUND_SECONDARY + "; -fx-border-width: 0 1 0 1;");
 
         // Bouton toggle qui occupe toute la hauteur
         toggleButton = new Button(sidebarExpanded ? "◀" : "▶");
@@ -326,9 +323,9 @@ public class PlanningView extends BorderPane {
         sidebar.setPrefHeight(Region.USE_COMPUTED_SIZE);
         sidebar.setMaxHeight(Double.MAX_VALUE); // FORCE l'expansion verticale
         sidebar.setPadding(new Insets(10));
-        sidebar.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor()
+        sidebar.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
                 + "; -fx-background-radius: 8 0 0 8; -fx-border-color: "
-                + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-width: 1 0 1 1;");
+                + ThemeConstants.BACKGROUND_SECONDARY + "; -fx-border-width: 1 0 1 1;");
 
         // Header simple avec juste le titre
         HBox header = new HBox();
@@ -339,8 +336,8 @@ public class PlanningView extends BorderPane {
 
         Label title = new Label("📅 Agendas");
         title.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: "
-                + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-background-color: "
-                + ThemeManager.getInstance().getCurrentBackgroundColor() + " !important;");
+                + ThemeConstants.BACKGROUND_SECONDARY + "; -fx-background-color: "
+                + ThemeConstants.BACKGROUND_PRIMARY + " !important;");
 
         header.getChildren().add(title);
 
@@ -468,7 +465,7 @@ public class PlanningView extends BorderPane {
     private void loadStylesheet() {
         try {
             // Forcer la réapplication du thème existant
-            ThemeManager.getInstance().reapplyCurrentTheme();
+            UnifiedThemeManager.getInstance().applyTheme(UnifiedThemeManager.getInstance().getCurrentTheme());
 
         } catch (Exception e) {
             System.err.println("Impossible de charger le CSS du planning: " + e.getMessage());
@@ -675,6 +672,7 @@ public class PlanningView extends BorderPane {
         }
     }
 
+    @SuppressWarnings("unused") // Réservé pour future utilisation
     private VBox findCenterArea() {
         // Rechercher la zone centrale dans la structure
         if (getCenter() instanceof HBox mainContent) {
@@ -795,7 +793,6 @@ public class PlanningView extends BorderPane {
         };
 
         saveTask.setOnSucceeded(e -> {
-            Object result = saveTask.getValue();
             logger.log(Level.INFO, "Événement de planning sauvegardé avec succès: {0}", eventData.getTitle());
 
             Platform.runLater(() -> {
@@ -1041,7 +1038,7 @@ public class PlanningView extends BorderPane {
         ColorPicker colorPicker = new ColorPicker(Color.web(agendaColors.get(agendaKey)));
         colorPicker.setPrefSize(28, 22);
         colorPicker.setStyle("-fx-color-label-visible: false; -fx-background-color: "
-                + ThemeManager.getInstance().getCurrentBackgroundColor() + " !important;");
+                + ThemeConstants.BACKGROUND_PRIMARY + " !important;");
         colorPickers.put(agendaKey, colorPicker);
 
         // Wrapper avec fond parfaitement contrôlé
@@ -1110,7 +1107,7 @@ public class PlanningView extends BorderPane {
     private void updateAgendaStyle(CheckBox checkbox, String color) {
         // Style complet pour forcer la couleur du contour et du texte
         String style = "-fx-text-fill: " + color + "; -fx-background-color: "
-                + ThemeManager.getInstance().getCurrentBackgroundColor() + " !important;" +
+                + ThemeConstants.BACKGROUND_PRIMARY + " !important;" +
                 "-fx-faint-focus-color: transparent; -fx-focus-color: transparent;";
 
         checkbox.setStyle(style);
@@ -1123,7 +1120,7 @@ public class PlanningView extends BorderPane {
         Platform.runLater(() -> {
             Node box = checkbox.lookup(".box");
             if (box != null) {
-                box.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor()
+                box.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
                         + " !important; " +
                         "-fx-border-color: " + color + " !important; " +
                         "-fx-border-width: 2px !important;");

@@ -1,5 +1,6 @@
 package com.magscene.magsav.desktop.core.navigation;
 
+import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import java.util.HashMap;
 import java.util.Map;
@@ -98,12 +99,46 @@ public class NavigationManager {
     }
     
     /**
+     * Navigue vers une route et sélectionne un élément par ID
+     * @param route La route de destination
+     * @param itemId L'ID de l'élément à sélectionner
+     */
+    public void navigateToWithSelection(Route route, String itemId) {
+        Pane view = getOrCreateView(route);
+        if (view != null && viewChangeHandler != null) {
+            currentRoute = route;
+            viewChangeHandler.accept(view);
+            
+            // Émettre l'événement de navigation
+            NavigationEvent event = new NavigationEvent(route, view);
+            notifyNavigationListeners(event);
+            
+            // Sélectionner l'élément si la vue implémente SelectableView
+            if (view instanceof SelectableView) {
+                SelectableView selectableView = (SelectableView) view;
+                
+                // Utiliser Platform.runLater pour laisser la vue se rafraîchir
+                Platform.runLater(() -> {
+                    boolean selected = selectableView.selectById(itemId);
+                    if (selected) {
+                        System.out.println("✅ Élément sélectionné: " + itemId + " dans " + selectableView.getViewName());
+                    } else {
+                        System.out.println("⚠️ Élément non trouvé: " + itemId + " dans " + selectableView.getViewName());
+                    }
+                });
+            } else {
+                System.out.println("⚠️ La vue " + route + " n'implémente pas SelectableView");
+            }
+        }
+    }
+    
+    /**
      * Récupère la route actuelle
      */
     public Route getCurrentRoute() {
         return currentRoute;
     }
-    
+
     private void notifyNavigationListeners(NavigationEvent event) {
         // Pour l'instant, juste un log. À étendre avec un vrai système d'événements
         System.out.println("📍 Navigation: " + event.getRoute());

@@ -1,13 +1,17 @@
 package com.magscene.magsav.desktop.view.sav;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.core.search.GlobalSearchManager;
+import com.magscene.magsav.desktop.core.search.SearchProvider;
 import com.magscene.magsav.desktop.service.business.SAVService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 
@@ -27,11 +31,17 @@ import javafx.scene.layout.VBox;
 /**
  * Gestionnaire SAV refactorisé utilisant la nouvelle architecture
  * Remplace SAVManagerView et StandardSAVManagerView
+ * Implémente SearchProvider pour la recherche globale
  */
-public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> {
+public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implements SearchProvider {
     private TableView<SAVRequestItem> savTable;
     private ObservableList<SAVRequestItem> savData; // Déclaration sans initialisation
+    private ObservableList<SAVRequestItem> allSavData; // Données complètes pour filtrage
     private SAVService savService;
+    
+    // Résultats de la dernière recherche globale
+    private List<SearchResult> lastSearchResults = new ArrayList<>();
+    private int lastResultCount = 0;
 
     @Override
     protected void initializeContent() {
@@ -63,6 +73,10 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> {
         } else {
             System.out.println("   ❌ ERREUR: savTable ou savData est NULL !");
         }
+
+        // Enregistrement comme fournisseur de recherche globale
+        GlobalSearchManager.getInstance().registerSearchProvider(this);
+        System.out.println("🔍 SAV enregistré comme SearchProvider");
 
         // Chargement initial des données
         System.out.println("🔧 NewSAVManagerView.initializeContent() - Appel loadSAVData()");
@@ -152,9 +166,9 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> {
                     row.setStyle("");
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
-                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                            "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                            "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    row.setStyle("-fx-background-color: " + ThemeConstants.SELECTION_BACKGROUND + "; " +
+                            "-fx-text-fill: " + ThemeConstants.SELECTION_TEXT + "; " +
+                            "-fx-border-color: " + ThemeConstants.SELECTION_BORDER + "; " +
                             "-fx-border-width: 1px;");
                 } else {
                     // Style par défaut
@@ -291,9 +305,77 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> {
         loadSAVData();
     }
 
+    /**
+     * Implémentation de SearchProvider.getModuleName
+     */
     @Override
-    protected String getModuleName() {
-        return "Service Après-Vente";
+    public String getModuleName() {
+        return "SAV";
+    }
+    
+    /**
+     * Implémentation de SearchProvider.performSearch
+     */
+    @Override
+    public void performSearch(String searchTerm) {
+        lastSearchResults.clear();
+        lastResultCount = 0;
+        
+        if (searchTerm == null || searchTerm.trim().isEmpty() || savData == null) {
+            return;
+        }
+        
+        String term = searchTerm.toLowerCase().trim();
+        
+        // Rechercher dans toutes les demandes SAV
+        List<SAVRequestItem> matchingItems = savData.stream()
+                .filter(item -> {
+                    String id = item.getId() != null ? item.getId().toLowerCase() : "";
+                    String title = item.getTitle() != null ? item.getTitle().toLowerCase() : "";
+                    String type = item.getType() != null ? item.getType().toLowerCase() : "";
+                    String status = item.getStatus() != null ? item.getStatus().toLowerCase() : "";
+                    
+                    return id.contains(term) || title.contains(term) || 
+                           type.contains(term) || status.contains(term);
+                })
+                .limit(10)
+                .collect(Collectors.toList());
+        
+        lastResultCount = (int) savData.stream()
+                .filter(item -> {
+                    String id = item.getId() != null ? item.getId().toLowerCase() : "";
+                    String title = item.getTitle() != null ? item.getTitle().toLowerCase() : "";
+                    String type = item.getType() != null ? item.getType().toLowerCase() : "";
+                    String status = item.getStatus() != null ? item.getStatus().toLowerCase() : "";
+                    
+                    return id.contains(term) || title.contains(term) || 
+                           type.contains(term) || status.contains(term);
+                })
+                .count();
+        
+        // Convertir en SearchResult
+        for (SAVRequestItem item : matchingItems) {
+            String id = item.getId() != null ? item.getId() : String.valueOf(System.identityHashCode(item));
+            String resultTitle = "SAV #" + id + (item.getStatus() != null ? " [" + item.getStatus() + "]" : "");
+            String subtitle = item.getTitle() != null ? item.getTitle() : "";
+            lastSearchResults.add(new SearchResult(id, resultTitle, subtitle, "SAV"));
+        }
+    }
+    
+    /**
+     * Implémentation de SearchProvider.getLastResultCount
+     */
+    @Override
+    public int getLastResultCount() {
+        return lastResultCount;
+    }
+    
+    /**
+     * Implémentation de SearchProvider.getLastResults
+     */
+    @Override
+    public List<SearchResult> getLastResults() {
+        return lastSearchResults;
     }
 
     @Override

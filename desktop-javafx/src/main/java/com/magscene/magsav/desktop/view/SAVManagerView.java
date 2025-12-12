@@ -1,16 +1,15 @@
 package com.magscene.magsav.desktop.view;
 
 import com.magscene.magsav.desktop.component.CustomTabPane;
+import com.magscene.magsav.desktop.core.navigation.SelectableView;
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
-import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.sav.RMAManagementView;
 import com.magscene.magsav.desktop.view.sav.RepairTrackingView;
 import com.magscene.magsav.desktop.view.sav.TechnicianPlanningView;
 
 // import com.magscene.magsav.desktop.view.sav.QRCodeScannerView; // Temporairement désactivé
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -24,15 +23,18 @@ import javafx.scene.layout.VBox;
 /**
  * Vue principale du module SAV intégrant toutes les fonctionnalités développées
  * Onglets : Suivi Réparations, Gestion RMA, Planning Techniciens, Scanner QR
+ * Implémente SelectableView pour la sélection depuis la recherche globale
  */
-public class SAVManagerView extends BorderPane {
+public class SAVManagerView extends BorderPane implements SelectableView {
 
-    private final ApiService apiService;
+    @SuppressWarnings("unused")
+    private final ApiService apiService; // Réservé pour utilisation future
     private CustomTabPane customTabPane;
 
     // Vues SAV spécialisées
     private RepairTrackingView repairTrackingView;
     private RMAManagementView rmaManagementView;
+    @SuppressWarnings("unused") // Utilisé dans les onglets, sera connecté plus tard
     private TechnicianPlanningView technicianPlanningView;
     // private QRCodeScannerView qrCodeScannerView; // Temporairement désactivé
 
@@ -52,45 +54,27 @@ public class SAVManagerView extends BorderPane {
     }
 
     private void setupLayout() {
-        // Header du module SAV
-        VBox header = createHeader();
-
-        // Toolbar séparée comme dans la référence
+        // Toolbar séparée comme dans la référence - sans header pour uniformisation
         HBox toolbar = createUnifiedToolbar();
 
-        // TopContainer comme référence
-        VBox topContainer = new VBox(header, toolbar);
-        setTop(topContainer);
+        // Toolbar directement en haut - pas de marges supplémentaires
+        setTop(toolbar);
 
         // CustomTabPane principal avec toutes les fonctionnalités SAV
         customTabPane = createCustomTabPane();
         setCenter(customTabPane);
 
-        // Style CSS
+        // Style CSS - utilise ThemeConstants pour uniformisation
         getStyleClass().add("sav-manager-view");
-        setPadding(new Insets(7));
-        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
-    }
-
-    private VBox createHeader() {
-        VBox header = new VBox(10); // STANDARD : 10px spacing comme référence
-        header.setPadding(new Insets(0, 0, 20, 0));
-
-        // Pas de titre - déjà dans le header principal de l'application
-
-        return header;
+        setPadding(ThemeConstants.PADDING_STANDARD);
+        setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + ";");
     }
 
     private HBox createUnifiedToolbar() {
-        HBox toolbar = new HBox(10);
+        HBox toolbar = new HBox(ThemeConstants.SPACING_MD);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(10));
-        toolbar.setStyle(
-                "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
-                        "-fx-background-radius: 8; " +
-                        "-fx-border-color: #8B91FF; " +
-                        "-fx-border-width: 1px; " +
-                        "-fx-border-radius: 8;");
+        toolbar.setPadding(ThemeConstants.TOOLBAR_PADDING);
+        toolbar.getStyleClass().add(ThemeConstants.UNIFIED_TOOLBAR_CLASS);
         VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Titre, description, demandeur...", text -> {
         });
         TextField searchField = (TextField) searchBox.getChildren().get(1);
@@ -128,14 +112,12 @@ public class SAVManagerView extends BorderPane {
         emergencyBtn.getStyleClass().add("btn-urgent");
         emergencyBtn.setOnAction(e -> createEmergencyRequest());
 
-        Button refreshBtn = ViewUtils.createRefreshButton("🔄 Actualiser", this::refresh);
-
         // Spacer pour pousser les actions à droite
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         toolbar.getChildren().addAll(searchBox, statusBox, priorityBox, typeBox, spacer,
-                newRequestBtn, editBtn, exportBtn, emergencyBtn, refreshBtn);
+                newRequestBtn, editBtn, exportBtn, emergencyBtn);
         return toolbar;
     }
 
@@ -210,6 +192,7 @@ public class SAVManagerView extends BorderPane {
         System.out.println("Création d'une demande urgente");
     }
 
+    @SuppressWarnings("unused") // Réservée pour bouton statistiques futur
     private void showStatistics() {
         // TODO: Afficher les statistiques du SAV
         System.out.println("Affichage des statistiques SAV");
@@ -278,5 +261,36 @@ public class SAVManagerView extends BorderPane {
             // TODO: Implémenter la recherche dans RepairTrackingView; //
             // repairTrackingView.selectAndViewIntervention(interventionName);
         }
+    }
+    
+    // ===== Implémentation SelectableView =====
+    
+    @Override
+    public boolean selectById(String id) {
+        if (id == null || id.isEmpty()) {
+            return false;
+        }
+        
+        // Sélectionner l'onglet "Suivi Réparations" par défaut
+        if (customTabPane != null) {
+            customTabPane.selectTab(0);
+        }
+        
+        // Déléguer à la vue de suivi des réparations
+        if (repairTrackingView != null) {
+            boolean selected = repairTrackingView.selectById(id);
+            if (selected) {
+                System.out.println("✅ Intervention SAV sélectionnée (ID: " + id + ")");
+                return true;
+            }
+        }
+        
+        System.out.println("⚠️ Intervention SAV non trouvée avec ID: " + id);
+        return false;
+    }
+    
+    @Override
+    public String getViewName() {
+        return "SAV & Interventions";
     }
 }

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 import com.magscene.magsav.desktop.theme.StandardColors;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -213,7 +213,7 @@ public class DayCalendarView extends VBox {
 
     private void initializeView() {
         getStyleClass().add("day-calendar");
-        this.setStyle("-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+        this.setStyle("-fx-border-color: " + ThemeConstants.BACKGROUND_SECONDARY + "; " +
                 "-fx-border-width: 1; " +
                 "-fx-border-radius: 8; " +
                 "-fx-pref-height: -1; -fx-max-height: -1; -fx-min-height: -1;"); // CSS d'expansion forcée comme
@@ -234,8 +234,8 @@ public class DayCalendarView extends VBox {
         ScrollPane scrollPane = new ScrollPane(dayGrid);
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
-        scrollPane.setStyle("-fx-background: " + ThemeManager.getInstance().getCurrentBackgroundColor()
-                + "; -fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        scrollPane.setStyle("-fx-background: " + ThemeConstants.BACKGROUND_PRIMARY
+                + "; -fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + ";");
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
@@ -274,8 +274,8 @@ public class DayCalendarView extends VBox {
         // emptyCorner - Style géré par CSS automatiquement; // Header de la date
         Label dateHeader = new Label(currentDate.format(DateTimeFormatter.ofPattern("EEEE dd MMMM yyyy")));
         dateHeader.getStyleClass().add("day-header");
-        dateHeader.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor()
-                + "; -fx-text-fill: " + ThemeManager.getInstance().getCurrentSecondaryColor()
+        dateHeader.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
+                + "; -fx-text-fill: " + ThemeConstants.BACKGROUND_SECONDARY
                 + "; -fx-font-size: 14px; -fx-font-weight: bold; " +
                 "-fx-alignment: center; -fx-padding: 8;");
         dateHeader.setAlignment(Pos.CENTER);
@@ -297,7 +297,7 @@ public class DayCalendarView extends VBox {
             hourLabel.setStyle(
                     "-fx-text-fill: " + StandardColors.SECONDARY_BLUE + "; -fx-font-size: 12px; -fx-padding: 5; " +
                             "-fx-alignment: top-center; -fx-background-color: "
-                            + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+                            + ThemeConstants.BACKGROUND_PRIMARY + ";");
             hourLabel.setPrefWidth(TIME_COLUMN_WIDTH);
             hourLabel.setMinWidth(TIME_COLUMN_WIDTH);
             hourLabel.setMaxWidth(TIME_COLUMN_WIDTH);
@@ -309,8 +309,8 @@ public class DayCalendarView extends VBox {
             // Cellule de contenu pour les événements (colonne 1)
             Pane hourCell = new Pane();
             hourCell.getStyleClass().add("hour-cell");
-            hourCell.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
-                    "-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+            hourCell.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
+                    "-fx-border-color: " + ThemeConstants.BACKGROUND_SECONDARY + "; " +
                     "-fx-border-width: 0 0 0.5 0;");
             hourCell.setMinHeight(HOUR_HEIGHT);
             hourCell.setPrefHeight(HOUR_HEIGHT);

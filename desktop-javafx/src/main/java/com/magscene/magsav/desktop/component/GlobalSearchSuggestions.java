@@ -1,8 +1,10 @@
 package com.magscene.magsav.desktop.component;
 
+import com.magscene.magsav.desktop.core.di.ApplicationContext;
+import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.service.GlobalSearchService;
 import com.magscene.magsav.desktop.service.GlobalSearchService.SearchResult;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -36,7 +38,9 @@ public class GlobalSearchSuggestions {
     public GlobalSearchSuggestions(TextField searchField, NavigationCallback navigationCallback) {
         this.searchField = searchField;
         this.navigationCallback = navigationCallback;
-        this.searchService = new GlobalSearchService();
+        // Utiliser l'ApiService de l'ApplicationContext pour charger les vraies données
+        ApiService apiService = ApplicationContext.getInstance().getInstance(ApiService.class);
+        this.searchService = new GlobalSearchService(apiService);
         this.suggestionPopup = new Popup();
         this.suggestionContainer = createSuggestionContainer();
 
@@ -61,7 +65,7 @@ public class GlobalSearchSuggestions {
         container.setPadding(new Insets(2));
         container.setPrefWidth(380);
         container.setMaxHeight(300);
-        container.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+        container.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
                 "-fx-border-color: #8B91FF; " +
                 "-fx-border-width: 0.5; " +
                 "-fx-border-radius: 6; " +
@@ -140,7 +144,7 @@ public class GlobalSearchSuggestions {
     private Label createTypeHeader(String type) {
         Label header = new Label(type.toUpperCase());
         header.setStyle("-fx-text-fill: #5F65D9; " +
-                "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+                "-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
                 "-fx-padding: 2 6; " +
                 "-fx-font-weight: bold; " +
                 "-fx-border-width: 0;");

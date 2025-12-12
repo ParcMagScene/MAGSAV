@@ -399,4 +399,33 @@ public class VehicleListView extends BorderPane {
     public void handleRefreshData() {
         refreshData();
     }
+    
+    /**
+     * Sélectionne un véhicule par son ID
+     * Utilisé par la recherche globale
+     */
+    public boolean selectById(String id) {
+        if (id == null || id.isEmpty() || vehicleData == null) {
+            return false;
+        }
+        
+        // Réinitialiser les filtres
+        if (searchField != null) searchField.clear();
+        if (typeFilter != null) typeFilter.setValue("Tous");
+        if (statusFilter != null) statusFilter.setValue("Tous");
+        
+        for (VehicleItem vehicle : vehicleData) {
+            if (id.equals(String.valueOf(vehicle.getId()))) {
+                Platform.runLater(() -> {
+                    vehicleTable.getSelectionModel().select(vehicle);
+                    vehicleTable.scrollTo(vehicle);
+                    System.out.println("✅ Véhicule sélectionné: " + vehicle.getDisplayName() + " (ID: " + id + ")");
+                });
+                return true;
+            }
+        }
+        
+        System.out.println("⚠️ Véhicule non trouvé avec ID: " + id);
+        return false;
+    }
 }

@@ -8,7 +8,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.theme.StandardColors;
 
 import java.time.LocalDateTime;
@@ -169,7 +169,7 @@ public class EventDetailsDialog extends Stage {
         HBox box = new HBox(10);
         box.setAlignment(Pos.CENTER_LEFT);
         box.setPadding(new Insets(5));
-        box.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-border-color: #ecf0f1; -fx-border-radius: 5px; -fx-background-radius: 5px;");
+        box.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; -fx-border-color: #ecf0f1; -fx-border-radius: 5px; -fx-background-radius: 5px;");
         
         Label avatarLabel = new Label("👤");
         
@@ -221,7 +221,7 @@ public class EventDetailsDialog extends Stage {
             descriptionArea.setEditable(false);
             descriptionArea.setWrapText(true);
             descriptionArea.setPrefRowCount(3);
-            descriptionArea.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; -fx-border-color: #ecf0f1;");
+            descriptionArea.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_SECONDARY + "; -fx-border-color: #ecf0f1;");
             
             section.getChildren().addAll(sectionTitle, descriptionArea);
         }

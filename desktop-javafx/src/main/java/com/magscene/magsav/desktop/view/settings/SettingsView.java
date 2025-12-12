@@ -4,9 +4,11 @@ import com.magscene.magsav.desktop.component.CustomTabPane;
 import com.magscene.magsav.desktop.core.category.Category;
 import com.magscene.magsav.desktop.core.category.CategoryManager;
 import com.magscene.magsav.desktop.core.category.CategoryType;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -27,6 +29,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -39,6 +42,8 @@ import javafx.scene.text.FontWeight;
 public class SettingsView extends VBox {
 
     private UnifiedThemeManager themeManager;
+    private HBox adaptiveToolbar;
+    private CustomTabPane tabPane;
 
     public SettingsView() {
         this.themeManager = UnifiedThemeManager.getInstance();
@@ -46,16 +51,65 @@ public class SettingsView extends VBox {
     }
 
     private void initializeView() {
-        setPadding(new Insets(7));
-        setSpacing(5);
+        // Layout uniforme comme Ventes et Installations - utilise ThemeConstants
+        setPadding(ThemeConstants.PADDING_STANDARD);
+        setSpacing(0);
+        setFillWidth(true);
         getStyleClass().add("settings-view");
 
-        // CustomTabPane avec les différents onglets (pas de titre - déjà dans header
-        // principal)
-        CustomTabPane tabPane = createSettingsTabPane();
+        // Toolbar adaptative en haut - utilise ThemeConstants
+        adaptiveToolbar = new HBox();
+        adaptiveToolbar.setAlignment(Pos.CENTER_LEFT);
+        adaptiveToolbar.setPadding(ThemeConstants.TOOLBAR_PADDING);
+        adaptiveToolbar.getStyleClass().add(ThemeConstants.UNIFIED_TOOLBAR_CLASS);
+
+        // CustomTabPane avec les différents onglets
+        tabPane = createSettingsTabPane();
         VBox.setVgrow(tabPane, Priority.ALWAYS);
 
-        getChildren().add(tabPane);
+        // Écouter les changements d'onglet
+        tabPane.selectedTabProperty().addListener((obs, oldTab, newTab) -> {
+            updateToolbarForSelectedTab(newTab);
+        });
+
+        // Initialiser la toolbar avec le premier onglet
+        updateToolbarForSelectedTab(tabPane.getSelectedTab());
+
+        // Assemblage : Toolbar adaptative puis TabPane
+        getChildren().addAll(adaptiveToolbar, tabPane);
+    }
+
+    /**
+     * Met à jour la toolbar selon l'onglet sélectionné
+     */
+    private void updateToolbarForSelectedTab(CustomTabPane.CustomTab selectedTab) {
+        if (selectedTab == null)
+            return;
+
+        adaptiveToolbar.getChildren().clear();
+
+        // Créer le contenu de la toolbar selon l'onglet
+        HBox toolbarContent = new HBox(10);
+        toolbarContent.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(toolbarContent, Priority.ALWAYS);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        String tabText = selectedTab.getText();
+        
+        if (tabText.contains("Catégories")) {
+            // Boutons spécifiques pour les catégories
+            Button addCategoryBtn = new Button("➕ Nouvelle catégorie");
+            addCategoryBtn.getStyleClass().add("action-button-primary");
+            
+            toolbarContent.getChildren().addAll(addCategoryBtn, spacer);
+        } else {
+            // Toolbar standard pour les autres onglets
+            toolbarContent.getChildren().add(spacer);
+        }
+
+        adaptiveToolbar.getChildren().add(toolbarContent);
     }
 
     /**

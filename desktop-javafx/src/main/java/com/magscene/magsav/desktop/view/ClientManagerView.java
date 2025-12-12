@@ -10,10 +10,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.core.navigation.SelectableView;
 import com.magscene.magsav.desktop.dialog.clients.ClientDialog;
 import com.magscene.magsav.desktop.model.Client;
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.util.ViewUtils;
 
 import javafx.application.Platform;
@@ -45,8 +46,9 @@ import javafx.scene.text.Font;
 /**
  * Interface JavaFX complete pour la gestion des clients
  * Fonctionnalites : tableau detaille, recherche, filtres, CRUD, statistiques
+ * Implémente SelectableView pour la sélection depuis la recherche globale
  */
-public class ClientManagerView extends BorderPane {
+public class ClientManagerView extends BorderPane implements SelectableView {
 
     private final ApiService apiService;
     private TableView<Client> clientTable;
@@ -65,9 +67,9 @@ public class ClientManagerView extends BorderPane {
     }
 
     private void initializeUI() {
-        // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
-        setPadding(new Insets(7));
-        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        // Layout uniforme comme Ventes et Installations - utilise ThemeConstants
+        setPadding(ThemeConstants.PADDING_STANDARD);
+        setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + ";");
 
         // Zone principale avec tableau - EXACTEMENT comme référence
         createTableContainer();
@@ -79,10 +81,10 @@ public class ClientManagerView extends BorderPane {
     }
 
     private HBox createToolbar() {
-        HBox toolbar = new HBox(10);
+        HBox toolbar = new HBox(ThemeConstants.SPACING_MD);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(10));
-        toolbar.getStyleClass().add("unified-toolbar");
+        toolbar.setPadding(ThemeConstants.TOOLBAR_PADDING);
+        toolbar.getStyleClass().add(ThemeConstants.UNIFIED_TOOLBAR_CLASS);
         VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Nom de l'entreprise, email, SIRET...",
                 text -> filterClients());
         searchField = (TextField) searchBox.getChildren().get(1);
@@ -131,10 +133,8 @@ public class ClientManagerView extends BorderPane {
                 clientTable.getSelectionModel().selectedItemProperty().isNull());
         Button deleteButton = ViewUtils.createDeleteButton("🗑️ Supprimer", this::deleteClient,
                 clientTable.getSelectionModel().selectedItemProperty().isNull());
-        Button refreshButton = ViewUtils.createRefreshButton("🔄 Actualiser", this::refreshData);
 
-        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", addButton, editButton, viewButton, deleteButton,
-                refreshButton);
+        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", addButton, editButton, viewButton, deleteButton);
 
         // Spacer pour pousser les actions à droite
         Region spacer = new Region();
@@ -163,7 +163,7 @@ public class ClientManagerView extends BorderPane {
     @SuppressWarnings("unchecked")
     private TableView<Client> createClientTable() {
         TableView<Client> table = new TableView<>(clientData);
-        table.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor()
+        table.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
                 + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
         table.setPrefHeight(400);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
@@ -241,9 +241,9 @@ public class ClientManagerView extends BorderPane {
                     row.setStyle("");
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
-                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                            "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                            "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    row.setStyle("-fx-background-color: " + ThemeConstants.SELECTION_BACKGROUND + "; " +
+                            "-fx-text-fill: " + ThemeConstants.SELECTION_TEXT + "; " +
+                            "-fx-border-color: " + ThemeConstants.SELECTION_BORDER + "; " +
                             "-fx-border-width: 1px;");
                 } else {
                     // Style par défaut
@@ -267,12 +267,13 @@ public class ClientManagerView extends BorderPane {
         return table;
     }
 
+    @SuppressWarnings("unused") // Réservé pour l'interface - sera utilisée plus tard
     private HBox createFooter() {
         HBox footer = new HBox(20);
         footer.setPadding(new Insets(15));
         footer.setAlignment(Pos.CENTER_LEFT);
-        footer.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor()
-                + "; -fx-background-radius: 8;");
+        footer.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
+                + "; -fx-background-radius: 8;");;
 
         Label helpLabel = new Label("💡 Double-clic pour modifier • Clic droit pour menu contextuel");
         helpLabel.setFont(Font.font("System", 12));
@@ -493,10 +494,6 @@ public class ClientManagerView extends BorderPane {
         }
     }
 
-    private void refreshData() {
-        loadClientData();
-    }
-
     /**
      * Sélectionne un client par nom et ouvre sa fiche de modification
      * Méthode publique appelée depuis la recherche globale
@@ -684,5 +681,39 @@ public class ClientManagerView extends BorderPane {
         alert.setHeaderText(null);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+    
+    // ===== Implémentation SelectableView =====
+    
+    @Override
+    public boolean selectById(String id) {
+        if (id == null || id.isEmpty() || clientData == null) {
+            return false;
+        }
+        
+        // Réinitialiser les filtres
+        if (searchField != null) searchField.clear();
+        if (typeFilter != null) typeFilter.getSelectionModel().selectFirst();
+        if (statusFilter != null) statusFilter.getSelectionModel().selectFirst();
+        if (categoryFilter != null) categoryFilter.getSelectionModel().selectFirst();
+        
+        for (Client client : clientData) {
+            if (id.equals(String.valueOf(client.getId()))) {
+                Platform.runLater(() -> {
+                    clientTable.getSelectionModel().select(client);
+                    clientTable.scrollTo(client);
+                    System.out.println("✅ Client sélectionné: " + client.getCompanyName() + " (ID: " + id + ")");
+                });
+                return true;
+            }
+        }
+        
+        System.out.println("⚠️ Client non trouvé avec ID: " + id);
+        return false;
+    }
+    
+    @Override
+    public String getViewName() {
+        return "Clients";
     }
 }

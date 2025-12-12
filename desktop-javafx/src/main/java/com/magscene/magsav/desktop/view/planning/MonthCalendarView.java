@@ -1,6 +1,6 @@
 package com.magscene.magsav.desktop.view.planning;
 
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.theme.StandardColors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -65,8 +65,8 @@ public class MonthCalendarView extends VBox {
             setMaxWidth(Double.MAX_VALUE);
             
             // Style de base
-            String backgroundColor = isCurrentMonth ? ThemeManager.getInstance().getCurrentBackgroundColor() : ThemeManager.getInstance().getCurrentSecondaryColor();
-            String borderColor = ThemeManager.getInstance().getCurrentSecondaryColor();
+            String backgroundColor = isCurrentMonth ? ThemeConstants.BACKGROUND_PRIMARY : ThemeConstants.BACKGROUND_SECONDARY;
+            String borderColor = ThemeConstants.BACKGROUND_SECONDARY;
             setStyle("-fx-background-color: " + backgroundColor + "; " +
                     "-fx-border-color: " + borderColor + "; " +
                     "-fx-border-width: 0.5; " +
@@ -105,7 +105,7 @@ public class MonthCalendarView extends VBox {
             });
             
             setOnMouseExited(e -> {
-                String backgroundColor = isCurrentMonth ? ThemeManager.getInstance().getCurrentBackgroundColor() : ThemeManager.getInstance().getCurrentSecondaryColor();
+                String backgroundColor = isCurrentMonth ? ThemeConstants.BACKGROUND_PRIMARY : ThemeConstants.BACKGROUND_SECONDARY;
                 setStyle(getStyle().replaceAll("; -fx-background-color: " + StandardColors.DARK_SECONDARY, "") + 
                         "; -fx-background-color: " + backgroundColor + ";");
             });
@@ -144,7 +144,7 @@ public class MonthCalendarView extends VBox {
     
     private void initializeView() {
         getStyleClass().add("month-calendar");
-        setStyle("-fx-border-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+        setStyle("-fx-border-color: " + ThemeConstants.BACKGROUND_SECONDARY + "; " +
                 "-fx-border-width: 1; " +
                 "-fx-border-radius: 8; " +
                 "-fx-pref-height: -1; -fx-max-height: -1; -fx-min-height: -1;"); // CSS d'expansion forcée comme WeekCalendarView; // Forcer l'expansion totale sur la largeur et la hauteur - cohérent avec WeekCalendarView
@@ -180,7 +180,7 @@ public class MonthCalendarView extends VBox {
     private void createMonthHeader() {
         Label monthLabel = new Label(currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")));
         monthLabel.getStyleClass().add("month-header");
-        monthLabel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; -fx-text-fill: " + ThemeManager.getInstance().getCurrentSecondaryColor() + "; " +
+        monthLabel.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; -fx-text-fill: " + ThemeConstants.BACKGROUND_SECONDARY + "; " +
                           "-fx-font-size: 18px; -fx-font-weight: bold; " +
                           "-fx-alignment: center; -fx-padding: 12;");
         monthLabel.setAlignment(Pos.CENTER);
@@ -212,7 +212,7 @@ public class MonthCalendarView extends VBox {
     private void createDaysGrid() {
         monthGrid = new GridPane();
         monthGrid.getStyleClass().add("month-grid");
-        monthGrid.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+        monthGrid.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
                          "-fx-pref-height: -1; -fx-max-height: -1; -fx-min-height: -1;"); // CSS d'expansion forcée
         
         dayCells.clear();

@@ -3,7 +3,7 @@ package com.magscene.magsav.desktop.dialog;
 import com.magscene.magsav.desktop.model.Client;
 import com.magscene.magsav.desktop.model.Contract;
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -154,7 +154,7 @@ public class ContractDialog extends Dialog<Contract> {
         getDialogPane().setContent(mainContainer);
         
         // Appliquer le thème dark au dialogue
-        ThemeManager.getInstance().applyThemeToDialog(getDialogPane());
+        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
     }
     
     private HBox createStandardButtons() {

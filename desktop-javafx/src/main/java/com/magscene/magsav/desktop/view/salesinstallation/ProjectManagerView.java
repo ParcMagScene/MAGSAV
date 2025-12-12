@@ -7,12 +7,14 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.core.navigation.SelectableView;
 import com.magscene.magsav.desktop.dialog.salesinstallation.ProjectDialog;
 import com.magscene.magsav.desktop.model.Project;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.service.TestDataService;
 import com.magscene.magsav.desktop.util.AlertUtil;
 import com.magscene.magsav.desktop.util.ViewUtils;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.view.base.AbstractManagerView;
 
 import javafx.application.Platform;
@@ -42,7 +44,7 @@ import javafx.scene.layout.VBox;
  * - Top: Toolbar (recherche + filtres + actions)
  * - Center: DetailPanelContainer (table + volet détail)
  */
-public class ProjectManagerView extends AbstractManagerView {
+public class ProjectManagerView extends AbstractManagerView implements SelectableView {
 
     // ========================================
     // 💼 COMPOSANTS SPÉCIFIQUES PROJETS; //
@@ -64,7 +66,6 @@ public class ProjectManagerView extends AbstractManagerView {
     private Button addButton;
     private Button editButton;
     private Button deleteButton;
-    private Button refreshButton;
     private Button exportButton;
 
     // ========================================
@@ -150,10 +151,6 @@ public class ProjectManagerView extends AbstractManagerView {
                 getTableSelectionProperty().isNull());
         addActionButton(deleteButton);
 
-        // 🔄 Actualiser données
-        refreshButton = ViewUtils.createRefreshButton("🔄 Actualiser", this::loadProjects);
-        addActionButton(refreshButton);
-
         // 📊 Exporter projets (bouton personnalisé)
         exportButton = new Button("📊 Exporter");
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
@@ -175,12 +172,11 @@ public class ProjectManagerView extends AbstractManagerView {
     // ========================================
     // 🔧 CRÉATION DE LA TABLE; // ========================================
 
-    @SuppressWarnings("unchecked")
     private void createProjectTable() {
         projectTable = new TableView<>();
         projectTable.setItems(sortedData);
         projectTable.setStyle("-fx-background-color: "
-                + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentUIColor()
+                + ThemeConstants.BACKGROUND_PRIMARY
                 + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
         sortedData.comparatorProperty().bind(projectTable.comparatorProperty());
 
@@ -198,12 +194,12 @@ public class ProjectManagerView extends AbstractManagerView {
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
                     row.setStyle("-fx-background-color: "
-                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                            + ThemeConstants.SELECTION_BACKGROUND + "; " +
                             "-fx-text-fill: "
-                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor()
+                            + ThemeConstants.SELECTION_TEXT
                             + "; " +
                             "-fx-border-color: "
-                            + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor()
+                            + ThemeConstants.SELECTION_BORDER
                             + "; " +
                             "-fx-border-width: 1px;");
                 } else {
@@ -785,6 +781,58 @@ public class ProjectManagerView extends AbstractManagerView {
             grid.add(labelNode, 0, row);
             grid.add(valueNode, 1, row);
         }
+    }
+    
+    // ========================================
+    // 🔍 IMPLÉMENTATION SELECTABLEVIEW
+    // ========================================
+    
+    @Override
+    public boolean selectById(String id) {
+        if (id == null || id.isEmpty()) {
+            return false;
+        }
+        
+        // Chercher le projet par ID dans les données
+        for (ProjectItem item : projectData) {
+            if (id.equals(item.getId())) {
+                // Réinitialiser les filtres pour être sûr de voir l'élément
+                filteredData.setPredicate(p -> true);
+                if (searchField != null) {
+                    searchField.clear();
+                }
+                
+                // Sélectionner et scroller vers l'élément
+                projectTable.getSelectionModel().select(item);
+                projectTable.scrollTo(item);
+                
+                System.out.println("✅ Projet sélectionné: " + item.getName() + " (ID: " + id + ")");
+                return true;
+            }
+        }
+        
+        // Essayer de chercher par numéro de projet
+        for (ProjectItem item : projectData) {
+            if (id.equals(item.getProjectNumber())) {
+                filteredData.setPredicate(p -> true);
+                if (searchField != null) {
+                    searchField.clear();
+                }
+                projectTable.getSelectionModel().select(item);
+                projectTable.scrollTo(item);
+                
+                System.out.println("✅ Projet sélectionné par numéro: " + item.getName());
+                return true;
+            }
+        }
+        
+        System.out.println("⚠️ Projet non trouvé avec ID/numéro: " + id);
+        return false;
+    }
+    
+    @Override
+    public String getViewName() {
+        return "Projets";
     }
 }
 

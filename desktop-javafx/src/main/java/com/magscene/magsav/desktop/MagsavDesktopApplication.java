@@ -261,9 +261,56 @@ public class MagsavDesktopApplication extends Application {
                 updateActiveButton(navigationButtons[0]);
             }
             updatePageTitle(Route.DASHBOARD.getDisplayName());
+            
+            // Pré-chargement des vues principales pour enregistrer les SearchProviders
+            preloadMainViews();
         });
 
         System.out.println("Interface utilisateur construite");
+    }
+    
+    /**
+     * Pré-charge les vues principales en arrière-plan pour enregistrer les SearchProviders
+     */
+    private void preloadMainViews() {
+        // Charger en arrière-plan les vues qui implémentent SearchProvider
+        new Thread(() -> {
+            try {
+                // Petit délai pour laisser le dashboard se charger
+                Thread.sleep(500);
+                
+                Platform.runLater(() -> {
+                    System.out.println("🔍 Pré-chargement des SearchProviders...");
+                    
+                    // Charger la vue Équipements (force l'enregistrement du SearchProvider)
+                    try {
+                        navigationManager.navigateTo(Route.EQUIPMENT);
+                        System.out.println("   ✅ Équipements chargé");
+                    } catch (Exception e) {
+                        System.err.println("   ⚠️ Erreur chargement Équipements: " + e.getMessage());
+                    }
+                    
+                    // Charger la vue SAV
+                    try {
+                        navigationManager.navigateTo(Route.SAV);
+                        System.out.println("   ✅ SAV chargé");
+                    } catch (Exception e) {
+                        System.err.println("   ⚠️ Erreur chargement SAV: " + e.getMessage());
+                    }
+                    
+                    // Revenir au dashboard
+                    navigationManager.navigateTo(Route.DASHBOARD);
+                    if (navigationButtons.length > 0) {
+                        updateActiveButton(navigationButtons[0]);
+                    }
+                    updatePageTitle(Route.DASHBOARD.getDisplayName());
+                    
+                    System.out.println("🔍 SearchProviders prêts pour la recherche globale");
+                });
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, "SearchProvider-Preloader").start();
     }
 
     /**
@@ -554,15 +601,8 @@ public class MagsavDesktopApplication extends Application {
             updateStatus("Navigation: Paramètres");
         });
 
-        // Bouton quitter
-        Button exitButton = new Button("❌");
-        exitButton.setTooltip(new Tooltip("Quitter"));
-        exitButton.getStyleClass().add("icon-button");
-        exitButton.setOnAction(e -> showExitConfirmation());
-
         toolbar.getChildren().addAll(appTitle, separator, globalSearch, leftSpacer, pageTitleLabel, rightSpacer,
-                settingsButton,
-                exitButton);
+                settingsButton);
         return toolbar;
     }
 

@@ -117,8 +117,6 @@ public class RepairTrackingView extends BorderPane {
         deleteBtn.disableProperty().bind(requestsTable.getSelectionModel().selectedItemProperty().isNull());
         deleteBtn.setOnAction(e -> deleteServiceRequest());
 
-        Button refreshBtn = ViewUtils.createRefreshButton("🔄 Actualiser", this::loadServiceRequests);
-
         Button exportBtn = new Button("📊 Exporter");
         exportBtn.getStyleClass().add("btn-secondary");
         exportBtn.setOnAction(e -> exportToCSV());
@@ -126,7 +124,7 @@ public class RepairTrackingView extends BorderPane {
         javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
         javafx.scene.layout.HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
-        toolbar.getChildren().addAll(addBtn, editBtn, viewBtn, deleteBtn, spacer, exportBtn, refreshBtn);
+        toolbar.getChildren().addAll(addBtn, editBtn, viewBtn, deleteBtn, spacer, exportBtn);
         return toolbar;
     }
 
@@ -778,5 +776,30 @@ public class RepairTrackingView extends BorderPane {
                 System.out.println("❌ Réparation non trouvée: " + repairName);
             }
         });
+    }
+    
+    /**
+     * Sélectionne une intervention SAV par son ID
+     * Utilisé par la recherche globale
+     */
+    public boolean selectById(String id) {
+        if (id == null || id.isEmpty() || serviceRequests == null) {
+            return false;
+        }
+        
+        for (ServiceRequest request : serviceRequests) {
+            if (id.equals(String.valueOf(request.getId()))) {
+                Platform.runLater(() -> {
+                    requestsTable.getSelectionModel().select(request);
+                    requestsTable.scrollTo(request);
+                    requestsTable.requestFocus();
+                    System.out.println("✅ Intervention SAV sélectionnée: " + request.getTitle() + " (ID: " + id + ")");
+                });
+                return true;
+            }
+        }
+        
+        System.out.println("⚠️ Intervention SAV non trouvée avec ID: " + id);
+        return false;
     }
 }

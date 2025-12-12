@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.view.preferences;
 
 import com.magscene.magsav.desktop.theme.Theme;
 import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.theme.StandardColors;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,6 +15,7 @@ import javafx.scene.text.FontWeight;
 /**
  * Vue de gestion des thèmes dans les préférences
  */
+@SuppressWarnings("deprecation") // ThemeManager est nécessaire pour la gestion des thèmes
 public class ThemePreferencesView extends VBox {
     
     private final ThemeManager themeManager = ThemeManager.getInstance();
@@ -85,11 +87,6 @@ public class ThemePreferencesView extends VBox {
         HBox section = new HBox(15);
         section.setAlignment(Pos.CENTER_LEFT);
         
-        Button refreshButton = new Button("🔄 Actualiser");
-        refreshButton.getStyleClass().add("button");
-        // $varName supprimÃ© - Style gÃ©rÃ© par CSS
-        refreshButton.setOnAction(e -> loadThemes());
-        
         Button resetButton = new Button("🔄 Thème par Défaut");
         resetButton.getStyleClass().add("button");
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
@@ -100,7 +97,7 @@ public class ThemePreferencesView extends VBox {
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS
         customButton.setOnAction(e -> createCustomTheme());
         
-        section.getChildren().addAll(refreshButton, resetButton, customButton);
+        section.getChildren().addAll(resetButton, customButton);
         return section;
     }
     
@@ -122,7 +119,7 @@ public class ThemePreferencesView extends VBox {
         HBox card = new HBox(15);
         card.setPadding(new Insets(15));
         card.setAlignment(Pos.CENTER_LEFT);
-        card.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; -fx-background-radius: 8; " +
+        card.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; -fx-background-radius: 8; " +
                      "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 2);");
         
         // Informations du thème

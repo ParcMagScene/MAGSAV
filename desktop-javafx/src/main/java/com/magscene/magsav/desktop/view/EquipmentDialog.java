@@ -3,13 +3,18 @@ package com.magscene.magsav.desktop.view;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import com.magscene.magsav.desktop.dialog.MediaGalleryDialog;
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.service.MediaService;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -23,6 +28,7 @@ import java.util.Map;
 public class EquipmentDialog extends Dialog<Map<String, Object>> {
     
     private final ApiService apiService;
+    private final MediaService mediaService;
     private final boolean isEditMode;
     private Map<String, Object> equipmentData;
     
@@ -52,9 +58,13 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     private Label photoPathLabel;
     private Button selectPhotoButton;
     private String selectedPhotoPath;
+    private ImageView photoPreview;
+    private boolean applyPhotoToAll = false;
+    private String photoMatchingField = null;
     
     public EquipmentDialog(ApiService apiService, Map<String, Object> equipment) {
         this.apiService = apiService;
+        this.mediaService = new MediaService();
         this.isEditMode = equipment != null;
         this.equipmentData = equipment != null ? equipment : new HashMap<>();
         
@@ -80,7 +90,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         getDialogPane().setPrefSize(800, 600);
         
         // Application du thème actuel au dialogue
-        String currentTheme = ThemeManager.getInstance().getCurrentTheme();
+        String currentTheme = UnifiedThemeManager.getInstance().getCurrentTheme();
         if ("dark".equals(currentTheme)) {
             getDialogPane().getStylesheets().add(getClass().getResource("/styles/theme-dark-ultra.css").toExternalForm());
         } else {
@@ -345,30 +355,117 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         Label titleLabel = new Label("Photo de l'equipement");
         titleLabel.getStyleClass().add("section-title");
         
-        VBox photoSection = new VBox(10);
-        photoSection.setPadding(new Insets(10));
-        photoSection.setStyle("-fx-border-color: #ddd; -fx-border-radius: 5px;");
+        VBox photoSection = new VBox(15);
+        photoSection.setPadding(new Insets(15));
+        photoSection.setStyle("-fx-border-color: #ddd; -fx-border-radius: 5px; -fx-background-color: #fafafa; -fx-background-radius: 5px;");
         
+        // Prévisualisation de la photo
+        photoPreview = new ImageView();
+        photoPreview.setFitWidth(200);
+        photoPreview.setFitHeight(200);
+        photoPreview.setPreserveRatio(true);
+        photoPreview.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);");
+        
+        VBox previewBox = new VBox(10);
+        previewBox.setAlignment(Pos.CENTER);
+        previewBox.getChildren().add(photoPreview);
+        
+        // Label du chemin
         photoPathLabel = new Label("Aucune photo selectionnee");
         photoPathLabel.getStyleClass().add("text-muted");
+        photoPathLabel.setWrapText(true);
         
-        selectPhotoButton = new Button("Selectionner une photo");
+        // Boutons
+        Button galleryButton = new Button("📷 Choisir dans la galerie");
+        galleryButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
+        galleryButton.setOnAction(e -> openPhotoGallery());
+        
+        selectPhotoButton = new Button("📁 Importer un fichier...");
         selectPhotoButton.setOnAction(e -> selectPhoto());
         
-        Button removePhotoButton = new Button("Supprimer");
+        Button removePhotoButton = new Button("🗑 Supprimer");
+        removePhotoButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white;");
         removePhotoButton.setOnAction(e -> removePhoto());
         
-        HBox photoButtons = new HBox(10, selectPhotoButton, removePhotoButton);
+        HBox photoButtons = new HBox(10, galleryButton, selectPhotoButton, removePhotoButton);
+        photoButtons.setAlignment(Pos.CENTER);
+        
+        // Info sur l'application à tous
+        Label infoLabel = new Label("💡 Conseil: Utilisez la galerie pour appliquer une photo à tous les équipements similaires");
+        infoLabel.setStyle("-fx-text-fill: #666; -fx-font-size: 11px;");
+        infoLabel.setWrapText(true);
         
         photoSection.getChildren().addAll(
+            new Label("Aperçu :"),
+            previewBox,
+            new Separator(),
             new Label("Fichier photo :"),
             photoPathLabel,
-            photoButtons
+            photoButtons,
+            infoLabel
         );
         
         container.getChildren().addAll(titleLabel, new Separator(), photoSection);
         
         return container;
+    }
+    
+    private void openPhotoGallery() {
+        // Récupérer le nom et le code LocMat de l'équipement
+        String name = nameField.getText().trim();
+        String locmatCode = extractLocmatCode();
+        
+        MediaGalleryDialog dialog = new MediaGalleryDialog(
+            mediaService, 
+            MediaGalleryDialog.MediaType.PHOTO,
+            name,
+            locmatCode
+        );
+        dialog.initOwner(getDialogPane().getScene().getWindow());
+        
+        dialog.showAndWait().ifPresent(selection -> {
+            File selectedFile = selection.getSelectedFile();
+            if (selectedFile != null) {
+                selectedPhotoPath = mediaService.getPhotoRelativePath(selectedFile);
+                photoPathLabel.setText(selectedFile.getName());
+                photoPathLabel.getStyleClass().removeAll("text-muted");
+                
+                // Charger la prévisualisation
+                try {
+                    Image image = new Image(selectedFile.toURI().toString(), 200, 200, true, true);
+                    photoPreview.setImage(image);
+                } catch (Exception ex) {
+                    System.err.println("Erreur chargement preview: " + ex.getMessage());
+                }
+                
+                // Mémoriser si on doit appliquer à tous
+                applyPhotoToAll = selection.isApplyToAll();
+                photoMatchingField = selection.getMatchingField();
+                
+                if (applyPhotoToAll) {
+                    photoPathLabel.setText(selectedFile.getName() + " (sera appliquée aux équipements similaires)");
+                }
+            }
+        });
+    }
+    
+    private String extractLocmatCode() {
+        // Essayer d'extraire le code LocMat des notes
+        String notes = notesField != null ? notesField.getText() : "";
+        if (notes.contains("Code LocMat:")) {
+            int start = notes.indexOf("Code LocMat:") + 12;
+            int end = notes.indexOf("\n", start);
+            if (end == -1) end = notes.length();
+            if (end > start) {
+                return notes.substring(start, end).trim();
+            }
+        }
+        // Ou du QR code si c'est un format LocMat
+        String qrCode = qrCodeField != null ? qrCodeField.getText() : "";
+        if (qrCode != null && !qrCode.isEmpty()) {
+            return qrCode;
+        }
+        return null;
     }
     
     private void loadCategories() {
@@ -400,8 +497,9 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     private void selectPhoto() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Selectionner une photo");
+        fileChooser.setInitialDirectory(mediaService.getPhotosPath().toFile());
         fileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp")
+            new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.webp", "*.avif")
         );
         
         File selectedFile = fileChooser.showOpenDialog(getDialogPane().getScene().getWindow());
@@ -409,13 +507,24 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
             selectedPhotoPath = selectedFile.getAbsolutePath();
             photoPathLabel.setText(selectedFile.getName());
             photoPathLabel.getStyleClass().removeAll("text-muted");
+            
+            // Charger la prévisualisation
+            try {
+                Image image = new Image(selectedFile.toURI().toString(), 200, 200, true, true);
+                photoPreview.setImage(image);
+            } catch (Exception ex) {
+                System.err.println("Erreur chargement preview: " + ex.getMessage());
+            }
         }
     }
     
     private void removePhoto() {
         selectedPhotoPath = null;
+        applyPhotoToAll = false;
+        photoMatchingField = null;
         photoPathLabel.setText("Aucune photo selectionnee");
         photoPathLabel.getStyleClass().add("text-muted");
+        photoPreview.setImage(null);
     }
     
     private void populateFields() {
@@ -450,6 +559,20 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         setDatePickerValue(warrantyExpirationPicker, "warrantyExpiration");
         setDatePickerValue(lastMaintenancePicker, "lastMaintenanceDate");
         setDatePickerValue(nextMaintenancePicker, "nextMaintenanceDate");
+        
+        // Photo existante
+        String existingPhoto = getStringValue("photoPath");
+        if (!existingPhoto.isEmpty()) {
+            selectedPhotoPath = existingPhoto;
+            photoPathLabel.setText(existingPhoto);
+            photoPathLabel.getStyleClass().removeAll("text-muted");
+            
+            // Charger la prévisualisation
+            Image image = mediaService.loadEquipmentPhoto(existingPhoto, 200, 200);
+            if (image != null) {
+                photoPreview.setImage(image);
+            }
+        }
     }
     
     private String getStringValue(String key) {
@@ -589,6 +712,12 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         // Photo
         if (selectedPhotoPath != null) {
             data.put("photoPath", selectedPhotoPath);
+        }
+        
+        // Options d'application multiple
+        data.put("applyPhotoToAll", applyPhotoToAll);
+        if (applyPhotoToAll && photoMatchingField != null) {
+            data.put("photoMatchingField", photoMatchingField);
         }
         
         // En mode edition, inclure l'ID

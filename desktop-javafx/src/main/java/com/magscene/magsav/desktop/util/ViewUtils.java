@@ -278,7 +278,7 @@ public class ViewUtils {
         toolbar.setPadding(ThemeConstants.TOOLBAR_PADDING);
         toolbar.setAlignment(Pos.CENTER_LEFT);
         toolbar.setStyle("-fx-background-color: "
-                + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() +
+                + ThemeConstants.SELECTION_BACKGROUND +
                 "; -fx-background-radius: 8;");
 
         // Ajout d'un spacer flexible à la fin
@@ -394,11 +394,11 @@ public class ViewUtils {
             row.setStyle("");
         } else if (isSelected) {
             row.setStyle("-fx-background-color: "
-                    + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionColor() + "; " +
+                    + ThemeConstants.SELECTION_BACKGROUND + "; " +
                     "-fx-text-fill: "
-                    + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionTextColor() + "; " +
+                    + ThemeConstants.SELECTION_TEXT + "; " +
                     "-fx-border-color: "
-                    + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    + ThemeConstants.SELECTION_BORDER + "; " +
                     "-fx-border-width: 2px;");
         } else {
             row.setStyle("");

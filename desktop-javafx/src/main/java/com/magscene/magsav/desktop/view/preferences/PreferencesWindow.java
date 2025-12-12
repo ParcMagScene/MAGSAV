@@ -3,7 +3,7 @@ package com.magscene.magsav.desktop.view.preferences;
 import com.magscene.magsav.desktop.config.EquipmentPreferencesManager;
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
 import com.magscene.magsav.desktop.theme.StandardColors;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -262,7 +262,7 @@ public class PreferencesWindow extends Stage {
         HBox footer = new HBox(15);
         footer.setPadding(new Insets(20));
         footer.setAlignment(Pos.CENTER_RIGHT);
-        footer.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor()
+        footer.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_SECONDARY
                 + "; -fx-border-color: " + StandardColors.getBorderColor() + "; -fx-border-width: 1 0 0 0;");
 
         Button cancelButton = new Button("❌ Annuler");

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -154,7 +154,7 @@ public class VehicleDialog extends Dialog<Map<String, Object>> {
         getDialogPane().setContent(content);
 
         // Appliquer le thème dark au dialogue
-        ThemeManager.getInstance().applyThemeToDialog(getDialogPane());
+        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
 
         // Mémoriser la taille et position
         WindowPreferencesService.getInstance().setupDialogMemory(getDialogPane(), "vehicle-dialog");
@@ -205,7 +205,7 @@ public class VehicleDialog extends Dialog<Map<String, Object>> {
 
         // Application du thème actuel au dialogue
         try {
-            String currentTheme = com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentTheme();
+            String currentTheme = UnifiedThemeManager.getInstance().getCurrentTheme();
             if ("dark".equals(currentTheme)) {
                 getDialogPane().getStylesheets()
                         .add(getClass().getResource("/styles/theme-dark-ultra.css").toExternalForm());

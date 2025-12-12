@@ -2,7 +2,7 @@ package com.magscene.magsav.desktop.dialog.clients;
 
 import com.magscene.magsav.desktop.model.Client;
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -102,7 +102,7 @@ public class ClientDialog extends Stage {
         setScene(scene);
         
         // Appliquer le thème dark au dialogue
-        ThemeManager.getInstance().applyThemeToScene(scene);
+        UnifiedThemeManager.getInstance().applyThemeToScene(scene);
     }
     
     private com.magscene.magsav.desktop.component.CustomTabPane createTabbedForm() {

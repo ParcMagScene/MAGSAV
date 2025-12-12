@@ -25,7 +25,7 @@ import com.magscene.magsav.desktop.model.ServiceRequest.ServiceRequestStatus;
 import com.magscene.magsav.desktop.model.ServiceRequest.ServiceRequestType;
 // Equipment simple pour relation
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 public class ServiceRequestDialog {
     private final Stage dialog;
@@ -140,7 +140,7 @@ public class ServiceRequestDialog {
         dialog.setScene(scene);
         
         // Appliquer le thème dark au dialogue
-        ThemeManager.getInstance().applyThemeToScene(scene);
+        UnifiedThemeManager.getInstance().applyThemeToScene(scene);
     }
     
     private VBox createLayout() {
@@ -240,7 +240,7 @@ public class ServiceRequestDialog {
                     VBox mainLayout = createLayout();
                     Scene scene = new Scene(mainLayout, 650, 750);
                     dialog.setScene(scene);
-                    ThemeManager.getInstance().applyThemeToScene(scene);
+                    UnifiedThemeManager.getInstance().applyThemeToScene(scene);
                     dialog.setTitle("Modifier la demande SAV");
                 });
                 

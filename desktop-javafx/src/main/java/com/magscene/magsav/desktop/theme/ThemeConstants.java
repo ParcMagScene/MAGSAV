@@ -169,8 +169,8 @@ public class ThemeConstants {
     /** Marge pour les toolbars */
     public static final Insets TOOLBAR_PADDING = new Insets(SPACING_MD);
 
-    /** Marge externe pour les toolbars (bottom) */
-    public static final Insets TOOLBAR_MARGIN = new Insets(0, 0, SPACING_SM, 0);
+    /** Marge externe pour les toolbars (bottom) - Zéro pour layout compact */
+    public static final Insets TOOLBAR_MARGIN = new Insets(0);
 
     // ========================================
     // 🔲 BORDURES ET RADIUS; // ========================================

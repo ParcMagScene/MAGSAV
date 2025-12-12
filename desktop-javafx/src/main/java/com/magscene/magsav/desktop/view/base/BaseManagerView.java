@@ -56,10 +56,9 @@ public abstract class BaseManagerView<T> extends BorderPane {
         Button btnAdd = ViewUtils.createAddButton("➕ Ajouter", this::handleAdd);
         Button btnEdit = ViewUtils.createEditButton("✏️ Modifier", this::handleEdit, null);
         Button btnDelete = ViewUtils.createDeleteButton("🗑️ Supprimer", this::handleDelete, null);
-        Button btnRefresh = ViewUtils.createRefreshButton("🔄 Actualiser", this::handleRefresh);
 
         // ActionsBox à droite comme dans ClientManagerView
-        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", btnAdd, btnEdit, btnDelete, btnRefresh);
+        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", btnAdd, btnEdit, btnDelete);
 
         // Spacer pour pousser les actions à droite
         Region spacer = new Region();

@@ -31,6 +31,11 @@ public class ApplicationContext {
                 com.magscene.magsav.desktop.service.ApiService.class,
                 () -> new com.magscene.magsav.desktop.service.ApiService());
 
+        // MediaService pour les photos et logos
+        registerSingleton(
+                com.magscene.magsav.desktop.service.MediaService.class,
+                new com.magscene.magsav.desktop.service.MediaService());
+
         // API Clients
         registerFactory(
                 com.magscene.magsav.desktop.service.api.EquipmentApiClient.class,
@@ -52,6 +57,7 @@ public class ApplicationContext {
         System.out.println("🏗️ ApplicationContext initialisé avec services:");
         System.out.println("  📡 API Clients: Equipment, SAV, ApiService");
         System.out.println("  🏢 Business Services: Equipment, SAV");
+        System.out.println("  🖼️ Media Services: MediaService");
         System.out.println("  🧭 Navigation: NavigationManager");
     }
 

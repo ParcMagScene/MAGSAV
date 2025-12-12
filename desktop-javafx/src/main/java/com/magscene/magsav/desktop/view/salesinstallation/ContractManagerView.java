@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 
@@ -72,7 +72,7 @@ public class ContractManagerView extends BaseManagerView<Object> {
         // Le binding sera fait dans le constructeur après initialisation de
         // contractList
         contractTable.setStyle("-fx-background-color: "
-                + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentUIColor()
+                + ThemeConstants.BACKGROUND_PRIMARY
                 + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
 
         // Colonne Référence
@@ -122,9 +122,9 @@ public class ContractManagerView extends BaseManagerView<Object> {
                     row.setStyle("");
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
-                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                            "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                            "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    row.setStyle("-fx-background-color: " + ThemeConstants.SELECTION_BACKGROUND + "; " +
+                            "-fx-text-fill: " + ThemeConstants.SELECTION_TEXT + "; " +
+                            "-fx-border-color: " + ThemeConstants.SELECTION_BORDER + "; " +
                             "-fx-border-width: 1px;");
                 } else {
                     // Style par défaut

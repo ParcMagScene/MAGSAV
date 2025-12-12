@@ -33,9 +33,9 @@ public class SelectionStyleManager {
                     row.setStyle("");
                 } else if (row.isSelected()) {
                     // Style de sélection prioritaire
-                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                               "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                               "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    row.setStyle("-fx-background-color: " + ThemeConstants.SELECTION_BACKGROUND + "; " +
+                               "-fx-text-fill: " + ThemeConstants.SELECTION_TEXT + "; " +
+                               "-fx-border-color: " + ThemeConstants.SELECTION_BORDER + "; " +
                                "-fx-border-width: 2px;");
                 } else {
                     // Style par défaut ou basé sur les données de l'item
@@ -78,9 +78,9 @@ public class SelectionStyleManager {
                     cell.setStyle("");
                 } else if (cell.isSelected()) {
                     // Style de sélection prioritaire
-                    cell.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                                "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                                "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    cell.setStyle("-fx-background-color: " + ThemeConstants.SELECTION_BACKGROUND + "; " +
+                                "-fx-text-fill: " + ThemeConstants.SELECTION_TEXT + "; " +
+                                "-fx-border-color: " + ThemeConstants.SELECTION_BORDER + "; " +
                                 "-fx-border-width: 2px;");
                 } else {
                     // Style par défaut
@@ -109,9 +109,9 @@ public class SelectionStyleManager {
                     row.setStyle("");
                 } else if (row.isSelected()) {
                     // Style de sélection prioritaire
-                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                               "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                               "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    row.setStyle("-fx-background-color: " + ThemeConstants.SELECTION_BACKGROUND + "; " +
+                               "-fx-text-fill: " + ThemeConstants.SELECTION_TEXT + "; " +
+                               "-fx-border-color: " + ThemeConstants.SELECTION_BORDER + "; " +
                                "-fx-border-width: 2px;");
                 } else {
                     // Style par défaut
@@ -154,9 +154,9 @@ public class SelectionStyleManager {
                 if (!cell.isEmpty()) {
                     if (cell.isSelected()) {
                         // Style de sélection prioritaire
-                        cell.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                                   "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                                   "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                        cell.setStyle("-fx-background-color: " + ThemeConstants.SELECTION_BACKGROUND + "; " +
+                                   "-fx-text-fill: " + ThemeConstants.SELECTION_TEXT + "; " +
+                                   "-fx-border-color: " + ThemeConstants.SELECTION_BORDER + "; " +
                                    "-fx-border-width: 2px;");
                     } else {
                         // Style par défaut

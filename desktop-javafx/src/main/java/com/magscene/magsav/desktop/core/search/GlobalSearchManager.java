@@ -110,4 +110,39 @@ public class GlobalSearchManager {
                 .mapToInt(SearchProvider::getLastResultCount)
                 .sum();
     }
+    
+    /**
+     * Obtient les résultats groupés par module
+     * @return Map avec le nom du module comme clé et la liste des résultats
+     */
+    public java.util.Map<String, java.util.List<SearchProvider.SearchResult>> getResultsByModule() {
+        java.util.Map<String, java.util.List<SearchProvider.SearchResult>> results = new java.util.LinkedHashMap<>();
+        
+        for (SearchProvider provider : searchProviders) {
+            if (provider.getLastResultCount() > 0) {
+                java.util.List<SearchProvider.SearchResult> moduleResults = provider.getLastResults();
+                if (!moduleResults.isEmpty()) {
+                    results.put(provider.getModuleName(), moduleResults);
+                }
+            }
+        }
+        
+        return results;
+    }
+    
+    /**
+     * Obtient un résumé des résultats par module (nom du module -> nombre de résultats)
+     */
+    public java.util.Map<String, Integer> getResultCountByModule() {
+        java.util.Map<String, Integer> counts = new java.util.LinkedHashMap<>();
+        
+        for (SearchProvider provider : searchProviders) {
+            int count = provider.getLastResultCount();
+            if (count > 0) {
+                counts.put(provider.getModuleName(), count);
+            }
+        }
+        
+        return counts;
+    }
 }

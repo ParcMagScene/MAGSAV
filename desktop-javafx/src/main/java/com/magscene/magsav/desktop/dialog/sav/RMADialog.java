@@ -7,7 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.util.ViewUtils;
 
@@ -104,7 +104,7 @@ public class RMADialog extends Dialog<Map<String, Object>> {
         getDialogPane().setPrefSize(800, 600);
         
         // Appliquer le thème dark aux dialogues
-        ThemeManager.getInstance().applyThemeToDialog(getDialogPane());
+        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
     }
 
     private com.magscene.magsav.desktop.component.CustomTabPane createTabbedInterface() {

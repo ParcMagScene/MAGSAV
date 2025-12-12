@@ -7,16 +7,18 @@ import java.util.stream.Collectors;
 
 /**
  * Service de recherche globale intelligente
+ * Charge les données réelles depuis l'API pour toutes les tables
  * Fournit des suggestions dynamiques classées par type
  */
 public class GlobalSearchService {
     
     private final Map<String, List<SearchResult>> searchIndex;
     private ApiService apiService;
+    private boolean dataLoaded = false;
     
     public GlobalSearchService() {
         this.searchIndex = new HashMap<>();
-        initializeSearchData();
+        initializeEmptyIndex();
     }
     
     /**
@@ -25,14 +27,448 @@ public class GlobalSearchService {
     public GlobalSearchService(ApiService apiService) {
         this.searchIndex = new HashMap<>();
         this.apiService = apiService;
-        initializeSearchData();
-        if (apiService != null) {
-            loadRealProjectData();
+        initializeEmptyIndex();
+        loadAllRealData();
+    }
+    
+    /**
+     * Initialise l'index avec des listes vides
+     */
+    private void initializeEmptyIndex() {
+        searchIndex.put("equipements", new ArrayList<>());
+        searchIndex.put("clients", new ArrayList<>());
+        searchIndex.put("fournisseurs", new ArrayList<>());
+        searchIndex.put("personnel", new ArrayList<>());
+        searchIndex.put("interventions", new ArrayList<>());
+        searchIndex.put("contrats", new ArrayList<>());
+        searchIndex.put("vehicules", new ArrayList<>());
+        searchIndex.put("projets", new ArrayList<>());
+    }
+    
+    /**
+     * Charge toutes les données réelles depuis l'API
+     */
+    public void loadAllRealData() {
+        if (apiService == null) {
+            System.err.println("⚠️ ApiService non disponible - chargement des données de démonstration");
+            loadDemoData();
+            return;
+        }
+        
+        System.out.println("🔄 Chargement des données pour la recherche globale...");
+        
+        try {
+            // Charger les équipements
+            loadEquipmentData();
+            
+            // Charger les clients
+            loadClientData();
+            
+            // Charger les fournisseurs
+            loadSupplierData();
+            
+            // Charger le personnel
+            loadPersonnelData();
+            
+            // Charger les véhicules
+            loadVehicleData();
+            
+            // Charger les interventions SAV
+            loadSAVData();
+            
+            // Charger les contrats
+            loadContractData();
+            
+            // Charger les projets
+            loadProjectData();
+            
+            dataLoaded = true;
+            System.out.println("✅ Recherche globale initialisée avec les données réelles");
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors du chargement des données: " + e.getMessage());
+            loadDemoData();
         }
     }
     
     /**
+     * Charge les équipements depuis l'API
+     */
+    private void loadEquipmentData() {
+        try {
+            List<Map<String, Object>> equipment = apiService.getAll("equipment");
+            List<SearchResult> results = new ArrayList<>();
+            
+            int x15Count = 0;
+            for (Map<String, Object> item : equipment) {
+                String name = getStringValue(item, "name", "designation", "nom");
+                String brand = getStringValue(item, "brand", "marque");
+                String category = getStringValue(item, "category", "categorie");
+                String qrCode = getStringValue(item, "qrCode", "qr_code");
+                String locmatCode = getStringValue(item, "internalReference", "locmatCode", "locmat_code");
+                String id = getStringValue(item, "id");
+                
+                // Debug: afficher les équipements contenant X15
+                if (name.toUpperCase().contains("X15") || (locmatCode != null && locmatCode.toUpperCase().contains("X15"))) {
+                    x15Count++;
+                    if (x15Count <= 3) {
+                        System.out.println("   🔍 DEBUG X15 trouvé: name='" + name + "', locmat='" + locmatCode + "'");
+                    }
+                }
+                
+                if (!name.isEmpty()) {
+                    String description = brand;
+                    if (!category.isEmpty()) {
+                        description += (description.isEmpty() ? "" : " - ") + category;
+                    }
+                    if (!locmatCode.isEmpty()) {
+                        description += " [LOCMAT: " + locmatCode + "]";
+                    }
+                    if (!qrCode.isEmpty()) {
+                        description += " [QR: " + qrCode + "]";
+                    }
+                    results.add(new SearchResult("Équipement", name, description, "📦", id, locmatCode));
+                }
+            }
+            
+            if (x15Count > 0) {
+                System.out.println("   🔍 DEBUG: " + x15Count + " équipements X15 trouvés au total");
+            }
+            
+            searchIndex.put("equipements", results);
+            System.out.println("   📦 " + results.size() + " équipements chargés");
+            
+        } catch (Exception e) {
+            System.err.println("   ⚠️ Erreur chargement équipements: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Charge les clients depuis l'API
+     */
+    private void loadClientData() {
+        try {
+            apiService.getAllClients().thenAccept(clientList -> {
+                List<SearchResult> results = new ArrayList<>();
+                
+                for (Object obj : clientList) {
+                    if (obj instanceof Map) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> client = (Map<String, Object>) obj;
+                        String name = getStringValue(client, "nom", "companyName", "name");
+                        String type = getStringValue(client, "type", "category");
+                        String ville = getStringValue(client, "ville", "city");
+                        String email = getStringValue(client, "email");
+                        String id = getStringValue(client, "id");
+                        
+                        if (!name.isEmpty()) {
+                            String description = type;
+                            if (!ville.isEmpty()) {
+                                description += (description.isEmpty() ? "" : " - ") + ville;
+                            }
+                            if (!email.isEmpty()) {
+                                description += " (" + email + ")";
+                            }
+                            results.add(new SearchResult("Client", name, description, "👥", id));
+                        }
+                    }
+                }
+                
+                searchIndex.put("clients", results);
+                System.out.println("   👥 " + results.size() + " clients chargés");
+                
+            }).join();
+        } catch (Exception e) {
+            System.err.println("   ⚠️ Erreur chargement clients: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Charge les fournisseurs depuis l'API
+     */
+    private void loadSupplierData() {
+        try {
+            List<Map<String, Object>> suppliers = apiService.getAll("suppliers");
+            List<SearchResult> results = new ArrayList<>();
+            
+            for (Map<String, Object> supplier : suppliers) {
+                String name = getStringValue(supplier, "name", "nom", "companyName");
+                String type = getStringValue(supplier, "type", "category");
+                String contact = getStringValue(supplier, "contactName", "contact");
+                String id = getStringValue(supplier, "id");
+                
+                if (!name.isEmpty()) {
+                    String description = type;
+                    if (!contact.isEmpty()) {
+                        description += (description.isEmpty() ? "" : " - ") + "Contact: " + contact;
+                    }
+                    results.add(new SearchResult("Fournisseur", name, description, "🏭", id));
+                }
+            }
+            
+            searchIndex.put("fournisseurs", results);
+            System.out.println("   🏭 " + results.size() + " fournisseurs chargés");
+            
+        } catch (Exception e) {
+            System.err.println("   ⚠️ Erreur chargement fournisseurs: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Charge le personnel depuis l'API
+     */
+    private void loadPersonnelData() {
+        try {
+            apiService.getAllPersonnel().thenAccept(personnelList -> {
+                List<SearchResult> results = new ArrayList<>();
+                
+                for (Object obj : personnelList) {
+                    if (obj instanceof Map) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> person = (Map<String, Object>) obj;
+                        String firstName = getStringValue(person, "firstName", "prenom");
+                        String lastName = getStringValue(person, "lastName", "nom");
+                        String name = (firstName + " " + lastName).trim();
+                        String role = getStringValue(person, "role", "fonction", "position");
+                        String department = getStringValue(person, "department", "service");
+                        String id = getStringValue(person, "id");
+                        
+                        if (!name.isEmpty() && !name.equals(" ")) {
+                            String description = role;
+                            if (!department.isEmpty()) {
+                                description += (description.isEmpty() ? "" : " - ") + department;
+                            }
+                            results.add(new SearchResult("Personnel", name, description, "👤", id));
+                        }
+                    }
+                }
+                
+                searchIndex.put("personnel", results);
+                System.out.println("   👤 " + results.size() + " membres du personnel chargés");
+                
+            }).join();
+        } catch (Exception e) {
+            System.err.println("   ⚠️ Erreur chargement personnel: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Charge les véhicules depuis l'API
+     */
+    private void loadVehicleData() {
+        try {
+            apiService.getAllVehicles().thenAccept(vehicleList -> {
+                List<SearchResult> results = new ArrayList<>();
+                
+                for (Object obj : vehicleList) {
+                    if (obj instanceof Map) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> vehicle = (Map<String, Object>) obj;
+                        String name = getStringValue(vehicle, "name", "nom");
+                        String plate = getStringValue(vehicle, "licensePlate", "immatriculation");
+                        String model = getStringValue(vehicle, "model", "modele");
+                        String status = getStringValue(vehicle, "status");
+                        String id = getStringValue(vehicle, "id");
+                        
+                        if (!name.isEmpty()) {
+                            String description = model;
+                            if (!plate.isEmpty()) {
+                                description += (description.isEmpty() ? "" : " - ") + plate;
+                            }
+                            if (!status.isEmpty()) {
+                                description += " [" + status + "]";
+                            }
+                            results.add(new SearchResult("Véhicule", name, description, "🚐", id));
+                        }
+                    }
+                }
+                
+                searchIndex.put("vehicules", results);
+                System.out.println("   🚐 " + results.size() + " véhicules chargés");
+                
+            }).join();
+        } catch (Exception e) {
+            System.err.println("   ⚠️ Erreur chargement véhicules: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Charge les interventions SAV depuis l'API
+     */
+    private void loadSAVData() {
+        try {
+            List<Map<String, Object>> savRequests = apiService.getAll("sav-requests");
+            List<SearchResult> results = new ArrayList<>();
+            
+            for (Map<String, Object> sav : savRequests) {
+                String reference = getStringValue(sav, "reference", "numero", "id");
+                String title = getStringValue(sav, "title", "objet", "description");
+                String status = getStringValue(sav, "status", "statut");
+                String equipment = getStringValue(sav, "equipmentName", "equipment");
+                String id = getStringValue(sav, "id");
+                
+                String name = !reference.isEmpty() ? reference : "SAV-" + id;
+                if (!title.isEmpty()) {
+                    String description = title;
+                    if (!equipment.isEmpty()) {
+                        description += " - " + equipment;
+                    }
+                    if (!status.isEmpty()) {
+                        description += " [" + status + "]";
+                    }
+                    results.add(new SearchResult("Intervention SAV", name, description, "🔧", id));
+                }
+            }
+            
+            searchIndex.put("interventions", results);
+            System.out.println("   🔧 " + results.size() + " interventions SAV chargées");
+            
+        } catch (Exception e) {
+            System.err.println("   ⚠️ Erreur chargement SAV: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Charge les contrats depuis l'API
+     */
+    private void loadContractData() {
+        try {
+            apiService.getAllContracts().thenAccept(contractList -> {
+                List<SearchResult> results = new ArrayList<>();
+                
+                for (Object obj : contractList) {
+                    if (obj instanceof Map) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> contract = (Map<String, Object>) obj;
+                        String reference = getStringValue(contract, "reference", "numero", "contractNumber");
+                        String clientName = getStringValue(contract, "clientName", "client");
+                        String type = getStringValue(contract, "type", "contractType");
+                        String status = getStringValue(contract, "status");
+                        String id = getStringValue(contract, "id");
+                        
+                        String name = !reference.isEmpty() ? reference : "Contrat-" + id;
+                        String description = clientName;
+                        if (!type.isEmpty()) {
+                            description += (description.isEmpty() ? "" : " - ") + type;
+                        }
+                        if (!status.isEmpty()) {
+                            description += " [" + status + "]";
+                        }
+                        results.add(new SearchResult("Contrat", name, description, "📋", id));
+                    }
+                }
+                
+                searchIndex.put("contrats", results);
+                System.out.println("   📋 " + results.size() + " contrats chargés");
+                
+            }).join();
+        } catch (Exception e) {
+            System.err.println("   ⚠️ Erreur chargement contrats: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Charge les projets depuis l'API
+     */
+    private void loadProjectData() {
+        try {
+            List<Map<String, Object>> projects = apiService.getAll("projects");
+            List<SearchResult> results = new ArrayList<>();
+            
+            for (Map<String, Object> project : projects) {
+                String name = getStringValue(project, "name", "nom", "projectName");
+                String clientName = getStringValue(project, "clientName", "client");
+                String type = getStringValue(project, "type");
+                String status = getStringValue(project, "status");
+                String id = getStringValue(project, "id");
+                
+                if (!name.isEmpty()) {
+                    String description = "";
+                    if (!clientName.isEmpty()) {
+                        description = "Client: " + clientName;
+                    }
+                    if (!type.isEmpty()) {
+                        description += (description.isEmpty() ? "" : " - ") + type;
+                    }
+                    if (!status.isEmpty()) {
+                        description += " [" + status + "]";
+                    }
+                    results.add(new SearchResult("Projet", name, description, "🎭", id));
+                }
+            }
+            
+            searchIndex.put("projets", results);
+            System.out.println("   🎭 " + results.size() + " projets chargés");
+            
+        } catch (Exception e) {
+            System.err.println("   ⚠️ Erreur chargement projets: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Charge des données de démonstration si l'API n'est pas disponible
+     */
+    private void loadDemoData() {
+        System.out.println("📦 Chargement des données de démonstration...");
+        
+        // Clients de démo
+        searchIndex.put("clients", Arrays.asList(
+            new SearchResult("Client", "MagScene Productions", "ENTREPRISE - Paris", "👥", "1"),
+            new SearchResult("Client", "Festival Rock en Seine", "FESTIVAL - Saint-Cloud", "👥", "2"),
+            new SearchResult("Client", "Théâtre du Châtelet", "THEATRE - Paris", "👥", "3"),
+            new SearchResult("Client", "Zénith de Paris", "SALLE_SPECTACLE - Paris", "👥", "5")
+        ));
+        
+        // Équipements de démo
+        searchIndex.put("equipements", Arrays.asList(
+            new SearchResult("Équipement", "Yamaha A15", "Enceinte active 15\" - Audio", "📦", "100"),
+            new SearchResult("Équipement", "Shure SM58", "Microphone dynamique - Audio", "📦", "101"),
+            new SearchResult("Équipement", "Console Yamaha M32", "Console de mixage 32 voies", "📦", "102")
+        ));
+        
+        // Personnel de démo
+        searchIndex.put("personnel", Arrays.asList(
+            new SearchResult("Personnel", "Thomas MARTIN", "Ingénieur son - Technique", "👤", "10"),
+            new SearchResult("Personnel", "Marie DUPONT", "Responsable planning - Administration", "👤", "11")
+        ));
+        
+        // Véhicules de démo
+        searchIndex.put("vehicules", Arrays.asList(
+            new SearchResult("Véhicule", "Camion Sonorisation", "Mercedes Actros - AB-123-CD [DISPONIBLE]", "🚐", "20"),
+            new SearchResult("Véhicule", "Fourgon Éclairage", "Iveco Daily - EF-456-GH [EN_MISSION]", "🚐", "21")
+        ));
+        
+        // Interventions de démo
+        searchIndex.put("interventions", Arrays.asList(
+            new SearchResult("Intervention SAV", "SAV-2024-001", "Réparation enceinte - Yamaha A15 [EN_COURS]", "🔧", "30"),
+            new SearchResult("Intervention SAV", "SAV-2024-002", "Maintenance console [TERMINE]", "🔧", "31")
+        ));
+        
+        // Projets de démo
+        searchIndex.put("projets", Arrays.asList(
+            new SearchResult("Projet", "Concert Stade de France", "Client: MagScene Productions - Vente [NEGOCIATION]", "🎭", "40"),
+            new SearchResult("Projet", "Festival Solidays", "Client: Festival Solidays - Prestation [CONFIRME]", "🎭", "41")
+        ));
+        
+        dataLoaded = true;
+    }
+    
+    /**
+     * Utilitaire pour extraire une valeur string d'une map avec plusieurs clés possibles
+     */
+    private String getStringValue(Map<String, Object> map, String... keys) {
+        for (String key : keys) {
+            Object value = map.get(key);
+            if (value != null && !value.toString().isEmpty()) {
+                return value.toString();
+            }
+        }
+        return "";
+    }
+    
+    /**
      * Recherche dynamique avec suggestions
+     * Priorise les correspondances sur le code LOCMAT
      */
     public ObservableList<SearchResult> search(String query) {
         if (query == null || query.trim().length() < 2) {
@@ -42,172 +478,93 @@ public class GlobalSearchService {
         String normalizedQuery = query.toLowerCase().trim();
         List<SearchResult> results = new ArrayList<>();
         
-        // Parcourir tous les types de données
+        // Debug: afficher l'état de l'index
+        System.out.println("🔎 Recherche: '" + normalizedQuery + "' dans " + searchIndex.size() + " catégories");
+        
+        // Parcourir tous les types de données - PAS de limite ici pour permettre "Afficher plus"
         for (Map.Entry<String, List<SearchResult>> entry : searchIndex.entrySet()) {
             List<SearchResult> typeResults = entry.getValue().stream()
-                .filter(item -> item.getName().toLowerCase().contains(normalizedQuery) ||
-                               item.getDescription().toLowerCase().contains(normalizedQuery))
-                .limit(5) // Limite à 5 résultats par type
-                .collect(Collectors.toList());
+                .filter(item -> {
+                    boolean nameMatch = item.getName().toLowerCase().contains(normalizedQuery);
+                    boolean descMatch = item.getDescription().toLowerCase().contains(normalizedQuery);
+                    boolean locmatMatch = item.getLocmatCode() != null && item.getLocmatCode().toLowerCase().contains(normalizedQuery);
+                    return nameMatch || descMatch || locmatMatch;
+                })
+                .collect(Collectors.toList()); // Pas de limite ici
+            
+            if (!typeResults.isEmpty()) {
+                System.out.println("   ✅ " + typeResults.size() + " résultats dans " + entry.getKey());
+            }
             results.addAll(typeResults);
         }
         
-        // Trier par pertinence et type
+        System.out.println("🔎 Total résultats: " + results.size());
+        
+        // Trier par pertinence - PRIORISER LES CORRESPONDANCES LOCMAT
         results.sort((a, b) -> {
-            // Prioriser les correspondances exactes en début
-            boolean aStartsWith = a.getName().toLowerCase().startsWith(normalizedQuery);
-            boolean bStartsWith = b.getName().toLowerCase().startsWith(normalizedQuery);
+            // 1. PRIORITÉ MAXIMALE: Correspondance exacte sur le code LOCMAT
+            boolean aLocmatExact = a.getLocmatCode() != null && a.getLocmatCode().equalsIgnoreCase(normalizedQuery);
+            boolean bLocmatExact = b.getLocmatCode() != null && b.getLocmatCode().equalsIgnoreCase(normalizedQuery);
+            if (aLocmatExact && !bLocmatExact) return -1;
+            if (!aLocmatExact && bLocmatExact) return 1;
             
-            if (aStartsWith && !bStartsWith) return -1;
-            if (!aStartsWith && bStartsWith) return 1;
+            // 2. HAUTE PRIORITÉ: Le code LOCMAT commence par la recherche
+            boolean aLocmatStartsWith = a.getLocmatCode() != null && a.getLocmatCode().toLowerCase().startsWith(normalizedQuery);
+            boolean bLocmatStartsWith = b.getLocmatCode() != null && b.getLocmatCode().toLowerCase().startsWith(normalizedQuery);
+            if (aLocmatStartsWith && !bLocmatStartsWith) return -1;
+            if (!aLocmatStartsWith && bLocmatStartsWith) return 1;
             
-            // Puis par type
+            // 3. MOYENNE PRIORITÉ: Le code LOCMAT contient la recherche
+            boolean aLocmatContains = a.getLocmatCode() != null && a.getLocmatCode().toLowerCase().contains(normalizedQuery);
+            boolean bLocmatContains = b.getLocmatCode() != null && b.getLocmatCode().toLowerCase().contains(normalizedQuery);
+            if (aLocmatContains && !bLocmatContains) return -1;
+            if (!aLocmatContains && bLocmatContains) return 1;
+            
+            // 4. Correspondance exacte sur le nom
+            boolean aNameStartsWith = a.getName().toLowerCase().startsWith(normalizedQuery);
+            boolean bNameStartsWith = b.getName().toLowerCase().startsWith(normalizedQuery);
+            if (aNameStartsWith && !bNameStartsWith) return -1;
+            if (!aNameStartsWith && bNameStartsWith) return 1;
+            
+            // 5. Puis par type
             return a.getType().compareTo(b.getType());
         });
         
-        // Limiter le nombre total de résultats
-        return FXCollections.observableArrayList(results.stream().limit(20).collect(Collectors.toList()));
+        // PAS de limite globale - la limite sera appliquée côté affichage
+        return FXCollections.observableArrayList(results);
     }
     
     /**
-     * Initialisation des données de recherche (simulation + données réelles)
+     * Rafraîchit les données depuis l'API
      */
-    private void initializeSearchData() {
-        // Clients (données de démonstration)
-        List<SearchResult> clients = Arrays.asList(
-            new SearchResult("Client", "Yann RIVOAL", "EURL RIVOAL - Prestataire audiovisuel", "👥"),
-            new SearchResult("Client", "Yannis GROS", "SAS EVENEMENTS PLUS - Organisation d'événements", "👥"),
-            new SearchResult("Client", "Yasmina RAOULT", "Mairie de Saint-Brieuc - Service culturel", "👥"),
-            new SearchResult("Client", "Yacht Club Dinard", "Association nautique - Événements privés", "👥"),
-            new SearchResult("Client", "Yes We Can Events", "Agence événementielle Rennes", "👥"),
-            new SearchResult("Client", "Mairie de Vannes", "Collectivité territoriale", "👥"),
-            new SearchResult("Client", "Festival Vieilles Charrues", "Organisation de festivals", "👥"),
-            new SearchResult("Client", "Salle Olympia Paris", "Salle de spectacle", "👥")
-        );
-        
-        // Matériel (liste mutable)
-        List<SearchResult> materiel = new ArrayList<>(Arrays.asList(
-            new SearchResult("Matériel", "Yamaha A15", "Enceinte active 15\" - 700W", "📦"),
-            new SearchResult("Matériel", "Yamaha B218", "Caisson de basses actif - 1000W", "📦"),
-            new SearchResult("Matériel", "Yamaha MG16XU", "Console de mixage 16 voies", "📦"),
-            new SearchResult("Matériel", "Yamaha P7000S", "Amplificateur de puissance", "📦"),
-            new SearchResult("Matériel", "Shure SM58", "Microphone dynamique cardioïde", "📦"),
-            new SearchResult("Matériel", "MacBook Pro 16\"", "Ordinateur portable pour régie", "📦"),
-            new SearchResult("Matériel", "iPad Air", "Tablette de contrôle à distance", "📦"),
-            new SearchResult("Matériel", "Projecteur LED 300W", "Éclairage à LED haute puissance", "📦")
-        ));
-        
-        // Fournisseurs
-        List<SearchResult> fournisseurs = Arrays.asList(
-            new SearchResult("Fournisseur", "Yamaha France", "Fabricant instruments et équipements audio", "🏪"),
-            new SearchResult("Fournisseur", "Yellowtec", "Fabricant équipements broadcast", "🏪"),
-            new SearchResult("Fournisseur", "Nexo SA", "Fabricant enceintes professionnelles", "🏪"),
-            new SearchResult("Fournisseur", "L-Acoustics", "Systèmes audio professionnels", "🏪")
-        );
-        
-        // Personnel (liste mutable)
-        List<SearchResult> personnel = new ArrayList<>(Arrays.asList(
-            new SearchResult("Personnel", "Yann MOIHAT", "Technicien son - Spécialiste mixage", "👤"),
-            new SearchResult("Personnel", "Yaël BERNARD", "Technicienne éclairage - Programmation", "👤"),
-            new SearchResult("Personnel", "Yves CADIOU", "Responsable logistique - Transport", "👤"),
-            new SearchResult("Personnel", "Yvonne LEMAIRE", "Commerciale - Devis et contrats", "👤")
-        ));
-        
-        // Interventions SAV
-        List<SearchResult> interventions = Arrays.asList(
-            new SearchResult("Intervention", "INT-2024-0156", "Réparation Yamaha A15 - Haut-parleur défaillant", "🔧"),
-            new SearchResult("Intervention", "INT-2024-0189", "Maintenance préventive console Yamaha", "🔧"),
-            new SearchResult("Intervention", "INT-2024-0203", "Formation utilisation équipement Yacht Club", "🔧")
-        );
-        
-        // Contrats
-        List<SearchResult> contrats = Arrays.asList(
-            new SearchResult("Contrat", "CTR-2024-045", "Maintenance annuelle - Yann RIVOAL", "📋"),
-            new SearchResult("Contrat", "CTR-2024-067", "Location matériel - Festival Vieilles Charrues", "📋"),
-            new SearchResult("Contrat", "CTR-2024-089", "Prestation complète - Yasmina RAOULT", "📋")
-        );
-        
-        // Véhicules
-        List<SearchResult> vehicules = Arrays.asList(
-            new SearchResult("Véhicule", "Iveco Daily", "AB-123-CD - Fourgon matériel 20m³", "🚐"),
-            new SearchResult("Véhicule", "Ford Transit", "EF-456-GH - Fourgon léger 12m³", "🚐"),
-            new SearchResult("Véhicule", "Renault Master", "IJ-789-KL - Fourgon aménagé régie", "🚐")
-        );
-        
-        // Projets/Événements
-        List<SearchResult> projets = Arrays.asList(
-            new SearchResult("Projets", "Festival Solidays", "Festival de musique - prestation complète son + éclairage", "🎭"),
-            new SearchResult("Projets", "Fête de la Musique", "Événement municipal - sonorisation places publiques", "🎭"),
-            new SearchResult("Projets", "Festival Rock en Seine", "Festival rock - système principal 4 scènes", "🎭"),
-            new SearchResult("Projets", "Francofolies La Rochelle", "Festival chanson française - technique complète", "🎭"),
-            new SearchResult("Projets", "Foire commerciale Paris", "Salon professionnel - équipement stands", "🎭"),
-            new SearchResult("Projets", "Finale Roland Garros", "Événement sportif - sonorisation cérémonie", "🎭"),
-            new SearchResult("Projets", "Fashion Week Paris", "Défilé mode - éclairage scénique LED", "🎭"),
-            new SearchResult("Projets", "Festival Jazz Montreux", "Festival international - régie complète", "🎭"),
-            new SearchResult("Projets", "Théâtre Mogador", "Installation fixe - système son numérique", "🎭"),
-            new SearchResult("Projets", "Concert Olympia", "Prestation concert - éclairage + son", "🎭")
-        );
-        
-        // Ajout de matériel avec "T"
-        List<SearchResult> materielT = Arrays.asList(
-            new SearchResult("Matériel", "Truss Prolyte H30V", "Structure aluminium 290mm - 3m", "📦"),
-            new SearchResult("Matériel", "Truss Global H40V", "Structure carrée 400mm - 2m", "📦"),
-            new SearchResult("Matériel", "Table de mixage X32", "Console numérique Behringer 32 voies", "📦"),
-            new SearchResult("Matériel", "Télécommande Yamaha", "Contrôleur sans fil DM3-D", "📦"),
-            new SearchResult("Matériel", "Transformateur 63A", "Alimentation triphasée 400V", "📦")
-        );
-        
-        // Ajout de personnel avec "T"
-        List<SearchResult> personnelT = Arrays.asList(
-            new SearchResult("Personnel", "Thomas MARTIN", "Ingénieur du son - Spécialiste systèmes", "👤"),
-            new SearchResult("Personnel", "Thierry DUBOIS", "Technicien éclairage - Programmation MA", "👤"),
-            new SearchResult("Personnel", "Théo BERNARD", "Stagiaire technique - Formation son", "👤"),
-            new SearchResult("Personnel", "Tanya ROUSSEAU", "Responsable planning - Gestion équipes", "👤")
-        );
-        
-        searchIndex.put("clients", clients);
-        searchIndex.put("materiel", materiel);
-        searchIndex.put("fournisseurs", fournisseurs);
-        searchIndex.put("personnel", personnel);
-        searchIndex.put("interventions", interventions);
-        searchIndex.put("contrats", contrats);
-        searchIndex.put("vehicules", vehicules);
-        searchIndex.put("projets", projets);
-        
-        // Ajouter le matériel et personnel avec "T" aux listes existantes
-        searchIndex.get("materiel").addAll(materielT);
-        searchIndex.get("personnel").addAll(personnelT);
-    }
-    
-    /**
-     * Charge les données réelles des projets depuis l'API
-     */
-    private void loadRealProjectData() {
-        try {
-            if (apiService != null) {
-                // Récupérer les vrais projets
-                List<Map<String, Object>> realProjects = apiService.getAll("projects");
-                List<SearchResult> projectResults = new ArrayList<>();
-                
-                for (Map<String, Object> project : realProjects) {
-                    String name = project.get("name") != null ? project.get("name").toString() : "";
-                    String description = project.get("clientName") != null ? 
-                        "Client: " + project.get("clientName") + " - " + project.get("type") : 
-                        project.get("type") != null ? project.get("type").toString() : "";
-                    
-                    if (!name.isEmpty()) {
-                        projectResults.add(new SearchResult("Projets", name, description, "🎭"));
-                    }
-                }
-                
-                // Remplacer les données de démonstration par les vraies données
-                searchIndex.put("projets", projectResults);
-                System.out.println("✅ Chargé " + projectResults.size() + " projets réels dans la recherche globale");
-            }
-        } catch (Exception e) {
-            System.err.println("⚠️ Erreur lors du chargement des projets réels: " + e.getMessage());
-            // Garder les données de démonstration en cas d'erreur
+    public void refresh() {
+        if (apiService != null) {
+            loadAllRealData();
         }
+    }
+    
+    /**
+     * Définit l'ApiService et charge les données
+     */
+    public void setApiService(ApiService apiService) {
+        this.apiService = apiService;
+        loadAllRealData();
+    }
+    
+    /**
+     * Indique si les données ont été chargées
+     */
+    public boolean isDataLoaded() {
+        return dataLoaded;
+    }
+    
+    /**
+     * Obtient le nombre total de résultats dans l'index
+     */
+    public int getTotalIndexedItems() {
+        return searchIndex.values().stream()
+                .mapToInt(List::size)
+                .sum();
     }
     
     /**
@@ -218,12 +575,24 @@ public class GlobalSearchService {
         private final String name;
         private final String description;
         private final String icon;
+        private final String id;
+        private final String locmatCode;
         
         public SearchResult(String type, String name, String description, String icon) {
+            this(type, name, description, icon, null, null);
+        }
+        
+        public SearchResult(String type, String name, String description, String icon, String id) {
+            this(type, name, description, icon, id, null);
+        }
+        
+        public SearchResult(String type, String name, String description, String icon, String id, String locmatCode) {
             this.type = type;
             this.name = name;
             this.description = description;
             this.icon = icon;
+            this.id = id;
+            this.locmatCode = locmatCode;
         }
         
         // Getters
@@ -231,6 +600,8 @@ public class GlobalSearchService {
         public String getName() { return name; }
         public String getDescription() { return description; }
         public String getIcon() { return icon; }
+        public String getId() { return id; }
+        public String getLocmatCode() { return locmatCode; }
         
         @Override
         public String toString() {

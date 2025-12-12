@@ -1,6 +1,7 @@
 package com.magscene.magsav.desktop.view.salesinstallation;
 
 import com.magscene.magsav.desktop.component.CustomTabPane;
+import com.magscene.magsav.desktop.core.navigation.SelectableView;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeConstants;
 
@@ -12,8 +13,9 @@ import javafx.scene.layout.VBox;
 /**
  * Vue avec onglets pour Ventes et Installations
  * Regroupe les Projets et les Contrats avec toolbar adaptative
+ * Implémente SelectableView pour la sélection depuis la recherche globale
  */
-public class SalesInstallationTabsView extends VBox {
+public class SalesInstallationTabsView extends VBox implements SelectableView {
 
     private final ApiService apiService;
     private CustomTabPane tabPane;
@@ -117,5 +119,36 @@ public class SalesInstallationTabsView extends VBox {
      */
     public CustomTabPane getTabPane() {
         return tabPane;
+    }
+    
+    // ===== Implémentation SelectableView =====
+    
+    @Override
+    public boolean selectById(String id) {
+        if (id == null || id.isEmpty()) {
+            return false;
+        }
+        
+        // Sélectionner l'onglet Projets par défaut
+        if (tabPane != null) {
+            tabPane.selectTab(0);
+        }
+        
+        // Déléguer à la vue ProjectManagerView
+        if (projectsView != null) {
+            boolean selected = projectsView.selectById(id);
+            if (selected) {
+                System.out.println("✅ Projet sélectionné (ID: " + id + ")");
+                return true;
+            }
+        }
+        
+        System.out.println("⚠️ Projet non trouvé avec ID: " + id);
+        return false;
+    }
+    
+    @Override
+    public String getViewName() {
+        return "Ventes & Installations";
     }
 }

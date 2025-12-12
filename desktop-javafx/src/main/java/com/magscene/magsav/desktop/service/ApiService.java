@@ -331,13 +331,141 @@ public class ApiService {
     public CompletableFuture<List<Object>> getAllEquipment() {
         return getEquipments();
     }
+    
+    /**
+     * Récupère tous les équipements ayant le même code LocMat (internalReference)
+     */
+    public List<Map<String, Object>> getEquipmentsByLocmatCode(String locmatCode) {
+        if (locmatCode == null || locmatCode.isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            // Encoder le code LocMat pour l'URL (gère les espaces et caractères spéciaux)
+            String encodedLocmatCode = java.net.URLEncoder.encode(locmatCode, java.nio.charset.StandardCharsets.UTF_8);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/equipment?internalReference=" + encodedLocmatCode))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                // Essayer de parser comme page paginée d'abord
+                Map<String, Object> pageResult = objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+                if (pageResult.containsKey("content")) {
+                    List<Map<String, Object>> content = (List<Map<String, Object>>) pageResult.get("content");
+                    // Filtrer par code LocMat exact
+                    return content.stream()
+                        .filter(e -> locmatCode.equals(e.get("internalReference")))
+                        .collect(java.util.stream.Collectors.toList());
+                }
+                // Sinon parser comme liste directe
+                List<Map<String, Object>> list = objectMapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
+                return list.stream()
+                    .filter(e -> locmatCode.equals(e.get("internalReference")))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la recherche par code LocMat: " + e.getMessage());
+        }
+        return new ArrayList<>();
+    }
+    
+    /**
+     * Récupère tous les équipements ayant le même nom
+     */
+    public List<Map<String, Object>> getEquipmentsByName(String name) {
+        if (name == null || name.isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            // Encoder le nom pour l'URL
+            String encodedName = java.net.URLEncoder.encode(name, java.nio.charset.StandardCharsets.UTF_8);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/equipment?name=" + encodedName))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                // Essayer de parser comme page paginée d'abord
+                Map<String, Object> pageResult = objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+                if (pageResult.containsKey("content")) {
+                    List<Map<String, Object>> content = (List<Map<String, Object>>) pageResult.get("content");
+                    // Filtrer par nom exact
+                    return content.stream()
+                        .filter(e -> name.equals(e.get("name")))
+                        .collect(java.util.stream.Collectors.toList());
+                }
+                // Sinon parser comme liste directe
+                List<Map<String, Object>> list = objectMapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
+                return list.stream()
+                    .filter(e -> name.equals(e.get("name")))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la recherche par nom: " + e.getMessage());
+        }
+        return new ArrayList<>();
+    }
+    
+    /**
+     * Met à jour la photo pour une liste d'équipements
+     */
+    public int updatePhotoForEquipments(List<Long> equipmentIds, String photoPath) {
+        int updated = 0;
+        for (Long id : equipmentIds) {
+            try {
+                Map<String, Object> updateData = new HashMap<>();
+                updateData.put("photoPath", photoPath);
+                
+                String json = objectMapper.writeValueAsString(updateData);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/equipment/" + id))
+                        .header("Content-Type", "application/json")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() == 200) {
+                    updated++;
+                    System.out.println("✅ Photo mise à jour pour équipement ID " + id);
+                }
+            } catch (Exception e) {
+                System.err.println("Erreur mise à jour photo équipement " + id + ": " + e.getMessage());
+            }
+        }
+        return updated;
+    }
 
     public CompletableFuture<Object> createEquipment(Map<String, Object> data) {
         return CompletableFuture.completedFuture(data);
     }
 
     public CompletableFuture<Object> updateEquipment(Long id, Map<String, Object> data) {
-        return CompletableFuture.completedFuture(data);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(data);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/equipment/" + id))
+                        .header("Content-Type", "application/json")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() == 200) {
+                    System.out.println("✅ Équipement ID " + id + " mis à jour avec succès");
+                    return objectMapper.readValue(response.body(), Map.class);
+                } else {
+                    System.err.println("❌ Erreur mise à jour équipement " + id + ": HTTP " + response.statusCode());
+                    return data;
+                }
+            } catch (Exception e) {
+                System.err.println("❌ Erreur mise à jour équipement " + id + ": " + e.getMessage());
+                return data;
+            }
+        });
     }
 
     public CompletableFuture<Boolean> deleteEquipment(Long id) {

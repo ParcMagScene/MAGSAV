@@ -11,11 +11,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.core.navigation.SelectableView;
 import com.magscene.magsav.desktop.dialog.ContractDialog;
 import com.magscene.magsav.desktop.model.Contract;
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
-import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.util.ViewUtils;
 
 import javafx.application.Platform;
@@ -23,7 +23,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -49,8 +48,9 @@ import javafx.scene.text.FontWeight;
 /**
  * Interface JavaFX complete pour la gestion des contrats
  * Fonctionnalites : tableau detaille, recherche, filtres, CRUD, statistiques
+ * Implémente SelectableView pour la sélection depuis la recherche globale
  */
-public class ContractManagerView extends BorderPane {
+public class ContractManagerView extends BorderPane implements SelectableView {
 
     private final ApiService apiService;
     private TableView<Contract> contractTable;
@@ -72,8 +72,9 @@ public class ContractManagerView extends BorderPane {
     }
 
     private void initializeUI() {
-        // BorderPane n'a pas de setSpacing - architecture comme Ventes et Installations
-        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        // Layout uniforme comme Ventes et Installations - utilise ThemeConstants
+        setPadding(ThemeConstants.PADDING_STANDARD);
+        setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + ";");
 
         // Tableau des contrats (créer EN PREMIER car utilisé dans
         // createSearchAndFilters)
@@ -100,15 +101,10 @@ public class ContractManagerView extends BorderPane {
     }
 
     private HBox createSearchAndFilters() {
-        HBox toolbar = new HBox(10);
+        HBox toolbar = new HBox(ThemeConstants.SPACING_MD);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        toolbar.setPadding(new Insets(10));
-        toolbar.setStyle(
-                "-fx-background-color: " + UnifiedThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
-                        "-fx-background-radius: 8; " +
-                        "-fx-border-color: #8B91FF; " +
-                        "-fx-border-width: 1px; " +
-                        "-fx-border-radius: 8;");
+        toolbar.setPadding(ThemeConstants.TOOLBAR_PADDING);
+        toolbar.getStyleClass().add(ThemeConstants.UNIFIED_TOOLBAR_CLASS);
         VBox searchBox = ViewUtils.createSearchBox("🔍 Recherche", "Numéro, titre, client...",
                 text -> filterContracts());
         searchField = (TextField) searchBox.getChildren().get(1);
@@ -163,9 +159,8 @@ public class ContractManagerView extends BorderPane {
                 contractTable.getSelectionModel().selectedItemProperty().isNull());
         Button deleteButton = ViewUtils.createDeleteButton("🗑️ Supprimer", this::deleteContract,
                 contractTable.getSelectionModel().selectedItemProperty().isNull());
-        Button refreshButton = ViewUtils.createRefreshButton("🔄 Actualiser", this::refreshData);
 
-        buttonRow.getChildren().addAll(addButton, editButton, viewButton, deleteButton, refreshButton);
+        buttonRow.getChildren().addAll(addButton, editButton, viewButton, deleteButton);
         actionsBox.getChildren().addAll(actionsLabel, buttonRow);
 
         // Spacer pour pousser les éléments
@@ -255,9 +250,9 @@ public class ContractManagerView extends BorderPane {
                     row.setStyle("");
                 } else if (row.isSelected()) {
                     // Style de sélection uniforme
-                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                            "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                            "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    row.setStyle("-fx-background-color: " + ThemeConstants.SELECTION_BACKGROUND + "; " +
+                            "-fx-text-fill: " + ThemeConstants.SELECTION_TEXT + "; " +
+                            "-fx-border-color: " + ThemeConstants.SELECTION_BORDER + "; " +
                             "-fx-border-width: 1px;");
                 } else {
                     // Style par défaut
@@ -534,10 +529,6 @@ public class ContractManagerView extends BorderPane {
         }
     }
 
-    private void refreshData() {
-        loadContractData();
-    }
-
     private void showErrorAlert(String title, String header, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -678,5 +669,38 @@ public class ContractManagerView extends BorderPane {
         }
 
         return contract;
+    }
+    
+    // ===== Implémentation SelectableView =====
+    
+    @Override
+    public boolean selectById(String id) {
+        if (id == null || id.isEmpty() || contractData == null) {
+            return false;
+        }
+        
+        // Réinitialiser les filtres
+        if (searchField != null) searchField.clear();
+        if (typeFilter != null) typeFilter.getSelectionModel().selectFirst();
+        if (statusFilter != null) statusFilter.getSelectionModel().selectFirst();
+        
+        for (Contract contract : contractData) {
+            if (id.equals(String.valueOf(contract.getId()))) {
+                Platform.runLater(() -> {
+                    contractTable.getSelectionModel().select(contract);
+                    contractTable.scrollTo(contract);
+                    System.out.println("✅ Contrat sélectionné: " + contract.getContractNumber() + " (ID: " + id + ")");
+                });
+                return true;
+            }
+        }
+        
+        System.out.println("⚠️ Contrat non trouvé avec ID: " + id);
+        return false;
+    }
+    
+    @Override
+    public String getViewName() {
+        return "Contrats";
     }
 }

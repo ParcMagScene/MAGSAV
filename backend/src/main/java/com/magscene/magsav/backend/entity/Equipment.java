@@ -90,8 +90,12 @@ public class Equipment {
     // DerniÃƒÂ¨re maintenance
     private LocalDateTime lastMaintenanceDate;
     
-    // Prochaine maintenance programmÃƒÂ©e
+    // Prochaine maintenance programmée
     private LocalDateTime nextMaintenanceDate;
+    
+    // Chemin de la photo principale (relatif au dossier Photos)
+    @Column(length = 500)
+    private String photoPath;
     
     // Enum pour le statut
     public enum Status {
@@ -319,6 +323,14 @@ public class Equipment {
 
     public void setNextMaintenanceDate(LocalDateTime nextMaintenanceDate) {
         this.nextMaintenanceDate = nextMaintenanceDate;
+    }
+    
+    public String getPhotoPath() {
+        return photoPath;
+    }
+
+    public void setPhotoPath(String photoPath) {
+        this.photoPath = photoPath;
     }
     
     @Override

@@ -2,7 +2,6 @@ package com.magscene.magsav.desktop.view.base;
 
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeConstants;
-import com.magscene.magsav.desktop.theme.ThemeManager;
 import com.magscene.magsav.desktop.util.ViewUtils;
 
 import javafx.geometry.Insets;
@@ -92,7 +91,7 @@ public abstract class AbstractManagerView extends BorderPane {
 
     private void setupBaseStyle() {
         // Style de base uniforme pour toutes les vues
-        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + ";");
 
         // CSS class pour identification et styling spécifique
         getStyleClass().add("standard-manager-view");

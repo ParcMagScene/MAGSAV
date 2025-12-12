@@ -1,6 +1,6 @@
 package com.magscene.magsav.desktop.view;
 
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -46,8 +46,8 @@ public class DashboardView extends BorderPane {
         HBox footer = createFooterSection();
         this.setBottom(footer);
 
-        // Padding uniforme
-        setPadding(new Insets(7));
+        // Padding uniforme - utilise ThemeConstants
+        setPadding(ThemeConstants.PADDING_STANDARD);
     }
 
     private VBox createHeaderSection() {
@@ -59,8 +59,8 @@ public class DashboardView extends BorderPane {
     }
 
     private VBox createMainContent() {
-        VBox content = new VBox(20);
-        content.setPadding(new Insets(15, 20, 20, 20));
+        VBox content = new VBox(ThemeConstants.SPACING_XL);
+        content.setPadding(ThemeConstants.PADDING_STANDARD);
 
         // Cartes statistiques rapides
         HBox statsCards = createStatsCards();
@@ -145,7 +145,7 @@ public class DashboardView extends BorderPane {
 
         // Force programmatique du style pour éviter les overrides CSS
         Platform.runLater(() -> {
-            chartTitle.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor()
+            chartTitle.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
                     + "; -fx-text-fill: #6B71F2; " +
                     "-fx-padding: 8px 12px; -fx-background-radius: 4px;");
         });
@@ -201,7 +201,7 @@ public class DashboardView extends BorderPane {
 
         // Force programmatique du style pour éviter les overrides CSS
         Platform.runLater(() -> {
-            chartTitle.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor()
+            chartTitle.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
                     + "; -fx-text-fill: #6B71F2; " +
                     "-fx-padding: 8px 12px; -fx-background-radius: 4px;");
         });

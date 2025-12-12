@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.view.supplier;
 
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
+import com.magscene.magsav.desktop.core.navigation.SelectableView;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 
@@ -22,8 +23,9 @@ import javafx.scene.layout.VBox;
 
 /**
  * Vue simplifiée de gestion des fournisseurs pour test Phase 2
+ * Implémente SelectableView pour la sélection depuis la recherche globale
  */
-public class SupplierManagerViewSimple extends BaseManagerView<Object> {
+public class SupplierManagerViewSimple extends BaseManagerView<Object> implements SelectableView {
 
     private TableView<SupplierData> supplierTable;
     private ObservableList<SupplierData> supplierList; // Déclaration sans initialisation
@@ -115,7 +117,7 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> {
         supplierTable = new TableView<>();
         supplierTable.setItems(supplierList);
         supplierTable.setStyle("-fx-background-color: "
-                + com.magscene.magsav.desktop.theme.ThemeManager.getInstance().getCurrentUIColor()
+                + com.magscene.magsav.desktop.theme.ThemeConstants.BACKGROUND_PRIMARY
                 + "; -fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1px; -fx-border-radius: 8px;");
 
         // Colonne Nom
@@ -323,5 +325,37 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> {
     public void refresh() {
         super.refresh();
         updateStatus("Données rafraîchies");
+    }
+    
+    // ===== Implémentation SelectableView =====
+    
+    @Override
+    public boolean selectById(String id) {
+        if (id == null || id.isEmpty() || supplierList == null) {
+            return false;
+        }
+        
+        // Note: SupplierData n'a pas d'ID, on cherche par nom ou index
+        for (int i = 0; i < supplierList.size(); i++) {
+            SupplierData supplier = supplierList.get(i);
+            // Comparer l'ID comme index ou par nom si l'ID contient le nom
+            if (id.equals(String.valueOf(i)) || supplier.getName().equalsIgnoreCase(id)) {
+                final SupplierData finalSupplier = supplier;
+                Platform.runLater(() -> {
+                    supplierTable.getSelectionModel().select(finalSupplier);
+                    supplierTable.scrollTo(finalSupplier);
+                    System.out.println("✅ Fournisseur sélectionné: " + finalSupplier.getName());
+                });
+                return true;
+            }
+        }
+        
+        System.out.println("⚠️ Fournisseur non trouvé avec ID: " + id);
+        return false;
+    }
+    
+    @Override
+    public String getViewName() {
+        return "Fournisseurs";
     }
 }

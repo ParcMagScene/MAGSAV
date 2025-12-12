@@ -2,11 +2,11 @@ package com.magscene.magsav.desktop.view.planning;
 
 import com.magscene.magsav.desktop.component.CustomTabPane;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.view.vehicle.VehicleAvailabilityView;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -23,6 +23,8 @@ public class PlanningManagerView extends VBox {
     private final ApiService apiService;
     private HBox adaptiveToolbar;
     private CustomTabPane tabPane;
+    private PlanningView planningView;
+    private javafx.scene.Node planningToolbar; // Toolbar extraite de PlanningView
 
     public PlanningManagerView(ApiService apiService) {
         this.apiService = apiService;
@@ -30,15 +32,17 @@ public class PlanningManagerView extends VBox {
     }
 
     private void initializeView() {
-        setPadding(new Insets(7));
+        // Layout uniforme comme Ventes et Installations - utilise ThemeConstants
+        setPadding(ThemeConstants.PADDING_STANDARD);
         setSpacing(0);
+        setFillWidth(true);
         getStyleClass().add("planning-manager-view");
 
-        // Toolbar adaptative en haut
+        // Toolbar adaptative en haut - utilise ThemeConstants
         adaptiveToolbar = new HBox();
         adaptiveToolbar.setAlignment(Pos.CENTER_LEFT);
-        adaptiveToolbar.setPadding(new Insets(10));
-        adaptiveToolbar.getStyleClass().add("unified-toolbar");
+        adaptiveToolbar.setPadding(ThemeConstants.TOOLBAR_PADDING);
+        adaptiveToolbar.getStyleClass().add(ThemeConstants.UNIFIED_TOOLBAR_CLASS);
 
         // Onglets en dessous
         tabPane = createMainContent();
@@ -61,24 +65,22 @@ public class PlanningManagerView extends VBox {
             return;
 
         adaptiveToolbar.getChildren().clear();
+        adaptiveToolbar.setVisible(true);
+        adaptiveToolbar.setManaged(true);
 
         String tabText = selectedTab.getText();
         if (tabText.contains("Événements")) {
-            // PlanningView a déjà sa propre toolbar intégrée, on masque celle du manager
-            adaptiveToolbar.setVisible(false);
-            adaptiveToolbar.setManaged(false);
+            // Réintégrer la toolbar entière de PlanningView (pas juste copier les enfants)
+            if (planningToolbar != null) {
+                adaptiveToolbar.getChildren().add(planningToolbar);
+                HBox.setHgrow(planningToolbar, Priority.ALWAYS);
+            }
         } else if (tabText.contains("Véhicules")) {
-            // Réafficher la toolbar pour les autres onglets
-            adaptiveToolbar.setVisible(true);
-            adaptiveToolbar.setManaged(true);
             // Toolbar simple pour Véhicules
             HBox toolbar = createSimpleToolbar("Actualiser");
             adaptiveToolbar.getChildren().add(toolbar);
             HBox.setHgrow(toolbar, Priority.ALWAYS);
         } else if (tabText.contains("Personnel")) {
-            // Réafficher la toolbar pour les autres onglets
-            adaptiveToolbar.setVisible(true);
-            adaptiveToolbar.setManaged(true);
             // Toolbar simple pour Personnel
             HBox toolbar = createSimpleToolbar("Actualiser");
             adaptiveToolbar.getChildren().add(toolbar);
@@ -86,18 +88,14 @@ public class PlanningManagerView extends VBox {
         }
     }
 
-    private HBox createSimpleToolbar(String refreshLabel) {
+    private HBox createSimpleToolbar(String label) {
         HBox toolbar = new HBox(10);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-
-        Button refreshBtn = new Button("🔄 " + refreshLabel);
-        refreshBtn.getStyleClass().add("action-button-secondary");
-        refreshBtn.setOnAction(e -> System.out.println(refreshLabel));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        toolbar.getChildren().addAll(refreshBtn, spacer);
+        toolbar.getChildren().add(spacer);
         return toolbar;
     }
 
@@ -128,11 +126,13 @@ public class PlanningManagerView extends VBox {
         return tabPane;
     }
 
-    private PlanningView planningView;
-
     private VBox createEventsView() {
-        // Utiliser la vraie PlanningView au lieu d'un placeholder
+        // Créer la PlanningView
         planningView = new PlanningView(apiService);
+        
+        // Extraire la toolbar de PlanningView pour l'afficher au-dessus des onglets
+        planningToolbar = planningView.getTop();
+        planningView.setTop(null); // Retirer la toolbar de la vue
 
         VBox eventsView = new VBox(0);
         eventsView.setPadding(new Insets(0));

@@ -1,12 +1,12 @@
 package com.magscene.magsav.desktop.component;
 
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.service.MediaService;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.util.QRCodeGenerator;
 
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -23,6 +24,7 @@ import javafx.util.Duration;
 /**
  * Volet de détails qui apparaît par glissement depuis la droite
  * pour afficher les informations détaillées d'un item sélectionné
+ * Supporte l'affichage des photos d'équipements et logos de marques
  */
 public class DetailPanel extends VBox {
 
@@ -31,13 +33,15 @@ public class DetailPanel extends VBox {
 
     private boolean isVisible = false;
     private TranslateTransition slideAnimation;
+    
+    // Service médias pour les photos et logos
+    private final MediaService mediaService;
 
     // Composants principaux
     private VBox headerSection;
     private VBox imageSection;
     private VBox infoSection;
     private VBox qrCodeSection;
-    private Button closeButton;
 
     // Éléments de contenu
     private Label titleLabel;
@@ -45,8 +49,13 @@ public class DetailPanel extends VBox {
     private ImageView mainImageView;
     private ImageView qrCodeView;
     private VBox dynamicInfoContainer;
+    
+    // Éléments du header compact
+    private ImageView headerPhotoView;
+    private ImageView headerLogoView;
 
     public DetailPanel() {
+        this.mediaService = new MediaService();
         initializeComponents();
         setupLayout();
         setupAnimation();
@@ -58,37 +67,25 @@ public class DetailPanel extends VBox {
     }
 
     private void initializeComponents() {
-        // Header avec titre et bouton fermer
+        // Header avec titre
         titleLabel = new Label();
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
         titleLabel.setTextFill(Color.web("#ffffff"));
-        titleLabel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor()
+        titleLabel.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
                 + "; -fx-padding: 8px 12px; -fx-background-radius: 4px; -fx-text-fill: #ffffff;");
 
         subtitleLabel = new Label();
         subtitleLabel.setFont(Font.font("System", FontWeight.NORMAL, 14));
         subtitleLabel.setTextFill(Color.web("#B8BCC8"));
-        subtitleLabel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor()
+        subtitleLabel.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
                 + "; -fx-padding: 6px 12px; -fx-background-radius: 4px; -fx-text-fill: #B8BCC8;");
 
-        closeButton = new Button("✕");
-        closeButton.setFont(Font.font("System", FontWeight.BOLD, 16));
-        closeButton.setStyle(
-                "-fx-background-color: #e74c3c; " +
-                        "-fx-text-fill: white; " +
-                        "-fx-background-radius: 15; " +
-                        "-fx-min-width: 30; " +
-                        "-fx-min-height: 30; " +
-                        "-fx-max-width: 30; " +
-                        "-fx-max-height: 30;");
-        closeButton.setOnAction(e -> hide());
-
-        // Section image/avatar
+        // Section image/avatar - Photo de l'équipement
         mainImageView = new ImageView();
-        mainImageView.setFitWidth(120);
-        mainImageView.setFitHeight(120);
+        mainImageView.setFitWidth(180);
+        mainImageView.setFitHeight(180);
         mainImageView.setPreserveRatio(true);
-        mainImageView.setStyle("");
+        mainImageView.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);");
 
         // Section QR Code
         qrCodeView = new ImageView();
@@ -98,9 +95,33 @@ public class DetailPanel extends VBox {
 
         // Container pour informations dynamiques
         dynamicInfoContainer = new VBox(8);
+        
+        // ImageViews pour le header compact
+        headerPhotoView = new ImageView();
+        headerPhotoView.setFitWidth(50);
+        headerPhotoView.setFitHeight(50);
+        headerPhotoView.setPreserveRatio(true);
+        
+        headerLogoView = new ImageView();
+        headerLogoView.setFitWidth(50);
+        headerLogoView.setFitHeight(30);
+        headerLogoView.setPreserveRatio(true);
     }
 
     private void setupLayout() {
+        // Photo miniature dans le header
+        StackPane headerPhotoContainer = new StackPane();
+        headerPhotoContainer.setMinSize(50, 50);
+        headerPhotoContainer.setMaxSize(50, 50);
+        headerPhotoContainer.setStyle("-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 6;");
+        headerPhotoContainer.getChildren().add(headerPhotoView);
+        
+        // Logo de marque dans le header
+        StackPane headerLogoContainer = new StackPane();
+        headerLogoContainer.setMinSize(50, 30);
+        headerLogoContainer.setMaxSize(50, 30);
+        headerLogoContainer.getChildren().add(headerLogoView);
+        
         // Header
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -108,20 +129,23 @@ public class DetailPanel extends VBox {
         HBox headerBox = new HBox(10);
         headerBox.setAlignment(Pos.CENTER_LEFT);
         headerBox.getChildren().addAll(
+                headerPhotoContainer,
                 new VBox(2, titleLabel, subtitleLabel),
                 spacer,
-                closeButton);
+                headerLogoContainer);
 
         headerSection = new VBox(5);
         headerSection.setPadding(new Insets(15, 15, 10, 15));
-        headerSection.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor()
+        headerSection.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
                 + "; -fx-background-radius: 8 8 0 0;");
         headerSection.getChildren().add(headerBox);
 
-        // Section image
+        // Section image (photo de l'équipement uniquement - logo dans le header)
         imageSection = new VBox(10);
         imageSection.setAlignment(Pos.CENTER);
         imageSection.setPadding(new Insets(15));
+        imageSection.setStyle("-fx-background-color: #f8f9fa; -fx-background-radius: 8px;");
+        
         imageSection.getChildren().add(mainImageView);
 
         // Section informations
@@ -174,7 +198,7 @@ public class DetailPanel extends VBox {
         setPrefWidth(PANEL_WIDTH);
         setMaxWidth(PANEL_WIDTH);
         setStyle(
-                "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+                "-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
                         "-fx-border-color: #8B91FF; " +
                         "-fx-border-width: 1px; " +
                         "-fx-border-radius: 5px; " +
@@ -212,12 +236,43 @@ public class DetailPanel extends VBox {
      * Met à jour le contenu du volet avec les données d'un item
      */
     public void updateContent(String title, String subtitle, Image mainImage, String qrCodeData, VBox infoContent) {
+        updateContent(title, subtitle, mainImage, qrCodeData, infoContent, null, null, null);
+    }
+    
+    /**
+     * Met à jour le contenu du volet avec support des photos et logos
+     * @param title Titre de l'élément
+     * @param subtitle Sous-titre
+     * @param mainImage Image principale (si déjà chargée)
+     * @param qrCodeData Données du QR code
+     * @param infoContent Contenu des informations
+     * @param photoPath Chemin de la photo (pour chargement depuis MediaService)
+     * @param brandName Nom de la marque (pour charger le logo)
+     * @param equipmentImage Image de l'équipement pré-chargée (optionnel)
+     */
+    public void updateContent(String title, String subtitle, Image mainImage, String qrCodeData, 
+                              VBox infoContent, String photoPath, String brandName, Image equipmentImage) {
         titleLabel.setText(title != null ? title : "");
         subtitleLabel.setText(subtitle != null ? subtitle : "");
 
-        // Image principale
-        if (mainImage != null) {
-            mainImageView.setImage(mainImage);
+        // Image principale - Photo de l'équipement
+        Image imageToShow = equipmentImage;
+        if (imageToShow == null && photoPath != null && !photoPath.isEmpty()) {
+            imageToShow = mediaService.loadEquipmentPhoto(photoPath, 180, 180);
+        }
+        if (imageToShow == null) {
+            imageToShow = mainImage;
+        }
+        
+        // Miniature dans le header
+        if (imageToShow != null) {
+            headerPhotoView.setImage(imageToShow);
+        } else {
+            headerPhotoView.setImage(null);
+        }
+        
+        if (imageToShow != null) {
+            mainImageView.setImage(imageToShow);
             imageSection.setVisible(true);
             imageSection.setManaged(true);
         } else {
@@ -225,6 +280,18 @@ public class DetailPanel extends VBox {
             mainImageView.setImage(createDefaultImage());
             imageSection.setVisible(true);
             imageSection.setManaged(true);
+        }
+        
+        // Logo de la marque (uniquement dans le header)
+        if (brandName != null && !brandName.isEmpty()) {
+            Image brandLogo = mediaService.getBrandLogo(brandName, 60, 40);
+            if (brandLogo != null) {
+                headerLogoView.setImage(brandLogo);
+            } else {
+                headerLogoView.setImage(null);
+            }
+        } else {
+            headerLogoView.setImage(null);
         }
 
         // QR Code - N'afficher que si les données ne sont pas vides
@@ -251,9 +318,17 @@ public class DetailPanel extends VBox {
      */
     public void updateContentWithAnimation(String title, String subtitle, Image mainImage, String qrCodeData,
             VBox infoContent) {
+        updateContentWithAnimation(title, subtitle, mainImage, qrCodeData, infoContent, null, null, null);
+    }
+    
+    /**
+     * Met à jour le contenu avec animation bidirectionnelle et support des photos/logos
+     */
+    public void updateContentWithAnimation(String title, String subtitle, Image mainImage, String qrCodeData,
+            VBox infoContent, String photoPath, String brandName, Image equipmentImage) {
         if (!isVisible) {
             // Si le volet n'est pas visible, l'afficher directement avec le nouveau contenu
-            updateContent(title, subtitle, mainImage, qrCodeData, infoContent);
+            updateContent(title, subtitle, mainImage, qrCodeData, infoContent, photoPath, brandName, equipmentImage);
             show();
             return;
         }
@@ -270,7 +345,7 @@ public class DetailPanel extends VBox {
 
         // Entre les deux animations, mettre à jour le contenu
         slideOut.setOnFinished(e -> {
-            updateContent(title, subtitle, mainImage, qrCodeData, infoContent);
+            updateContent(title, subtitle, mainImage, qrCodeData, infoContent, photoPath, brandName, equipmentImage);
             slideIn.play();
         });
 

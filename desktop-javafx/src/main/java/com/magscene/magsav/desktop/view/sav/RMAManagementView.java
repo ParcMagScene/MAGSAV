@@ -10,7 +10,7 @@ import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.dialog.sav.RMADialog;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.StandardColors;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.util.AlertUtil;
 import com.magscene.magsav.desktop.util.ViewUtils;
 
@@ -57,7 +57,7 @@ public class RMAManagementView extends BorderPane {
         this.rmaRecords = FXCollections.observableArrayList();
 
         // Configuration principale - STRUCTURE SIMPLIFIÉE BorderPane
-        this.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        this.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + ";");
 
         // Initialisation des composants
         this.rmaStatusFilter = new ComboBox<>();
@@ -99,7 +99,7 @@ public class RMAManagementView extends BorderPane {
         toolbar.setAlignment(Pos.CENTER_LEFT);
         toolbar.setPadding(new Insets(10));
         toolbar.setStyle(
-                "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + "; " +
+                "-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
                         "-fx-background-radius: 8; " +
                         "-fx-border-color: #8B91FF; " +
                         "-fx-border-width: 1px; " +
@@ -149,12 +149,10 @@ public class RMAManagementView extends BorderPane {
         deleteBtn.disableProperty().bind(rmaTable.getSelectionModel().selectedItemProperty().isNull());
         deleteBtn.setOnAction(e -> deleteSelectedRMA());
 
-        Button refreshBtn = ViewUtils.createRefreshButton("🔄 Actualiser", this::loadRMARecords);
-
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        toolbar.getChildren().addAll(searchBox, statusBox, typeBox, spacer, addBtn, editBtn, deleteBtn, refreshBtn);
+        toolbar.getChildren().addAll(searchBox, statusBox, typeBox, spacer, addBtn, editBtn, deleteBtn);
         return toolbar;
     }
 
@@ -265,9 +263,9 @@ public class RMAManagementView extends BorderPane {
                 // Priorité 1: Si sélectionné, couleur de sélection MAGSAV
                 if (row.isSelected()) {
                     // Style de sélection plus visible avec bordure
-                    row.setStyle("-fx-background-color: " + ThemeManager.getInstance().getSelectionColor() + "; " +
-                            "-fx-text-fill: " + ThemeManager.getInstance().getSelectionTextColor() + "; " +
-                            "-fx-border-color: " + ThemeManager.getInstance().getSelectionBorderColor() + "; " +
+                    row.setStyle("-fx-background-color: " + ThemeConstants.SELECTION_BACKGROUND + "; " +
+                            "-fx-text-fill: " + ThemeConstants.SELECTION_TEXT + "; " +
+                            "-fx-border-color: " + ThemeConstants.SELECTION_BORDER + "; " +
                             "-fx-border-width: 2px;");
                     return;
                 }
@@ -380,7 +378,7 @@ public class RMAManagementView extends BorderPane {
             case "REFUSÉ":
                 return "-fx-background-color: rgba(220, 53, 69, 0.2)"; // Rouge translucide
             default:
-                return "-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor();
+                return "-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY;
         }
     }
 

@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.theme.ThemeManager;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -69,7 +69,7 @@ public class BrandConfigView extends BorderPane {
     }
 
     private void initializeUI() {
-        setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentBackgroundColor() + ";");
+        setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + ";");
 
         // Header
         VBox header = createHeader();
@@ -94,7 +94,7 @@ public class BrandConfigView extends BorderPane {
     private VBox createHeader() {
         VBox header = new VBox(10);
         header.setPadding(new Insets(15));
-        header.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentSecondaryColor() + ";");
+        header.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_SECONDARY + ";");
 
         Label titleLabel = new Label("🏷️ Gestion des Marques");
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
@@ -111,7 +111,7 @@ public class BrandConfigView extends BorderPane {
     private VBox createBrandsList() {
         VBox panel = new VBox(10);
         panel.setPadding(new Insets(10));
-        panel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
+        panel.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
                 "-fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1; -fx-border-radius: 8;");
 
         // Toolbar avec recherche et filtres
@@ -232,7 +232,7 @@ public class BrandConfigView extends BorderPane {
     private VBox createEditPanel() {
         VBox panel = new VBox(15);
         panel.setPadding(new Insets(15));
-        panel.setStyle("-fx-background-color: " + ThemeManager.getInstance().getCurrentUIColor() + "; " +
+        panel.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY + "; " +
                 "-fx-background-radius: 8; -fx-border-color: #8B91FF; -fx-border-width: 1; -fx-border-radius: 8;");
 
         Label titleLabel = new Label("✏️ Édition de Marque");

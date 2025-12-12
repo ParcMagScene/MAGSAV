@@ -521,14 +521,9 @@ public class ClientManagerView extends BorderPane implements SelectableView {
                     System.out.println("✅ Client trouvé et sélectionné: " + client.getCompanyName());
 
                     // Ouvrir automatiquement la fiche de modification avec délai
-                    Platform.runLater(() -> {
-                        try {
-                            Thread.sleep(200); // Petit délai pour la sélection
-                            editClient();
-                        } catch (InterruptedException e) {
-                            editClient();
-                        }
-                    });
+                    javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(200));
+                    pause.setOnFinished(e -> editClient());
+                    pause.play();
                     found = true;
                     break;
                 }
@@ -554,15 +549,10 @@ public class ClientManagerView extends BorderPane implements SelectableView {
                 System.out.println("✅ Données client chargées, nouvelle tentative de sélection");
                 selectAndViewClient(clientName);
             } else {
-                // Réessayer après 500ms
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(500);
-                        scheduleClientDataCheck(clientName, attempt + 1);
-                    } catch (InterruptedException e) {
-                        // Ignore
-                    }
-                }).start();
+                // Réessayer après 500ms avec PauseTransition
+                javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(500));
+                pause.setOnFinished(e -> scheduleClientDataCheck(clientName, attempt + 1));
+                pause.play();
             }
         });
     }

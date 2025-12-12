@@ -308,13 +308,8 @@ public class DashboardView extends BorderPane {
 
     private void forceChartColors(javafx.scene.Node chart, String[] colors) {
         // Méthode pour forcer l'application des couleurs harmoniques
-        javafx.application.Platform.runLater(() -> {
-            try {
-                Thread.sleep(100); // Attendre le rendu complet
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(100));
+        pause.setOnFinished(event -> {
             chart.applyCss();
             chart.autosize();
 
@@ -337,17 +332,13 @@ public class DashboardView extends BorderPane {
                 });
             }
         });
+        pause.play();
     }
 
     private void stylePieChartLabels(PieChart pieChart) {
         // Styliser les labels du camembert en #6B71F2
-        javafx.application.Platform.runLater(() -> {
-            try {
-                Thread.sleep(300); // Attendre le rendu complet des labels
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(300));
+        pause.setOnFinished(event -> {
             pieChart.applyCss();
 
             // Styliser TOUS les éléments texte du PieChart

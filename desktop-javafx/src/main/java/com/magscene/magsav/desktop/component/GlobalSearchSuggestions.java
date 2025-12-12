@@ -90,13 +90,9 @@ public class GlobalSearchSuggestions {
         searchField.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue) {
                 // Délai pour permettre le clic sur une suggestion
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(150);
-                    } catch (InterruptedException e) {
-                    }
-                    javafx.application.Platform.runLater(() -> hideSuggestions());
-                }).start();
+                javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(150));
+                pause.setOnFinished(e -> hideSuggestions());
+                pause.play();
             }
         });
     }

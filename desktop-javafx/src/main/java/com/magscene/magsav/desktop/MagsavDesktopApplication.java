@@ -273,44 +273,37 @@ public class MagsavDesktopApplication extends Application {
      * Pré-charge les vues principales en arrière-plan pour enregistrer les SearchProviders
      */
     private void preloadMainViews() {
-        // Charger en arrière-plan les vues qui implémentent SearchProvider
-        new Thread(() -> {
+        // Charger les vues qui implémentent SearchProvider après un délai
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(500));
+        pause.setOnFinished(event -> {
+            System.out.println("🔍 Pré-chargement des SearchProviders...");
+            
+            // Charger la vue Équipements (force l'enregistrement du SearchProvider)
             try {
-                // Petit délai pour laisser le dashboard se charger
-                Thread.sleep(500);
-                
-                Platform.runLater(() -> {
-                    System.out.println("🔍 Pré-chargement des SearchProviders...");
-                    
-                    // Charger la vue Équipements (force l'enregistrement du SearchProvider)
-                    try {
-                        navigationManager.navigateTo(Route.EQUIPMENT);
-                        System.out.println("   ✅ Équipements chargé");
-                    } catch (Exception e) {
-                        System.err.println("   ⚠️ Erreur chargement Équipements: " + e.getMessage());
-                    }
-                    
-                    // Charger la vue SAV
-                    try {
-                        navigationManager.navigateTo(Route.SAV);
-                        System.out.println("   ✅ SAV chargé");
-                    } catch (Exception e) {
-                        System.err.println("   ⚠️ Erreur chargement SAV: " + e.getMessage());
-                    }
-                    
-                    // Revenir au dashboard
-                    navigationManager.navigateTo(Route.DASHBOARD);
-                    if (navigationButtons.length > 0) {
-                        updateActiveButton(navigationButtons[0]);
-                    }
-                    updatePageTitle(Route.DASHBOARD.getDisplayName());
-                    
-                    System.out.println("🔍 SearchProviders prêts pour la recherche globale");
-                });
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                navigationManager.navigateTo(Route.EQUIPMENT);
+                System.out.println("   ✅ Équipements chargé");
+            } catch (Exception e) {
+                System.err.println("   ⚠️ Erreur chargement Équipements: " + e.getMessage());
             }
-        }, "SearchProvider-Preloader").start();
+            
+            // Charger la vue SAV
+            try {
+                navigationManager.navigateTo(Route.SAV);
+                System.out.println("   ✅ SAV chargé");
+            } catch (Exception e) {
+                System.err.println("   ⚠️ Erreur chargement SAV: " + e.getMessage());
+            }
+            
+            // Revenir au dashboard
+            navigationManager.navigateTo(Route.DASHBOARD);
+            if (navigationButtons.length > 0) {
+                updateActiveButton(navigationButtons[0]);
+            }
+            updatePageTitle(Route.DASHBOARD.getDisplayName());
+            
+            System.out.println("🔍 SearchProviders prêts pour la recherche globale");
+        });
+        pause.play();
     }
 
     /**

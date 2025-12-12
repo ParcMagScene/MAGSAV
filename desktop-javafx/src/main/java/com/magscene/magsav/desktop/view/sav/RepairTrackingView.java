@@ -735,15 +735,9 @@ public class RepairTrackingView extends BorderPane {
             System.out.println("⏳ Données réparation non chargées, rechargement...");
             loadServiceRequests();
             // Programmer une nouvelle tentative après le chargement
-            Platform.runLater(() -> {
-                new Thread(() -> {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                    }
-                    Platform.runLater(() -> selectAndViewRepair(repairName));
-                }).start();
-            });
+            javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(1000));
+            pause.setOnFinished(event -> selectAndViewRepair(repairName));
+            pause.play();
             return;
         }
 

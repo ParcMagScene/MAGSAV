@@ -650,25 +650,20 @@ public class ServiceRequestDialog {
         }
         
         // Attendre que les données soient chargées puis rechercher
-        Platform.runLater(() -> {
-            new Thread(() -> {
-                // Attendre un peu que les données soient chargées
-                try { Thread.sleep(500); } catch (InterruptedException e) {}
-                
-                Platform.runLater(() -> {
-                    ObservableList<Map<String, Object>> items = comboBox.getItems();
-                    if (items != null) {
-                        for (Map<String, Object> personnel : items) {
-                            String fullName = getPersonnelFullName(personnel);
-                            if (fullName != null && fullName.toLowerCase().contains(name.toLowerCase())) {
-                                comboBox.setValue(personnel);
-                                break;
-                            }
-                        }
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(500));
+        pause.setOnFinished(event -> {
+            ObservableList<Map<String, Object>> items = comboBox.getItems();
+            if (items != null) {
+                for (Map<String, Object> personnel : items) {
+                    String fullName = getPersonnelFullName(personnel);
+                    if (fullName != null && fullName.toLowerCase().contains(name.toLowerCase())) {
+                        comboBox.setValue(personnel);
+                        break;
                     }
-                });
-            }).start();
+                }
+            }
         });
+        pause.play();
     }
 
     /**
@@ -680,25 +675,20 @@ public class ServiceRequestDialog {
         }
         
         // Attendre que les données soient chargées puis rechercher
-        Platform.runLater(() -> {
-            new Thread(() -> {
-                // Attendre un peu que les données soient chargées
-                try { Thread.sleep(500); } catch (InterruptedException e) {}
-                
-                Platform.runLater(() -> {
-                    ObservableList<Map<String, Object>> items = comboBox.getItems();
-                    if (items != null) {
-                        for (Map<String, Object> equipment : items) {
-                            String equipmentName = getEquipmentName(equipment);
-                            if (equipmentName != null && equipmentName.toLowerCase().contains(name.toLowerCase())) {
-                                comboBox.setValue(equipment);
-                                break;
-                            }
-                        }
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(500));
+        pause.setOnFinished(event -> {
+            ObservableList<Map<String, Object>> items = comboBox.getItems();
+            if (items != null) {
+                for (Map<String, Object> equipment : items) {
+                    String equipmentName = getEquipmentName(equipment);
+                    if (equipmentName != null && equipmentName.toLowerCase().contains(name.toLowerCase())) {
+                        comboBox.setValue(equipment);
+                        break;
                     }
-                });
-            }).start();
+                }
+            }
         });
+        pause.play();
     }
 
     /**

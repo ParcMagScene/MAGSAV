@@ -6,7 +6,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.regex.Pattern;
 
 // import com.magscene.magsav.desktop.model.Equipment; // Supprimé après refactoring
-import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.AlertUtil;
 
@@ -36,7 +35,6 @@ import javafx.scene.layout.VBox;
  */
 public class QRCodeScannerView extends VBox {
 
-    private final ApiService apiService;
     private final ObservableList<InventoryItem> scannedItems;
     private final TableView<InventoryItem> inventoryTable;
 
@@ -63,7 +61,6 @@ public class QRCodeScannerView extends VBox {
     private final ComboBox<String> statusFilter;
 
     public QRCodeScannerView() {
-        this.apiService = new ApiService();
         this.scannedItems = FXCollections.observableArrayList();
         this.sessionStart = LocalDateTime.now();
 
@@ -734,8 +731,11 @@ public class QRCodeScannerView extends VBox {
 
     private void applyInventoryFilters() {
         // Implémentation du filtrage en temps réel
+        @SuppressWarnings("unused")
         String searchText = quickSearchField.getText().toLowerCase();
+        @SuppressWarnings("unused")
         String categoryValue = categoryFilter.getValue();
+        @SuppressWarnings("unused")
         String statusValue = statusFilter.getValue();
 
         // Logique de filtrage (à implémenter)

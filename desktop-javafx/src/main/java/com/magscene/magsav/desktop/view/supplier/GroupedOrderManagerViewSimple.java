@@ -1,5 +1,6 @@
 package com.magscene.magsav.desktop.view.supplier;
 
+import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
 import com.magscene.magsav.desktop.dialog.supplier.GroupedOrderDialog;
@@ -90,7 +91,17 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
 
     private void performSearch(String text) {
         updateStatus("Recherche: " + text);
-        // TODO: Implémenter recherche
+        if (text == null || text.isEmpty()) {
+            orderTable.setItems(orderList);
+            return;
+        }
+        String searchLower = text.toLowerCase();
+        orderTable.setItems(orderList.filtered(order -> {
+            String orderRef = order.getReference() != null ? order.getReference().toLowerCase() : "";
+            String supplier = order.getSupplier() != null ? order.getSupplier().toLowerCase() : "";
+            String status = order.getStatus() != null ? order.getStatus().toLowerCase() : "";
+            return orderRef.contains(searchLower) || supplier.contains(searchLower) || status.contains(searchLower);
+        }));
     }
 
     private void loadOrders() {
@@ -109,6 +120,14 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
         if (orderTable != null && orderList != null) {
             orderTable.setItems(orderList);
             System.out.println("🔗 Tableau GroupedOrders lié à orderList");
+            
+            // Lier les boutons Edit/Delete à la sélection du tableau
+            bindSelectionToButtons(
+                javafx.beans.binding.Bindings.createBooleanBinding(
+                    () -> orderTable.getSelectionModel().getSelectedItem() == null,
+                    orderTable.getSelectionModel().selectedItemProperty()
+                )
+            );
         }
 
         // Les données seront chargées après l'initialisation par createTestData()
@@ -301,11 +320,11 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
         public VBox getDetailInfoContent() {
             VBox content = new VBox(10);
             content.getChildren().addAll(
-                    new Label("💰 Montant: " + getAmount()),
-                    new Label("🎯 Seuil: " + getThreshold()),
-                    new Label("📊 Statut: " + getStatus()),
-                    new Label("📅 Date: " + getDate()),
-                    new Label("💸 Économies: " + getSavings()));
+                    DetailPanel.createInfoRow("💰 Montant", getAmount()),
+                    DetailPanel.createInfoRow("🎯 Seuil", getThreshold()),
+                    DetailPanel.createInfoRow("📊 Statut", getStatus()),
+                    DetailPanel.createInfoRow("📅 Date", getDate()),
+                    DetailPanel.createInfoRow("💸 Économies", getSavings()));
             return content;
         }
     }
@@ -381,14 +400,6 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
                 updateStatus("Commande supprimée");
             }
         });
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     @Override

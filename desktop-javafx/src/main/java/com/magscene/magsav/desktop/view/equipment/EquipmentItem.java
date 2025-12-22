@@ -15,7 +15,6 @@ import javafx.scene.layout.VBox;
  */
 public class EquipmentItem implements DetailPanelProvider {
     private final Map<String, Object> data;
-    private static MediaService mediaService;
     
     // Cache pour l'image de l'équipement
     private Image cachedImage;
@@ -23,9 +22,6 @@ public class EquipmentItem implements DetailPanelProvider {
 
     public EquipmentItem(Map<String, Object> data) {
         this.data = data;
-        if (mediaService == null) {
-            mediaService = new MediaService();
-        }
     }
 
     public Map<String, Object> getData() {
@@ -62,7 +58,7 @@ public class EquipmentItem implements DetailPanelProvider {
         if (!imageLoaded) {
             String photoPath = getPhotoPath();
             if (photoPath != null && !photoPath.isEmpty()) {
-                cachedImage = mediaService.loadEquipmentPhoto(photoPath, 180, 180);
+                cachedImage = MediaService.getInstance().loadEquipmentPhoto(photoPath, 180, 180);
             }
             imageLoaded = true;
         }
@@ -83,7 +79,7 @@ public class EquipmentItem implements DetailPanelProvider {
     public Image getBrandLogo() {
         String brand = getBrand();
         if (brand != null && !brand.isEmpty()) {
-            return mediaService.getBrandLogo(brand, 60, 40);
+            return MediaService.getInstance().getBrandLogo(brand, 60, 40);
         }
         return null;
     }
@@ -167,7 +163,16 @@ public class EquipmentItem implements DetailPanelProvider {
      * Récupère le code LocMat (référence interne)
      */
     public String getLocmatCode() {
-        return (String) data.get("internalReference");
+        String code = (String) data.get("internalReference");
+        // Nettoyer les "*" des codes LOCMAT
+        return code != null ? code.replace("*", "").trim() : null;
+    }
+    
+    /**
+     * Récupère le numéro de série
+     */
+    public String getSerialNumber() {
+        return (String) data.get("serialNumber");
     }
     
     /**
@@ -219,15 +224,23 @@ public class EquipmentItem implements DetailPanelProvider {
 
     @Override
     public VBox getDetailInfoContent() {
-        VBox content = new VBox(10);
-        // Note: La marque est affichée via le logo dans le DetailPanel, pas besoin de la dupliquer ici
-        content.getChildren().addAll(
-                new Label("ID: " + getId()),
-                new Label("Catégorie: " + (getCategory() != null ? getCategory() : "N/A")),
-                new Label("Statut: " + (getStatus() != null ? getStatus() : "N/A")),
-                new Label("Propriétaire: " + (getSupplier() != null ? getSupplier() : "Non défini")),
-                new Label("UID: " + (getQrCode() != null ? getQrCode() : "N/A")),
-                new Label("Localisation: " + (getLocation() != null ? getLocation() : "N/A")));
+        VBox content = new VBox(8);
+        content.setStyle("-fx-padding: 5;");
+        
+        // Code LOCMAT (référence interne) - déjà nettoyé par getLocmatCode()
+        String locmatCode = getLocmatCode();
+        
+        // Créer les labels avec style
+        Label locmatLabel = new Label("📋 Code LOCMAT: " + (locmatCode != null && !locmatCode.isEmpty() ? locmatCode : "N/A"));
+        locmatLabel.setStyle("-fx-font-weight: bold;");
+        
+        Label serialLabel = new Label("🔢 N° Série: " + (getSerialNumber() != null && !getSerialNumber().isEmpty() ? getSerialNumber() : "N/A"));
+        Label categoryLabel = new Label("📁 Catégorie: " + (getCategory() != null ? getCategory() : "N/A"));
+        Label statusLabel = new Label("📊 Statut: " + (getStatus() != null ? getStatus() : "N/A"));
+        Label uidLabel = new Label("🏷️ UID: " + (getQrCode() != null ? getQrCode() : "N/A"));
+        Label locationLabel = new Label("📍 Localisation: " + (getLocation() != null ? getLocation() : "N/A"));
+        
+        content.getChildren().addAll(locmatLabel, serialLabel, categoryLabel, statusLabel, uidLabel, locationLabel);
         
         // Photo
         String photoPath = getPhotoPath();
@@ -235,12 +248,7 @@ public class EquipmentItem implements DetailPanelProvider {
             content.getChildren().add(new Label("📷 Photo: " + photoPath));
         }
         
-        // Notes (tronquées si trop longues)
-        String notes = getNotes();
-        if (notes != null && !notes.isEmpty()) {
-            String truncatedNotes = notes.length() > 200 ? notes.substring(0, 200) + "..." : notes;
-            content.getChildren().add(new Label("Notes: " + truncatedNotes));
-        }
+        System.out.println("✅ getDetailInfoContent() appelé pour: " + getName() + " - LOCMAT: " + locmatCode);
         return content;
     }
 }

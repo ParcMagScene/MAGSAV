@@ -7,7 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.validation.Valid;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +27,9 @@ public class VehicleController {
     
     @Autowired
     private VehicleRepository vehicleRepository;
+    
+    @PersistenceContext
+    private EntityManager entityManager;
     
     /**
      * RÃƒÂ©cupÃƒÂ¨re tous les vÃƒÂ©hicules
@@ -124,6 +130,8 @@ public class VehicleController {
         vehicle.setCurrentLocation(vehicleDetails.getCurrentLocation());
         vehicle.setAssignedDriver(vehicleDetails.getAssignedDriver());
         vehicle.setNotes(vehicleDetails.getNotes());
+        vehicle.setColor(vehicleDetails.getColor());
+        vehicle.setOwner(vehicleDetails.getOwner());
         
         Vehicle updatedVehicle = vehicleRepository.save(vehicle);
         return ResponseEntity.ok(updatedVehicle);
@@ -293,5 +301,147 @@ public class VehicleController {
         
         return ResponseEntity.badRequest().build();
     }
+    
+    /**
+     * Migration du schéma pour les nouveaux types de véhicules
+     */
+    @PostMapping("/migrate-schema")
+    @Transactional
+    public ResponseEntity<Map<String, Object>> migrateSchema() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            // Liste des contraintes CHECK à supprimer (noms possibles générés par H2)
+            String[] constraintNames = {
+                "CONSTRAINT_3D", "CONSTRAINT_3D1", "CONSTRAINT_3D2", "CONSTRAINT_3D3",
+                "VEHICLES_TYPE_CHECK", "CK_VEHICLES_TYPE"
+            };
+            
+            int dropped = 0;
+            for (String constraintName : constraintNames) {
+                try {
+                    entityManager.createNativeQuery(
+                        "ALTER TABLE vehicles DROP CONSTRAINT IF EXISTS \"" + constraintName + "\""
+                    ).executeUpdate();
+                    dropped++;
+                } catch (Exception e) {
+                    // Contrainte n'existe pas, on continue
+                }
+            }
+            
+            // Supprimer toutes les contraintes CHECK restantes
+            try {
+                entityManager.createNativeQuery(
+                    "ALTER TABLE vehicles ALTER COLUMN type VARCHAR(255)"
+                ).executeUpdate();
+            } catch (Exception e) {
+                System.out.println("Modification colonne type: " + e.getMessage());
+            }
+            
+            result.put("success", true);
+            result.put("message", "Migration terminée, contraintes supprimées: " + dropped);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(result);
+        }
+    }
+    
+    /**
+     * Supprime tous les véhicules (pour import)
+     */
+    @DeleteMapping("/all")
+    public ResponseEntity<Map<String, Object>> deleteAllVehicles() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            long count = vehicleRepository.count();
+            vehicleRepository.deleteAll();
+            result.put("success", true);
+            result.put("deleted", count);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(result);
+        }
+    }
+    
+    /**
+     * Import en masse de véhicules
+     */
+    @PostMapping("/import")
+    public ResponseEntity<Map<String, Object>> importVehicles(@RequestBody List<Map<String, Object>> vehiclesData) {
+        Map<String, Object> result = new HashMap<>();
+        int imported = 0;
+        int skipped = 0;
+        
+        System.out.println("Import véhicules - Reçu " + vehiclesData.size() + " éléments");
+        
+        for (Map<String, Object> data : vehiclesData) {
+            try {
+                System.out.println("Data reçue: " + data);
+                Object nameObj = data.get("name");
+                String name = nameObj != null ? nameObj.toString() : null;
+                System.out.println("Name extrait: '" + name + "'");
+                if (name == null || name.trim().isEmpty()) {
+                    System.out.println("Name vide ou null, skip");
+                    skipped++;
+                    continue;
+                }
+                
+                Vehicle vehicle = new Vehicle();
+                vehicle.setName(name.trim());
+                
+                Object brandObj = data.get("brand");
+                String brandStr = brandObj != null ? brandObj.toString().trim() : null;
+                vehicle.setBrand(brandStr != null && !brandStr.isEmpty() ? brandStr : null);
+                
+                Object modelObj = data.get("model");
+                String modelStr = modelObj != null ? modelObj.toString().trim() : null;
+                vehicle.setModel(modelStr != null && !modelStr.isEmpty() ? modelStr : null);
+                
+                Object licensePlateObj = data.get("licensePlate");
+                String licensePlateStr = licensePlateObj != null ? licensePlateObj.toString().trim() : null;
+                vehicle.setLicensePlate(licensePlateStr != null && !licensePlateStr.isEmpty() ? licensePlateStr : null);
+                
+                Object colorObj = data.get("color");
+                String colorStr = colorObj != null ? colorObj.toString().trim() : null;
+                vehicle.setColor(colorStr != null && !colorStr.isEmpty() ? colorStr : null);
+                
+                Object ownerObj = data.get("owner");
+                String ownerStr = ownerObj != null ? ownerObj.toString().trim() : null;
+                vehicle.setOwner(ownerStr != null && !ownerStr.isEmpty() ? ownerStr : null);
+                
+                Object notesObj = data.get("notes");
+                String notesStr = notesObj != null ? notesObj.toString().trim() : null;
+                vehicle.setNotes(notesStr != null && !notesStr.isEmpty() ? notesStr : null);
+                
+                // Type de véhicule
+                Object typeObj = data.get("type");
+                String typeStr = typeObj != null ? typeObj.toString() : null;
+                if (typeStr != null && !typeStr.trim().isEmpty()) {
+                    vehicle.setType(Vehicle.VehicleType.fromDisplayName(typeStr));
+                }
+                
+                // Statut par défaut
+                vehicle.setStatus(Vehicle.VehicleStatus.AVAILABLE);
+                
+                vehicleRepository.save(vehicle);
+                System.out.println("Véhicule importé: " + vehicle.getName());
+                imported++;
+            } catch (Exception e) {
+                System.err.println("Erreur import véhicule: " + e.getMessage());
+                e.printStackTrace();
+                skipped++;
+            }
+        }
+        
+        result.put("success", true);
+        result.put("imported", imported);
+        result.put("skipped", skipped);
+        result.put("total", vehicleRepository.count());
+        
+        return ResponseEntity.ok(result);
+    }
 }
-

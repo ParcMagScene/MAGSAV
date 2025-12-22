@@ -498,6 +498,44 @@ public class ViewUtils {
         logger.fine("💬 Barre de boutons de dialogue créée");
         return buttonBar;
     }
+    
+    /**
+     * Crée une barre de boutons pour les dialogues en mode lecture seule
+     * avec boutons "Modifier" et "Fermer" sans icônes
+     * 
+     * @param editAction   Action du bouton Modifier
+     * @param closeAction  Action du bouton Fermer
+     * @return HBox contenant les boutons stylés et alignés
+     */
+    public static HBox createReadOnlyButtonBar(Runnable editAction, Runnable closeAction) {
+        HBox buttonBar = new HBox(10);
+        buttonBar.setAlignment(Pos.CENTER_RIGHT);
+        buttonBar.setPadding(new Insets(15, 0, 0, 0));
+
+        // Bouton Fermer (style neutre)
+        Button closeBtn = new Button("Fermer");
+        closeBtn.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white; -fx-padding: 8 20; " +
+                         "-fx-background-radius: 5; -fx-font-weight: bold;");
+        closeBtn.setCancelButton(true);
+        if (closeAction != null) {
+            closeBtn.setOnAction(e -> closeAction.run());
+        }
+        
+        // Bouton Modifier (style bleu primaire MAGSAV, sans icône)
+        Button editBtn = new Button("Modifier");
+        editBtn.setStyle("-fx-background-color: " + ThemeConstants.PRIMARY_COLOR + "; " +
+                        "-fx-text-fill: white; -fx-padding: 8 20; " +
+                        "-fx-background-radius: 5; -fx-font-weight: bold;");
+        editBtn.setDefaultButton(true);
+        if (editAction != null) {
+            editBtn.setOnAction(e -> editAction.run());
+        }
+
+        buttonBar.getChildren().addAll(closeBtn, editBtn);
+        
+        logger.fine("💬 Barre de boutons lecture seule créée");
+        return buttonBar;
+    }
 
     // ========================================
     // 📋 CRÉATION DE SECTIONS D'INFORMATION

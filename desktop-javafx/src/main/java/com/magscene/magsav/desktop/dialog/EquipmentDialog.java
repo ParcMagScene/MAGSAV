@@ -10,10 +10,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import com.magscene.magsav.desktop.service.ApiService;
+import com.magscene.magsav.desktop.service.MediaService;
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +61,8 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
     private Label photoPathLabel;
     private Button selectPhotoButton;
     private String selectedPhotoPath;
+    private File selectedPhotoFile;  // Fichier source de la photo sélectionnée
+    private final MediaService mediaService;
     
     public EquipmentDialog(ApiService apiService, Map<String, Object> equipment) {
         this(apiService, equipment, false);
@@ -67,6 +74,7 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         this.isReadOnlyMode = readOnlyMode;
         this.equipmentData = equipment != null ? equipment : new HashMap<>();
         this.categoriesManager = CategoriesConfigManager.getInstance();
+        this.mediaService = MediaService.getInstance();
         
         setupDialog();
         createFormContent();
@@ -479,19 +487,28 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Selectionner une photo");
         fileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp")
+            new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp", "*.webp", "*.avif")
         );
+        
+        // Ouvrir par défaut dans le dossier Photos si existant
+        Path photosPath = mediaService.getPhotosPath();
+        if (Files.exists(photosPath)) {
+            fileChooser.setInitialDirectory(photosPath.toFile());
+        }
         
         File selectedFile = fileChooser.showOpenDialog(getDialogPane().getScene().getWindow());
         if (selectedFile != null) {
-            selectedPhotoPath = selectedFile.getAbsolutePath();
+            selectedPhotoFile = selectedFile;
+            selectedPhotoPath = selectedFile.getName(); // Utiliser uniquement le nom du fichier
             photoPathLabel.setText(selectedFile.getName());
             photoPathLabel.getStyleClass().removeAll("text-muted");
+            System.out.println("📷 Photo sélectionnée: " + selectedFile.getAbsolutePath());
         }
     }
     
     private void removePhoto() {
         selectedPhotoPath = null;
+        selectedPhotoFile = null;
         photoPathLabel.setText("Aucune photo selectionnee");
         photoPathLabel.getStyleClass().add("text-muted");
     }
@@ -528,6 +545,19 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         setDatePickerValue(warrantyExpirationPicker, "warrantyExpiration");
         setDatePickerValue(lastMaintenancePicker, "lastMaintenanceDate");
         setDatePickerValue(nextMaintenancePicker, "nextMaintenanceDate");
+        
+        // Photo existante
+        String existingPhotoPath = getStringValue("photoPath");
+        if (!existingPhotoPath.isEmpty()) {
+            selectedPhotoPath = existingPhotoPath;
+            // Extraire juste le nom du fichier si c'est un chemin complet
+            String displayName = existingPhotoPath.contains("/") || existingPhotoPath.contains("\\")
+                ? new File(existingPhotoPath).getName()
+                : existingPhotoPath;
+            photoPathLabel.setText(displayName);
+            photoPathLabel.getStyleClass().removeAll("text-muted");
+            System.out.println("📷 Photo existante chargée: " + existingPhotoPath);
+        }
     }
     
     private String getStringValue(String key) {
@@ -647,8 +677,20 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
             data.put("nextMaintenanceDate", nextMaintenancePicker.getValue().toString() + "T00:00:00");
         }
         
-        // Photo
-        if (selectedPhotoPath != null) {
+        // Photo - copier dans le dossier médias si nécessaire
+        if (selectedPhotoFile != null && selectedPhotoFile.exists()) {
+            try {
+                // Copier la photo dans le dossier Medias MAGSAV/Photos
+                String photoFileName = copyPhotoToMediaFolder(selectedPhotoFile);
+                data.put("photoPath", photoFileName);
+                System.out.println("📷 Photo copiée et enregistrée: " + photoFileName);
+            } catch (IOException e) {
+                System.err.println("⚠️ Erreur copie photo: " + e.getMessage());
+                // Utiliser le nom de fichier original si la copie échoue
+                data.put("photoPath", selectedPhotoFile.getName());
+            }
+        } else if (selectedPhotoPath != null && !selectedPhotoPath.isEmpty()) {
+            // Photo existante (chemin relatif déjà enregistré)
             data.put("photoPath", selectedPhotoPath);
         }
         
@@ -658,6 +700,44 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
         }
         
         return data;
+    }
+    
+    /**
+     * Copie une photo dans le dossier Medias MAGSAV/Photos
+     * @param sourceFile le fichier source
+     * @return le nom du fichier copié (chemin relatif)
+     */
+    private String copyPhotoToMediaFolder(File sourceFile) throws IOException {
+        Path photosPath = mediaService.getPhotosPath();
+        
+        // Créer le dossier s'il n'existe pas
+        if (!Files.exists(photosPath)) {
+            Files.createDirectories(photosPath);
+        }
+        
+        // Utiliser le nom original du fichier
+        String fileName = sourceFile.getName();
+        Path targetPath = photosPath.resolve(fileName);
+        
+        // Si le fichier existe déjà avec le même nom, ajouter un suffixe
+        if (Files.exists(targetPath) && !sourceFile.toPath().equals(targetPath)) {
+            String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+            String extension = fileName.substring(fileName.lastIndexOf('.'));
+            int counter = 1;
+            while (Files.exists(targetPath)) {
+                fileName = baseName + "_" + counter + extension;
+                targetPath = photosPath.resolve(fileName);
+                counter++;
+            }
+        }
+        
+        // Copier le fichier (sauf s'il est déjà dans le dossier cible)
+        if (!sourceFile.toPath().equals(targetPath)) {
+            Files.copy(sourceFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("📷 Fichier copié vers: " + targetPath);
+        }
+        
+        return fileName;
     }
     
     private String mapDisplayStatusToEnum(String displayStatus) {
@@ -723,8 +803,8 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
      */
     private HBox createCustomButtonBar() {
         if (isReadOnlyMode) {
-            // Mode lecture seule : boutons Modifier et Fermer
-            return com.magscene.magsav.desktop.util.ViewUtils.createDialogButtonBar(
+            // Mode lecture seule : boutons Modifier et Fermer (sans icônes)
+            return com.magscene.magsav.desktop.util.ViewUtils.createReadOnlyButtonBar(
                 () -> {
                     // Action Modifier : ouvrir en mode édition
                     if (equipmentData != null) {
@@ -739,8 +819,8 @@ public class EquipmentDialog extends Dialog<Map<String, Object>> {
                 () -> {
                     // Action Fermer
                     forceClose();
-                },
-                null            );
+                }
+            );
         } else {
             // Mode édition : boutons Enregistrer et Annuler
             return com.magscene.magsav.desktop.util.ViewUtils.createDialogButtonBar(

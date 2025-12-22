@@ -5,6 +5,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.magscene.magsav.desktop.component.AvatarView;
+import com.magscene.magsav.desktop.component.CustomTabPane;
 import com.magscene.magsav.desktop.config.SpecialtiesConfigManager;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
@@ -20,7 +22,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -51,6 +53,10 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
     private TextArea notesArea;
     private VBox specialtiesContainer;
     private final SpecialtiesConfigManager specialtiesManager;
+    
+    // Avatar
+    private AvatarView avatarView;
+    private String currentAvatarPath;
 
     // Enumerations locales pour l'interface
     private enum PersonnelType {
@@ -66,6 +72,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
             this.displayName = displayName;
         }
 
+        @SuppressWarnings("unused")
         public String getDisplayName() {
             return displayName;
         }
@@ -88,6 +95,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
             this.displayName = displayName;
         }
 
+        @SuppressWarnings("unused")
         public String getDisplayName() {
             return displayName;
         }
@@ -109,16 +117,23 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         this.isReadOnlyMode = readOnlyMode;
         this.specialtiesManager = SpecialtiesConfigManager.getInstance();
 
+        // Configuration du titre
         if (isReadOnlyMode) {
             setTitle("Détails du personnel");
+            setHeaderText(null);
         } else {
             setTitle(isEditMode ? "Modifier le personnel" : "Nouveau personnel");
+            setHeaderText(null);
         }
 
-        // Creation du contenu avec boutons personnalisés
-        VBox mainContainer = new VBox();
-        mainContainer.getChildren().add(createContent());
+        // Taille réduite grâce aux onglets
+        getDialogPane().setPrefSize(600, 450);
 
+        // Creation du contenu avec onglets
+        VBox mainContainer = new VBox();
+        mainContainer.getChildren().add(createTabbedContent());
+
+        // Barre de boutons personnalisée
         if (isReadOnlyMode) {
             mainContainer.getChildren().add(createReadOnlyButtonBar());
         } else {
@@ -126,6 +141,9 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         }
 
         getDialogPane().setContent(mainContainer);
+
+        // Appliquer le thème
+        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
 
         // Mémoriser la taille et position
         WindowPreferencesService.getInstance().setupDialogMemory(getDialogPane(), "personnel-dialog");
@@ -147,7 +165,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
     }
 
     private HBox createReadOnlyButtonBar() {
-        return ViewUtils.createDialogButtonBar(
+        return ViewUtils.createReadOnlyButtonBar(
                 () -> {
                     // Action Modifier : ouvrir en mode édition puis fermer ce dialog
                     PersonnelDialog editDialog = new PersonnelDialog(existingPersonnel, apiService, false);
@@ -157,8 +175,7 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
                     });
                     close();
                 },
-                this::close,
-                null);
+                this::close);
     }
 
     private HBox createCustomButtonBar() {
@@ -204,109 +221,178 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
             specialtiesContainer.setDisable(true);
     }
 
-    private ScrollPane createContent() {
-        VBox content = new VBox(15);
-        content.setPadding(new Insets(20));
+    /**
+     * Crée le contenu avec onglets comme EquipmentDialog
+     */
+    private CustomTabPane createTabbedContent() {
+        CustomTabPane tabPane = new CustomTabPane();
 
-        // Informations personnelles
-        VBox personalInfo = createPersonalInfoSection();
+        // Onglet 1: Informations personnelles
+        CustomTabPane.CustomTab personalTab = 
+            new CustomTabPane.CustomTab("Personnel", createPersonalInfoForm(), "👤");
+        tabPane.addTab(personalTab);
 
-        // Informations professionnelles
-        VBox professionalInfo = createProfessionalInfoSection();
+        // Onglet 2: Informations professionnelles
+        CustomTabPane.CustomTab professionalTab = 
+            new CustomTabPane.CustomTab("Professionnel", createProfessionalInfoForm(), "💼");
+        tabPane.addTab(professionalTab);
 
-        // Notes
-        VBox notesSection = createNotesSection();
+        // Onglet 3: Spécialités et notes
+        CustomTabPane.CustomTab notesTab = 
+            new CustomTabPane.CustomTab("Compétences", createNotesForm(), "🎯");
+        tabPane.addTab(notesTab);
 
-        content.getChildren().addAll(personalInfo, professionalInfo, notesSection);
-
-        ScrollPane scrollPane = new ScrollPane(content);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefSize(500, 600);
-
-        // Appliquer le thème dark au dialogue
-        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
-
-        return scrollPane;
+        tabPane.selectTab(0);
+        return tabPane;
     }
 
-    private VBox createPersonalInfoSection() {
-        VBox section = new VBox(10);
-
-        Label sectionTitle = new Label("👤 Informations Personnelles");
-        sectionTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2196F3;");
+    private VBox createPersonalInfoForm() {
+        VBox container = new VBox(15);
+        container.setPadding(new Insets(20));
+        
+        // Section Avatar en haut
+        HBox avatarSection = new HBox(20);
+        avatarSection.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        
+        // Créer l'avatar
+        String personId = existingPersonnel != null ? 
+            String.valueOf(existingPersonnel.getOrDefault("id", "new")) : "new";
+        String firstName = existingPersonnel != null ? 
+            (String) existingPersonnel.getOrDefault("firstName", "") : "";
+        String lastName = existingPersonnel != null ? 
+            (String) existingPersonnel.getOrDefault("lastName", "") : "";
+        String avatarPath = existingPersonnel != null ? 
+            (String) existingPersonnel.getOrDefault("avatarPath", null) : null;
+        
+        avatarView = AvatarView.createFormAvatar(personId, firstName, lastName, avatarPath);
+        avatarView.setEditable(!isReadOnlyMode);
+        avatarView.setOnAvatarChanged(path -> {
+            currentAvatarPath = path;
+            System.out.println("👤 Avatar modifié: " + path);
+        });
+        currentAvatarPath = avatarPath;
+        
+        VBox avatarInfo = new VBox(5);
+        Label avatarLabel = new Label("Photo de profil");
+        avatarLabel.getStyleClass().add("form-label");
+        avatarLabel.setStyle("-fx-font-weight: bold;");
+        
+        Label avatarHint = new Label(isReadOnlyMode ? "" : "Double-clic pour modifier");
+        avatarHint.setStyle("-fx-text-fill: #6C757D; -fx-font-size: 11px;");
+        
+        avatarInfo.getChildren().addAll(avatarLabel, avatarHint);
+        avatarSection.getChildren().addAll(avatarView, avatarInfo);
 
         GridPane grid = new GridPane();
         grid.setHgap(15);
         grid.setVgap(10);
-        grid.setPadding(new Insets(10));
 
-        // Prenom
-        grid.add(new Label("Prenom *:"), 0, 0);
+        int row = 0;
+
+        // Prénom
+        Label firstNameLabel = new Label("Prénom *");
+        firstNameLabel.getStyleClass().add("form-label");
         firstNameField = new TextField();
-        firstNameField.setPromptText("Prenom");
-        grid.add(firstNameField, 1, 0);
+        firstNameField.setPromptText("Prénom");
+        // Mettre à jour l'avatar quand le prénom change
+        firstNameField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (avatarView != null) {
+                avatarView.setPerson(personId, newVal, lastNameField.getText(), currentAvatarPath);
+            }
+        });
+        grid.add(firstNameLabel, 0, row);
+        grid.add(firstNameField, 1, row++);
 
         // Nom
-        grid.add(new Label("Nom *:"), 0, 1);
+        Label lastNameLabel = new Label("Nom *");
+        lastNameLabel.getStyleClass().add("form-label");
         lastNameField = new TextField();
         lastNameField.setPromptText("Nom de famille");
-        grid.add(lastNameField, 1, 1);
+        // Mettre à jour l'avatar quand le nom change
+        lastNameField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (avatarView != null) {
+                avatarView.setPerson(personId, firstNameField.getText(), newVal, currentAvatarPath);
+            }
+        });
+        grid.add(lastNameLabel, 0, row);
+        grid.add(lastNameField, 1, row++);
 
         // Email
-        grid.add(new Label("Email:"), 0, 2);
+        Label emailLabel = new Label("Email");
+        emailLabel.getStyleClass().add("form-label");
         emailField = new TextField();
         emailField.setPromptText("email@example.com");
-        grid.add(emailField, 1, 2);
+        grid.add(emailLabel, 0, row);
+        grid.add(emailField, 1, row++);
 
-        // Telephone
-        grid.add(new Label("Telephone:"), 0, 3);
+        // Téléphone
+        Label phoneLabel = new Label("Téléphone");
+        phoneLabel.getStyleClass().add("form-label");
         phoneField = new TextField();
         phoneField.setPromptText("+33 1 23 45 67 89");
-        grid.add(phoneField, 1, 3);
+        grid.add(phoneLabel, 0, row);
+        grid.add(phoneField, 1, row++);
 
-        section.getChildren().addAll(sectionTitle, grid);
-        return section;
+        container.getChildren().addAll(
+            avatarSection,
+            new Separator(),
+            new Label("Informations personnelles"),
+            new Separator(),
+            grid
+        );
+
+        return container;
     }
 
-    private VBox createProfessionalInfoSection() {
-        VBox section = new VBox(10);
-
-        Label sectionTitle = new Label("💼 Informations Professionnelles");
-        sectionTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #4CAF50;");
+    private VBox createProfessionalInfoForm() {
+        VBox container = new VBox(15);
+        container.setPadding(new Insets(20));
 
         GridPane grid = new GridPane();
         grid.setHgap(15);
         grid.setVgap(10);
-        grid.setPadding(new Insets(10));
+
+        int row = 0;
 
         // Type
-        grid.add(new Label("Type *:"), 0, 0);
+        Label typeLabel = new Label("Type *");
+        typeLabel.getStyleClass().add("form-label");
         typeCombo = new ComboBox<>();
         typeCombo.setItems(FXCollections.observableArrayList(PersonnelType.values()));
         typeCombo.setValue(PersonnelType.EMPLOYEE);
-        grid.add(typeCombo, 1, 0);
+        typeCombo.setPrefWidth(200);
+        grid.add(typeLabel, 0, row);
+        grid.add(typeCombo, 1, row++);
 
         // Statut
-        grid.add(new Label("Statut *:"), 0, 1);
+        Label statusLabel = new Label("Statut *");
+        statusLabel.getStyleClass().add("form-label");
         statusCombo = new ComboBox<>();
         statusCombo.setItems(FXCollections.observableArrayList(PersonnelStatus.values()));
         statusCombo.setValue(PersonnelStatus.ACTIVE);
-        grid.add(statusCombo, 1, 1);
+        statusCombo.setPrefWidth(200);
+        grid.add(statusLabel, 0, row);
+        grid.add(statusCombo, 1, row++);
 
         // Poste
-        grid.add(new Label("Poste:"), 0, 2);
+        Label jobLabel = new Label("Poste");
+        jobLabel.getStyleClass().add("form-label");
         jobTitleField = new TextField();
-        jobTitleField.setPromptText("Intitule du poste");
-        grid.add(jobTitleField, 1, 2);
+        jobTitleField.setPromptText("Intitulé du poste");
+        grid.add(jobLabel, 0, row);
+        grid.add(jobTitleField, 1, row++);
 
-        // Departement
-        grid.add(new Label("Departement:"), 0, 3);
+        // Département
+        Label deptLabel = new Label("Département");
+        deptLabel.getStyleClass().add("form-label");
         departmentField = new TextField();
-        departmentField.setPromptText("Nom du departement");
-        grid.add(departmentField, 1, 3);
+        departmentField.setPromptText("Nom du département");
+        grid.add(deptLabel, 0, row);
+        grid.add(departmentField, 1, row++);
 
         // Date d'embauche
-        grid.add(new Label("Date d'embauche:"), 0, 4);
+        Label hireDateLabel = new Label("Date d'embauche");
+        hireDateLabel.getStyleClass().add("form-label");
         hireDatePicker = new DatePicker();
         hireDatePicker.setConverter(new StringConverter<LocalDate>() {
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -321,31 +407,45 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
                 return string != null && !string.trim().isEmpty() ? LocalDate.parse(string, formatter) : null;
             }
         });
-        grid.add(hireDatePicker, 1, 4);
+        grid.add(hireDateLabel, 0, row);
+        grid.add(hireDatePicker, 1, row++);
 
-        section.getChildren().addAll(sectionTitle, grid);
-        return section;
+        container.getChildren().addAll(
+            new Label("Informations professionnelles"),
+            new Separator(),
+            grid
+        );
+
+        return container;
     }
 
-    private VBox createNotesSection() {
-        VBox section = new VBox(10);
+    private VBox createNotesForm() {
+        VBox container = new VBox(15);
+        container.setPadding(new Insets(20));
 
-        Label sectionTitle = new Label("📝 Notes");
-        sectionTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #FF9800;");
-
+        // Notes
+        Label notesLabel = new Label("Notes");
+        notesLabel.getStyleClass().add("form-label");
         notesArea = new TextArea();
         notesArea.setPromptText("Notes additionnelles...");
         notesArea.setPrefRowCount(3);
         notesArea.setWrapText(true);
 
-        // Section spécialités
-        Label specialtiesTitle = new Label("🎯 Spécialités");
-        specialtiesTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #9C27B0;");
-
+        // Spécialités
+        Label specialtiesLabel = new Label("Spécialités");
+        specialtiesLabel.getStyleClass().add("form-label");
         specialtiesContainer = createSpecialtiesCheckBoxes();
 
-        section.getChildren().addAll(sectionTitle, notesArea, specialtiesTitle, specialtiesContainer);
-        return section;
+        container.getChildren().addAll(
+            new Label("Notes et compétences"),
+            new Separator(),
+            notesLabel,
+            notesArea,
+            specialtiesLabel,
+            specialtiesContainer
+        );
+
+        return container;
     }
 
     private VBox createSpecialtiesCheckBoxes() {
@@ -523,6 +623,11 @@ public class PersonnelDialog extends Dialog<Map<String, Object>> {
         personnelData.put("department", departmentField.getText().trim());
         personnelData.put("notes", notesArea.getText().trim());
         personnelData.put("specialties", getSelectedSpecialties());
+        
+        // Avatar
+        if (currentAvatarPath != null && !currentAvatarPath.isEmpty()) {
+            personnelData.put("avatarPath", currentAvatarPath);
+        }
 
         // Date d'embauche
         if (hireDatePicker.getValue() != null) {

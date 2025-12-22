@@ -78,15 +78,39 @@ public class UnifiedThemeManager {
             // Supprimer tous les anciens styles
             scene.getStylesheets().clear();
             
-            // Ajouter le nouveau thème
+            // 1. Charger les variables CSS centralisées
+            loadStylesheet(scene, "/styles/_variables.css");
+            
+            // 2. Ajouter le thème principal
             String cssPath = getClass().getResource(theme.getCssFile()).toExternalForm();
             scene.getStylesheets().add(cssPath);
             System.out.println("🎨 CSS CHARGÉ: " + theme.getCssFile() + " -> " + cssPath);
+            
+            // 3. Charger les styles de détail unifiés
+            loadStylesheet(scene, "/styles/detail-unified.css");
+            
+            // 4. Charger les styles d'entités (entity-details.css)
+            loadStylesheet(scene, "/styles/entity-details.css");
             
             // Appliquer la classe de thème à la racine
             scene.getRoot().getStyleClass().removeIf(style -> style.startsWith("theme-"));
             scene.getRoot().getStyleClass().add("theme-" + currentTheme);
             System.out.println("✅ Classe CSS appliquée: theme-" + currentTheme + " sur " + scene.getRoot().getClass().getSimpleName());
+        }
+    }
+    
+    /**
+     * Charge une feuille de style si elle existe
+     */
+    private void loadStylesheet(Scene scene, String cssFile) {
+        try {
+            var resource = getClass().getResource(cssFile);
+            if (resource != null) {
+                scene.getStylesheets().add(resource.toExternalForm());
+                System.out.println("📄 CSS supplémentaire: " + cssFile);
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ CSS non trouvé: " + cssFile);
         }
     }
     
@@ -231,7 +255,27 @@ public class UnifiedThemeManager {
      * Applique le thème actuel à un dialogue
      */
     public void applyThemeToDialog(javafx.scene.control.DialogPane dialogPane) {
-        if (dialogPane != null && dialogPane.getScene() != null) {
+        if (dialogPane == null) return;
+        
+        // Appliquer directement le CSS au DialogPane (même si pas encore dans une Scene)
+        Theme theme = getThemeById(currentTheme);
+        if (theme != null) {
+            // Supprimer les anciens styles
+            dialogPane.getStylesheets().clear();
+            
+            // Ajouter le CSS du thème
+            String cssPath = getClass().getResource(theme.getCssFile()).toExternalForm();
+            dialogPane.getStylesheets().add(cssPath);
+            System.out.println("🎨 CSS CHARGÉ: " + theme.getCssFile() + " -> " + cssPath);
+            
+            // Appliquer la classe de thème
+            dialogPane.getStyleClass().removeIf(style -> style.startsWith("theme-"));
+            dialogPane.getStyleClass().add("theme-" + currentTheme);
+            System.out.println("✅ Classe CSS appliquée: theme-" + currentTheme + " sur DialogPane");
+        }
+        
+        // Si la Scene existe aussi, l'appliquer là
+        if (dialogPane.getScene() != null) {
             applyThemeToScene(dialogPane.getScene());
         }
     }

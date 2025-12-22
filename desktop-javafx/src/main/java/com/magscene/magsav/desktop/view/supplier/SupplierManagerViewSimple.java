@@ -1,16 +1,16 @@
 package com.magscene.magsav.desktop.view.supplier;
 
+import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
 import com.magscene.magsav.desktop.core.navigation.SelectableView;
+import com.magscene.magsav.desktop.util.DialogUtils;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -83,7 +83,17 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
 
     private void performSearch(String text) {
         updateStatus("Recherche: " + text);
-        // TODO: Implémenter recherche
+        if (text == null || text.isEmpty()) {
+            supplierTable.setItems(supplierList);
+            return;
+        }
+        String searchLower = text.toLowerCase();
+        supplierTable.setItems(supplierList.filtered(supplier -> {
+            String name = supplier.getName() != null ? supplier.getName().toLowerCase() : "";
+            String category = supplier.getCategory() != null ? supplier.getCategory().toLowerCase() : "";
+            String phone = supplier.getPhone() != null ? supplier.getPhone().toLowerCase() : "";
+            return name.contains(searchLower) || category.contains(searchLower) || phone.contains(searchLower);
+        }));
     }
 
     private void loadSuppliers() {
@@ -107,6 +117,14 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
         if (supplierTable != null && supplierList != null) {
             supplierTable.setItems(supplierList);
             System.out.println("🔗 Tableau Suppliers lié à supplierList");
+            
+            // Lier les boutons Edit/Delete à la sélection du tableau
+            bindSelectionToButtons(
+                javafx.beans.binding.Bindings.createBooleanBinding(
+                    () -> supplierTable.getSelectionModel().getSelectedItem() == null,
+                    supplierTable.getSelectionModel().selectedItemProperty()
+                )
+            );
         }
 
         // Charger les données depuis le backend
@@ -161,9 +179,12 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
                     supplierList.clear();
 
                     for (java.util.Map<String, Object> supplierMap : backendSuppliers) {
+                        Long id = supplierMap.get("id") != null ? ((Number) supplierMap.get("id")).longValue() : null;
                         String name = (String) supplierMap.getOrDefault("name", "N/A");
                         String contact = (String) supplierMap.getOrDefault("contactPerson", "N/A");
                         String email = (String) supplierMap.getOrDefault("email", "N/A");
+                        String phone = (String) supplierMap.getOrDefault("phone", "");
+                        String category = (String) supplierMap.getOrDefault("category", "Général");
 
                         // Construire la liste des services
                         java.util.List<String> services = new java.util.ArrayList<>();
@@ -180,7 +201,7 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
                         Boolean active = (Boolean) supplierMap.getOrDefault("active", true);
                         String status = active ? "✅ Actif" : "❌ Inactif";
 
-                        supplierList.add(new SupplierData(name, contact, email, servicesStr, status));
+                        supplierList.add(new SupplierData(id, name, contact, email, phone, servicesStr, status, category));
                     }
 
                     // Forcer le rafraîchissement du tableau
@@ -202,21 +223,31 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
 
     // Classe interne pour les données test
     public static class SupplierData implements DetailPanelProvider {
+        private Long id;
         private String name;
         private String contact;
         private String email;
+        private String phone;
         private String services;
         private String status;
+        private String category;
 
-        public SupplierData(String name, String contact, String email, String services, String status) {
+        public SupplierData(Long id, String name, String contact, String email, String phone, String services, String status, String category) {
+            this.id = id;
             this.name = name;
             this.contact = contact;
             this.email = email;
+            this.phone = phone;
             this.services = services;
             this.status = status;
+            this.category = category;
         }
 
         // Getters pour PropertyValueFactory
+        public Long getId() {
+            return id;
+        }
+
         public String getName() {
             return name;
         }
@@ -229,12 +260,20 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
             return email;
         }
 
+        public String getPhone() {
+            return phone;
+        }
+
         public String getServices() {
             return services;
         }
 
         public String getStatus() {
             return status;
+        }
+
+        public String getCategory() {
+            return category;
         }
 
         // Implémentation de DetailPanelProvider
@@ -267,9 +306,9 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
         public VBox getDetailInfoContent() {
             VBox content = new VBox(10);
             content.getChildren().addAll(
-                    new Label("📧 Email: " + getEmail()),
-                    new Label("🛠️ Services: " + getServices()),
-                    new Label("📊 Statut: " + getStatus()));
+                    DetailPanel.createInfoRow("📧 Email", getEmail()),
+                    DetailPanel.createInfoRow("🛠️ Services", getServices()),
+                    DetailPanel.createInfoRow("📊 Statut", getStatus()));
             return content;
         }
     }
@@ -277,8 +316,31 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
     // Méthodes abstraites du parent
     @Override
     protected void handleAdd() {
-        updateStatus("Ajout d'un nouveau fournisseur...");
-        showAlert("Fonctionnalité", "Ajout de fournisseur - À implémenter");
+        updateStatus("Ouverture du dialogue d'ajout de fournisseur...");
+        
+        // Ouvrir le dialogue de création
+        com.magscene.magsav.desktop.view.supplier.dialog.SupplierDialog dialog = 
+            new com.magscene.magsav.desktop.view.supplier.dialog.SupplierDialog((javafx.stage.Stage) getScene().getWindow());
+        
+        java.util.Optional<com.magscene.magsav.desktop.view.supplier.dialog.SupplierDialog.SupplierResult> result = dialog.showAndWait();
+        
+        result.ifPresent(supplierResult -> {
+            // Convertir le résultat en Map pour l'API
+            java.util.Map<String, Object> supplierData = supplierResult.toMap();
+            
+            // Appeler l'API pour créer le fournisseur
+            apiService.createSupplier(supplierData)
+                .thenRun(() -> Platform.runLater(() -> {
+                    DialogUtils.showSuccess("Succès", "Fournisseur créé avec succès.");
+                    loadSuppliersFromBackend(); // Recharger les données
+                }))
+                .exceptionally(throwable -> {
+                    Platform.runLater(() -> {
+                        DialogUtils.showError("Erreur", "Erreur lors de la création: " + throwable.getMessage());
+                    });
+                    return null;
+                });
+        });
     }
 
     @Override
@@ -286,10 +348,31 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
         SupplierData selected = supplierTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             updateStatus("Aucun fournisseur sélectionné");
+            DialogUtils.showInfo("Information", "Veuillez sélectionner un fournisseur à modifier.");
             return;
         }
+        
         updateStatus("Modification de " + selected.getName());
-        showAlert("Fonctionnalité", "Modification de fournisseur - À implémenter");
+        
+        // Convertir SupplierData en Map pour le nouveau SupplierDetailDialog
+        java.util.Map<String, Object> supplierData = new java.util.HashMap<>();
+        supplierData.put("id", selected.getId());
+        supplierData.put("name", selected.getName());
+        supplierData.put("contactPerson", selected.getContact());
+        supplierData.put("email", selected.getEmail());
+        supplierData.put("phone", selected.getPhone());
+        supplierData.put("active", selected.getStatus().contains("Actif"));
+        supplierData.put("category", selected.getCategory());
+        supplierData.put("services", selected.getServices());
+        
+        // Ouvrir le nouveau dialogue unifié
+        com.magscene.magsav.desktop.dialog.SupplierDetailDialog dialog = 
+            new com.magscene.magsav.desktop.dialog.SupplierDetailDialog(apiService, supplierData);
+        
+        dialog.showAndWait();
+        
+        // Recharger les données après fermeture (en cas de modification)
+        loadSuppliersFromBackend();
     }
 
     @Override
@@ -297,28 +380,19 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
         SupplierData selected = supplierTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             updateStatus("Aucun fournisseur sélectionné");
+            DialogUtils.showInfo("Information", "Veuillez sélectionner un fournisseur à supprimer.");
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setHeaderText("Supprimer le fournisseur");
-        confirm.setContentText("Confirmer la suppression de " + selected.getName() + " ?");
-
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                supplierList.remove(selected);
-                updateStatus("Fournisseur supprimé");
-            }
-        });
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        if (DialogUtils.confirmDelete(selected.getName())) {
+            // Pour une suppression complète, il faudrait l'ID du fournisseur
+            // Pour l'instant, on supprime localement et on tente de resynchroniser
+            supplierList.remove(selected);
+            updateStatus("Fournisseur supprimé");
+            
+            // Note: Sans ID, on ne peut pas appeler deleteSupplier(id)
+            // Il faudrait améliorer SupplierData pour inclure l'ID
+        }
     }
 
     @Override

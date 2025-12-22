@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -116,9 +117,8 @@ public class MaterialRequestDialog extends Dialog<MaterialRequestDialog.RequestR
         // Mémoriser la taille et position
         WindowPreferencesService.getInstance().setupDialogMemory(getDialogPane(), "material-request-dialog");
 
-        // Style
-        getDialogPane().getStylesheets().add(
-                getClass().getResource("/styles/supplier-system.css").toExternalForm());
+        // Appliquer le thème unifié
+        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
         getDialogPane().getStyleClass().add("material-request-dialog");
     }
 

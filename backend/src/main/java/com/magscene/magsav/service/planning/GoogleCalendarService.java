@@ -45,6 +45,7 @@ public class GoogleCalendarService {
     // URLs Google Calendar API
     private static final String GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/auth";
     private static final String GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+    @SuppressWarnings("unused")
     private static final String GOOGLE_CALENDAR_API_BASE = "https://www.googleapis.com/calendar/v3";
     private static final String GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
     
@@ -289,6 +290,7 @@ public class GoogleCalendarService {
         for (GoogleCalendarEvent googleEvent : googleEvents) {
             try {
                 // Convertir l'événement Google en format MAGSAV
+                @SuppressWarnings("unused")
                 Event magsavEvent = convertToMagsavEvent(googleEvent, account);
                 
                 // Créer ou mettre à jour l'événement dans MAGSAV

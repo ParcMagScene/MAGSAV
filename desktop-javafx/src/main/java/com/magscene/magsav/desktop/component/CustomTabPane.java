@@ -2,14 +2,12 @@ package com.magscene.magsav.desktop.component;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
@@ -50,6 +48,7 @@ public class CustomTabPane extends VBox {
     // Navigation buttons for overflow handling
     private Button leftNavButton;
     private Button rightNavButton;
+    @SuppressWarnings("unused")
     private ScrollPane tabScrollPane;
     
     public CustomTabPane() {

@@ -120,8 +120,9 @@ public class LocmatImportService {
         
         LocmatRow locmatRow = new LocmatRow();
         
-        // Code Locmat (colonne A)
-        locmatRow.codeLocmat = getCellValueAsString(row.getCell(0));
+        // Code Locmat (colonne A) - nettoyer les caractères '*'
+        String rawCode = getCellValueAsString(row.getCell(0));
+        locmatRow.codeLocmat = rawCode != null ? rawCode.replace("*", "").trim() : null;
         
         // Catégorie (colonne B)
         locmatRow.categorie = getCellValueAsString(row.getCell(1));

@@ -1,5 +1,9 @@
 package com.magscene.magsav.desktop.view;
 
+import com.magscene.magsav.desktop.service.DashboardService;
+import com.magscene.magsav.desktop.service.DashboardService.CategoryData;
+import com.magscene.magsav.desktop.service.DashboardService.DashboardStats;
+import com.magscene.magsav.desktop.service.DashboardService.MonthlyData;
 import com.magscene.magsav.desktop.theme.ThemeConstants;
 
 import javafx.application.Platform;
@@ -17,13 +21,29 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import java.util.List;
+
 /**
  * Dashboard principal de MAGSAV-3.0
  * Vue d'ensemble avec statistiques et informations clés
+ * Utilise les données réelles du backend
  */
 public class DashboardView extends BorderPane {
 
+    private final DashboardService dashboardService;
+    
+    // Labels des cartes statistiques pour mise à jour dynamique
+    private Label equipmentValueLabel;
+    private Label savValueLabel;
+    private Label clientsValueLabel;
+    private Label vehiclesValueLabel;
+    
+    // Graphiques pour mise à jour dynamique
+    private BarChart<String, Number> savBarChart;
+    private PieChart equipmentPieChart;
+
     public DashboardView() {
+        this.dashboardService = DashboardService.getInstance();
         initializeComponents();
         createLayout();
         loadDashboardData();
@@ -79,17 +99,21 @@ public class DashboardView extends BorderPane {
         HBox statsContainer = new HBox(15);
         statsContainer.setAlignment(Pos.CENTER);
 
-        // Carte Équipements
-        VBox equipmentCard = createStatsCard("📦", "Équipements", "1,247", "Total en parc");
+        // Carte Équipements - valeur initialisée à "..." en attendant les données
+        VBox equipmentCard = createStatsCard("📦", "Équipements", "...", "Total en parc");
+        equipmentValueLabel = (Label) equipmentCard.getChildren().get(2);
 
         // Carte SAV
-        VBox savCard = createStatsCard("🔧", "SAV Actifs", "23", "En cours");
+        VBox savCard = createStatsCard("🔧", "SAV Actifs", "...", "En cours");
+        savValueLabel = (Label) savCard.getChildren().get(2);
 
         // Carte Clients
-        VBox clientsCard = createStatsCard("👥", "Clients", "89", "Actifs");
+        VBox clientsCard = createStatsCard("👥", "Clients", "...", "Total");
+        clientsValueLabel = (Label) clientsCard.getChildren().get(2);
 
         // Carte Véhicules
-        VBox vehiclesCard = createStatsCard("🚐", "Véhicules", "12", "Flotte");
+        VBox vehiclesCard = createStatsCard("🚐", "Véhicules", "...", "Flotte");
+        vehiclesValueLabel = (Label) vehiclesCard.getChildren().get(2);
 
         statsContainer.getChildren().addAll(equipmentCard, savCard, clientsCard, vehiclesCard);
         return statsContainer;
@@ -152,42 +176,24 @@ public class DashboardView extends BorderPane {
 
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis yAxis = new NumberAxis();
-        BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
+        savBarChart = new BarChart<>(xAxis, yAxis);
 
-        barChart.setTitle("Nombre d'interventions");
-        barChart.setPrefHeight(250);
+        savBarChart.setTitle("Nombre d'interventions");
+        savBarChart.setPrefHeight(250);
 
+        // Données initiales vides - seront chargées depuis l'API
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Interventions");
-
-        // Données simulées
-        series.getData().add(new XYChart.Data<>("Mai", 15));
-        series.getData().add(new XYChart.Data<>("Juin", 22));
-        series.getData().add(new XYChart.Data<>("Juillet", 18));
-        series.getData().add(new XYChart.Data<>("Août", 28));
-        series.getData().add(new XYChart.Data<>("Sept", 25));
-        series.getData().add(new XYChart.Data<>("Oct", 23));
-
-        barChart.getData().add(series);
+        savBarChart.getData().add(series);
 
         // Application des couleurs harmoniques au BarChart
-        barChart.setAnimated(false);
+        savBarChart.setAnimated(false);
 
-        // Appliquer les couleurs après rendu
-        javafx.application.Platform.runLater(() -> {
-            barChart.lookupAll(".chart-bar").forEach(node -> {
-                node.setStyle("-fx-bar-fill: #6B71F2; -fx-background-color: #6B71F2;");
-            });
-            barChart.lookupAll(".default-color0").forEach(node -> {
-                node.setStyle("-fx-bar-fill: #6B71F2; -fx-background-color: #6B71F2;");
-            });
-        });
-
-        chartContainer.getChildren().addAll(chartTitle, barChart);
+        chartContainer.getChildren().addAll(chartTitle, savBarChart);
 
         // Forcer l'application des couleurs harmoniques
         String[] barColors = { "#6B71F2", "#F26BA6", "#A6F26B", "#6BF2A6", "#8A7DD3" };
-        forceChartColors(barChart, barColors);
+        forceChartColors(savBarChart, barColors);
 
         return chartContainer;
     }
@@ -206,60 +212,13 @@ public class DashboardView extends BorderPane {
                     "-fx-padding: 8px 12px; -fx-background-radius: 4px;");
         });
 
-        PieChart pieChart = new PieChart();
-        pieChart.setPrefHeight(250);
+        equipmentPieChart = new PieChart();
+        equipmentPieChart.setPrefHeight(250);
 
-        // Données simulées
-        PieChart.Data audioData = new PieChart.Data("Audio", 35);
-        PieChart.Data videoData = new PieChart.Data("Vidéo", 25);
-        PieChart.Data eclairageData = new PieChart.Data("Éclairage", 20);
-        PieChart.Data structureData = new PieChart.Data("Structure", 15);
-        PieChart.Data autresData = new PieChart.Data("Autres", 5);
+        // Données initiales vides - seront chargées depuis l'API
+        equipmentPieChart.setAnimated(false);
 
-        pieChart.getData().addAll(audioData, videoData, eclairageData, structureData, autresData);
-
-        // Application des couleurs harmoniques au PieChart
-        String[] harmonicColors = { "#6B71F2", "#F26BA6", "#A6F26B", "#6BF2A6", "#8A7DD3" };
-        pieChart.setAnimated(false);
-
-        // Appliquer les couleurs directement aux données
-        for (int i = 0; i < pieChart.getData().size(); i++) {
-            final int colorIndex = i;
-            PieChart.Data data = pieChart.getData().get(i);
-
-            // Ajouter un listener pour appliquer le style au nœud
-            data.nodeProperty().addListener((obs, oldNode, newNode) -> {
-                if (newNode != null) {
-                    newNode.setStyle("-fx-pie-color: " + harmonicColors[colorIndex] +
-                            "; -fx-background-color: " + harmonicColors[colorIndex] + ";");
-                }
-            });
-        }
-
-        // Appliquer aussi après rendu complet
-        javafx.application.Platform.runLater(() -> {
-            for (int i = 0; i < pieChart.getData().size(); i++) {
-                final int colorIndex = i;
-                pieChart.lookupAll(".default-color" + i).forEach(node -> {
-                    node.setStyle("-fx-pie-color: " + harmonicColors[colorIndex] +
-                            "; -fx-background-color: " + harmonicColors[colorIndex] + ";");
-                });
-                pieChart.lookupAll(".chart-pie").forEach(node -> {
-                    if (node.getStyleClass().contains("default-color" + colorIndex)) {
-                        node.setStyle("-fx-pie-color: " + harmonicColors[colorIndex] +
-                                "; -fx-background-color: " + harmonicColors[colorIndex] + ";");
-                    }
-                });
-            }
-        });
-
-        chartContainer.getChildren().addAll(chartTitle, pieChart);
-
-        // Forcer l'application des couleurs harmoniques pour le PieChart
-        forceChartColors(pieChart, harmonicColors);
-
-        // Styliser les labels du camembert
-        stylePieChartLabels(pieChart);
+        chartContainer.getChildren().addAll(chartTitle, equipmentPieChart);
 
         return chartContainer;
     }
@@ -301,9 +260,88 @@ public class DashboardView extends BorderPane {
     }
 
     private void loadDashboardData() {
-        // Simulation du chargement des données en arrière-plan; // Dans une vraie
-        // implémentation, ceci ferait appel aux services appropriés
-        System.out.println("📊 Chargement des données du dashboard...");
+        System.out.println("📊 Chargement des données réelles du dashboard...");
+        
+        // Charger les statistiques globales
+        dashboardService.getStats().thenAccept(stats -> {
+            Platform.runLater(() -> {
+                // Mettre à jour les cartes statistiques
+                equipmentValueLabel.setText(formatNumber(stats.totalEquipment));
+                savValueLabel.setText(String.valueOf(stats.activeSav));
+                clientsValueLabel.setText(String.valueOf(stats.totalClients));
+                vehiclesValueLabel.setText(String.valueOf(stats.totalVehicles));
+                System.out.println("✅ Statistiques du dashboard mises à jour");
+            });
+        });
+        
+        // Charger les données SAV par mois
+        dashboardService.getSavByMonth().thenAccept(monthlyData -> {
+            Platform.runLater(() -> {
+                updateSavChart(monthlyData);
+                System.out.println("✅ Graphique SAV mis à jour avec " + monthlyData.size() + " mois");
+            });
+        });
+        
+        // Charger la répartition des équipements par catégorie
+        dashboardService.getEquipmentByCategory().thenAccept(categoryData -> {
+            Platform.runLater(() -> {
+                updateEquipmentChart(categoryData);
+                System.out.println("✅ Graphique équipements mis à jour avec " + categoryData.size() + " catégories");
+            });
+        });
+    }
+    
+    private void updateSavChart(List<MonthlyData> monthlyData) {
+        if (savBarChart == null || savBarChart.getData().isEmpty()) return;
+        
+        XYChart.Series<String, Number> series = savBarChart.getData().get(0);
+        series.getData().clear();
+        
+        for (MonthlyData data : monthlyData) {
+            series.getData().add(new XYChart.Data<>(data.month, data.count));
+        }
+        
+        // Appliquer les couleurs après mise à jour
+        String[] barColors = { "#6B71F2", "#F26BA6", "#A6F26B", "#6BF2A6", "#8A7DD3" };
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(100));
+        pause.setOnFinished(e -> {
+            savBarChart.lookupAll(".chart-bar").forEach(node -> {
+                node.setStyle("-fx-bar-fill: #6B71F2; -fx-background-color: #6B71F2;");
+            });
+        });
+        pause.play();
+    }
+    
+    private void updateEquipmentChart(List<CategoryData> categoryData) {
+        if (equipmentPieChart == null) return;
+        
+        equipmentPieChart.getData().clear();
+        
+        String[] harmonicColors = { "#6B71F2", "#F26BA6", "#A6F26B", "#6BF2A6", "#8A7DD3", "#F2A66B", "#6BA6F2" };
+        
+        for (int i = 0; i < categoryData.size(); i++) {
+            CategoryData data = categoryData.get(i);
+            PieChart.Data pieData = new PieChart.Data(data.category + " (" + data.count + ")", data.count);
+            equipmentPieChart.getData().add(pieData);
+            
+            // Appliquer la couleur
+            final int colorIndex = i % harmonicColors.length;
+            pieData.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                if (newNode != null) {
+                    newNode.setStyle("-fx-pie-color: " + harmonicColors[colorIndex] + ";");
+                }
+            });
+        }
+        
+        // Styliser les labels
+        stylePieChartLabels(equipmentPieChart);
+    }
+    
+    private String formatNumber(long number) {
+        if (number >= 1000) {
+            return String.format("%,d", number).replace(",", " ");
+        }
+        return String.valueOf(number);
     }
 
     private void forceChartColors(javafx.scene.Node chart, String[] colors) {
@@ -405,7 +443,7 @@ public class DashboardView extends BorderPane {
      * Méthode pour rafraîchir les données du dashboard
      */
     public void refreshData() {
+        System.out.println("🔄 Rafraîchissement du dashboard...");
         loadDashboardData();
-        System.out.println("🔄 Dashboard rafraîchi");
     }
 }

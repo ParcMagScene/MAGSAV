@@ -1,7 +1,6 @@
 package com.magscene.magsav.desktop.view.equipment;
 
 import com.magscene.magsav.desktop.component.EntityDetailView;
-import javafx.scene.image.Image;
 
 import java.util.Map;
 
@@ -30,8 +29,12 @@ public class EquipmentDetailView extends EntityDetailView {
         // Image par défaut pour équipement
         setDefaultImage("equipment");
         
-        // Section Identification
-        addInfoRow("Référence", (String) equipmentData.get("internalRef"), true);
+        // Section Identification (Code LOCMAT)
+        String internalRef = (String) equipmentData.get("internalReference");
+        if (internalRef != null) {
+            internalRef = internalRef.replace("*", "").trim(); // Nettoyer les *
+        }
+        addInfoRow("Code LOCMAT", internalRef, true);
         addInfoRow("Numéro de série", (String) equipmentData.get("serialNumber"));
         addInfoRow("Code QR", (String) equipmentData.get("qrCode"));
         addSeparator();

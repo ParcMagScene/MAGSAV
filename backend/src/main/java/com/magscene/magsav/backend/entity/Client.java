@@ -112,6 +112,9 @@ public class Client {
     @Column(length = 100)
     private String assignedSalesRep;
 
+    @Column(name = "logo_path")
+    private String logoPath; // Chemin vers le logo dans le dossier Logos
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -403,6 +406,14 @@ public class Client {
 
     public void setAssignedSalesRep(String assignedSalesRep) {
         this.assignedSalesRep = assignedSalesRep;
+    }
+
+    public String getLogoPath() {
+        return logoPath;
+    }
+
+    public void setLogoPath(String logoPath) {
+        this.logoPath = logoPath;
     }
 
     public LocalDateTime getCreatedAt() {

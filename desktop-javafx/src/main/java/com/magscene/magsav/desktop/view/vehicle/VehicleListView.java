@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.view.vehicle;
 
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.dialog.VehicleDialog;
+import com.magscene.magsav.desktop.dialog.VehicleDetailDialog;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.theme.StandardColors;
@@ -112,10 +113,10 @@ public class VehicleListView extends BorderPane {
             row.emptyProperty().addListener((obs, wasEmpty, isEmpty) -> updateStyle.run());
             row.itemProperty().addListener((obs, oldItem, newItem) -> updateStyle.run());
             
-            // Double-clic pour ouvrir les détails en mode lecture seule
+            // Double-clic pour éditer le véhicule (comme les équipements)
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
-                    openVehicleDetails(row.getItem());
+                    editVehicle();
                 }
             });
             
@@ -124,7 +125,9 @@ public class VehicleListView extends BorderPane {
         
         // Gestion d'état déplacée vers toolbar externe (VehicleManagerView)
         
-        return DetailPanelContainer.wrapTableView(vehicleTable);
+        DetailPanelContainer container = DetailPanelContainer.wrapTableView(vehicleTable);
+        
+        return container;
     }
     
     private void createTableColumns() {
@@ -133,11 +136,15 @@ public class VehicleListView extends BorderPane {
         plateCol.setCellValueFactory(new PropertyValueFactory<>("licensePlate"));
         plateCol.setPrefWidth(120);
         
-        // Nom/Description
-        TableColumn<VehicleItem, String> nameCol = new TableColumn<>("Description");
-        nameCol.setCellValueFactory(data -> 
-            new SimpleStringProperty(data.getValue().getBrand() + " " + data.getValue().getModel()));
-        nameCol.setPrefWidth(200);
+        // Marque
+        TableColumn<VehicleItem, String> brandCol = new TableColumn<>("Marque");
+        brandCol.setCellValueFactory(new PropertyValueFactory<>("brand"));
+        brandCol.setPrefWidth(120);
+        
+        // Nom/Désignation
+        TableColumn<VehicleItem, String> nameCol = new TableColumn<>("Désignation");
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
+        nameCol.setPrefWidth(160);
         
         // Type
         TableColumn<VehicleItem, String> typeCol = new TableColumn<>("Type");
@@ -189,9 +196,22 @@ public class VehicleListView extends BorderPane {
         locationCol.setCellValueFactory(new PropertyValueFactory<>("location"));
         locationCol.setPrefWidth(150);
         
+        // Propriétaire
+        TableColumn<VehicleItem, String> ownerCol = new TableColumn<>("Propriétaire");
+        ownerCol.setCellValueFactory(new PropertyValueFactory<>("owner"));
+        ownerCol.setPrefWidth(120);
+        
+        // Couleur
+        TableColumn<VehicleItem, String> colorCol = new TableColumn<>("Couleur");
+        colorCol.setCellValueFactory(new PropertyValueFactory<>("color"));
+        colorCol.setPrefWidth(80);
+        
         vehicleTable.getColumns().add(plateCol);
         vehicleTable.getColumns().add(nameCol);
+        vehicleTable.getColumns().add(brandCol);
         vehicleTable.getColumns().add(typeCol);
+        vehicleTable.getColumns().add(colorCol);
+        vehicleTable.getColumns().add(ownerCol);
         vehicleTable.getColumns().add(statusCol);
         vehicleTable.getColumns().add(mileageCol);
         vehicleTable.getColumns().add(locationCol);
@@ -231,7 +251,28 @@ public class VehicleListView extends BorderPane {
     }
     
     private void filterVehicles() {
-        // TODO: Implémenter le filtrage
+        String searchText = searchField.getText() != null ? searchField.getText().toLowerCase() : "";
+        String selectedType = typeFilter.getValue();
+        String selectedStatus = statusFilter.getValue();
+        
+        vehicleTable.setItems(vehicleData.filtered(item -> {
+            // Filtre texte
+            boolean matchesSearch = searchText.isEmpty() ||
+                (item.getName() != null && item.getName().toLowerCase().contains(searchText)) ||
+                (item.getLicensePlate() != null && item.getLicensePlate().toLowerCase().contains(searchText)) ||
+                (item.getBrand() != null && item.getBrand().toLowerCase().contains(searchText)) ||
+                (item.getModel() != null && item.getModel().toLowerCase().contains(searchText));
+            
+            // Filtre type
+            boolean matchesType = "Tous".equals(selectedType) || selectedType == null ||
+                (item.getType() != null && item.getType().toUpperCase().contains(selectedType.toUpperCase()));
+            
+            // Filtre statut
+            boolean matchesStatus = "Tous".equals(selectedStatus) || selectedStatus == null ||
+                (item.getStatus() != null && item.getStatus().equals(selectedStatus));
+            
+            return matchesSearch && matchesType && matchesStatus;
+        }));
     }
     
     private void setLoading(boolean loading) {
@@ -269,25 +310,34 @@ public class VehicleListView extends BorderPane {
         // Convertir VehicleItem vers Map<String, Object> pour le dialog
         Map<String, Object> vehicleData = new java.util.HashMap<>();
         vehicleData.put("id", selectedVehicle.getId());
+        vehicleData.put("name", selectedVehicle.getName());
         vehicleData.put("brand", selectedVehicle.getBrand());
         vehicleData.put("model", selectedVehicle.getModel());
         vehicleData.put("licensePlate", selectedVehicle.getLicensePlate());
         vehicleData.put("type", selectedVehicle.getType());
         vehicleData.put("status", selectedVehicle.getStatus());
         vehicleData.put("mileage", selectedVehicle.getMileage());
-        vehicleData.put("location", selectedVehicle.getLocation());
+        vehicleData.put("currentLocation", selectedVehicle.getLocation());
         vehicleData.put("fuelType", selectedVehicle.getFuelType());
         vehicleData.put("notes", selectedVehicle.getNotes());
+        vehicleData.put("color", selectedVehicle.getColor());
+        vehicleData.put("owner", selectedVehicle.getOwner());
+        vehicleData.put("lastMaintenanceDate", selectedVehicle.getLastMaintenance());
+        vehicleData.put("nextMaintenanceDate", selectedVehicle.getNextMaintenance());
+        vehicleData.put("insuranceExpiration", selectedVehicle.getInsuranceExpiry());
+        vehicleData.put("technicalControlExpiration", selectedVehicle.getTechnicalControlExpiry());
+        vehicleData.put("dailyRentalRate", selectedVehicle.getDailyRate());
         
-        VehicleDialog dialog = new VehicleDialog(vehicleData);
-        dialog.initModality(Modality.WINDOW_MODAL);
-        dialog.initOwner(getScene().getWindow());
+        // Ouvrir le dialogue en mode lecture seule (comme pour les équipements)
+        VehicleDetailDialog detailDialog = new VehicleDetailDialog(apiService, vehicleData);
+        detailDialog.initModality(Modality.WINDOW_MODAL);
+        detailDialog.initOwner(getScene().getWindow());
         
-        Optional<Map<String, Object>> result = dialog.showAndWait();
-        if (result.isPresent()) {
-            // Mettre à jour le véhicule via l'API
-            apiService.updateVehicle(selectedVehicle.getId(), result.get()).thenRun(() -> {
-                Platform.runLater(this::refreshData);
+        Optional<Map<String, Object>> result = detailDialog.showAndWait();
+        if (result != null && result.isPresent()) {
+            // Rafraîchir les données si modification
+            Platform.runLater(() -> {
+                refreshData();
             });
         }
     }

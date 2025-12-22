@@ -2,7 +2,6 @@ package com.magscene.magsav.desktop.test;
 
 import com.magscene.magsav.desktop.core.di.ApplicationContext;
 import com.magscene.magsav.desktop.core.navigation.NavigationManager;
-import com.magscene.magsav.desktop.core.navigation.Route;
 import com.magscene.magsav.desktop.service.business.EquipmentService;
 import com.magscene.magsav.desktop.service.business.SAVService;
 import com.magscene.magsav.desktop.view.equipment.NewEquipmentManagerView;

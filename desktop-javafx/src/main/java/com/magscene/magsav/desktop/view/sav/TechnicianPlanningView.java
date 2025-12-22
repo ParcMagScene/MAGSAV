@@ -39,6 +39,7 @@ import javafx.scene.layout.VBox;
  */
 public class TechnicianPlanningView extends VBox {
 
+    @SuppressWarnings("unused")
     private final ApiService apiService;
     private final ObservableList<TechnicianSchedule> schedules;
     private final TableView<TechnicianSchedule> planningTable;
@@ -176,6 +177,7 @@ public class TechnicianPlanningView extends VBox {
         return toolbar;
     }
 
+    @SuppressWarnings("unused")
     private HBox createPlanningHeaderSection() {
         HBox headerBox = new HBox(20);
         headerBox.setAlignment(Pos.CENTER_LEFT);
@@ -202,6 +204,7 @@ public class TechnicianPlanningView extends VBox {
         return headerBox;
     }
 
+    @SuppressWarnings("unused")
     private VBox createPlanningControlSection() {
         VBox controlSection = new VBox(10);
         controlSection.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
@@ -415,6 +418,7 @@ public class TechnicianPlanningView extends VBox {
         return recommendationsBox;
     }
 
+    @SuppressWarnings("unused")
     private HBox createPlanningActionsBar() {
         HBox actionsBar = new HBox(10);
         actionsBar.setAlignment(Pos.CENTER_LEFT);
@@ -580,8 +584,7 @@ public class TechnicianPlanningView extends VBox {
 
     private void applyPlanningFilters() {
         // Implémentation du filtrage du planning
-        String selectedTechnician = technicianFilter.getValue();
-        // Logique de filtrage basée sur le technicien sélectionné
+        // TODO: Utiliser technicianFilter.getValue() pour filtrer les plannings
     }
 
     private void displayScheduleDetails(TechnicianSchedule schedule) {
@@ -665,8 +668,7 @@ public class TechnicianPlanningView extends VBox {
         // Chargement des données de planning pour la date sélectionnée
         schedules.clear();
 
-        // Simulation de données de planning
-        LocalDate selectedDate = planningDate.getValue();
+        // Simulation de données de planning (TODO: utiliser planningDate.getValue())
 
         schedules.addAll(
                 new TechnicianSchedule("Marc Dupont", LocalTime.of(9, 0), "Réparation console audio MX-24",

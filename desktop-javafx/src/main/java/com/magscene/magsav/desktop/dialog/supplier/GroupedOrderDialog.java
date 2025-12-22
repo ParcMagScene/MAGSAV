@@ -15,6 +15,7 @@ import java.util.List;
 
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
+import com.magscene.magsav.desktop.util.DialogUtils;
 
 public class GroupedOrderDialog {
     private final Stage dialog;
@@ -258,11 +259,7 @@ public class GroupedOrderDialog {
     }
     
     private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        DialogUtils.showError(title, message);
     }
     
     public Map<String, Object> showAndWait() {

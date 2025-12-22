@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class SpecialtyPlanningService {
     
     private final SpecialtiesConfigManager specialtiesManager;
+    @SuppressWarnings("unused")
     private final ApiService apiService;
     private final Map<String, List<PersonnelAssignment>> specialtyAssignments;
     private final List<PersonnelAssignment> personnelAssignments;

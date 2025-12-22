@@ -55,7 +55,7 @@ public class DetailPanel extends VBox {
     private ImageView headerLogoView;
 
     public DetailPanel() {
-        this.mediaService = new MediaService();
+        this.mediaService = MediaService.getInstance();
         initializeComponents();
         setupLayout();
         setupAnimation();
@@ -71,55 +71,58 @@ public class DetailPanel extends VBox {
         titleLabel = new Label();
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 18));
         titleLabel.setTextFill(Color.web("#ffffff"));
-        titleLabel.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
-                + "; -fx-padding: 8px 12px; -fx-background-radius: 4px; -fx-text-fill: #ffffff;");
+        titleLabel.setWrapText(true);
+        titleLabel.setMaxWidth(280);
 
         subtitleLabel = new Label();
         subtitleLabel.setFont(Font.font("System", FontWeight.NORMAL, 14));
-        subtitleLabel.setTextFill(Color.web("#B8BCC8"));
-        subtitleLabel.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
-                + "; -fx-padding: 6px 12px; -fx-background-radius: 4px; -fx-text-fill: #B8BCC8;");
+        subtitleLabel.setTextFill(Color.web("#E8E9FF"));
+        subtitleLabel.setWrapText(true);
+        subtitleLabel.setMaxWidth(280);
 
         // Section image/avatar - Photo de l'équipement
         mainImageView = new ImageView();
-        mainImageView.setFitWidth(180);
-        mainImageView.setFitHeight(180);
+        mainImageView.setFitWidth(120);
+        mainImageView.setFitHeight(120);
         mainImageView.setPreserveRatio(true);
         mainImageView.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);");
 
         // Section QR Code
         qrCodeView = new ImageView();
-        qrCodeView.setFitWidth(100);
-        qrCodeView.setFitHeight(100);
+        qrCodeView.setFitWidth(80);
+        qrCodeView.setFitHeight(80);
         qrCodeView.setPreserveRatio(true);
 
         // Container pour informations dynamiques
-        dynamicInfoContainer = new VBox(8);
+        dynamicInfoContainer = new VBox(6);
+        dynamicInfoContainer.setStyle("-fx-background-color: #ffffff; -fx-padding: 10; -fx-background-radius: 5; -fx-text-fill: #2c3e50;");
+        dynamicInfoContainer.setMinHeight(100);
         
-        // ImageViews pour le header compact
+        // ImageViews pour le header - Photo plus grande (70x70)
         headerPhotoView = new ImageView();
-        headerPhotoView.setFitWidth(50);
-        headerPhotoView.setFitHeight(50);
+        headerPhotoView.setFitWidth(70);
+        headerPhotoView.setFitHeight(70);
         headerPhotoView.setPreserveRatio(true);
         
+        // Logo de marque (taille standard)
         headerLogoView = new ImageView();
-        headerLogoView.setFitWidth(50);
-        headerLogoView.setFitHeight(30);
+        headerLogoView.setFitWidth(60);
+        headerLogoView.setFitHeight(40);
         headerLogoView.setPreserveRatio(true);
     }
 
     private void setupLayout() {
-        // Photo miniature dans le header
+        // Photo dans le header (à gauche) - plus grande
         StackPane headerPhotoContainer = new StackPane();
-        headerPhotoContainer.setMinSize(50, 50);
-        headerPhotoContainer.setMaxSize(50, 50);
+        headerPhotoContainer.setMinSize(70, 70);
+        headerPhotoContainer.setMaxSize(70, 70);
         headerPhotoContainer.setStyle("-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 6;");
         headerPhotoContainer.getChildren().add(headerPhotoView);
         
-        // Logo de marque dans le header
+        // Logo de marque dans le header (à droite)
         StackPane headerLogoContainer = new StackPane();
-        headerLogoContainer.setMinSize(50, 30);
-        headerLogoContainer.setMaxSize(50, 30);
+        headerLogoContainer.setMinSize(60, 40);
+        headerLogoContainer.setMaxSize(60, 40);
         headerLogoContainer.getChildren().add(headerLogoView);
         
         // Header
@@ -134,16 +137,16 @@ public class DetailPanel extends VBox {
                 spacer,
                 headerLogoContainer);
 
-        headerSection = new VBox(5);
-        headerSection.setPadding(new Insets(15, 15, 10, 15));
-        headerSection.setStyle("-fx-background-color: " + ThemeConstants.BACKGROUND_PRIMARY
+        headerSection = new VBox(3);
+        headerSection.setPadding(new Insets(10, 12, 8, 12));
+        headerSection.setStyle("-fx-background-color: " + ThemeConstants.PRIMARY_COLOR
                 + "; -fx-background-radius: 8 8 0 0;");
         headerSection.getChildren().add(headerBox);
 
         // Section image (photo de l'équipement uniquement - logo dans le header)
-        imageSection = new VBox(10);
+        imageSection = new VBox(5);
         imageSection.setAlignment(Pos.CENTER);
-        imageSection.setPadding(new Insets(15));
+        imageSection.setPadding(new Insets(10));
         imageSection.setStyle("-fx-background-color: #f8f9fa; -fx-background-radius: 8px;");
         
         imageSection.getChildren().add(mainImageView);
@@ -153,18 +156,22 @@ public class DetailPanel extends VBox {
         infoTitle.setFont(Font.font("System", FontWeight.BOLD, 14));
         infoTitle.setTextFill(Color.web("#2c3e50"));
 
-        infoSection = new VBox(10);
-        infoSection.setPadding(new Insets(0, 15, 15, 15));
+        infoSection = new VBox(8);
+        infoSection.setPadding(new Insets(10, 12, 10, 12));
+        infoSection.setStyle("-fx-background-color: #f5f6fa;");
         infoSection.getChildren().addAll(infoTitle, dynamicInfoContainer);
+        // S'assurer que la section info est toujours visible
+        infoSection.setVisible(true);
+        infoSection.setManaged(true);
 
         // Section QR Code
         Label qrTitle = new Label("🔳 QR Code");
         qrTitle.setFont(Font.font("System", FontWeight.BOLD, 14));
         qrTitle.setTextFill(Color.web("#2c3e50"));
 
-        qrCodeSection = new VBox(10);
+        qrCodeSection = new VBox(6);
         qrCodeSection.setAlignment(Pos.CENTER);
-        qrCodeSection.setPadding(new Insets(0, 15, 15, 15));
+        qrCodeSection.setPadding(new Insets(0, 12, 10, 12));
         qrCodeSection.getChildren().addAll(qrTitle, qrCodeView);
 
         // Conteneur principal avec scroll
@@ -248,41 +255,33 @@ public class DetailPanel extends VBox {
      * @param infoContent Contenu des informations
      * @param photoPath Chemin de la photo (pour chargement depuis MediaService)
      * @param brandName Nom de la marque (pour charger le logo)
-     * @param equipmentImage Image de l'équipement pré-chargée (optionnel)
+     * @param preloadedImage Image pré-chargée (photo équipement ou véhicule, optionnel)
      */
     public void updateContent(String title, String subtitle, Image mainImage, String qrCodeData, 
-                              VBox infoContent, String photoPath, String brandName, Image equipmentImage) {
+                              VBox infoContent, String photoPath, String brandName, Image preloadedImage) {
         titleLabel.setText(title != null ? title : "");
         subtitleLabel.setText(subtitle != null ? subtitle : "");
 
-        // Image principale - Photo de l'équipement
-        Image imageToShow = equipmentImage;
-        if (imageToShow == null && photoPath != null && !photoPath.isEmpty()) {
-            imageToShow = mediaService.loadEquipmentPhoto(photoPath, 180, 180);
-        }
+        // Image principale - Utiliser l'image pré-chargée en priorité
+        // Si pas d'image pré-chargée, utiliser mainImage (de getDetailImage())
+        Image imageToShow = preloadedImage;
         if (imageToShow == null) {
             imageToShow = mainImage;
         }
         
-        // Miniature dans le header
+        // Photo dans le header (à gauche) - afficher si disponible
         if (imageToShow != null) {
             headerPhotoView.setImage(imageToShow);
         } else {
             headerPhotoView.setImage(null);
         }
         
-        if (imageToShow != null) {
-            mainImageView.setImage(imageToShow);
-            imageSection.setVisible(true);
-            imageSection.setManaged(true);
-        } else {
-            // Image par défaut ou icône
-            mainImageView.setImage(createDefaultImage());
-            imageSection.setVisible(true);
-            imageSection.setManaged(true);
-        }
+        // Section image centrale - toujours masquée (photo uniquement dans le header)
+        // La photo est affichée dans le header à gauche, pas besoin de duplication
+        imageSection.setVisible(false);
+        imageSection.setManaged(false);
         
-        // Logo de la marque (uniquement dans le header)
+        // Logo de la marque (dans le header à droite)
         if (brandName != null && !brandName.isEmpty()) {
             Image brandLogo = mediaService.getBrandLogo(brandName, 60, 40);
             if (brandLogo != null) {
@@ -305,10 +304,128 @@ public class DetailPanel extends VBox {
             qrCodeSection.setManaged(false);
         }
 
-        // Informations dynamiques
+        // Informations dynamiques - Recréer les éléments pour éviter les problèmes de parent unique
         dynamicInfoContainer.getChildren().clear();
-        if (infoContent != null) {
-            dynamicInfoContainer.getChildren().addAll(infoContent.getChildren());
+        if (infoContent != null && !infoContent.getChildren().isEmpty()) {
+            System.out.println("📋 DetailPanel: Ajout de " + infoContent.getChildren().size() + " éléments d'info");
+            
+            // Créer une copie profonde de chaque élément
+            for (javafx.scene.Node node : new java.util.ArrayList<>(infoContent.getChildren())) {
+                javafx.scene.Node copiedNode = deepCopyNode(node);
+                if (copiedNode != null) {
+                    dynamicInfoContainer.getChildren().add(copiedNode);
+                }
+            }
+            System.out.println("✅ DetailPanel: " + dynamicInfoContainer.getChildren().size() + " éléments ajoutés au volet");
+        } else {
+            System.out.println("⚠️ DetailPanel: infoContent vide ou null");
+        }
+    }
+    
+    /**
+     * Crée une copie profonde d'un Node pour éviter les problèmes de parent unique
+     */
+    private javafx.scene.Node deepCopyNode(javafx.scene.Node node) {
+        if (node instanceof Label) {
+            Label original = (Label) node;
+            Label copy = new Label(original.getText());
+            // Police lisible
+            copy.setFont(Font.font("System", 12));
+            // Couleur visible forcée
+            copy.setTextFill(Color.web("#2c3e50"));
+            copy.setWrapText(true);
+            copy.setMaxWidth(350);
+            // Copier le style si présent
+            if (original.getStyle() != null && !original.getStyle().isEmpty()) {
+                copy.setStyle(original.getStyle() + "; -fx-text-fill: #2c3e50;");
+            } else {
+                copy.setStyle("-fx-text-fill: #2c3e50;");
+            }
+            // Debug: afficher le texte copié
+            System.out.println("   📝 Label copié: " + original.getText());
+            return copy;
+        } else if (node instanceof HBox) {
+            HBox original = (HBox) node;
+            HBox copy = new HBox(original.getSpacing());
+            copy.setAlignment(original.getAlignment());
+            copy.setPadding(original.getPadding());
+            if (original.getStyle() != null && !original.getStyle().isEmpty()) {
+                copy.setStyle(original.getStyle());
+            }
+            for (javafx.scene.Node child : original.getChildren()) {
+                javafx.scene.Node copiedChild = deepCopyNode(child);
+                if (copiedChild != null) {
+                    copy.getChildren().add(copiedChild);
+                }
+            }
+            return copy;
+        } else if (node instanceof VBox) {
+            VBox original = (VBox) node;
+            VBox copy = new VBox(original.getSpacing());
+            copy.setAlignment(original.getAlignment());
+            copy.setPadding(original.getPadding());
+            if (original.getStyle() != null && !original.getStyle().isEmpty()) {
+                copy.setStyle(original.getStyle());
+            }
+            for (javafx.scene.Node child : original.getChildren()) {
+                javafx.scene.Node copiedChild = deepCopyNode(child);
+                if (copiedChild != null) {
+                    copy.getChildren().add(copiedChild);
+                }
+            }
+            return copy;
+        } else if (node instanceof javafx.scene.layout.GridPane) {
+            javafx.scene.layout.GridPane original = (javafx.scene.layout.GridPane) node;
+            javafx.scene.layout.GridPane copy = new javafx.scene.layout.GridPane();
+            copy.setHgap(original.getHgap());
+            copy.setVgap(original.getVgap());
+            copy.setAlignment(original.getAlignment());
+            copy.setPadding(original.getPadding());
+            if (original.getStyle() != null && !original.getStyle().isEmpty()) {
+                copy.setStyle(original.getStyle());
+            }
+            // Copier les contraintes de colonnes
+            copy.getColumnConstraints().addAll(original.getColumnConstraints());
+            copy.getRowConstraints().addAll(original.getRowConstraints());
+            // Copier les enfants avec leurs positions
+            for (javafx.scene.Node child : original.getChildren()) {
+                javafx.scene.Node copiedChild = deepCopyNode(child);
+                if (copiedChild != null) {
+                    Integer rowIndex = javafx.scene.layout.GridPane.getRowIndex(child);
+                    Integer colIndex = javafx.scene.layout.GridPane.getColumnIndex(child);
+                    Integer rowSpan = javafx.scene.layout.GridPane.getRowSpan(child);
+                    Integer colSpan = javafx.scene.layout.GridPane.getColumnSpan(child);
+                    copy.add(copiedChild, 
+                        colIndex != null ? colIndex : 0, 
+                        rowIndex != null ? rowIndex : 0,
+                        colSpan != null ? colSpan : 1,
+                        rowSpan != null ? rowSpan : 1);
+                }
+            }
+            return copy;
+        } else if (node instanceof Region) {
+            // Pour les spacers et autres Region
+            Region original = (Region) node;
+            Region copy = new Region();
+            copy.setMinWidth(original.getMinWidth());
+            copy.setMinHeight(original.getMinHeight());
+            copy.setPrefWidth(original.getPrefWidth());
+            copy.setPrefHeight(original.getPrefHeight());
+            copy.setMaxWidth(original.getMaxWidth());
+            copy.setMaxHeight(original.getMaxHeight());
+            if (original.getStyle() != null && !original.getStyle().isEmpty()) {
+                copy.setStyle(original.getStyle());
+            }
+            // Préserver HGrow/VGrow si définis
+            Priority hgrow = HBox.getHgrow(original);
+            Priority vgrow = VBox.getVgrow(original);
+            if (hgrow != null) HBox.setHgrow(copy, hgrow);
+            if (vgrow != null) VBox.setVgrow(copy, vgrow);
+            return copy;
+        } else {
+            // Pour les autres types, on essaie de les cloner ou on retourne null
+            System.out.println("⚠️ Type de node non supporté pour copie: " + node.getClass().getSimpleName());
+            return null;
         }
     }
 
@@ -373,16 +490,17 @@ public class DetailPanel extends VBox {
      */
     public static HBox createInfoRow(String label, String value) {
         Label labelNode = new Label(label + ":");
-        labelNode.setFont(Font.font("System", FontWeight.BOLD, 12));
+        labelNode.setFont(Font.font("System", FontWeight.BOLD, 11));
         labelNode.setTextFill(Color.web("#34495e"));
-        labelNode.setPrefWidth(100);
+        labelNode.setMinWidth(90);
+        labelNode.setPrefWidth(90);
 
         Label valueNode = new Label(value != null ? value : "N/A");
-        valueNode.setFont(Font.font("System", FontWeight.NORMAL, 12));
+        valueNode.setFont(Font.font("System", FontWeight.NORMAL, 11));
         valueNode.setTextFill(Color.web("#2c3e50"));
         valueNode.setWrapText(true);
 
-        HBox row = new HBox(10);
+        HBox row = new HBox(6);
         row.setAlignment(Pos.CENTER_LEFT);
         row.getChildren().addAll(labelNode, valueNode);
 

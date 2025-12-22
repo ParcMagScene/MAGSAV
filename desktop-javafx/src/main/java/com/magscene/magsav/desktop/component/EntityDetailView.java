@@ -401,6 +401,7 @@ public class EntityDetailView extends Stage {
     /**
      * Retourne l'icône correspondant au type d'entité
      */
+    @SuppressWarnings("unused")
     private String getEntityIcon(String entityType) {
         switch (entityType.toLowerCase()) {
             case "equipment":
@@ -463,6 +464,7 @@ public class EntityDetailView extends Stage {
 
         // QR Code si ID disponible
         if (data.containsKey("id")) {
+            @SuppressWarnings("unused")
             String qrData = entityType + "_" + data.get("id");
             // detail.generateQRCode(qrData); // TODO: Implement QR codes
         }

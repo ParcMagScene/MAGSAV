@@ -21,6 +21,7 @@ public class Personnel {
     private Double hourlyRate;
     private Boolean active;
     private String notes;
+    private String avatarPath; // Chemin vers l'avatar dans le dossier Avatars
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -69,6 +70,9 @@ public class Personnel {
     
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    
+    public String getAvatarPath() { return avatarPath; }
+    public void setAvatarPath(String avatarPath) { this.avatarPath = avatarPath; }
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

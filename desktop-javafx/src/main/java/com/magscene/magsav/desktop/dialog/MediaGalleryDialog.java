@@ -63,11 +63,14 @@ public class MediaGalleryDialog extends Dialog<MediaGalleryDialog.MediaSelection
     }
     
     private static final int THUMBNAIL_SIZE = 100;
+    @SuppressWarnings("unused")
     private static final int COLUMNS = 5;
     
     private final MediaService mediaService;
     private final MediaType mediaType;
+    @SuppressWarnings("unused")
     private final String equipmentName;
+    @SuppressWarnings("unused")
     private final String locmatCode;
     
     private FlowPane galleryPane;
@@ -75,10 +78,6 @@ public class MediaGalleryDialog extends Dialog<MediaGalleryDialog.MediaSelection
     private Label statusLabel;
     private File selectedFile;
     private ImageView selectedThumbnail;
-    private CheckBox applyToAllCheckbox;
-    private RadioButton matchByNameRadio;
-    private RadioButton matchByCodeRadio;
-    private VBox applyToAllOptions;
     
     public MediaGalleryDialog(MediaService mediaService, MediaType mediaType, 
                               String equipmentName, String locmatCode) {
@@ -116,16 +115,18 @@ public class MediaGalleryDialog extends Dialog<MediaGalleryDialog.MediaSelection
             getDialogPane().getStylesheets().add(
                 getClass().getResource("/styles/theme-dark-ultra.css").toExternalForm()
             );
+        } else {
+            // Thème clair - appliquer le CSS light pour les couleurs de texte
+            getDialogPane().getStylesheets().add(
+                getClass().getResource("/styles/magsav-light.css").toExternalForm()
+            );
+            getDialogPane().getStyleClass().add("theme-light");
         }
         
         // Result converter
         setResultConverter(buttonType -> {
             if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE && selectedFile != null) {
-                String matchField = null;
-                if (applyToAllCheckbox.isSelected()) {
-                    matchField = matchByNameRadio.isSelected() ? "name" : "locmatCode";
-                }
-                return new MediaSelection(selectedFile, applyToAllCheckbox.isSelected(), matchField);
+                return new MediaSelection(selectedFile, false, null);
             }
             return null;
         });
@@ -147,18 +148,15 @@ public class MediaGalleryDialog extends Dialog<MediaGalleryDialog.MediaSelection
         scrollPane.setFitToWidth(true);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setPrefHeight(350);
+        scrollPane.setPrefHeight(400);
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: #f8f9fa;");
-        
-        // Options "Appliquer à tous"
-        VBox applyOptions = createApplyToAllOptions();
         
         // Statut
         statusLabel = new Label("Chargement...");
         statusLabel.setFont(Font.font("System", FontWeight.NORMAL, 12));
         statusLabel.setTextFill(Color.GRAY);
         
-        mainContainer.getChildren().addAll(searchBar, scrollPane, applyOptions, statusLabel);
+        mainContainer.getChildren().addAll(searchBar, scrollPane, statusLabel);
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
         
         getDialogPane().setContent(mainContainer);
@@ -183,57 +181,6 @@ public class MediaGalleryDialog extends Dialog<MediaGalleryDialog.MediaSelection
         searchBar.getChildren().addAll(searchLabel, searchField, spacer, refreshButton);
         
         return searchBar;
-    }
-    
-    private VBox createApplyToAllOptions() {
-        applyToAllOptions = new VBox(8);
-        applyToAllOptions.setPadding(new Insets(10));
-        applyToAllOptions.setStyle("-fx-border-color: #ddd; -fx-border-radius: 5px; -fx-background-color: #f0f0f0; -fx-background-radius: 5px;");
-        
-        // Checkbox principal
-        applyToAllCheckbox = new CheckBox("Appliquer cette photo à tous les équipements similaires");
-        applyToAllCheckbox.setFont(Font.font("System", FontWeight.BOLD, 12));
-        applyToAllCheckbox.setOnAction(e -> updateApplyOptions());
-        
-        // Radio buttons pour le critère de correspondance
-        ToggleGroup matchGroup = new ToggleGroup();
-        
-        matchByNameRadio = new RadioButton("Équipements avec le même nom: " + 
-            (equipmentName != null ? "\"" + equipmentName + "\"" : "N/A"));
-        matchByNameRadio.setToggleGroup(matchGroup);
-        matchByNameRadio.setSelected(true);
-        matchByNameRadio.setDisable(true);
-        
-        matchByCodeRadio = new RadioButton("Équipements avec le même code LocMat: " + 
-            (locmatCode != null ? "\"" + locmatCode + "\"" : "N/A"));
-        matchByCodeRadio.setToggleGroup(matchGroup);
-        matchByCodeRadio.setDisable(true);
-        
-        // Désactiver si pas de code LocMat
-        if (locmatCode == null || locmatCode.isEmpty()) {
-            matchByCodeRadio.setDisable(true);
-            matchByCodeRadio.setText("Équipements avec le même code LocMat: (non disponible)");
-        }
-        
-        VBox radioBox = new VBox(5);
-        radioBox.setPadding(new Insets(0, 0, 0, 20));
-        radioBox.getChildren().addAll(matchByNameRadio, matchByCodeRadio);
-        
-        applyToAllOptions.getChildren().addAll(applyToAllCheckbox, radioBox);
-        
-        // Cacher si c'est pour les logos (pas d'option appliquer à tous)
-        if (mediaType == MediaType.LOGO) {
-            applyToAllOptions.setVisible(false);
-            applyToAllOptions.setManaged(false);
-        }
-        
-        return applyToAllOptions;
-    }
-    
-    private void updateApplyOptions() {
-        boolean enabled = applyToAllCheckbox.isSelected();
-        matchByNameRadio.setDisable(!enabled);
-        matchByCodeRadio.setDisable(!enabled || locmatCode == null || locmatCode.isEmpty());
     }
     
     private void loadGallery() {
@@ -288,6 +235,7 @@ public class MediaGalleryDialog extends Dialog<MediaGalleryDialog.MediaSelection
         nameLabel.setFont(Font.font("System", FontWeight.NORMAL, 10));
         nameLabel.setMaxWidth(THUMBNAIL_SIZE);
         nameLabel.setWrapText(false);
+        nameLabel.setStyle("-fx-text-fill: #2c3e50;");
         
         container.getChildren().addAll(imageView, nameLabel);
         

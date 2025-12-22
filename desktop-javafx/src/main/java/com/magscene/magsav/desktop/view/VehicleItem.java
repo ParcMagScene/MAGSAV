@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.view;
 
 import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
+import com.magscene.magsav.desktop.service.MediaService;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
 public class VehicleItem implements DetailPanelProvider {
     
     private final Long id;
+    private final String name;
     private final String brand;
     private final String model;
     private final String licensePlate;
@@ -28,24 +30,31 @@ public class VehicleItem implements DetailPanelProvider {
     private final String technicalControlExpiry;
     private final Double dailyRate;
     private final String availability;
+    private final String owner;
+    private final String color;
+    private final String photoPath;
     
     public VehicleItem(Map<String, Object> vehicleData) {
         this.id = getLongValue(vehicleData, "id");
+        this.name = getStringValue(vehicleData, "name");
         this.brand = getStringValue(vehicleData, "brand");
         this.model = getStringValue(vehicleData, "model");
         this.licensePlate = getStringValue(vehicleData, "licensePlate");
-        this.type = getStringValue(vehicleData, "type");
+        this.type = convertTypeToDisplay(getStringValue(vehicleData, "type"));
         this.status = convertStatusToDisplay(getStringValue(vehicleData, "status"));
-        this.fuelType = getStringValue(vehicleData, "fuelType");
+        this.fuelType = convertFuelTypeToDisplay(getStringValue(vehicleData, "fuelType"));
         this.mileage = getDoubleValue(vehicleData, "mileage");
-        this.location = getStringValue(vehicleData, "location");
+        this.location = getStringValue(vehicleData, "currentLocation");
         this.notes = getStringValue(vehicleData, "notes");
-        this.lastMaintenance = getStringValue(vehicleData, "lastMaintenance");
-        this.nextMaintenance = getStringValue(vehicleData, "nextMaintenance");
-        this.insuranceExpiry = getStringValue(vehicleData, "insuranceExpiry");
-        this.technicalControlExpiry = getStringValue(vehicleData, "technicalControlExpiry");
-        this.dailyRate = getDoubleValue(vehicleData, "dailyRate");
+        this.lastMaintenance = getStringValue(vehicleData, "lastMaintenanceDate");
+        this.nextMaintenance = getStringValue(vehicleData, "nextMaintenanceDate");
+        this.insuranceExpiry = getStringValue(vehicleData, "insuranceExpiration");
+        this.technicalControlExpiry = getStringValue(vehicleData, "technicalControlExpiration");
+        this.dailyRate = getDoubleValue(vehicleData, "dailyRentalRate");
         this.availability = getStringValue(vehicleData, "availability");
+        this.owner = getStringValue(vehicleData, "owner");
+        this.color = getStringValue(vehicleData, "color");
+        this.photoPath = getStringValue(vehicleData, "photoPath");
     }
     
     // Méthodes utilitaires pour l'extraction sécurisée des données
@@ -83,6 +92,41 @@ public class VehicleItem implements DetailPanelProvider {
         };
     }
     
+    private String convertTypeToDisplay(String type) {
+        if (type == null || type.isEmpty()) return "Autre";
+        
+        return switch (type.toUpperCase()) {
+            case "VAN" -> "Fourgon";
+            case "VL" -> "VL";
+            case "VL_17M3" -> "VL 17 m³";
+            case "VL_20M3" -> "VL 20 m³";
+            case "TRUCK" -> "Camion";
+            case "PORTEUR" -> "Porteur";
+            case "TRACTEUR" -> "Tracteur";
+            case "SEMI_REMORQUE" -> "Semi-remorque";
+            case "SCENE_MOBILE" -> "Scène Mobile";
+            case "TRAILER" -> "Remorque";
+            case "CAR" -> "Voiture";
+            case "MOTORCYCLE" -> "Moto";
+            case "OTHER" -> "Autre";
+            default -> capitalize(type);
+        };
+    }
+    
+    private String convertFuelTypeToDisplay(String fuelType) {
+        if (fuelType == null || fuelType.isEmpty()) return "";
+        
+        return switch (fuelType.toUpperCase()) {
+            case "DIESEL" -> "Diesel";
+            case "GASOLINE", "ESSENCE" -> "Essence";
+            case "ELECTRIC" -> "Électrique";
+            case "HYBRID" -> "Hybride";
+            case "LPG" -> "GPL";
+            case "CNG" -> "GNV";
+            default -> capitalize(fuelType);
+        };
+    }
+    
     private String capitalize(String text) {
         if (text == null || text.isEmpty()) return text;
         String[] words = text.toLowerCase().split("_| ");
@@ -107,6 +151,7 @@ public class VehicleItem implements DetailPanelProvider {
     
     // Getters pour JavaFX
     public Long getId() { return id; }
+    public String getName() { return name; }
     public String getBrand() { return brand; }
     public String getModel() { return model; }
     public String getLicensePlate() { return licensePlate; }
@@ -118,10 +163,46 @@ public class VehicleItem implements DetailPanelProvider {
     public String getNotes() { return notes; }
     public String getLastMaintenance() { return lastMaintenance; }
     public String getNextMaintenance() { return nextMaintenance; }
+    public String getOwner() { return owner; }
+    public String getColor() { return color; }
     public String getInsuranceExpiry() { return insuranceExpiry; }
     public String getTechnicalControlExpiry() { return technicalControlExpiry; }
     public Double getDailyRate() { return dailyRate; }
     public String getAvailability() { return availability; }
+    
+    /**
+     * Récupère le logo de la marque du véhicule
+     */
+    public Image getBrandLogo() {
+        if (brand != null && !brand.isEmpty()) {
+            return MediaService.getInstance().getBrandLogo(brand, 60, 40);
+        }
+        return null;
+    }
+    
+    /**
+     * Chemin de la photo du véhicule
+     */
+    public String getPhotoPath() {
+        return photoPath;
+    }
+    
+    /**
+     * Image du véhicule chargée depuis le MediaService
+     */
+    public Image getVehicleImage() {
+        return getVehicleImage(80, 60);
+    }
+    
+    /**
+     * Image du véhicule avec dimensions personnalisées
+     */
+    public Image getVehicleImage(double width, double height) {
+        if (photoPath != null && !photoPath.isEmpty()) {
+            return MediaService.getInstance().loadVehiclePhoto(photoPath, width, height);
+        }
+        return null;
+    }
     
     public String getDisplayName() {
         StringBuilder name = new StringBuilder();
@@ -147,6 +228,11 @@ public class VehicleItem implements DetailPanelProvider {
     // Implémentation de DetailPanelProvider
     @Override
     public String getDetailTitle() {
+        // Utiliser le nom en priorité
+        if (name != null && !name.isEmpty()) {
+            return name;
+        }
+        // Sinon utiliser marque + modèle
         StringBuilder title = new StringBuilder();
         if (brand != null && !brand.isEmpty() && model != null && !model.isEmpty()) {
             title.append(brand).append(" ").append(model);
@@ -183,27 +269,15 @@ public class VehicleItem implements DetailPanelProvider {
 
     @Override
     public Image getDetailImage() {
-        // Photo du véhicule ou logo fabricant
-        if (model != null && brand != null) {
-            // Format: véhicule_{marque}_{modèle}.jpg
-            String vehicleName = (brand + "_" + model).toLowerCase().replaceAll("[\\s-]+", "_");
-            try {
-                return new Image(getClass().getResourceAsStream("/images/vehicles/" + vehicleName + ".jpg"));
-            } catch (Exception e) {
-                // Sinon cherche le logo du fabricant
-                String manufacturerLogo = brand.toLowerCase().replaceAll("[\\s-]+", "_");
-                try {
-                    return new Image(getClass().getResourceAsStream("/images/manufacturers/" + manufacturerLogo + ".png"));
-                } catch (Exception ex) {
-                    // Image par défaut pour les véhicules
-                    try {
-                        return new Image(getClass().getResourceAsStream("/images/vehicles/default_vehicle.png"));
-                    } catch (Exception exc) {
-                        return null;
-                    }
-                }
+        // Retourner uniquement la photo du véhicule
+        // Le logo de marque est géré séparément via getBrand()
+        if (photoPath != null && !photoPath.isEmpty()) {
+            Image vehiclePhoto = MediaService.getInstance().loadVehiclePhoto(photoPath, 120, 90);
+            if (vehiclePhoto != null) {
+                return vehiclePhoto;
             }
         }
+        
         return null;
     }
 
@@ -215,10 +289,35 @@ public class VehicleItem implements DetailPanelProvider {
 
     @Override
     public VBox getDetailInfoContent() {
-        VBox content = new VBox(8);
+        VBox content = new VBox(4);
+        
+        // Informations principales
+        if (name != null && !name.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Désignation", name));
+        }
+        
+        if (brand != null && !brand.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Marque", brand));
+        }
+        
+        if (model != null && !model.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Modèle", model));
+        }
+        
+        if (color != null && !color.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Couleur", color));
+        }
+        
+        if (owner != null && !owner.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Propriétaire", owner));
+        }
         
         if (status != null && !status.trim().isEmpty()) {
             content.getChildren().add(DetailPanel.createInfoRow("Statut", status));
+        }
+        
+        if (fuelType != null && !fuelType.trim().isEmpty()) {
+            content.getChildren().add(DetailPanel.createInfoRow("Carburant", fuelType));
         }
         
         if (location != null && !location.trim().isEmpty()) {

@@ -297,7 +297,7 @@ public class GlobalSearchService {
      */
     private void loadSAVData() {
         try {
-            List<Map<String, Object>> savRequests = apiService.getAll("sav-requests");
+            List<Map<String, Object>> savRequests = apiService.getAll("service-requests");
             List<SearchResult> results = new ArrayList<>();
             
             for (Map<String, Object> sav : savRequests) {

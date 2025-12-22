@@ -167,6 +167,7 @@ public class WeekCalendarView extends VBox {
         grid.getRowConstraints().add(headerRow);
 
         // Lignes des heures - toutes s'étendent pour utiliser l'espace disponible
+        @SuppressWarnings("unused")
         int totalHours = END_HOUR - START_HOUR + 1;
         for (int hour = START_HOUR; hour <= END_HOUR; hour++) {
             int row = hour - START_HOUR + 1;
@@ -370,10 +371,12 @@ public class WeekCalendarView extends VBox {
             return LocalDateTime.of(date, LocalTime.of(hour, 0));
         }
 
+        @SuppressWarnings("unused")
         public LocalDateTime getStartTime() {
             return LocalDateTime.of(date, LocalTime.of(hour, 0));
         }
 
+        @SuppressWarnings("unused")
         public LocalDateTime getEndTime() {
             return LocalDateTime.of(date, LocalTime.of(hour + 1, 0));
         }
@@ -674,6 +677,7 @@ public class WeekCalendarView extends VBox {
         }
 
         // Calculer le nombre maximum d'événements simultanés
+        @SuppressWarnings("unused")
         int maxConcurrentEvents = timeSlots.values().stream()
                 .mapToInt(List::size)
                 .max().orElse(0);
@@ -829,6 +833,7 @@ public class WeekCalendarView extends VBox {
     /**
      * Trouve une colonne disponible pour un événement
      */
+    @SuppressWarnings("unused")
     private int findAvailableColumn(EventBlock event, Map<EventBlock, Integer> eventColumns, int maxColumns) {
         for (int column = 0; column < maxColumns; column++) {
             boolean columnAvailable = true;
@@ -1011,7 +1016,9 @@ public class WeekCalendarView extends VBox {
 
         if (selectionStart != null && selectionEnd != null) {
             // Créer un rectangle de sélection
+            @SuppressWarnings("unused")
             LocalDateTime start = selectionStart.isBefore(selectionEnd) ? selectionStart : selectionEnd;
+            @SuppressWarnings("unused")
             LocalDateTime end = selectionStart.isBefore(selectionEnd) ? selectionEnd : selectionStart;
 
             selectionRectangle = new Rectangle();

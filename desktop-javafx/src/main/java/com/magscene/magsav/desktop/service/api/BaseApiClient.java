@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
@@ -33,11 +34,12 @@ public abstract class BaseApiClient {
     protected CompletableFuture<String> getAsync(String endpoint) {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(BASE_URL + endpoint))
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json; charset=UTF-8")
+            .header("Accept-Charset", "UTF-8")
             .GET()
             .build();
         
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
                 .thenApply(HttpResponse::body);
     }
     
@@ -50,11 +52,11 @@ public abstract class BaseApiClient {
             
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + endpoint))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
                 .build();
                 
-            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
                     .thenApply(HttpResponse::body);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
@@ -67,14 +69,20 @@ public abstract class BaseApiClient {
     protected CompletableFuture<String> putAsync(String endpoint, Object body) {
         try {
             String jsonBody = objectMapper.writeValueAsString(body);
+            System.out.println("🔄 PUT " + endpoint);
+            System.out.println("   Body: " + (jsonBody.length() > 500 ? jsonBody.substring(0, 500) + "..." : jsonBody));
             
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + endpoint))
-                .header("Content-Type", "application/json")
-                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
                 .build();
                 
-            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
+                    .thenApply(response -> {
+                        System.out.println("✅ PUT " + endpoint + " -> réponse reçue");
+                        return response;
+                    })
                     .thenApply(HttpResponse::body);
         } catch (Exception e) {
             return CompletableFuture.failedFuture(e);
@@ -87,11 +95,11 @@ public abstract class BaseApiClient {
     protected CompletableFuture<String> deleteAsync(String endpoint) {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(BASE_URL + endpoint))
-            .header("Content-Type", "application/json")
+            .header("Content-Type", "application/json; charset=UTF-8")
             .DELETE()
             .build();
         
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
                 .thenApply(HttpResponse::body);
     }
     

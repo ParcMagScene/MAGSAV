@@ -39,8 +39,59 @@
     -fx-text-fill: #212529;
 }
 
-* {
-    -fx-background-color: #FFFFFF;
+/* NOTE: On ne met PAS * { -fx-background-color } car ça écrase les couleurs du PieChart */
+
+/* ========================================
+   STYLES PIECHART - Secteurs visibles
+   ======================================== */
+.pie-chart {
+    -fx-background-color: transparent;
+}
+
+.pie-chart .chart-content {
+    -fx-background-color: transparent;
+}
+
+.pie-chart .chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+/* Couleurs des secteurs du camembert */
+.default-color0.chart-pie { -fx-pie-color: #6B71F2; }
+.default-color1.chart-pie { -fx-pie-color: #F26BA6; }
+.default-color2.chart-pie { -fx-pie-color: #A6F26B; }
+.default-color3.chart-pie { -fx-pie-color: #6BF2A6; }
+.default-color4.chart-pie { -fx-pie-color: #8A7DD3; }
+.default-color5.chart-pie { -fx-pie-color: #F2A66B; }
+.default-color6.chart-pie { -fx-pie-color: #6BA6F2; }
+.default-color7.chart-pie { -fx-pie-color: #D36BA6; }
+
+/* Couleurs légende correspondantes */
+.default-color0.chart-legend-item-symbol { -fx-background-color: #6B71F2; }
+.default-color1.chart-legend-item-symbol { -fx-background-color: #F26BA6; }
+.default-color2.chart-legend-item-symbol { -fx-background-color: #A6F26B; }
+.default-color3.chart-legend-item-symbol { -fx-background-color: #6BF2A6; }
+.default-color4.chart-legend-item-symbol { -fx-background-color: #8A7DD3; }
+.default-color5.chart-legend-item-symbol { -fx-background-color: #F2A66B; }
+.default-color6.chart-legend-item-symbol { -fx-background-color: #6BA6F2; }
+.default-color7.chart-legend-item-symbol { -fx-background-color: #D36BA6; }
+
+/* Labels du camembert */
+.pie-chart .chart-pie-label {
+    -fx-fill: #6B71F2;
+    -fx-font-size: 11px;
+}
+
+.pie-chart .chart-pie-label-line {
+    -fx-stroke: #6B71F2;
+}
+
+/* Légende du graphique */
+.pie-chart .chart-legend {
+    -fx-background-color: transparent;
+}
+
+.pie-chart .chart-legend-item {
     -fx-text-fill: #212529;
 }
 
@@ -465,4 +516,76 @@
     -fx-background-radius: 4px;
     -fx-padding: 4px 8px;
     -fx-font-size: 12px !important;
+}
+
+/* ========================================
+   STYLES POUR DIALOGUES (Detail Dialogs)
+   ======================================== */
+
+/* Dialog pane - fond et texte */
+.dialog-pane {
+    -fx-background-color: #F8F9FA;
+}
+
+.dialog-pane .content {
+    -fx-background-color: #F8F9FA;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: #212529;
+}
+
+/* Sections des dialogues */
+.dialog-pane .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.dialog-pane .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Labels dans les GridPane des dialogues */
+.dialog-pane GridPane .label {
+    -fx-text-fill: #2c3e50;
+}
+
+/* VBox sections */
+.dialog-pane VBox {
+    -fx-background-color: transparent;
+}
+
+/* TextArea dans les dialogues */
+.dialog-pane .text-area {
+    -fx-text-fill: #212529;
+    -fx-control-inner-background: #FFFFFF;
+}
+
+.dialog-pane .text-area .content {
+    -fx-background-color: #FFFFFF;
+}
+
+/* TextField dans les dialogues */
+.dialog-pane .text-field {
+    -fx-text-fill: #212529;
+    -fx-background-color: #FFFFFF;
+}
+
+/* ComboBox dans les dialogues */
+.dialog-pane .combo-box {
+    -fx-text-fill: #212529;
+}
+
+.dialog-pane .combo-box .list-cell {
+    -fx-text-fill: #212529;
+}
+
+/* Separator dans les dialogues */
+.dialog-pane .separator .line {
+    -fx-border-color: #DEE2E6;
+}
+
+/* Button bar des dialogues */
+.dialog-pane .button-bar {
+    -fx-background-color: #F8F9FA;
 }

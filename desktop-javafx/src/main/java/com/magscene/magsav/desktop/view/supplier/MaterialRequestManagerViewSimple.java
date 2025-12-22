@@ -6,9 +6,11 @@ import java.util.List;
 
 import com.magsav.entities.MaterialRequest;
 import com.magsav.enums.RequestStatus;
+import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
 import com.magscene.magsav.desktop.service.api.SupplierApiClient;
+import com.magscene.magsav.desktop.util.DialogUtils;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 import com.magscene.magsav.desktop.view.supplier.dialog.MaterialRequestDialog;
@@ -105,7 +107,18 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
 
     private void performSearch(String text) {
         updateStatus("Recherche: " + text);
-        // TODO: Implémenter recherche
+        if (text == null || text.isEmpty()) {
+            requestTable.setItems(requestList);
+            return;
+        }
+        String searchLower = text.toLowerCase();
+        requestTable.setItems(requestList.filtered(request -> {
+            String reqRef = request.getReference() != null ? request.getReference().toLowerCase() : "";
+            String description = request.getDescription() != null ? request.getDescription().toLowerCase() : "";
+            String requester = request.getRequester() != null ? request.getRequester().toLowerCase() : "";
+            String status = request.getStatus() != null ? request.getStatus().toLowerCase() : "";
+            return reqRef.contains(searchLower) || description.contains(searchLower) || requester.contains(searchLower) || status.contains(searchLower);
+        }));
     }
 
     private void loadRequests() {
@@ -124,6 +137,14 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
         if (requestTable != null && requestList != null) {
             requestTable.setItems(requestList);
             System.out.println("🔗 Tableau MaterialRequests lié à requestList");
+            
+            // Lier les boutons Edit/Delete à la sélection du tableau
+            bindSelectionToButtons(
+                javafx.beans.binding.Bindings.createBooleanBinding(
+                    () -> requestTable.getSelectionModel().getSelectedItem() == null,
+                    requestTable.getSelectionModel().selectedItemProperty()
+                )
+            );
         }
 
         // Les données seront chargées après l'initialisation par
@@ -257,6 +278,7 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
     /**
      * Convertit une entité MaterialRequest backend en RequestData pour affichage
      */
+    @SuppressWarnings("unused")
     private RequestData convertToRequestData(MaterialRequest request) {
         String reference = request.getRequestNumber();
         String description = request.getDescription();
@@ -412,10 +434,10 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
         public VBox getDetailInfoContent() {
             VBox content = new VBox(10);
             content.getChildren().addAll(
-                    new Label("👤 Demandeur: " + getRequester()),
-                    new Label("⚡ Priorité: " + getPriority()),
-                    new Label("📊 Statut: " + getStatus()),
-                    new Label("📅 Date: " + getDate()));
+                    DetailPanel.createInfoRow("👤 Demandeur", getRequester()),
+                    DetailPanel.createInfoRow("⚡ Priorité", getPriority()),
+                    DetailPanel.createInfoRow("📊 Statut", getStatus()),
+                    DetailPanel.createInfoRow("📅 Date", getDate()));
             return content;
         }
     }
@@ -610,11 +632,7 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
     }
 
     private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        DialogUtils.showInfo(title, message);
     }
 
     @Override
@@ -628,6 +646,7 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
     }
 
     // Méthodes d'actions avec backend
+    @SuppressWarnings("unused")
     private void approveSelectedRequest() {
         RequestData selected = requestTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
@@ -668,6 +687,7 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
         });
     }
 
+    @SuppressWarnings("unused")
     private void rejectSelectedRequest() {
         RequestData selected = requestTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
@@ -708,6 +728,7 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
         });
     }
 
+    @SuppressWarnings("unused")
     private void allocateSelectedRequest() {
         RequestData selected = requestTable.getSelectionModel().getSelectedItem();
         if (selected == null) {

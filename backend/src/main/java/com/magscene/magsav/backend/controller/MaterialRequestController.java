@@ -4,7 +4,6 @@ import com.magsav.entities.*;
 import com.magsav.enums.RequestContext;
 import com.magsav.enums.RequestUrgency;
 import com.magscene.magsav.backend.dto.MaterialRequestDTO;
-import com.magscene.magsav.backend.entity.Project;
 import com.magscene.magsav.backend.service.MaterialRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

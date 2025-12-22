@@ -38,6 +38,19 @@ public class MediaService {
     // Mapping nom de marque -> fichier logo
     private final Map<String, String> brandLogoMapping = new HashMap<>();
     
+    // Instance singleton pour partager le cache entre toutes les instances
+    private static MediaService instance;
+    
+    /**
+     * Obtient l'instance singleton du MediaService
+     */
+    public static synchronized MediaService getInstance() {
+        if (instance == null) {
+            instance = new MediaService();
+        }
+        return instance;
+    }
+    
     public MediaService() {
         // Déterminer le chemin de base
         this.basePath = findMediaBasePath();
@@ -47,6 +60,9 @@ public class MediaService {
         
         // Initialiser le mapping des logos de marques
         initializeBrandLogoMapping();
+        
+        // Charger le mapping LOCMAT-photos
+        loadLocmatPhotoMapping();
     }
     
     /**
@@ -222,6 +238,140 @@ public class MediaService {
     }
     
     /**
+     * Invalide le cache d'une photo spécifique
+     * @param photoPath le chemin de la photo à invalider
+     */
+    public void invalidatePhotoCache(String photoPath) {
+        if (photoPath == null || photoPath.isEmpty()) {
+            return;
+        }
+        
+        // Construire le chemin complet si nécessaire
+        File file = new File(photoPath);
+        if (!file.isAbsolute()) {
+            file = photosPath.resolve(photoPath).toFile();
+        }
+        
+        // Supprimer toutes les entrées de cache pour ce fichier (toutes tailles)
+        String absolutePath = file.getAbsolutePath();
+        List<String> keysToRemove = imageCache.keySet().stream()
+            .filter(key -> key.startsWith("photo_" + absolutePath))
+            .toList();
+        
+        for (String key : keysToRemove) {
+            imageCache.remove(key);
+            System.out.println("📷 Cache invalidé pour: " + key);
+        }
+    }
+    
+    /**
+     * Charge une photo de véhicule
+     * Les photos de véhicules sont stockées dans le même dossier Photos
+     */
+    public Image loadVehiclePhoto(String photoPath, double width, double height) {
+        System.out.println("🚗 loadVehiclePhoto appelé avec: " + photoPath);
+        if (photoPath == null || photoPath.isEmpty()) {
+            return null;
+        }
+        
+        // Si c'est juste un nom de fichier, chercher dans Photos
+        File file = new File(photoPath);
+        if (!file.isAbsolute()) {
+            file = photosPath.resolve(photoPath).toFile();
+            System.out.println("🚗 Chemin résolu: " + file.getAbsolutePath());
+        }
+        
+        if (file.exists()) {
+            final File finalFile = file;
+            String cacheKey = "vehicle_photo_" + file.getAbsolutePath() + "_" + (int)width + "x" + (int)height;
+            return imageCache.computeIfAbsent(cacheKey, k -> {
+                System.out.println("🚗 Chargement photo véhicule: " + finalFile.toURI().toString());
+                return new Image(finalFile.toURI().toString(), width, height, true, true, true);
+            });
+        } else {
+            System.out.println("🚗 Photo véhicule non trouvée: " + file.getAbsolutePath());
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Vide complètement le cache des photos
+     */
+    public void clearPhotoCache() {
+        List<String> keysToRemove = imageCache.keySet().stream()
+            .filter(key -> key.startsWith("photo_"))
+            .toList();
+        
+        for (String key : keysToRemove) {
+            imageCache.remove(key);
+        }
+        System.out.println("📷 Cache des photos vidé (" + keysToRemove.size() + " entrées supprimées)");
+    }
+
+    /**
+     * Charge le logo d'un client
+     * Les logos de clients sont stockés dans le dossier Logos
+     */
+    public Image loadClientLogo(String logoPath, double width, double height) {
+        System.out.println("🏢 loadClientLogo appelé avec: " + logoPath);
+        if (logoPath == null || logoPath.isEmpty()) {
+            return null;
+        }
+        
+        // Si c'est juste un nom de fichier, chercher dans Logos
+        File file = new File(logoPath);
+        if (!file.isAbsolute()) {
+            file = logosPath.resolve(logoPath).toFile();
+            System.out.println("🏢 Chemin résolu: " + file.getAbsolutePath());
+        }
+        
+        if (file.exists()) {
+            final File finalFile = file;
+            String cacheKey = "client_logo_" + file.getAbsolutePath() + "_" + (int)width + "x" + (int)height;
+            return imageCache.computeIfAbsent(cacheKey, k -> {
+                System.out.println("🏢 Chargement logo client: " + finalFile.toURI().toString());
+                return new Image(finalFile.toURI().toString(), width, height, true, true, true);
+            });
+        } else {
+            System.out.println("🏢 Logo client non trouvé: " + file.getAbsolutePath());
+        }
+        
+        return null;
+    }
+
+    /**
+     * Charge l'avatar d'une personne
+     * Les avatars sont stockés dans le dossier Avatars
+     */
+    public Image loadAvatar(String avatarPath, double width, double height) {
+        System.out.println("👤 loadAvatar appelé avec: " + avatarPath);
+        if (avatarPath == null || avatarPath.isEmpty()) {
+            return null;
+        }
+        
+        // Si c'est juste un nom de fichier, chercher dans Avatars
+        File file = new File(avatarPath);
+        if (!file.isAbsolute()) {
+            file = avatarsPath.resolve(avatarPath).toFile();
+            System.out.println("👤 Chemin résolu: " + file.getAbsolutePath());
+        }
+        
+        if (file.exists()) {
+            final File finalFile = file;
+            String cacheKey = "avatar_" + file.getAbsolutePath() + "_" + (int)width + "x" + (int)height;
+            return imageCache.computeIfAbsent(cacheKey, k -> {
+                System.out.println("👤 Chargement avatar: " + finalFile.toURI().toString());
+                return new Image(finalFile.toURI().toString(), width, height, true, true, true);
+            });
+        } else {
+            System.out.println("👤 Avatar non trouvé: " + file.getAbsolutePath());
+        }
+        
+        return null;
+    }
+    
+    /**
      * Récupère le logo d'une marque
      */
     public Image getBrandLogo(String brandName, double width, double height) {
@@ -355,6 +505,13 @@ public class MediaService {
     }
     
     /**
+     * Retourne le dossier Photos en tant que File
+     */
+    public java.io.File getPhotosDirectory() {
+        return photosPath.toFile();
+    }
+    
+    /**
      * Retourne le chemin du dossier Logos
      */
     public Path getLogosPath() {
@@ -373,5 +530,519 @@ public class MediaService {
      */
     public void clearCache() {
         imageCache.clear();
+    }
+    
+    // ========================================
+    // 👤 GESTION DES AVATARS
+    // ========================================
+    
+    // Avatars par défaut disponibles
+    private static final String[] DEFAULT_AVATARS = {
+        "default-avatar-blue.png",
+        "default-avatar-purple.png", 
+        "default-avatar-green.png",
+        "default-avatar-orange.png",
+        "default-avatar-pink.png",
+        "default-avatar-cyan.png",
+        "default-avatar-yellow.png",
+        "default-avatar-red.png",
+        "default-avatar-teal.png",
+        "default-avatar-indigo.png"
+    };
+    
+    // Couleurs correspondant aux avatars par défaut
+    private static final String[] DEFAULT_AVATAR_COLORS = {
+        "#6B71F2", // blue
+        "#9C27B0", // purple
+        "#4CAF50", // green
+        "#FF9800", // orange
+        "#E91E63", // pink
+        "#00BCD4", // cyan
+        "#FFEB3B", // yellow
+        "#F44336", // red
+        "#009688", // teal
+        "#3F51B5"  // indigo
+    };
+    
+    /**
+     * Initialise les avatars par défaut si le dossier est vide
+     */
+    public void initializeDefaultAvatars() {
+        try {
+            // Créer le dossier si nécessaire
+            if (!Files.exists(avatarsPath)) {
+                Files.createDirectories(avatarsPath);
+            }
+            
+            // Vérifier si des avatars par défaut existent déjà
+            boolean hasDefaultAvatars = listAvatars().stream()
+                .anyMatch(f -> f.getName().startsWith("default-avatar-"));
+            
+            if (!hasDefaultAvatars) {
+                System.out.println("👤 Génération des avatars par défaut...");
+                generateAllDefaultAvatars();
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur initialisation avatars: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Génère tous les avatars par défaut (fichiers PNG)
+     */
+    private void generateAllDefaultAvatars() {
+        for (int i = 0; i < DEFAULT_AVATARS.length; i++) {
+            generateDefaultAvatarFile(DEFAULT_AVATARS[i], DEFAULT_AVATAR_COLORS[i], i + 1);
+        }
+        System.out.println("✅ " + DEFAULT_AVATARS.length + " avatars par défaut générés");
+    }
+    
+    /**
+     * Génère un fichier avatar par défaut avec une icône utilisateur
+     */
+    private void generateDefaultAvatarFile(String fileName, String color, int index) {
+        try {
+            Path targetPath = avatarsPath.resolve(fileName);
+            if (Files.exists(targetPath)) {
+                return; // Déjà généré
+            }
+            
+            // Créer une image SVG simple en PNG
+            // On utilise JavaFX pour générer une image
+            javafx.application.Platform.runLater(() -> {
+                try {
+                    javafx.scene.layout.StackPane pane = new javafx.scene.layout.StackPane();
+                    pane.setPrefSize(128, 128);
+                    
+                    // Cercle de fond
+                    javafx.scene.shape.Circle circle = new javafx.scene.shape.Circle(64);
+                    circle.setFill(javafx.scene.paint.Color.web(color));
+                    
+                    // Icône utilisateur (silhouette simple)
+                    javafx.scene.shape.Circle head = new javafx.scene.shape.Circle(20);
+                    head.setFill(javafx.scene.paint.Color.WHITE);
+                    head.setTranslateY(-15);
+                    
+                    javafx.scene.shape.Ellipse body = new javafx.scene.shape.Ellipse(30, 20);
+                    body.setFill(javafx.scene.paint.Color.WHITE);
+                    body.setTranslateY(25);
+                    
+                    javafx.scene.Group userIcon = new javafx.scene.Group(head, body);
+                    
+                    pane.getChildren().addAll(circle, userIcon);
+                    
+                    // Snapshot vers image
+                    javafx.scene.SnapshotParameters params = new javafx.scene.SnapshotParameters();
+                    params.setFill(javafx.scene.paint.Color.TRANSPARENT);
+                    
+                    javafx.scene.Scene scene = new javafx.scene.Scene(pane, 128, 128);
+                    javafx.scene.image.WritableImage writableImage = pane.snapshot(params, null);
+                    
+                    // Sauvegarder en PNG
+                    java.awt.image.BufferedImage bufferedImage = javafx.embed.swing.SwingFXUtils.fromFXImage(writableImage, null);
+                    javax.imageio.ImageIO.write(bufferedImage, "png", targetPath.toFile());
+                    
+                    System.out.println("👤 Avatar généré: " + fileName);
+                } catch (Exception e) {
+                    System.err.println("Erreur génération avatar " + fileName + ": " + e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            System.err.println("Erreur génération avatar: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Liste les avatars par défaut disponibles
+     */
+    public List<String> getDefaultAvatarNames() {
+        return Arrays.asList(DEFAULT_AVATARS);
+    }
+    
+    /**
+     * Vérifie si les avatars par défaut sont initialisés
+     */
+    public boolean hasDefaultAvatars() {
+        if (!Files.exists(avatarsPath)) {
+            return false;
+        }
+        return listAvatars().stream()
+            .anyMatch(f -> f.getName().startsWith("default-avatar-"));
+    }
+    
+    /**
+     * Retourne le chemin du dossier Avatars
+     */
+    public Path getAvatarsPath() {
+        return avatarsPath;
+    }
+    
+    /**
+     * Liste tous les avatars disponibles
+     */
+    public List<File> listAvatars() {
+        return listMediaFiles(avatarsPath);
+    }
+    
+    /**
+     * Charge un avatar depuis le dossier Avatars
+     * @param avatarPath chemin relatif ou absolu de l'avatar
+     * @param size taille de l'avatar (carré)
+     * @return Image de l'avatar ou null
+     */
+    public Image loadAvatar(String avatarPath, double size) {
+        if (avatarPath == null || avatarPath.isEmpty()) {
+            return null;
+        }
+        
+        File file = new File(avatarPath);
+        if (!file.isAbsolute()) {
+            file = avatarsPath.resolve(avatarPath).toFile();
+        }
+        
+        if (file.exists()) {
+            String cacheKey = "avatar_" + file.getAbsolutePath() + "_" + (int)size;
+            final File finalFile = file;
+            return imageCache.computeIfAbsent(cacheKey, k ->
+                new Image(finalFile.toURI().toString(), size, size, true, true, true)
+            );
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Copie une photo pour en faire un avatar
+     * @param sourceFile fichier source (photo)
+     * @param personId identifiant de la personne
+     * @param personName nom de la personne (pour le nom de fichier)
+     * @return nom du fichier avatar créé
+     */
+    public String copyPhotoAsAvatar(File sourceFile, String personId, String personName) throws IOException {
+        // Créer le dossier si nécessaire
+        if (!Files.exists(avatarsPath)) {
+            Files.createDirectories(avatarsPath);
+        }
+        
+        String extension = getFileExtension(sourceFile.getName());
+        String safeName = personName.replaceAll("[^a-zA-Z0-9]", "_");
+        String targetName = "avatar_" + personId + "_" + safeName + extension;
+        Path targetPath = avatarsPath.resolve(targetName);
+        
+        Files.copy(sourceFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+        
+        // Invalider le cache
+        invalidateAvatarCache(targetName);
+        
+        System.out.println("👤 Avatar créé: " + targetName);
+        return targetName;
+    }
+    
+    /**
+     * Génère et sauvegarde un avatar par défaut basé sur les initiales
+     * @param personId identifiant de la personne
+     * @param firstName prénom
+     * @param lastName nom
+     * @return nom du fichier avatar créé
+     */
+    public String generateDefaultAvatar(String personId, String firstName, String lastName) {
+        // Le nom du fichier sera basé sur l'ID et les initiales
+        String initials = getInitials(firstName, lastName);
+        String fileName = "default_" + personId + "_" + initials + ".png";
+        
+        // Vérifier si un avatar par défaut existe déjà
+        Path avatarPath = avatarsPath.resolve(fileName);
+        if (Files.exists(avatarPath)) {
+            return fileName;
+        }
+        
+        // Sinon, retourner le nom du fichier qui sera généré dynamiquement
+        return fileName;
+    }
+    
+    /**
+     * Obtient les initiales d'une personne
+     */
+    public String getInitials(String firstName, String lastName) {
+        StringBuilder initials = new StringBuilder();
+        
+        if (firstName != null && !firstName.isEmpty()) {
+            initials.append(Character.toUpperCase(firstName.charAt(0)));
+        }
+        if (lastName != null && !lastName.isEmpty()) {
+            initials.append(Character.toUpperCase(lastName.charAt(0)));
+        }
+        
+        if (initials.length() == 0) {
+            initials.append("?");
+        }
+        
+        return initials.toString();
+    }
+    
+    /**
+     * Génère une couleur harmonique basée sur une chaîne (ID ou nom)
+     * @param seed chaîne pour générer la couleur de manière déterministe
+     * @return code couleur hexadécimal
+     */
+    public String generateAvatarColor(String seed) {
+        // Palette de couleurs harmoniques MAGSAV
+        String[] colors = {
+            "#6B71F2", // Bleu violet principal
+            "#F26BA6", // Rose
+            "#A6F26B", // Vert lime
+            "#6BF2A6", // Vert menthe
+            "#8A7DD3", // Violet doux
+            "#F2A66B", // Orange
+            "#6BA6F2", // Bleu ciel
+            "#D36BA6", // Magenta
+            "#71C9CE", // Turquoise
+            "#A06BF2", // Violet
+            "#F2D36B", // Jaune doré
+            "#6BF2D3"  // Cyan
+        };
+        
+        if (seed == null || seed.isEmpty()) {
+            return colors[0];
+        }
+        
+        // Hash simple pour sélectionner une couleur de manière déterministe
+        int hash = Math.abs(seed.hashCode());
+        return colors[hash % colors.length];
+    }
+    
+    /**
+     * Supprime un avatar
+     * @param avatarPath chemin relatif de l'avatar
+     * @return true si suppression réussie
+     */
+    public boolean deleteAvatar(String avatarPath) {
+        if (avatarPath == null || avatarPath.isEmpty()) {
+            return false;
+        }
+        
+        // Ne pas supprimer les avatars par défaut générés
+        if (avatarPath.startsWith("default_")) {
+            return false;
+        }
+        
+        try {
+            Path fullPath = avatarsPath.resolve(avatarPath);
+            if (Files.exists(fullPath)) {
+                Files.delete(fullPath);
+                invalidateAvatarCache(avatarPath);
+                System.out.println("👤 Avatar supprimé: " + avatarPath);
+                return true;
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur suppression avatar: " + e.getMessage());
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Invalide le cache d'un avatar spécifique
+     */
+    public void invalidateAvatarCache(String avatarPath) {
+        if (avatarPath == null || avatarPath.isEmpty()) {
+            return;
+        }
+        
+        File file = new File(avatarPath);
+        if (!file.isAbsolute()) {
+            file = avatarsPath.resolve(avatarPath).toFile();
+        }
+        
+        String absolutePath = file.getAbsolutePath();
+        List<String> keysToRemove = imageCache.keySet().stream()
+            .filter(key -> key.startsWith("avatar_" + absolutePath))
+            .toList();
+        
+        for (String key : keysToRemove) {
+            imageCache.remove(key);
+        }
+    }
+    
+    /**
+     * Vérifie si un avatar existe
+     */
+    public boolean avatarExists(String avatarPath) {
+        if (avatarPath == null || avatarPath.isEmpty()) {
+            return false;
+        }
+        
+        File file = new File(avatarPath);
+        if (!file.isAbsolute()) {
+            file = avatarsPath.resolve(avatarPath).toFile();
+        }
+        
+        return file.exists();
+    }
+    
+    // ========================================
+    // 📝 RENOMMAGE DE FICHIERS
+    // ========================================
+    
+    /**
+     * Renomme un fichier média
+     * @param file le fichier à renommer
+     * @param newName le nouveau nom (sans extension)
+     * @return le nouveau fichier ou null si échec
+     */
+    public File renameMediaFile(File file, String newName) {
+        if (file == null || !file.exists() || newName == null || newName.trim().isEmpty()) {
+            return null;
+        }
+        
+        String extension = getFileExtension(file.getName());
+        String newFileName = newName.trim() + extension;
+        Path newPath = file.toPath().getParent().resolve(newFileName);
+        
+        // Vérifier si le nouveau nom existe déjà
+        if (Files.exists(newPath) && !newPath.equals(file.toPath())) {
+            System.err.println("⚠️ Un fichier avec ce nom existe déjà: " + newFileName);
+            return null;
+        }
+        
+        try {
+            Files.move(file.toPath(), newPath, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("✅ Fichier renommé: " + file.getName() + " → " + newFileName);
+            
+            // Invalider le cache
+            invalidateAllCacheForFile(file.getAbsolutePath());
+            
+            return newPath.toFile();
+        } catch (IOException e) {
+            System.err.println("Erreur renommage: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Invalide toutes les entrées de cache pour un fichier
+     */
+    private void invalidateAllCacheForFile(String absolutePath) {
+        List<String> keysToRemove = imageCache.keySet().stream()
+            .filter(key -> key.contains(absolutePath))
+            .toList();
+        
+        for (String key : keysToRemove) {
+            imageCache.remove(key);
+        }
+    }
+    
+    // ========================================
+    // 🔗 ASSIGNATION MÉDIA-ÉQUIPEMENT
+    // ========================================
+    
+    // Mapping code LOCMAT -> fichier photo
+    private final Map<String, String> locmatPhotoMapping = new HashMap<>();
+    
+    /**
+     * Assigne une photo à un code LOCMAT
+     * @param locmatCode le code LOCMAT de l'équipement
+     * @param photoFileName le nom du fichier photo
+     */
+    public void assignPhotoToLocmat(String locmatCode, String photoFileName) {
+        if (locmatCode == null || locmatCode.isEmpty()) {
+            return;
+        }
+        
+        locmatPhotoMapping.put(locmatCode.toUpperCase().trim(), photoFileName);
+        System.out.println("🔗 Photo assignée: " + locmatCode + " → " + photoFileName);
+        
+        // Sauvegarder le mapping
+        saveLocmatPhotoMapping();
+    }
+    
+    /**
+     * Récupère la photo assignée à un code LOCMAT
+     */
+    public String getPhotoForLocmat(String locmatCode) {
+        if (locmatCode == null || locmatCode.isEmpty()) {
+            return null;
+        }
+        return locmatPhotoMapping.get(locmatCode.toUpperCase().trim());
+    }
+    
+    /**
+     * Supprime l'assignation d'une photo pour un code LOCMAT
+     */
+    public void removePhotoAssignment(String locmatCode) {
+        if (locmatCode != null) {
+            locmatPhotoMapping.remove(locmatCode.toUpperCase().trim());
+            saveLocmatPhotoMapping();
+        }
+    }
+    
+    /**
+     * Retourne tous les mappings LOCMAT -> photo
+     */
+    public Map<String, String> getAllLocmatPhotoMappings() {
+        return Collections.unmodifiableMap(locmatPhotoMapping);
+    }
+    
+    /**
+     * Sauvegarde le mapping LOCMAT-photo dans un fichier
+     */
+    private void saveLocmatPhotoMapping() {
+        try {
+            Path mappingFile = basePath.resolve("locmat-photos.properties");
+            Properties props = new Properties();
+            props.putAll(locmatPhotoMapping);
+            
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(mappingFile.toFile())) {
+                props.store(fos, "Mapping LOCMAT -> Photo");
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur sauvegarde mapping: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Charge le mapping LOCMAT-photo depuis le fichier
+     */
+    public void loadLocmatPhotoMapping() {
+        try {
+            Path mappingFile = basePath.resolve("locmat-photos.properties");
+            if (Files.exists(mappingFile)) {
+                Properties props = new Properties();
+                try (java.io.FileInputStream fis = new java.io.FileInputStream(mappingFile.toFile())) {
+                    props.load(fis);
+                }
+                
+                locmatPhotoMapping.clear();
+                for (String key : props.stringPropertyNames()) {
+                    locmatPhotoMapping.put(key, props.getProperty(key));
+                }
+                System.out.println("📂 Mapping LOCMAT-photos chargé: " + locmatPhotoMapping.size() + " entrées");
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur chargement mapping: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Renomme une photo pour qu'elle corresponde à un code LOCMAT
+     * @param photoFile le fichier photo existant
+     * @param locmatCode le code LOCMAT
+     * @return le nouveau fichier ou null si échec
+     */
+    public File renamePhotoForLocmat(File photoFile, String locmatCode) {
+        if (photoFile == null || locmatCode == null || locmatCode.isEmpty()) {
+            return null;
+        }
+        
+        // Créer un nom basé sur le code LOCMAT
+        String cleanCode = locmatCode.replaceAll("[^a-zA-Z0-9-]", "_");
+        File renamedFile = renameMediaFile(photoFile, cleanCode);
+        
+        if (renamedFile != null) {
+            // Assigner automatiquement
+            assignPhotoToLocmat(locmatCode, renamedFile.getName());
+        }
+        
+        return renamedFile;
     }
 }

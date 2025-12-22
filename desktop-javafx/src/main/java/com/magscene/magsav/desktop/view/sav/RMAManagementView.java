@@ -41,6 +41,7 @@ import javafx.scene.layout.VBox;
  */
 public class RMAManagementView extends BorderPane {
 
+    @SuppressWarnings("unused")
     private final ApiService apiService;
     private final ObservableList<RMARecord> rmaRecords;
     private final TableView<RMARecord> rmaTable;
@@ -360,6 +361,7 @@ public class RMAManagementView extends BorderPane {
         }
     }
 
+    @SuppressWarnings("unused")
     private String getRMARowBackgroundColor(String status) {
         // Couleurs compatibles thème sombre avec transparence
         switch (status.toUpperCase()) {

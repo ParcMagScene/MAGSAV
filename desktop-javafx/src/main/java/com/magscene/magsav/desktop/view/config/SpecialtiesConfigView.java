@@ -11,7 +11,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -29,6 +28,7 @@ import java.util.logging.Level;
 public class SpecialtiesConfigView extends VBox {
     
     private final SpecialtiesConfigManager configManager;
+    @SuppressWarnings("unused")
     private final ApiService apiService;
     
     // Composants UI - Gestion des spécialités
@@ -463,6 +463,7 @@ public class SpecialtiesConfigView extends VBox {
         alert.showAndWait();
     }
     
+    @SuppressWarnings("unused")
     private void showInfoAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

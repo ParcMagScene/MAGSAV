@@ -3,7 +3,6 @@ package com.magscene.magsav.desktop.util;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.geometry.HPos;
-import javafx.geometry.VPos;
 import java.util.logging.Logger;
 
 /**

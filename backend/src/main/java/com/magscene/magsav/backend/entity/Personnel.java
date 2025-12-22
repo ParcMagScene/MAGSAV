@@ -91,6 +91,9 @@ public class Personnel {
     @Column(name = "specialties", length = 500)
     private String specialties; // Stocké comme texte séparé par des virgules
     
+    @Column(name = "avatar_path")
+    private String avatarPath; // Chemin vers l'avatar dans le dossier Avatars
+    
     @Column(name = "created_at")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
@@ -179,6 +182,12 @@ public class Personnel {
     public String getSpecialties() { return specialties; }
     public void setSpecialties(String specialties) { 
         this.specialties = specialties;
+        updateTimestamp();
+    }
+    
+    public String getAvatarPath() { return avatarPath; }
+    public void setAvatarPath(String avatarPath) { 
+        this.avatarPath = avatarPath;
         updateTimestamp();
     }
     

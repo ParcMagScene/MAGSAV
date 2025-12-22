@@ -222,6 +222,7 @@ public class StandardVehicleManagerView extends AbstractManagerView {
     /**
      * Masque la toolbar globale car les actions sont gérées par les onglets individuels
      */
+    @SuppressWarnings("unused")
     private void hideToolbar() {
         Platform.runLater(() -> {
             if (standardToolbar != null) {

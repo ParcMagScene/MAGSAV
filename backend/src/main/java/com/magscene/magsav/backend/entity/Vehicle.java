@@ -18,7 +18,14 @@ public class Vehicle {
     // Énumérations internes
     public enum VehicleType {
         VAN("Fourgon"),
+        VL("VL"),
+        VL_17M3("VL 17 m3"),
+        VL_20M3("VL 20 m3"),
         TRUCK("Camion"),
+        PORTEUR("Porteur"),
+        TRACTEUR("Tracteur"),
+        SEMI_REMORQUE("Semi-remorque"),
+        SCENE_MOBILE("Scène Mobile"),
         TRAILER("Remorque"),
         CAR("Voiture"),
         MOTORCYCLE("Moto"),
@@ -31,6 +38,30 @@ public class Vehicle {
         }
         
         public String getDisplayName() { return displayName; }
+        
+        /**
+         * Trouve un VehicleType à partir d'un nom (insensible à la casse et aux espaces)
+         */
+        public static VehicleType fromDisplayName(String name) {
+            if (name == null || name.trim().isEmpty()) {
+                return OTHER;
+            }
+            String normalized = name.trim().toLowerCase();
+            for (VehicleType type : values()) {
+                if (type.displayName.toLowerCase().equals(normalized) ||
+                    type.name().toLowerCase().replace("_", " ").equals(normalized) ||
+                    type.name().toLowerCase().replace("_", "").equals(normalized.replace(" ", ""))) {
+                    return type;
+                }
+            }
+            // Cas spéciaux
+            if (normalized.contains("20") && normalized.contains("m3")) return VL_20M3;
+            if (normalized.contains("17") && normalized.contains("m3")) return VL_17M3;
+            if (normalized.startsWith("vl")) return VL;
+            if (normalized.contains("scène") || normalized.contains("scene")) return SCENE_MOBILE;
+            if (normalized.contains("semi")) return SEMI_REMORQUE;
+            return OTHER;
+        }
     }
     
     public enum VehicleStatus {
@@ -81,6 +112,12 @@ public class Vehicle {
     
     @Column(name = "model")
     private String model;
+    
+    @Column(name = "color")
+    private String color; // Couleur du véhicule
+    
+    @Column(name = "owner")
+    private String owner; // Propriétaire du véhicule
     
     @Column(name = "license_plate", unique = true)
     private String licensePlate;
@@ -148,6 +185,9 @@ public class Vehicle {
     @Column(name = "notes", length = 2000)
     private String notes;
     
+    @Column(name = "photo_path")
+    private String photoPath; // Chemin vers la photo du véhicule
+    
     @Column(name = "created_at")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
@@ -188,6 +228,18 @@ public class Vehicle {
     public String getModel() { return model; }
     public void setModel(String model) { 
         this.model = model;
+        updateTimestamp();
+    }
+    
+    public String getColor() { return color; }
+    public void setColor(String color) { 
+        this.color = color;
+        updateTimestamp();
+    }
+    
+    public String getOwner() { return owner; }
+    public void setOwner(String owner) { 
+        this.owner = owner;
         updateTimestamp();
     }
     
@@ -314,6 +366,12 @@ public class Vehicle {
     public String getNotes() { return notes; }
     public void setNotes(String notes) { 
         this.notes = notes;
+        updateTimestamp();
+    }
+    
+    public String getPhotoPath() { return photoPath; }
+    public void setPhotoPath(String photoPath) { 
+        this.photoPath = photoPath;
         updateTimestamp();
     }
     

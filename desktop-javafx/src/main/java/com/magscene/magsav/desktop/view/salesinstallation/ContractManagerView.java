@@ -6,9 +6,11 @@ import java.util.Map;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeConstants;
+import com.magscene.magsav.desktop.util.DialogUtils;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
@@ -39,6 +41,14 @@ public class ContractManagerView extends BaseManagerView<Object> {
         if (contractTable != null) {
             contractTable.setItems(contractList);
         }
+
+        // Lier les boutons Éditer/Supprimer à la sélection de la table
+        bindSelectionToButtons(
+            Bindings.createBooleanBinding(
+                () -> contractTable.getSelectionModel().getSelectedItem() == null,
+                contractTable.getSelectionModel().selectedItemProperty()
+            )
+        );
 
         // Charger les données de manière asynchrone après la construction complète de
         // l'UI
@@ -255,7 +265,18 @@ public class ContractManagerView extends BaseManagerView<Object> {
 
     private void performSearch(String text) {
         updateStatus("Recherche: " + text);
-        // TODO: Implémenter recherche
+        if (text == null || text.isEmpty()) {
+            contractTable.setItems(contractList);
+            return;
+        }
+        String searchLower = text.toLowerCase();
+        contractTable.setItems(contractList.filtered(contract -> {
+            String ref = contract.getReference() != null ? contract.getReference().toLowerCase() : "";
+            String client = contract.getClientName() != null ? contract.getClientName().toLowerCase() : "";
+            String type = contract.getType() != null ? contract.getType().toLowerCase() : "";
+            String status = contract.getStatus() != null ? contract.getStatus().toLowerCase() : "";
+            return ref.contains(searchLower) || client.contains(searchLower) || type.contains(searchLower) || status.contains(searchLower);
+        }));
     }
 
     @Override
@@ -317,11 +338,7 @@ public class ContractManagerView extends BaseManagerView<Object> {
     }
 
     private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        DialogUtils.showInfo(title, message);
     }
 
     @Override
@@ -425,8 +442,9 @@ public class ContractManagerView extends BaseManagerView<Object> {
 
         private void addDetailRow(javafx.scene.layout.GridPane grid, int row, String label, String value) {
             javafx.scene.control.Label labelNode = new javafx.scene.control.Label(label);
-            labelNode.setStyle("-fx-font-weight: bold; -fx-min-width: 100px;");
+            labelNode.setStyle("-fx-font-weight: bold; -fx-min-width: 100px; -fx-text-fill: #34495e;");
             javafx.scene.control.Label valueNode = new javafx.scene.control.Label(value != null ? value : "N/A");
+            valueNode.setStyle("-fx-text-fill: #2c3e50;");
 
             grid.add(labelNode, 0, row);
             grid.add(valueNode, 1, row);

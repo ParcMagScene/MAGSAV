@@ -31,6 +31,7 @@ public class YearCalendarView extends VBox {
     private BiConsumer<YearMonth, LocalDate> onMonthSelected;
 
     // Classe pour représenter un événement
+    @SuppressWarnings("unused")
     private static class Event {
         final String title;
         final LocalDateTime startTime;

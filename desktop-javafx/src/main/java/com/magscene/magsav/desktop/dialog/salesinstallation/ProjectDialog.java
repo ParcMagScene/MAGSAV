@@ -15,7 +15,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -528,6 +527,7 @@ public class ProjectDialog extends Dialog<Map<String, Object>> {
     /**
      * Configuration de la validation du formulaire en temps réel
      */
+    @SuppressWarnings("unused")
     private void setupFormValidation(Node saveButton) {
         // Écouter les changements sur tous les champs critiques
         nameField.textProperty().addListener((obs, old, text) -> validateFormWithVisualFeedback(saveButton));

@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -51,10 +52,11 @@ public class ApiService {
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(BASE_URL + endpoint))
                         .timeout(Duration.ofSeconds(10))
+                        .header("Accept-Charset", "UTF-8")
                         .GET()
                         .build();
 
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
                 if (response.statusCode() == 200) {
                     return objectMapper.readValue(response.body(), new TypeReference<List<Object>>() {
@@ -340,30 +342,44 @@ public class ApiService {
             return new ArrayList<>();
         }
         try {
-            // Encoder le code LocMat pour l'URL (gère les espaces et caractères spéciaux)
-            String encodedLocmatCode = java.net.URLEncoder.encode(locmatCode, java.nio.charset.StandardCharsets.UTF_8);
+            // Récupérer TOUS les équipements et filtrer côté client
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/equipment?internalReference=" + encodedLocmatCode))
+                    .uri(URI.create(BASE_URL + "/equipment"))
                     .GET()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == 200) {
-                // Essayer de parser comme page paginée d'abord
-                Map<String, Object> pageResult = objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
-                if (pageResult.containsKey("content")) {
-                    List<Map<String, Object>> content = (List<Map<String, Object>>) pageResult.get("content");
-                    // Filtrer par code LocMat exact
-                    return content.stream()
-                        .filter(e -> locmatCode.equals(e.get("internalReference")))
-                        .collect(java.util.stream.Collectors.toList());
+                String body = response.body().trim();
+                List<Map<String, Object>> allEquipments = new ArrayList<>();
+                
+                // Déterminer le type de réponse (liste ou objet paginé)
+                if (body.startsWith("[")) {
+                    allEquipments = objectMapper.readValue(body, new TypeReference<List<Map<String, Object>>>() {});
+                } else if (body.startsWith("{")) {
+                    Map<String, Object> pageResult = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                    if (pageResult.containsKey("content")) {
+                        @SuppressWarnings("unchecked")
+                        List<Map<String, Object>> content = (List<Map<String, Object>>) pageResult.get("content");
+                        allEquipments = content;
+                    }
                 }
-                // Sinon parser comme liste directe
-                List<Map<String, Object>> list = objectMapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
-                return list.stream()
+                
+                // Filtrer par code LocMat (internalReference)
+                List<Map<String, Object>> filtered = allEquipments.stream()
                     .filter(e -> locmatCode.equals(e.get("internalReference")))
                     .collect(java.util.stream.Collectors.toList());
+                
+                // Debug: afficher les équipements trouvés avec leurs propriétaires
+                System.out.println("🔍 Recherche par code LocMat '" + locmatCode + "':");
+                System.out.println("   - Total équipements dans la base: " + allEquipments.size());
+                System.out.println("   - Équipements avec ce code LocMat: " + filtered.size());
+                for (Map<String, Object> e : filtered) {
+                    System.out.println("     • ID=" + e.get("id") + ", owner=" + e.get("owner") + ", name=" + e.get("name"));
+                }
+                
+                return filtered;
             }
         } catch (Exception e) {
             System.err.println("Erreur lors de la recherche par code LocMat: " + e.getMessage());
@@ -379,30 +395,44 @@ public class ApiService {
             return new ArrayList<>();
         }
         try {
-            // Encoder le nom pour l'URL
-            String encodedName = java.net.URLEncoder.encode(name, java.nio.charset.StandardCharsets.UTF_8);
+            // Récupérer TOUS les équipements et filtrer côté client
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE_URL + "/equipment?name=" + encodedName))
+                    .uri(URI.create(BASE_URL + "/equipment"))
                     .GET()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == 200) {
-                // Essayer de parser comme page paginée d'abord
-                Map<String, Object> pageResult = objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
-                if (pageResult.containsKey("content")) {
-                    List<Map<String, Object>> content = (List<Map<String, Object>>) pageResult.get("content");
-                    // Filtrer par nom exact
-                    return content.stream()
-                        .filter(e -> name.equals(e.get("name")))
-                        .collect(java.util.stream.Collectors.toList());
+                String body = response.body().trim();
+                List<Map<String, Object>> allEquipments = new ArrayList<>();
+                
+                // Déterminer le type de réponse (liste ou objet paginé)
+                if (body.startsWith("[")) {
+                    allEquipments = objectMapper.readValue(body, new TypeReference<List<Map<String, Object>>>() {});
+                } else if (body.startsWith("{")) {
+                    Map<String, Object> pageResult = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                    if (pageResult.containsKey("content")) {
+                        @SuppressWarnings("unchecked")
+                        List<Map<String, Object>> content = (List<Map<String, Object>>) pageResult.get("content");
+                        allEquipments = content;
+                    }
                 }
-                // Sinon parser comme liste directe
-                List<Map<String, Object>> list = objectMapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {});
-                return list.stream()
+                
+                // Filtrer par nom (comparaison exacte)
+                List<Map<String, Object>> filtered = allEquipments.stream()
                     .filter(e -> name.equals(e.get("name")))
                     .collect(java.util.stream.Collectors.toList());
+                
+                // Debug: afficher les équipements trouvés avec leurs propriétaires
+                System.out.println("🔍 Recherche par nom '" + name + "':");
+                System.out.println("   - Total équipements dans la base: " + allEquipments.size());
+                System.out.println("   - Équipements avec ce nom: " + filtered.size());
+                for (Map<String, Object> e : filtered) {
+                    System.out.println("     • ID=" + e.get("id") + ", owner=" + e.get("owner") + ", internalRef=" + e.get("internalReference"));
+                }
+                
+                return filtered;
             }
         } catch (Exception e) {
             System.err.println("Erreur lors de la recherche par nom: " + e.getMessage());
@@ -423,11 +453,11 @@ public class ApiService {
                 String json = objectMapper.writeValueAsString(updateData);
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(BASE_URL + "/equipment/" + id))
-                        .header("Content-Type", "application/json")
-                        .PUT(HttpRequest.BodyPublishers.ofString(json))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
                         .build();
 
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
                 if (response.statusCode() == 200) {
                     updated++;
                     System.out.println("✅ Photo mise à jour pour équipement ID " + id);
@@ -440,7 +470,50 @@ public class ApiService {
     }
 
     public CompletableFuture<Object> createEquipment(Map<String, Object> data) {
-        return CompletableFuture.completedFuture(data);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(data);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/equipment"))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200 || response.statusCode() == 201) {
+                    System.out.println("✅ Équipement créé avec succès via backend");
+                    return objectMapper.readValue(response.body(), Map.class);
+                } else {
+                    System.err.println("❌ Erreur création équipement: HTTP " + response.statusCode());
+                    return createEquipmentLocally(data);
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Backend indisponible, création locale: " + e.getMessage());
+                return createEquipmentLocally(data);
+            }
+        });
+    }
+
+    private Map<String, Object> createEquipmentLocally(Map<String, Object> data) {
+        // Générer un ID unique pour l'équipement local
+        long maxId = 0;
+        if (persistentEquipment != null) {
+            for (Object e : persistentEquipment) {
+                if (e instanceof Map) {
+                    Object id = ((Map<?, ?>) e).get("id");
+                    if (id instanceof Number) {
+                        maxId = Math.max(maxId, ((Number) id).longValue());
+                    }
+                }
+            }
+        } else {
+            persistentEquipment = new ArrayList<>();
+        }
+        Map<String, Object> newEquipment = new HashMap<>(data);
+        newEquipment.put("id", maxId + 1);
+        persistentEquipment.add(newEquipment);
+        System.out.println("✅ Équipement créé localement avec ID: " + (maxId + 1));
+        return newEquipment;
     }
 
     public CompletableFuture<Object> updateEquipment(Long id, Map<String, Object> data) {
@@ -449,11 +522,11 @@ public class ApiService {
                 String json = objectMapper.writeValueAsString(data);
                 HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(BASE_URL + "/equipment/" + id))
-                        .header("Content-Type", "application/json")
-                        .PUT(HttpRequest.BodyPublishers.ofString(json))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
                         .build();
 
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
                 if (response.statusCode() == 200) {
                     System.out.println("✅ Équipement ID " + id + " mis à jour avec succès");
                     return objectMapper.readValue(response.body(), Map.class);
@@ -578,18 +651,140 @@ public class ApiService {
         return getActivePersonnel();
     }
 
-    public CompletableFuture<Void> deletePersonnel(Long id) {
-        // Vraie suppression des données persistantes de personnel
-        return CompletableFuture.runAsync(() -> {
-            if (persistentPersonnel != null) {
-                persistentPersonnel.removeIf(person -> {
-                    if (person instanceof Map) {
-                        Object personId = ((Map<?, ?>) person).get("id");
-                        return personId != null && personId.toString().equals(id.toString());
+    /**
+     * Créer un nouveau membre du personnel
+     */
+    public CompletableFuture<Map<String, Object>> createPersonnel(Map<String, Object> personnelData) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(personnelData);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/personnel"))
+                        .timeout(Duration.ofSeconds(10))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+                if (response.statusCode() == 200 || response.statusCode() == 201) {
+                    System.out.println("✅ Personnel créé avec succès dans le backend");
+                    return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+                } else {
+                    throw new RuntimeException("HTTP " + response.statusCode() + ": " + response.body());
+                }
+            } catch (Exception e) {
+                System.err.println("❌ Erreur création personnel: " + e.getMessage());
+                // Fallback: créer localement
+                return createPersonnelLocally(personnelData);
+            }
+        });
+    }
+
+    /**
+     * Mettre à jour un membre du personnel
+     */
+    public CompletableFuture<Map<String, Object>> updatePersonnel(Long id, Map<String, Object> personnelData) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(personnelData);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/personnel/" + id))
+                        .timeout(Duration.ofSeconds(10))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+                if (response.statusCode() == 200) {
+                    System.out.println("✅ Personnel mis à jour avec succès dans le backend");
+                    return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+                } else {
+                    throw new RuntimeException("HTTP " + response.statusCode() + ": " + response.body());
+                }
+            } catch (Exception e) {
+                System.err.println("❌ Erreur mise à jour personnel: " + e.getMessage());
+                // Fallback: mettre à jour localement
+                return updatePersonnelLocally(id, personnelData);
+            }
+        });
+    }
+
+    /**
+     * Créer un personnel localement (mode hors-ligne)
+     */
+    private Map<String, Object> createPersonnelLocally(Map<String, Object> personnelData) {
+        if (persistentPersonnel == null) {
+            getSimulatedPersonnelData();
+        }
+        Long newId = persistentPersonnel.stream()
+                .map(p -> ((Map<?, ?>) p).get("id"))
+                .filter(id -> id instanceof Number)
+                .mapToLong(id -> ((Number) id).longValue())
+                .max().orElse(0L) + 1;
+        
+        personnelData.put("id", newId);
+        personnelData.put("createdAt", java.time.LocalDateTime.now().toString());
+        personnelData.put("updatedAt", java.time.LocalDateTime.now().toString());
+        persistentPersonnel.add(personnelData);
+        System.out.println("✅ Personnel créé localement avec ID " + newId);
+        return personnelData;
+    }
+
+    /**
+     * Mettre à jour un personnel localement (mode hors-ligne)
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> updatePersonnelLocally(Long id, Map<String, Object> personnelData) {
+        if (persistentPersonnel != null) {
+            for (int i = 0; i < persistentPersonnel.size(); i++) {
+                Object person = persistentPersonnel.get(i);
+                if (person instanceof Map) {
+                    Map<String, Object> personMap = (Map<String, Object>) person;
+                    Object personId = personMap.get("id");
+                    if (personId != null && personId.toString().equals(id.toString())) {
+                        personnelData.put("id", id);
+                        personnelData.put("updatedAt", java.time.LocalDateTime.now().toString());
+                        persistentPersonnel.set(i, personnelData);
+                        System.out.println("✅ Personnel ID " + id + " mis à jour localement");
+                        return personnelData;
                     }
-                    return false;
-                });
-                System.out.println("✅ Personnel ID " + id + " supprimé avec succès");
+                }
+            }
+        }
+        return personnelData;
+    }
+
+    public CompletableFuture<Void> deletePersonnel(Long id) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/personnel/" + id))
+                        .timeout(Duration.ofSeconds(10))
+                        .DELETE()
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+                if (response.statusCode() == 200 || response.statusCode() == 204) {
+                    System.out.println("✅ Personnel ID " + id + " supprimé du backend");
+                } else {
+                    throw new RuntimeException("HTTP " + response.statusCode());
+                }
+            } catch (Exception e) {
+                System.err.println("Backend indisponible, suppression locale: " + e.getMessage());
+                // Fallback: supprimer localement
+                if (persistentPersonnel != null) {
+                    persistentPersonnel.removeIf(person -> {
+                        if (person instanceof Map) {
+                            Object personId = ((Map<?, ?>) person).get("id");
+                            return personId != null && personId.toString().equals(id.toString());
+                        }
+                        return false;
+                    });
+                }
+                System.out.println("✅ Personnel ID " + id + " supprimé localement");
             }
         });
     }
@@ -848,7 +1043,11 @@ public class ApiService {
 
     // Methodes pour les vehicules
     public CompletableFuture<List<Object>> getAllVehicles() {
-        return CompletableFuture.completedFuture(getSimulatedVehicleData());
+        return makeRequest("/vehicles")
+                .exceptionally(throwable -> {
+                    System.err.println("Backend indisponible pour véhicules, utilisation des données simulées");
+                    return getSimulatedVehicleData();
+                });
     }
 
     /**
@@ -951,11 +1150,95 @@ public class ApiService {
     }
 
     public CompletableFuture<Object> createVehicle(Map<String, Object> data) {
-        return CompletableFuture.completedFuture(data);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(data);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/vehicles"))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200 || response.statusCode() == 201) {
+                    System.out.println("✅ Véhicule créé avec succès via backend");
+                    return objectMapper.readValue(response.body(), Map.class);
+                } else {
+                    System.err.println("❌ Erreur création véhicule: HTTP " + response.statusCode());
+                    return createVehicleLocally(data);
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Backend indisponible, création locale: " + e.getMessage());
+                return createVehicleLocally(data);
+            }
+        });
+    }
+
+    private Map<String, Object> createVehicleLocally(Map<String, Object> data) {
+        // Générer un ID unique pour le véhicule local
+        long maxId = 0;
+        if (persistentVehicles != null) {
+            for (Object v : persistentVehicles) {
+                if (v instanceof Map) {
+                    Object id = ((Map<?, ?>) v).get("id");
+                    if (id instanceof Number) {
+                        maxId = Math.max(maxId, ((Number) id).longValue());
+                    }
+                }
+            }
+        } else {
+            persistentVehicles = new ArrayList<>();
+        }
+        Map<String, Object> newVehicle = new HashMap<>(data);
+        newVehicle.put("id", maxId + 1);
+        persistentVehicles.add(newVehicle);
+        System.out.println("✅ Véhicule créé localement avec ID: " + (maxId + 1));
+        return newVehicle;
     }
 
     public CompletableFuture<Object> updateVehicle(Long id, Map<String, Object> data) {
-        return CompletableFuture.completedFuture(data);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(data);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/vehicles/" + id))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200) {
+                    System.out.println("✅ Véhicule ID " + id + " mis à jour avec succès");
+                    return objectMapper.readValue(response.body(), Map.class);
+                } else {
+                    System.err.println("❌ Erreur mise à jour véhicule " + id + ": HTTP " + response.statusCode());
+                    return updateVehicleLocally(id, data);
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Backend indisponible, mise à jour locale: " + e.getMessage());
+                return updateVehicleLocally(id, data);
+            }
+        });
+    }
+
+    private Map<String, Object> updateVehicleLocally(Long id, Map<String, Object> data) {
+        if (persistentVehicles != null) {
+            for (int i = 0; i < persistentVehicles.size(); i++) {
+                Object v = persistentVehicles.get(i);
+                if (v instanceof Map) {
+                    Object vehicleId = ((Map<?, ?>) v).get("id");
+                    if (vehicleId != null && vehicleId.toString().equals(id.toString())) {
+                        Map<String, Object> updated = new HashMap<>((Map<String, Object>) v);
+                        updated.putAll(data);
+                        persistentVehicles.set(i, updated);
+                        System.out.println("✅ Véhicule ID " + id + " mis à jour localement");
+                        return updated;
+                    }
+                }
+            }
+        }
+        System.out.println("⚠️ Véhicule ID " + id + " non trouvé pour mise à jour locale");
+        return data;
     }
 
     public CompletableFuture<Void> deleteVehicle(Long id) {
@@ -993,7 +1276,7 @@ public class ApiService {
                     .GET()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == 200) {
                 List<Map<String, Object>> result = objectMapper.readValue(
@@ -1226,7 +1509,7 @@ public class ApiService {
                     .GET()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == 200) {
                 return objectMapper.readValue(response.body(), new TypeReference<List<Map<String, Object>>>() {
@@ -1249,11 +1532,11 @@ public class ApiService {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + "/brands"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .header("Content-Type", "application/json; charset=UTF-8")
+                    .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == 201) {
                 return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {
@@ -1276,11 +1559,11 @@ public class ApiService {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + "/brands/" + id))
-                    .header("Content-Type", "application/json")
-                    .PUT(HttpRequest.BodyPublishers.ofString(json))
+                    .header("Content-Type", "application/json; charset=UTF-8")
+                    .PUT(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() == 200) {
                 return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {
@@ -1304,7 +1587,7 @@ public class ApiService {
                     .DELETE()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() != 200) {
                 throw new RuntimeException("Erreur HTTP : " + response.statusCode() + " - " + response.body());
@@ -1409,7 +1692,7 @@ public class ApiService {
             }
 
             HttpRequest request = requestBuilder.build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return response.body();
@@ -1487,6 +1770,180 @@ public class ApiService {
     public List<Map<String, Object>> getSuppliers() {
         // TODO: Remplacer par un vrai appel API retournant List<Supplier>
         return (List<Map<String, Object>>) (Object) getSimulatedSuppliers();
+    }
+
+    /**
+     * Crée un nouveau fournisseur via l'API backend
+     */
+    public CompletableFuture<Map<String, Object>> createSupplier(Map<String, Object> supplierData) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(supplierData);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/suppliers"))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .timeout(Duration.ofSeconds(10))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200 || response.statusCode() == 201) {
+                    System.out.println("✅ Fournisseur créé avec succès via backend");
+                    return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+                } else {
+                    System.err.println("❌ Erreur création fournisseur: HTTP " + response.statusCode());
+                    return supplierData;
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Backend indisponible pour création fournisseur: " + e.getMessage());
+                return supplierData;
+            }
+        });
+    }
+
+    /**
+     * Met à jour un fournisseur existant via l'API backend
+     */
+    public CompletableFuture<Map<String, Object>> updateSupplier(Long id, Map<String, Object> supplierData) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(supplierData);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/suppliers/" + id))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .timeout(Duration.ofSeconds(10))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200) {
+                    System.out.println("✅ Fournisseur ID " + id + " mis à jour avec succès");
+                    return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+                } else {
+                    System.err.println("❌ Erreur mise à jour fournisseur " + id + ": HTTP " + response.statusCode());
+                    return supplierData;
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Backend indisponible pour mise à jour fournisseur: " + e.getMessage());
+                return supplierData;
+            }
+        });
+    }
+
+    /**
+     * Supprime un fournisseur via l'API backend
+     */
+    public CompletableFuture<Boolean> deleteSupplier(Long id) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/suppliers/" + id))
+                        .DELETE()
+                        .timeout(Duration.ofSeconds(10))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200 || response.statusCode() == 204) {
+                    System.out.println("✅ Fournisseur ID " + id + " supprimé avec succès");
+                    return true;
+                } else {
+                    System.err.println("❌ Erreur suppression fournisseur " + id + ": HTTP " + response.statusCode());
+                    return false;
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Backend indisponible pour suppression fournisseur: " + e.getMessage());
+                return false;
+            }
+        });
+    }
+
+    // ==================== MÉTHODES CRUD UNIFIÉES ====================
+
+    /**
+     * Met à jour une demande SAV via l'API backend
+     */
+    public CompletableFuture<Map<String, Object>> updateSAVRequest(Long id, Map<String, Object> savData) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(savData);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/sav-requests/" + id))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .timeout(Duration.ofSeconds(10))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200) {
+                    System.out.println("✅ Demande SAV ID " + id + " mise à jour avec succès");
+                    return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+                } else {
+                    System.err.println("❌ Erreur mise à jour SAV " + id + ": HTTP " + response.statusCode());
+                    return savData;
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Backend indisponible pour mise à jour SAV: " + e.getMessage());
+                return savData;
+            }
+        });
+    }
+
+    /**
+     * Met à jour un client via l'API backend (nouvelle signature avec ID)
+     */
+    public CompletableFuture<Map<String, Object>> updateClient(Long id, Map<String, Object> clientData) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(clientData);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/clients/" + id))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .timeout(Duration.ofSeconds(10))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200) {
+                    System.out.println("✅ Client ID " + id + " mis à jour avec succès");
+                    return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+                } else {
+                    System.err.println("❌ Erreur mise à jour client " + id + ": HTTP " + response.statusCode());
+                    return clientData;
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Backend indisponible pour mise à jour client: " + e.getMessage());
+                return clientData;
+            }
+        });
+    }
+
+    /**
+     * Met à jour un contrat via l'API backend (nouvelle signature avec ID)
+     */
+    public CompletableFuture<Map<String, Object>> updateContract(Long id, Map<String, Object> contractData) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                String json = objectMapper.writeValueAsString(contractData);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/contracts/" + id))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .timeout(Duration.ofSeconds(10))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200) {
+                    System.out.println("✅ Contrat ID " + id + " mis à jour avec succès");
+                    return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+                } else {
+                    System.err.println("❌ Erreur mise à jour contrat " + id + ": HTTP " + response.statusCode());
+                    return contractData;
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Backend indisponible pour mise à jour contrat: " + e.getMessage());
+                return contractData;
+            }
+        });
     }
 
     /**

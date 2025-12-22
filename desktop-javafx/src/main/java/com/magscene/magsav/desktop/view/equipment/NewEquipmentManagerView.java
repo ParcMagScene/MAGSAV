@@ -21,6 +21,7 @@ import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -75,6 +76,14 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> impl
         if (equipmentTable != null && equipmentData != null) {
             equipmentTable.setItems(equipmentData);
             System.out.println("🔗 Tableau Equipment lié à equipmentData");
+            
+            // Lier les boutons Edit/Delete à la sélection du tableau
+            bindSelectionToButtons(
+                javafx.beans.binding.Bindings.createBooleanBinding(
+                    () -> equipmentTable.getSelectionModel().getSelectedItem() == null,
+                    equipmentTable.getSelectionModel().selectedItemProperty()
+                )
+            );
         }
 
         // Enregistrement comme fournisseur de recherche globale
@@ -289,7 +298,7 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> impl
         TableColumn<EquipmentItem, String> categoryCol = new TableColumn<>("Sous-catégorie");
         TableColumn<EquipmentItem, String> quantityCol = new TableColumn<>("Qté");
         TableColumn<EquipmentItem, String> statusCol = new TableColumn<>("Statut");
-        TableColumn<EquipmentItem, String> supplierCol = new TableColumn<>("Propriétaire");
+        TableColumn<EquipmentItem, String> serialCol = new TableColumn<>("N° Série");
         TableColumn<EquipmentItem, String> locationCol = new TableColumn<>("Emplacement");
 
         // Configuration des cellValueFactories simplifiées avec les getters du wrapper
@@ -301,7 +310,7 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> impl
         categoryCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCategory()));
         quantityCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getQuantity()));
         statusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus()));
-        supplierCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getSupplier()));
+        serialCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getSerialNumber()));
         locationCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getLocation()));
 
         // Configuration des largeurs
@@ -313,10 +322,10 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> impl
         categoryCol.setPrefWidth(120);
         quantityCol.setPrefWidth(40);
         statusCol.setPrefWidth(85);
-        supplierCol.setPrefWidth(90);
+        serialCol.setPrefWidth(120);
         locationCol.setPrefWidth(90);
 
-        table.getColumns().addAll(qrCol, locmatCol, nameCol, brandCol, parentCategoryCol, categoryCol, quantityCol, statusCol, supplierCol, locationCol);
+        table.getColumns().addAll(qrCol, locmatCol, nameCol, brandCol, parentCategoryCol, categoryCol, quantityCol, statusCol, serialCol, locationCol);
 
         // Style de sélection uniforme et double-clic pour édition
         table.setRowFactory(tv -> {
@@ -463,8 +472,32 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> impl
 
     @Override
     protected void handleAdd() {
-        updateStatus("Ajout d'un nouvel équipement");
-        // TODO: Ouvrir le dialog d'ajout
+        updateStatus("Ouverture du dialogue d'ajout d'équipement...");
+        
+        // Ouvrir le dialog d'ajout
+        com.magscene.magsav.desktop.service.ApiService apiService = 
+            ApplicationContext.getInstance().getInstance(com.magscene.magsav.desktop.service.ApiService.class);
+        
+        com.magscene.magsav.desktop.dialog.EquipmentDialog dialog = 
+            new com.magscene.magsav.desktop.dialog.EquipmentDialog(apiService, null);
+        dialog.initOwner(getScene().getWindow());
+        
+        java.util.Optional<java.util.Map<String, Object>> result = dialog.showAndWait();
+        
+        result.ifPresent(equipmentData -> {
+            // Appeler l'API pour créer l'équipement
+            apiService.createEquipment(equipmentData)
+                .thenRun(() -> javafx.application.Platform.runLater(() -> {
+                    loadEquipmentData(); // Recharger les données
+                    updateStatus("Équipement créé avec succès");
+                }))
+                .exceptionally(throwable -> {
+                    javafx.application.Platform.runLater(() -> {
+                        updateStatus("Erreur lors de la création: " + throwable.getMessage());
+                    });
+                    return null;
+                });
+        });
     }
 
     @Override
@@ -512,13 +545,45 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> impl
 
     @Override
     protected void handleDelete() {
-        Object selected = equipmentTable.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            updateStatus("Suppression de l'équipement sélectionné");
-            // TODO: Confirmer et supprimer
-        } else {
+        EquipmentItem selected = equipmentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
             updateStatus("Aucun équipement sélectionné");
+            return;
         }
+        
+        // Demander confirmation
+        javafx.scene.control.Alert confirm = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation de suppression");
+        confirm.setHeaderText("Supprimer l'équipement");
+        confirm.setContentText("Êtes-vous sûr de vouloir supprimer \"" + selected.getName() + "\" ?");
+        
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                Object idObj = selected.getData().get("id");
+                if (idObj != null) {
+                    Long id = Long.valueOf(idObj.toString());
+                    
+                    com.magscene.magsav.desktop.service.ApiService apiService = 
+                        ApplicationContext.getInstance().getInstance(com.magscene.magsav.desktop.service.ApiService.class);
+                    
+                    apiService.deleteEquipment(id)
+                        .thenAccept(success -> javafx.application.Platform.runLater(() -> {
+                            if (success) {
+                                loadEquipmentData();
+                                updateStatus("Équipement supprimé avec succès");
+                            } else {
+                                updateStatus("Erreur lors de la suppression de l'équipement");
+                            }
+                        }))
+                        .exceptionally(throwable -> {
+                            javafx.application.Platform.runLater(() -> {
+                                updateStatus("Erreur: " + throwable.getMessage());
+                            });
+                            return null;
+                        });
+                }
+            }
+        });
     }
 
     @Override

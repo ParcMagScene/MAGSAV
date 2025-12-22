@@ -1,6 +1,7 @@
 package com.magscene.magsav.desktop.dialog;
 
 import com.magscene.magsav.desktop.service.QRCodeService;
+import com.magscene.magsav.desktop.util.DialogUtils;
 import com.magscene.magsav.desktop.view.equipment.EquipmentItem;
 
 import javafx.geometry.Insets;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
  */
 public class QRCodeDialog extends Stage {
     
+    @SuppressWarnings("unused")
     private final List<EquipmentItem> equipments;
     private final QRCodeService qrCodeService;
     private final List<EquipmentItem> magSceneEquipments;
@@ -220,10 +222,10 @@ public class QRCodeDialog extends Stage {
             boolean success = qrCodeService.saveQRCodeToFile(uid, outputFile);
             
             if (success) {
-                showAlert(Alert.AlertType.INFORMATION, "Succès", 
+                DialogUtils.showSuccess("Succès", 
                         "QR code exporté avec succès:\n" + outputFile.getAbsolutePath());
             } else {
-                showAlert(Alert.AlertType.ERROR, "Erreur", 
+                DialogUtils.showError("Erreur", 
                         "Impossible d'exporter le QR code.");
             }
         }
@@ -231,7 +233,7 @@ public class QRCodeDialog extends Stage {
     
     private void exportAllQRCodes() {
         if (magSceneEquipments.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Attention", "Aucun équipement MAG SCENE à exporter.");
+            DialogUtils.showWarning("Attention", "Aucun équipement MAG SCENE à exporter.");
             return;
         }
         
@@ -248,18 +250,9 @@ public class QRCodeDialog extends Stage {
             
             int successCount = qrCodeService.generateBulkQRCodes(uids, selectedDir);
             
-            showAlert(Alert.AlertType.INFORMATION, "Export terminé", 
+            DialogUtils.showSuccess("Export terminé", 
                     successCount + " / " + uids.size() + " QR codes exportés avec succès dans:\n" + 
                     selectedDir.getAbsolutePath());
         }
-    }
-    
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.initOwner(this);
-        alert.showAndWait();
     }
 }

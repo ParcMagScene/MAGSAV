@@ -5,17 +5,12 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
-import com.magscene.magsav.desktop.service.ApiService;
-import com.magscene.magsav.desktop.util.ViewUtils;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Dialogue pour créer/modifier un RMA (Return Merchandise Authorization)
@@ -59,7 +54,6 @@ public class RMADialog extends Dialog<Map<String, Object>> {
 
     private final Map<String, Object> rmaData;
     private boolean isReadOnlyMode;
-    private final ApiService apiService;
 
     public RMADialog(String title, Map<String, Object> existingRMA) {
         this(title, existingRMA, false);
@@ -67,7 +61,6 @@ public class RMADialog extends Dialog<Map<String, Object>> {
 
     public RMADialog(String title, Map<String, Object> existingRMA, boolean readOnlyMode) {
         this.isReadOnlyMode = readOnlyMode;
-        this.apiService = new ApiService();
         
         if (readOnlyMode) {
             setTitle("Détails du RMA");

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -112,9 +113,8 @@ public class CatalogImportDialog extends Dialog<CatalogImportDialog.ImportResult
         // Mémoriser la taille et position
         WindowPreferencesService.getInstance().setupDialogMemory(getDialogPane(), "catalog-import-dialog");
 
-        // Style
-        getDialogPane().getStylesheets().add(
-                getClass().getResource("/styles/supplier-system.css").toExternalForm());
+        // Appliquer le thème unifié
+        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
         getDialogPane().getStyleClass().add("catalog-import-dialog");
     }
 

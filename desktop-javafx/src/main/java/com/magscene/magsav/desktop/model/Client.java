@@ -138,6 +138,7 @@ public class Client implements DetailPanelProvider {
     
     // Métadonnées
     private String notes;
+    private String logoPath; // Chemin vers le logo du client
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -345,6 +346,14 @@ public class Client implements DetailPanelProvider {
     public void setNotes(String notes) {
         this.notes = notes;
     }
+
+    public String getLogoPath() {
+        return logoPath;
+    }
+
+    public void setLogoPath(String logoPath) {
+        this.logoPath = logoPath;
+    }
     
     public LocalDateTime getCreatedAt() {
         return createdAt;
@@ -427,7 +436,16 @@ public class Client implements DetailPanelProvider {
 
     @Override
     public Image getDetailImage() {
-        // Avatar/logo selon le type de client
+        // Essayer d'abord de charger le logo du client
+        if (logoPath != null && !logoPath.isEmpty()) {
+            Image logo = com.magscene.magsav.desktop.service.MediaService.getInstance()
+                .loadClientLogo(logoPath, 100, 100);
+            if (logo != null) {
+                return logo;
+            }
+        }
+        
+        // Sinon, utiliser un avatar générique selon le type de client
         String avatarType = "company"; // par défaut entreprise
         
         if (type != null) {

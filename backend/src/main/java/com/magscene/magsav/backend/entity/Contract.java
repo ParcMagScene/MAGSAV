@@ -467,7 +467,7 @@ public class Contract {
         if (invoicedAmount == null) {
             return BigDecimal.ZERO;
         }
-        return invoicedAmount.divide(totalAmount, 4, BigDecimal.ROUND_HALF_UP)
+        return invoicedAmount.divide(totalAmount, 4, java.math.RoundingMode.HALF_UP)
                 .multiply(new BigDecimal("100"));
     }
 

@@ -1,0 +1,681 @@
+/* =======================================================================
+   MAGSAV 3.0 - CSS Unifié pour les Fiches de Détails
+   Fusionne entity-detail.css et entity-details.css
+   Utilise les variables de _variables.css
+   ======================================================================= */
+
+/* ================================
+   CONTAINER PRINCIPAL
+   ================================ */
+.entity-detail-view {
+    -fx-font-family: -magsav-font-family;
+}
+
+.theme-light .entity-detail-view {
+    -fx-background-color: -magsav-bg-primary;
+    -fx-border-color: -magsav-primary;
+    -fx-border-width: 1px;
+    -fx-border-radius: -magsav-radius-lg;
+    -fx-background-radius: -magsav-radius-lg;
+}
+
+.theme-dark .entity-detail-view {
+    -fx-background-color: -magsav-bg-primary;
+    -fx-border-color: -magsav-primary;
+    -fx-border-width: 1px;
+    -fx-border-radius: -magsav-radius-lg;
+    -fx-background-radius: -magsav-radius-lg;
+}
+
+/* ================================
+   HEADER DE LA FICHE
+   ================================ */
+.entity-detail-header,
+.header-container {
+    -fx-background-radius: -magsav-radius-lg -magsav-radius-lg 0 0;
+    -fx-padding: -magsav-spacing-xl;
+}
+
+.theme-light .entity-detail-header,
+.theme-light .header-container {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-primary;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.theme-dark .entity-detail-header,
+.theme-dark .header-container {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-primary;
+    -fx-border-width: 0 0 1px 0;
+}
+
+/* ================================
+   TITRES
+   ================================ */
+.entity-detail-title,
+.entity-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.theme-light .entity-detail-title,
+.theme-light .entity-title {
+    -fx-text-fill: -magsav-text-primary;
+}
+
+.theme-dark .entity-detail-title,
+.theme-dark .entity-title {
+    -fx-text-fill: -magsav-text-primary;
+}
+
+.entity-detail-subtitle,
+.entity-subtitle {
+    -fx-font-size: 16px;
+    -fx-font-weight: normal;
+}
+
+.theme-light .entity-detail-subtitle,
+.theme-light .entity-subtitle {
+    -fx-text-fill: -magsav-text-secondary;
+}
+
+.theme-dark .entity-detail-subtitle,
+.theme-dark .entity-subtitle {
+    -fx-text-fill: -magsav-text-secondary;
+}
+
+/* ================================
+   BADGES ET STATUS
+   ================================ */
+.entity-type-badge,
+.status-badge {
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-border-width: 1px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 12px;
+}
+
+.theme-light .entity-type-badge,
+.theme-light .status-badge {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-text-fill: -magsav-primary;
+    -fx-border-color: -magsav-primary;
+}
+
+.theme-dark .entity-type-badge,
+.theme-dark .status-badge {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-text-fill: -magsav-primary;
+    -fx-border-color: -magsav-primary;
+}
+
+/* ================================
+   SECTIONS DE CONTENU
+   ================================ */
+.entity-content-section {
+    -fx-padding: 0 -magsav-spacing-xl -magsav-spacing-xl -magsav-spacing-xl;
+}
+
+.theme-light .entity-content-section {
+    -fx-background-color: -magsav-bg-primary;
+}
+
+.theme-dark .entity-content-section {
+    -fx-background-color: -magsav-bg-primary;
+}
+
+/* Section titles */
+.section-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-border-width: 0 0 2px 0;
+    -fx-padding: 8px 0;
+}
+
+.theme-light .section-title {
+    -fx-text-fill: -magsav-text-primary;
+    -fx-border-color: -magsav-primary;
+}
+
+.theme-dark .section-title {
+    -fx-text-fill: -magsav-text-primary;
+    -fx-border-color: -magsav-primary;
+}
+
+/* ================================
+   LIGNES D'INFORMATION
+   ================================ */
+.info-row {
+    -fx-alignment: center-left;
+    -fx-padding: 6px 12px;
+    -fx-spacing: 15px;
+    -fx-background-radius: -magsav-radius-sm;
+}
+
+.theme-light .info-row {
+    -fx-background-color: rgba(248, 249, 250, 0.6);
+}
+
+.theme-light .info-row:hover {
+    -fx-background-color: -magsav-bg-secondary;
+}
+
+.theme-dark .info-row {
+    -fx-background-color: rgba(22, 33, 62, 0.6);
+}
+
+.theme-dark .info-row:hover {
+    -fx-background-color: -magsav-bg-secondary;
+}
+
+/* Ligne en évidence */
+.info-row-highlight,
+.info-row.highlight {
+    -fx-border-width: 1px;
+    -fx-border-radius: -magsav-radius-md;
+    -fx-background-radius: -magsav-radius-md;
+}
+
+.theme-light .info-row-highlight,
+.theme-light .info-row.highlight {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-primary;
+}
+
+.theme-dark .info-row-highlight,
+.theme-dark .info-row.highlight {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-primary;
+}
+
+/* Labels */
+.info-label {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 150px;
+}
+
+.theme-light .info-label {
+    -fx-text-fill: -magsav-text-secondary;
+}
+
+.theme-dark .info-label {
+    -fx-text-fill: -magsav-text-secondary;
+}
+
+/* Valeurs */
+.info-value {
+    -fx-font-size: 14px;
+    -fx-wrap-text: true;
+}
+
+.theme-light .info-value {
+    -fx-text-fill: -magsav-text-primary;
+}
+
+.theme-dark .info-value {
+    -fx-text-fill: -magsav-text-primary;
+}
+
+.info-value-highlight,
+.info-value.highlight {
+    -fx-font-weight: normal;
+}
+
+.theme-light .info-value-highlight,
+.theme-light .info-value.highlight {
+    -fx-text-fill: -magsav-primary;
+}
+
+.theme-dark .info-value-highlight,
+.theme-dark .info-value.highlight {
+    -fx-text-fill: -magsav-primary;
+}
+
+.info-value.empty {
+    -fx-font-style: italic;
+}
+
+.theme-light .info-value.empty {
+    -fx-text-fill: -magsav-text-muted;
+}
+
+.theme-dark .info-value.empty {
+    -fx-text-fill: -magsav-text-muted;
+}
+
+/* ================================
+   BOUTONS D'ACTION
+   ================================ */
+.entity-action-button {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-cursor: HAND;
+}
+
+.entity-action-button:hover {
+    -fx-opacity: 0.85;
+}
+
+.entity-action-button:pressed {
+    -fx-translate-y: 1px;
+}
+
+/* Bouton Modifier / Primary */
+.entity-action-button.edit-button,
+.action-button-primary {
+    -fx-pref-width: 120px;
+}
+
+.theme-light .entity-action-button.edit-button,
+.theme-light .action-button-primary {
+    -fx-background-color: -magsav-primary;
+    -fx-text-fill: -magsav-text-inverse;
+    -fx-border-color: -magsav-primary-pressed;
+    -fx-effect: -magsav-shadow-sm;
+}
+
+.theme-light .entity-action-button.edit-button:hover,
+.theme-light .action-button-primary:hover {
+    -fx-background-color: -magsav-primary-hover;
+    -fx-effect: -magsav-shadow-md;
+}
+
+.theme-dark .entity-action-button.edit-button,
+.theme-dark .action-button-primary {
+    -fx-background-color: -magsav-primary;
+    -fx-text-fill: -magsav-text-inverse;
+    -fx-border-color: -magsav-primary-pressed;
+    -fx-effect: -magsav-shadow-sm;
+}
+
+/* Bouton Fermer / Secondary */
+.entity-action-button.close-button,
+.action-button-secondary {
+    -fx-pref-width: 120px;
+}
+
+.theme-light .entity-action-button.close-button,
+.theme-light .action-button-secondary {
+    -fx-background-color: #6C757D;
+    -fx-text-fill: -magsav-text-inverse;
+    -fx-border-color: #5A6268;
+}
+
+.theme-light .entity-action-button.close-button:hover,
+.theme-light .action-button-secondary:hover {
+    -fx-background-color: #7C858D;
+}
+
+.theme-dark .entity-action-button.close-button,
+.theme-dark .action-button-secondary {
+    -fx-background-color: -magsav-bg-tertiary;
+    -fx-text-fill: -magsav-text-primary;
+    -fx-border-color: -magsav-border-medium;
+}
+
+/* Bouton Sauvegarder / Success */
+.entity-action-button.save-button,
+.action-button-success {
+    -fx-pref-width: 120px;
+}
+
+.theme-light .entity-action-button.save-button,
+.theme-light .action-button-success {
+    -fx-background-color: -magsav-success;
+    -fx-text-fill: -magsav-text-inverse;
+    -fx-border-color: #1E7E34;
+}
+
+.theme-light .entity-action-button.save-button:hover,
+.theme-light .action-button-success:hover {
+    -fx-background-color: #34CE57;
+}
+
+.theme-dark .entity-action-button.save-button,
+.theme-dark .action-button-success {
+    -fx-background-color: -magsav-success;
+    -fx-text-fill: -magsav-text-inverse;
+    -fx-border-color: -magsav-success;
+}
+
+/* Bouton Annuler / Danger */
+.entity-action-button.cancel-button,
+.action-button-danger {
+    -fx-pref-width: 120px;
+}
+
+.theme-light .entity-action-button.cancel-button,
+.theme-light .action-button-danger {
+    -fx-background-color: -magsav-danger;
+    -fx-text-fill: -magsav-text-inverse;
+    -fx-border-color: #C82333;
+}
+
+.theme-light .entity-action-button.cancel-button:hover,
+.theme-light .action-button-danger:hover {
+    -fx-background-color: #E4606D;
+}
+
+.theme-dark .entity-action-button.cancel-button,
+.theme-dark .action-button-danger {
+    -fx-background-color: -magsav-danger;
+    -fx-text-fill: -magsav-text-inverse;
+    -fx-border-color: -magsav-danger;
+}
+
+/* Container des boutons */
+.action-buttons-container {
+    -fx-alignment: center;
+    -fx-spacing: 10px;
+    -fx-padding: 0 -magsav-spacing-xl -magsav-spacing-xl -magsav-spacing-xl;
+}
+
+/* ================================
+   IMAGES ET MÉDIAS
+   ================================ */
+.image-section,
+.entity-image-section {
+    -fx-alignment: center;
+    -fx-padding: -magsav-spacing-xl;
+    -fx-background-color: transparent;
+}
+
+.main-image,
+.entity-main-image {
+    -fx-effect: -magsav-shadow-primary;
+}
+
+/* ================================
+   SCROLLPANE
+   ================================ */
+.entity-detail-scroll {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.theme-light .entity-detail-scroll,
+.theme-light .entity-detail-scroll .viewport {
+    -fx-background: -magsav-bg-primary;
+    -fx-background-color: -magsav-bg-primary;
+}
+
+.theme-dark .entity-detail-scroll,
+.theme-dark .entity-detail-scroll .viewport {
+    -fx-background: -magsav-bg-primary;
+    -fx-background-color: -magsav-bg-primary;
+}
+
+/* ScrollBar */
+.theme-light .scroll-pane .scroll-bar:vertical {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-pref-width: 12px;
+}
+
+.theme-light .scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: -magsav-bg-primary;
+    -fx-border-color: -magsav-border-light;
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+}
+
+.theme-light .scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: -magsav-primary;
+    -fx-background-radius: 5px;
+}
+
+.theme-light .scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -magsav-primary-hover;
+}
+
+.theme-dark .scroll-pane .scroll-bar:vertical {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-pref-width: 12px;
+}
+
+.theme-dark .scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: -magsav-bg-tertiary;
+    -fx-border-color: -magsav-border-light;
+    -fx-border-width: 1px;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+}
+
+.theme-dark .scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: -magsav-primary;
+    -fx-background-radius: 5px;
+}
+
+.scroll-pane .scroll-bar .increment-button,
+.scroll-pane .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+}
+
+/* ================================
+   SÉPARATEURS
+   ================================ */
+.separator-line,
+.info-separator {
+    -fx-pref-height: 1px;
+    -fx-opacity: 0.3;
+}
+
+.theme-light .separator-line,
+.theme-light .info-separator {
+    -fx-background-color: -magsav-border-light;
+}
+
+.theme-dark .separator-line,
+.theme-dark .info-separator {
+    -fx-background-color: -magsav-border-light;
+}
+
+/* ================================
+   MODE ÉDITION
+   ================================ */
+.theme-light .edit-mode .info-row {
+    -fx-background-color: rgba(107, 113, 242, 0.1);
+    -fx-border-color: -magsav-primary;
+    -fx-border-width: 1px;
+    -fx-border-radius: -magsav-radius-sm;
+}
+
+.theme-light .edit-mode .info-value {
+    -fx-background-color: -magsav-bg-primary;
+    -fx-border-color: -magsav-primary;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-padding: 4px 8px;
+}
+
+.theme-dark .edit-mode .info-row {
+    -fx-background-color: rgba(139, 145, 255, 0.1);
+    -fx-border-color: -magsav-primary;
+    -fx-border-width: 1px;
+    -fx-border-radius: -magsav-radius-sm;
+}
+
+.theme-dark .edit-mode .info-value {
+    -fx-background-color: -magsav-bg-secondary;
+    -fx-border-color: -magsav-primary;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
+    -fx-padding: 4px 8px;
+}
+
+/* ================================
+   ÉTATS SPÉCIAUX
+   ================================ */
+.error-state {
+    -fx-border-color: -magsav-danger;
+}
+
+.theme-light .error-state {
+    -fx-background-color: -magsav-danger-bg;
+}
+
+.theme-dark .error-state {
+    -fx-background-color: -magsav-danger-bg;
+}
+
+.success-state {
+    -fx-border-color: -magsav-success;
+}
+
+.theme-light .success-state {
+    -fx-background-color: -magsav-success-bg;
+}
+
+.theme-dark .success-state {
+    -fx-background-color: -magsav-success-bg;
+}
+
+.warning-state {
+    -fx-border-color: -magsav-warning;
+}
+
+.theme-light .warning-state {
+    -fx-background-color: -magsav-warning-bg;
+}
+
+.theme-dark .warning-state {
+    -fx-background-color: -magsav-warning-bg;
+}
+
+/* ================================
+   INDICATEURS DE STATUT
+   ================================ */
+.status-active,
+.status-disponible {
+    -fx-font-weight: bold;
+}
+
+.theme-light .status-active,
+.theme-light .status-disponible {
+    -fx-text-fill: -magsav-success;
+}
+
+.theme-dark .status-active,
+.theme-dark .status-disponible {
+    -fx-text-fill: -magsav-success;
+}
+
+.status-inactive {
+    -fx-font-weight: bold;
+}
+
+.theme-light .status-inactive {
+    -fx-text-fill: -magsav-danger;
+}
+
+.theme-dark .status-inactive {
+    -fx-text-fill: -magsav-danger;
+}
+
+.status-maintenance,
+.status-en-cours {
+    -fx-font-weight: bold;
+}
+
+.theme-light .status-maintenance {
+    -fx-text-fill: -magsav-warning;
+}
+
+.theme-light .status-en-cours {
+    -fx-text-fill: -magsav-info;
+}
+
+.theme-dark .status-maintenance {
+    -fx-text-fill: -magsav-warning;
+}
+
+.theme-dark .status-en-cours {
+    -fx-text-fill: -magsav-info;
+}
+
+.status-termine {
+    -fx-font-weight: bold;
+}
+
+.theme-light .status-termine {
+    -fx-text-fill: -magsav-text-muted;
+}
+
+.theme-dark .status-termine {
+    -fx-text-fill: -magsav-text-muted;
+}
+
+/* ================================
+   ANIMATIONS
+   ================================ */
+.fade-in,
+.entity-detail-fade-in {
+    -fx-opacity: 0;
+}
+
+.fade-in.show {
+    -fx-opacity: 1;
+}
+
+.entity-detail-interactive:hover {
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+/* ================================
+   QR CODE SECTION
+   ================================ */
+.qr-section {
+    -fx-alignment: center;
+    -fx-background-color: transparent;
+    -fx-padding: 0 -magsav-spacing-xl -magsav-spacing-xl -magsav-spacing-xl;
+}
+
+/* ================================
+   TYPES D'ENTITÉS - BADGES COLORÉS
+   ================================ */
+.entity-equipment .entity-type-badge {
+    -fx-background-color: #1565C0;
+    -fx-border-color: #42A5F5;
+    -fx-text-fill: #42A5F5;
+}
+
+.entity-vehicle .entity-type-badge {
+    -fx-background-color: #2E7D32;
+    -fx-border-color: #66BB6A;
+    -fx-text-fill: #66BB6A;
+}
+
+.entity-personnel .entity-type-badge {
+    -fx-background-color: #E65100;
+    -fx-border-color: #FF9800;
+    -fx-text-fill: #FF9800;
+}
+
+.entity-client .entity-type-badge {
+    -fx-background-color: #6A1B9A;
+    -fx-border-color: #BA68C8;
+    -fx-text-fill: #BA68C8;
+}
+
+.entity-contract .entity-type-badge {
+    -fx-background-color: #D32F2F;
+    -fx-border-color: #EF5350;
+    -fx-text-fill: #EF5350;
+}
+
+.entity-supplier .entity-type-badge {
+    -fx-background-color: #00695C;
+    -fx-border-color: #26A69A;
+    -fx-text-fill: #26A69A;
+}

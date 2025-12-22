@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.view.base;
 
 import com.magscene.magsav.desktop.util.ViewUtils;
 
+import javafx.beans.binding.BooleanBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -22,6 +23,10 @@ public abstract class BaseManagerView<T> extends BorderPane {
     protected Pane mainContent;
     protected HBox statusBar;
     protected Label statusLabel;
+    
+    // Boutons d'action stockés pour permettre le binding de désactivation
+    protected Button editButton;
+    protected Button deleteButton;
 
     public BaseManagerView() {
         initializeLayout();
@@ -53,12 +58,18 @@ public abstract class BaseManagerView<T> extends BorderPane {
         toolbar.getStyleClass().add("unified-toolbar");
 
         // Boutons d'action avec ViewUtils (comme dans ClientManagerView)
+        // Les boutons Edit et Delete sont désactivés par défaut, les sous-classes
+        // doivent appeler bindSelectionToButtons() pour les lier à la sélection du tableau
         Button btnAdd = ViewUtils.createAddButton("➕ Ajouter", this::handleAdd);
-        Button btnEdit = ViewUtils.createEditButton("✏️ Modifier", this::handleEdit, null);
-        Button btnDelete = ViewUtils.createDeleteButton("🗑️ Supprimer", this::handleDelete, null);
+        editButton = ViewUtils.createEditButton("✏️ Modifier", this::handleEdit, null);
+        deleteButton = ViewUtils.createDeleteButton("🗑️ Supprimer", this::handleDelete, null);
+        
+        // Désactiver par défaut - sera activé via bindSelectionToButtons()
+        editButton.setDisable(true);
+        deleteButton.setDisable(true);
 
         // ActionsBox à droite comme dans ClientManagerView
-        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", btnAdd, btnEdit, btnDelete);
+        VBox actionsBox = ViewUtils.createActionsBox("⚡ Actions", btnAdd, editButton, deleteButton);
 
         // Spacer pour pousser les actions à droite
         Region spacer = new Region();
@@ -71,6 +82,21 @@ public abstract class BaseManagerView<T> extends BorderPane {
         toolbar.getChildren().addAll(spacer, actionsBox);
 
         return toolbar;
+    }
+    
+    /**
+     * Lie les boutons Edit et Delete à un binding de sélection.
+     * Les sous-classes doivent appeler cette méthode après avoir créé leur TableView.
+     * 
+     * @param noSelectionBinding Un BooleanBinding qui est true quand aucun élément n'est sélectionné
+     */
+    protected void bindSelectionToButtons(BooleanBinding noSelectionBinding) {
+        if (editButton != null && noSelectionBinding != null) {
+            editButton.disableProperty().bind(noSelectionBinding);
+        }
+        if (deleteButton != null && noSelectionBinding != null) {
+            deleteButton.disableProperty().bind(noSelectionBinding);
+        }
     }
 
     /**

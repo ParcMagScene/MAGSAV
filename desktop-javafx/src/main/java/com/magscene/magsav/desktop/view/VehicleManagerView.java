@@ -8,6 +8,7 @@ import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.vehicle.VehicleAvailabilityView;
 import com.magscene.magsav.desktop.view.vehicle.VehicleListView;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -107,17 +108,133 @@ public class VehicleManagerView extends VBox implements SelectableView {
     private HBox createAvailabilityToolbar() {
         HBox toolbar = new HBox(10);
         toolbar.setAlignment(Pos.CENTER_LEFT);
-        // Pas de padding ni de classe CSS ici car déjà présents dans adaptiveToolbar
 
-        // Toolbar simplifiée pour l'onglet Disponibilités - pas de bouton Actualiser
-        javafx.scene.control.Label label = new javafx.scene.control.Label("📅 Vue des disponibilités");
-        label.setStyle("-fx-font-weight: bold; -fx-text-fill: #333;");
+        // ========== SECTION NAVIGATION (Gauche) ==========
+        
+        // Bouton précédent
+        Button prevBtn = new Button("◀");
+        prevBtn.getStyleClass().add("nav-button");
+        prevBtn.setOnAction(e -> {
+            if (availabilityTab != null) {
+                availabilityTab.navigatePrevious();
+                updatePeriodLabel();
+            }
+        });
 
+        // Label de la période
+        javafx.scene.control.Label periodLabel = new javafx.scene.control.Label();
+        periodLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #333; -fx-padding: 0 10 0 10;");
+        periodLabel.setMinWidth(180);
+        periodLabel.setAlignment(Pos.CENTER);
+        
+        // Stocker le label pour mise à jour
+        toolbar.getProperties().put("periodLabel", periodLabel);
+        
+        // Bouton suivant
+        Button nextBtn = new Button("▶");
+        nextBtn.getStyleClass().add("nav-button");
+        nextBtn.setOnAction(e -> {
+            if (availabilityTab != null) {
+                availabilityTab.navigateNext();
+                updatePeriodLabel();
+            }
+        });
+
+        // Bouton Aujourd'hui
+        Button todayBtn = new Button("Aujourd'hui");
+        todayBtn.getStyleClass().add("action-button-secondary");
+        todayBtn.setOnAction(e -> {
+            if (availabilityTab != null) {
+                availabilityTab.navigateToday();
+                updatePeriodLabel();
+            }
+        });
+
+        // Séparateur
+        javafx.scene.control.Separator sep1 = new javafx.scene.control.Separator(javafx.geometry.Orientation.VERTICAL);
+
+        // ========== SECTION VUE (Centre) ==========
+        
+        // Bouton Vue Semaine
+        Button weekBtn = new Button("📅 Semaine");
+        weekBtn.getStyleClass().add("action-button-secondary");
+        weekBtn.setOnAction(e -> {
+            if (availabilityTab != null) {
+                availabilityTab.setViewMode(VehicleAvailabilityView.ViewMode.WEEK);
+                updatePeriodLabel();
+                updateViewButtons(weekBtn, (Button) toolbar.lookup("#monthBtn"));
+            }
+        });
+
+        // Bouton Vue Mois
+        Button monthBtn = new Button("📆 Mois");
+        monthBtn.setId("monthBtn");
+        monthBtn.getStyleClass().add("action-button-primary");
+        monthBtn.setOnAction(e -> {
+            if (availabilityTab != null) {
+                availabilityTab.setViewMode(VehicleAvailabilityView.ViewMode.MONTH);
+                updatePeriodLabel();
+                updateViewButtons((Button) toolbar.lookup("#weekBtn"), monthBtn);
+            }
+        });
+        weekBtn.setId("weekBtn");
+
+        // Spacer
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        toolbar.getChildren().addAll(label, spacer);
+        // ========== SECTION ACTIONS (Droite) ==========
+        
+        Button refreshBtn = new Button("🔄 Actualiser");
+        refreshBtn.getStyleClass().add("action-button-secondary");
+        refreshBtn.setOnAction(e -> {
+            if (availabilityTab != null) {
+                availabilityTab.refresh();
+            }
+        });
+
+        // Assemblage
+        toolbar.getChildren().addAll(
+                prevBtn, periodLabel, nextBtn, todayBtn,
+                sep1,
+                weekBtn, monthBtn,
+                spacer,
+                refreshBtn
+        );
+
+        // Initialiser le label de période
+        Platform.runLater(this::updatePeriodLabel);
+
         return toolbar;
+    }
+
+    private void updatePeriodLabel() {
+        if (availabilityTab != null && adaptiveToolbar != null) {
+            // Chercher le label dans la toolbar
+            for (javafx.scene.Node node : adaptiveToolbar.getChildren()) {
+                if (node instanceof HBox hbox) {
+                    Object labelObj = hbox.getProperties().get("periodLabel");
+                    if (labelObj instanceof javafx.scene.control.Label label) {
+                        label.setText(availabilityTab.getPeriodLabel());
+                    }
+                }
+            }
+        }
+    }
+
+    private void updateViewButtons(Button weekBtn, Button monthBtn) {
+        if (availabilityTab == null) return;
+        
+        boolean isWeek = availabilityTab.getViewMode() == VehicleAvailabilityView.ViewMode.WEEK;
+        
+        if (weekBtn != null) {
+            weekBtn.getStyleClass().removeAll("action-button-primary", "action-button-secondary");
+            weekBtn.getStyleClass().add(isWeek ? "action-button-primary" : "action-button-secondary");
+        }
+        if (monthBtn != null) {
+            monthBtn.getStyleClass().removeAll("action-button-primary", "action-button-secondary");
+            monthBtn.getStyleClass().add(isWeek ? "action-button-secondary" : "action-button-primary");
+        }
     }
 
     private CustomTabPane createTabPane() {

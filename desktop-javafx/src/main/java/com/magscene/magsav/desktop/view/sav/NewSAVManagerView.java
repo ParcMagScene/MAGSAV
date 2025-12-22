@@ -8,8 +8,11 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
+import com.magscene.magsav.desktop.core.di.ApplicationContext;
 import com.magscene.magsav.desktop.core.search.GlobalSearchManager;
 import com.magscene.magsav.desktop.core.search.SearchProvider;
+import com.magscene.magsav.desktop.dialog.SAVDetailDialog;
+import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.service.business.SAVService;
 import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.util.ViewUtils;
@@ -36,6 +39,7 @@ import javafx.scene.layout.VBox;
 public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implements SearchProvider {
     private TableView<SAVRequestItem> savTable;
     private ObservableList<SAVRequestItem> savData; // Déclaration sans initialisation
+    @SuppressWarnings("unused")
     private ObservableList<SAVRequestItem> allSavData; // Données complètes pour filtrage
     private SAVService savService;
     
@@ -64,6 +68,14 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implement
         if (savTable != null && savData != null) {
             savTable.setItems(savData);
             System.out.println("   ✅ Tableau SAV lié à savData");
+
+            // Lier les boutons Edit/Delete à la sélection du tableau
+            bindSelectionToButtons(
+                javafx.beans.binding.Bindings.createBooleanBinding(
+                    () -> savTable.getSelectionModel().getSelectedItem() == null,
+                    savTable.getSelectionModel().selectedItemProperty()
+                )
+            );
 
             // Debug : Logger les changements dans la liste
             savData.addListener((javafx.collections.ListChangeListener<Object>) change -> {
@@ -112,8 +124,6 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implement
                 "Toutes priorités", value -> loadSAVData());
 
         toolbar.getChildren().addAll(searchBox, statusBox, priorityBox);
-
-        DatePicker dateToPicker = new DatePicker();
     }
 
     private TableView<SAVRequestItem> createSAVTable() {
@@ -242,6 +252,7 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implement
     }
 
     // Actions des boutons
+    @SuppressWarnings("unused")
     private void handleChangeStatus() {
         Object selected = savTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
@@ -252,21 +263,25 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implement
         }
     }
 
+    @SuppressWarnings("unused")
     private void handleAssignTechnician() {
         updateStatus("Attribution de technicien...");
         // TODO: Ouvrir dialog d'attribution
     }
 
+    @SuppressWarnings("unused")
     private void handleAddNote() {
         updateStatus("Ajout de note...");
         // TODO: Ouvrir dialog de note
     }
 
+    @SuppressWarnings("unused")
     private void handlePrintLabel() {
         updateStatus("Impression d'étiquette...");
         // TODO: Générer et imprimer l'étiquette
     }
 
+    @SuppressWarnings("unused")
     private void handleGenerateQuote() {
         updateStatus("Génération de devis...");
         // TODO: Générer le devis
@@ -280,10 +295,34 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implement
 
     @Override
     protected void handleEdit() {
-        Object selected = savTable.getSelectionModel().getSelectedItem();
+        SAVRequestItem selected = savTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            updateStatus("Modification de la demande SAV");
-            // TODO: Ouvrir le dialog de modification
+            updateStatus("Affichage de la demande SAV #" + selected.getId());
+            
+            // Garder l'ID pour resélectionner après rafraîchissement
+            String selectedId = selected.getId();
+            
+            // Ouvrir le dialog en mode lecture
+            ApiService apiService = ApplicationContext.getInstance().getInstance(ApiService.class);
+            
+            SAVDetailDialog detailDialog = new SAVDetailDialog(apiService, selected.getData());
+            detailDialog.initOwner(getScene().getWindow());
+            detailDialog.showAndWait();
+            
+            // Rafraîchir les données après fermeture du dialog
+            loadSAVData();
+            
+            // Resélectionner l'élément
+            if (selectedId != null) {
+                javafx.application.Platform.runLater(() -> {
+                    for (SAVRequestItem item : savTable.getItems()) {
+                        if (selectedId.equals(item.getId())) {
+                            savTable.getSelectionModel().select(item);
+                            break;
+                        }
+                    }
+                });
+            }
         } else {
             updateStatus("Aucune demande sélectionnée");
         }
@@ -384,6 +423,7 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implement
     }
 
     // Méthodes de filtrage
+    @SuppressWarnings("unused")
     private void applyFilters(String status, String priority, java.time.LocalDate dateFrom,
             java.time.LocalDate dateTo) {
         updateStatus("Application des filtres...");
@@ -391,6 +431,7 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implement
         loadSAVData();
     }
 
+    @SuppressWarnings("unused")
     private void resetFilters(ComboBox<String> statusFilter, ComboBox<String> priorityFilter,
             DatePicker dateFromPicker, DatePicker dateToPicker) {
         statusFilter.setValue("Tous statuts");
@@ -401,16 +442,19 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implement
         loadSAVData();
     }
 
+    @SuppressWarnings("unused")
     private void handleImportSAV() {
         updateStatus("Import SAV en cours...");
         // TODO: Implémenter l'import SAV
     }
 
+    @SuppressWarnings("unused")
     private void handleExportSAV() {
         updateStatus("Export SAV en cours...");
         // TODO: Implémenter l'export SAV
     }
 
+    @SuppressWarnings("unused")
     private void handleShowStatistics() {
         updateStatus("Affichage des statistiques SAV...");
         // savService.getSAVStatistics().thenAccept(stats -> {
@@ -418,6 +462,7 @@ public class NewSAVManagerView extends BaseManagerView<SAVRequestItem> implement
         // });
     }
 
+    @SuppressWarnings("unused")
     private void handleGenerateReports() {
         updateStatus("Génération de rapports...");
         // TODO: Ouvrir dialog de génération de rapports

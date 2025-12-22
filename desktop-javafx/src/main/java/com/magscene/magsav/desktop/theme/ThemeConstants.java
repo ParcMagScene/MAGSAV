@@ -294,7 +294,118 @@ public class ThemeConstants {
     public static final String UNIFIED_TOOLBAR_CLASS = "unified-toolbar";
 
     // ========================================
-    // 🔧 MÉTHODES UTILITAIRES; // ========================================
+    // �️ STYLES POUR DIALOGUES
+    // ========================================
+
+    /** Style de base pour boutons de dialogue */
+    public static final String DIALOG_BUTTON_BASE_STYLE = 
+            "-fx-font-weight: bold; -fx-padding: 10 30; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 13px; -fx-min-width: 110;";
+
+    /** Style pour bouton Modifier (bleu primaire) */
+    public static final String DIALOG_EDIT_BUTTON_STYLE = DIALOG_BUTTON_BASE_STYLE +
+            "-fx-background-color: " + PRIMARY_COLOR + "; -fx-text-fill: white;";
+
+    /** Style pour bouton Enregistrer (vert succès) */
+    public static final String DIALOG_SAVE_BUTTON_STYLE = DIALOG_BUTTON_BASE_STYLE +
+            "-fx-background-color: " + SUCCESS_COLOR + "; -fx-text-fill: white;";
+
+    /** Style pour bouton Fermer (gris neutre) */
+    public static final String DIALOG_CLOSE_BUTTON_STYLE = DIALOG_BUTTON_BASE_STYLE +
+            "-fx-background-color: " + INACTIVE_COLOR + "; -fx-text-fill: white;";
+
+    /** Style pour le contenu des dialogues */
+    public static final String DIALOG_CONTENT_STYLE = "-fx-background-color: " + BACKGROUND_SECONDARY + ";";
+
+    /** Style pour le header des dialogues (gradient) */
+    public static final String DIALOG_HEADER_STYLE = "-fx-background-color: linear-gradient(to right, #2c3e50, " + PRIMARY_COLOR + ");";
+
+    /** Couleur de base sombre pour gradients */
+    public static final String GRADIENT_DARK_BASE = "#2c3e50";
+
+    /** Couleur teal pour véhicules */
+    public static final String VEHICLE_COLOR = "#16a085";
+
+    /** Couleur violet pour personnel */
+    public static final String PERSONNEL_COLOR = "#8e44ad";
+
+    /** Couleur orange/marron pour fournisseurs */
+    public static final String SUPPLIER_COLOR = "#d35400";
+
+    /** Couleur rouge pour SAV */
+    public static final String SAV_COLOR = "#e74c3c";
+
+    /** Couleur bleu foncé pour contrats */
+    public static final String CONTRACT_COLOR = "#2c3e50";
+
+    /** Couleur vert pour clients */
+    public static final String CLIENT_COLOR = "#27ae60";
+
+    /** Header gradient pour équipements */
+    public static final String DIALOG_HEADER_EQUIPMENT_STYLE = "-fx-background-color: linear-gradient(to right, " + GRADIENT_DARK_BASE + ", " + INFO_COLOR + ");";
+
+    /** Header gradient pour véhicules */
+    public static final String DIALOG_HEADER_VEHICLE_STYLE = "-fx-background-color: linear-gradient(to right, " + GRADIENT_DARK_BASE + ", " + VEHICLE_COLOR + ");";
+
+    /** Header gradient pour personnel */
+    public static final String DIALOG_HEADER_PERSONNEL_STYLE = "-fx-background-color: linear-gradient(to right, " + GRADIENT_DARK_BASE + ", " + PERSONNEL_COLOR + ");";
+
+    /** Header gradient pour fournisseurs */
+    public static final String DIALOG_HEADER_SUPPLIER_STYLE = "-fx-background-color: linear-gradient(to right, " + GRADIENT_DARK_BASE + ", " + SUPPLIER_COLOR + ");";
+
+    /** Header gradient pour SAV */
+    public static final String DIALOG_HEADER_SAV_STYLE = "-fx-background-color: linear-gradient(to right, " + GRADIENT_DARK_BASE + ", " + SAV_COLOR + ");";
+
+    /** Header gradient pour contrats */
+    public static final String DIALOG_HEADER_CONTRACT_STYLE = "-fx-background-color: linear-gradient(to right, " + GRADIENT_DARK_BASE + ", " + CONTRACT_COLOR + ");";
+
+    /** Header gradient pour clients */
+    public static final String DIALOG_HEADER_CLIENT_STYLE = "-fx-background-color: linear-gradient(to right, " + GRADIENT_DARK_BASE + ", " + CLIENT_COLOR + ");";
+
+    /** Style pour barre d'actions en bas des dialogues */
+    public static final String DIALOG_ACTION_BAR_STYLE = "-fx-background-color: " + BACKGROUND_TERTIARY + "; -fx-border-color: #bdc3c7; -fx-border-width: 1 0 0 0;";
+
+    /** Style de base pour boutons d'action dans dialogues */
+    public static final String ACTION_BUTTON_BASE_STYLE = "-fx-font-weight: bold; -fx-padding: 6 12; -fx-background-radius: 4; -fx-cursor: hand; -fx-font-size: 11px;";
+
+    /** Style pour bouton Imprimer (bleu info) */
+    public static final String DIALOG_PRINT_BUTTON_STYLE = ACTION_BUTTON_BASE_STYLE + "-fx-background-color: " + INFO_COLOR + "; -fx-text-fill: white;";
+
+    /** Style hover pour bouton Imprimer */
+    public static final String DIALOG_PRINT_BUTTON_HOVER_STYLE = ACTION_BUTTON_BASE_STYLE + "-fx-background-color: #2980b9; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 2);";
+
+    /** Style pour bouton QR Code (violet) */
+    public static final String DIALOG_QR_BUTTON_STYLE = ACTION_BUTTON_BASE_STYLE + "-fx-background-color: " + SPECIAL_COLOR + "; -fx-text-fill: white;";
+
+    /** Style hover pour bouton QR Code */
+    public static final String DIALOG_QR_BUTTON_HOVER_STYLE = ACTION_BUTTON_BASE_STYLE + "-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 2);";
+
+    /** Style pour bouton Historique (orange) */
+    public static final String DIALOG_HISTORY_BUTTON_STYLE = ACTION_BUTTON_BASE_STYLE + "-fx-background-color: " + WARNING_COLOR + "; -fx-text-fill: white;";
+
+    /** Style hover pour bouton Historique */
+    public static final String DIALOG_HISTORY_BUTTON_HOVER_STYLE = ACTION_BUTTON_BASE_STYLE + "-fx-background-color: #d35400; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 2);";
+
+    /** Style pour indicateur mode édition */
+    public static final String EDIT_INDICATOR_STYLE = "-fx-background-color: " + INFO_COLOR + "; -fx-background-radius: 10; -fx-padding: 2 5;";
+
+    /** Style pour champ en mode lecture seule */
+    public static final String FIELD_READONLY_STYLE = "-fx-background-color: " + BACKGROUND_SECONDARY + "; -fx-border-color: #ddd;";
+
+    /** Style pour champ en mode édition */
+    public static final String FIELD_EDITABLE_STYLE = "-fx-background-color: white; -fx-border-color: " + INFO_COLOR + "; -fx-border-width: 2;";
+
+    /** Style pour ComboBox en mode lecture seule */
+    public static final String COMBO_READONLY_STYLE = "-fx-background-color: " + BACKGROUND_SECONDARY + "; -fx-border-color: #ddd; -fx-border-radius: 4;";
+
+    /** Style pour ComboBox en mode édition */
+    public static final String COMBO_EDITABLE_STYLE = "-fx-background-color: white; -fx-border-color: " + INFO_COLOR + "; -fx-border-width: 2; -fx-border-radius: 4;";
+
+    /** Style pour tags/badges */
+    public static final String TAG_STYLE = "-fx-background-color: " + INFO_COLOR + "; -fx-text-fill: white; -fx-padding: 2 8; -fx-background-radius: 10;";
+
+    // ========================================
+    // 🔧 MÉTHODES UTILITAIRES
+    // ========================================
 
     /**
      * Génère un style CSS pour un texte coloré selon le statut

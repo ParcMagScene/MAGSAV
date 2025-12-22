@@ -104,7 +104,7 @@ public class Equipment {
         MAINTENANCE("En maintenance"),
         OUT_OF_ORDER("Hors service"),
         IN_SAV("En SAV"),
-        RETIRED("RetirÃƒÂ© du service");
+        RETIRED("Retiré du service");
         
         private final String displayName;
         
@@ -114,6 +114,27 @@ public class Equipment {
         
         public String getDisplayName() {
             return displayName;
+        }
+        
+        /**
+         * Convertit un displayName ou nom d'enum en Status
+         */
+        public static Status fromDisplayName(String name) {
+            if (name == null) return null;
+            
+            // D'abord essayer par displayName
+            for (Status s : values()) {
+                if (s.displayName.equalsIgnoreCase(name)) {
+                    return s;
+                }
+            }
+            
+            // Ensuite essayer par nom d'enum
+            try {
+                return valueOf(name.toUpperCase().replace(" ", "_").replace("'", ""));
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
         }
     }
     

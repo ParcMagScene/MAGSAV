@@ -24,7 +24,6 @@ import java.util.List;
 public class CategoriesConfigView extends VBox {
     
     private final CategoriesConfigManager configManager;
-    private final ApiService apiService;
     
     // Composants UI - Gestion des catégories
     private TreeView<CategoriesConfigManager.CategoryItem> categoriesTree;
@@ -44,8 +43,9 @@ public class CategoriesConfigView extends VBox {
     private Button assignEquipmentBtn;
     private Button unassignEquipmentBtn;
     
+    @SuppressWarnings("unused")
     public CategoriesConfigView(ApiService apiService) {
-        this.apiService = apiService;
+        // apiService parameter kept for future backend integration
         this.configManager = CategoriesConfigManager.getInstance();
         
         initializeComponents();
@@ -755,6 +755,8 @@ public class CategoriesConfigView extends VBox {
             String name = (String) categoryData.get("name");
             String color = (String) categoryData.get("color");
             String icon = (String) categoryData.get("icon");
+            // parentId for future hierarchical support
+            @SuppressWarnings("unused")
             String parentId = (String) categoryData.get("parentId");
             
             if (name != null && !name.trim().isEmpty()) {
@@ -847,14 +849,6 @@ public class CategoriesConfigView extends VBox {
     
     private void showErrorAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-    
-    private void showInfoAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);

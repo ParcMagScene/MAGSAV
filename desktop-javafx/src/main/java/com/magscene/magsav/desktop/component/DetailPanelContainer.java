@@ -1,6 +1,7 @@
 package com.magscene.magsav.desktop.component;
 
 import com.magscene.magsav.desktop.view.equipment.EquipmentItem;
+import com.magscene.magsav.desktop.view.VehicleItem;
 
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableView;
@@ -94,6 +95,18 @@ public class DetailPanelContainer extends StackPane {
                     item.getPhotoPath(),
                     item.getBrand(),
                     item.getEquipmentImage());
+        } else if (provider instanceof VehicleItem) {
+            // Si c'est un VehicleItem, utiliser photo (gauche) et logo (droite)
+            VehicleItem vehicle = (VehicleItem) provider;
+            detailPanel.updateContentWithAnimation(
+                    provider.getDetailTitle(),
+                    provider.getDetailSubtitle(),
+                    provider.getDetailImage(),
+                    provider.getQRCodeData(),
+                    provider.getDetailInfoContent(),
+                    vehicle.getPhotoPath(),
+                    vehicle.getBrand(),
+                    vehicle.getVehicleImage(180, 140));  // Taille plus grande pour le volet
         } else {
             // Utiliser l'animation bidirectionnelle pour un effet de transition fluide
             detailPanel.updateContentWithAnimation(

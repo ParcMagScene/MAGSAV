@@ -4,6 +4,7 @@ import com.magscene.magsav.desktop.component.GlobalSearchComponent;
 import com.magscene.magsav.desktop.core.di.ApplicationContext;
 import com.magscene.magsav.desktop.core.navigation.NavigationManager;
 import com.magscene.magsav.desktop.core.navigation.Route;
+import com.magscene.magsav.desktop.service.MediaService;
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
 import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
@@ -21,6 +22,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -216,6 +219,16 @@ public class MagsavDesktopApplication extends Application {
             }
         });
 
+        // Gestion des médias (Photos, Logos, Avatars)
+        navigationManager.registerView(Route.MEDIA, () -> {
+            try {
+                com.magscene.magsav.desktop.service.ApiService apiService = new com.magscene.magsav.desktop.service.ApiService();
+                return new com.magscene.magsav.desktop.view.MediaManagerView(apiService);
+            } catch (Exception e) {
+                return createErrorPane("Médias", e);
+            }
+        });
+
         // Paramètres
         navigationManager.registerView(Route.SETTINGS, () -> {
             try {
@@ -380,7 +393,7 @@ public class MagsavDesktopApplication extends Application {
                 Route.CLIENTS, Route.SALES,
                 Route.VEHICLES, Route.PERSONNEL, Route.PLANNING,
                 Route.SUPPLIERS, Route.MATERIAL_REQUESTS, Route.GROUPED_ORDERS,
-                Route.SETTINGS
+                Route.MEDIA, Route.SETTINGS
         };
 
         Button[] buttons = new Button[routes.length];
@@ -554,19 +567,52 @@ public class MagsavDesktopApplication extends Application {
      * Création de la barre d'outils utilisateur
      */
     private HBox createUserToolbar() {
-        HBox toolbar = new HBox(10);
-        toolbar.setPadding(new Insets(5, 10, 5, 10));
+        HBox toolbar = new HBox(15);
+        toolbar.setPadding(new Insets(8, 15, 8, 15));
         toolbar.setAlignment(Pos.CENTER_LEFT);
         toolbar.getStyleClass().add("user-toolbar");
 
-        // Logo ou titre de l'application
-        Label appTitle = new Label("MAGSAV 3.0");
-        appTitle.getStyleClass().add("app-title");
-        appTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        // Logo Mag Scene - Aligné verticalement avec les boutons de navigation
+        HBox logoContainer = new HBox();
+        logoContainer.setAlignment(Pos.CENTER);
+        logoContainer.setPrefWidth(200); // Largeur fixe pour aligner avec le panel de navigation
+        logoContainer.setMinWidth(200);
+        logoContainer.setMaxWidth(200);
+        
+        ImageView logoView = new ImageView();
+        logoView.setFitHeight(36);
+        logoView.setPreserveRatio(true);
+        logoView.setSmooth(true);
+        
+        // Charger le logo depuis le dossier Medias
+        try {
+            MediaService mediaService = MediaService.getInstance();
+            java.nio.file.Path logoPath = mediaService.getLogosPath().resolve("MagSceneBLACK.gif");
+            if (java.nio.file.Files.exists(logoPath)) {
+                Image logoImage = new Image(logoPath.toUri().toString(), 0, 36, true, true);
+                logoView.setImage(logoImage);
+            } else {
+                // Fallback: afficher le texte si le logo n'est pas trouvé
+                System.out.println("⚠️ Logo non trouvé: " + logoPath);
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur chargement logo: " + e.getMessage());
+        }
+        
+        // Ajouter le logo ou un label de fallback
+        if (logoView.getImage() != null) {
+            logoContainer.getChildren().add(logoView);
+        } else {
+            Label appTitle = new Label("MAG SCÈNE");
+            appTitle.getStyleClass().add("app-title");
+            appTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
+            logoContainer.getChildren().add(appTitle);
+        }
 
-        // Séparateur vertical
+        // Séparateur vertical avec marges
         Separator separator = new Separator();
         separator.setOrientation(javafx.geometry.Orientation.VERTICAL);
+        separator.setPadding(new Insets(5, 0, 5, 0));
 
         // Composant de recherche globale
         GlobalSearchComponent globalSearch = new GlobalSearchComponent();
@@ -578,23 +624,24 @@ public class MagsavDesktopApplication extends Application {
         // Titre de la page courante (centré)
         pageTitleLabel = new Label("");
         pageTitleLabel.getStyleClass().add("page-title");
-        pageTitleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        pageTitleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
         pageTitleLabel.setAlignment(Pos.CENTER);
 
         // Spacer pour pousser les boutons à droite
         Region rightSpacer = new Region();
         HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-        // Bouton paramètres
-        Button settingsButton = new Button("⚙️");
+        // Bouton paramètres (roue simple)
+        Button settingsButton = new Button("⚙");
         settingsButton.setTooltip(new Tooltip("Paramètres"));
         settingsButton.getStyleClass().add("icon-button");
+        settingsButton.setStyle("-fx-font-size: 18px;");
         settingsButton.setOnAction(e -> {
             navigationManager.navigateTo(Route.SETTINGS);
             updateStatus("Navigation: Paramètres");
         });
 
-        toolbar.getChildren().addAll(appTitle, separator, globalSearch, leftSpacer, pageTitleLabel, rightSpacer,
+        toolbar.getChildren().addAll(logoContainer, separator, globalSearch, leftSpacer, pageTitleLabel, rightSpacer,
                 settingsButton);
         return toolbar;
     }
@@ -664,6 +711,7 @@ public class MagsavDesktopApplication extends Application {
     /**
      * Crée un panneau par défaut
      */
+    @SuppressWarnings("unused")
     private Pane createDefaultPane(String moduleName) {
         VBox defaultPane = new VBox(10);
         // $varName supprimÃ© - Style gÃ©rÃ© par CSS

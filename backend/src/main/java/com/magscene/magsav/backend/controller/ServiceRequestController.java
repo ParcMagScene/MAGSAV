@@ -28,6 +28,7 @@ public class ServiceRequestController {
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
     
+    @SuppressWarnings("unused")
     @Autowired
     private EquipmentRepository equipmentRepository;
     

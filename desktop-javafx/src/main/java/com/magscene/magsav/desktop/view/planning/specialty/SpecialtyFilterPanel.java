@@ -11,7 +11,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 
 /**
  * Panneau de sélection et filtrage des spécialités pour le planning

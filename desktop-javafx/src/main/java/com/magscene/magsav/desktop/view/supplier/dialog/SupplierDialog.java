@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.magscene.magsav.desktop.service.WindowPreferencesService;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -122,9 +123,8 @@ public class SupplierDialog extends Dialog<SupplierDialog.SupplierResult> {
         // Mémoriser la taille et position
         WindowPreferencesService.getInstance().setupDialogMemory(getDialogPane(), "supplier-dialog");
 
-        // Style
-        getDialogPane().getStylesheets().add(
-                getClass().getResource("/styles/supplier-system.css").toExternalForm());
+        // Appliquer le thème unifié (comme Personnel/Vehicle/Equipment dialogs)
+        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
         getDialogPane().getStyleClass().add("supplier-dialog");
     }
 
@@ -668,6 +668,38 @@ public class SupplierDialog extends Dialog<SupplierDialog.SupplierResult> {
 
         public void setCatalogFile(File catalogFile) {
             this.catalogFile = catalogFile;
+        }
+
+        /**
+         * Convertit le résultat en Map pour l'API backend
+         */
+        public java.util.Map<String, Object> toMap() {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("name", name);
+            map.put("contactPerson", contactPerson);
+            map.put("email", email);
+            map.put("phone", phone);
+            map.put("website", website);
+            map.put("siret", siret);
+            map.put("address", address);
+            map.put("paymentTerms", paymentTerms);
+            map.put("deliveryTerms", deliveryTerms);
+            map.put("minimumOrder", minimumOrder);
+            map.put("notes", notes);
+            map.put("active", "ACTIF".equals(status) || "Actif".equalsIgnoreCase(status));
+            
+            // Convertir les services en flags booléens pour le backend
+            boolean hasAfterSales = services != null && (services.contains("SAV") || services.contains("Service après-vente"));
+            boolean hasRMA = services != null && (services.contains("RMA") || services.contains("Retours marchandises"));
+            boolean hasParts = services != null && (services.contains("Pièces") || services.contains("Pièces détachées"));
+            boolean hasEquipment = services != null && (services.contains("Matériel") || services.contains("Équipement"));
+            
+            map.put("hasAfterSalesService", hasAfterSales);
+            map.put("hasRMAService", hasRMA);
+            map.put("hasPartsService", hasParts);
+            map.put("hasEquipmentService", hasEquipment);
+            
+            return map;
         }
     }
 }

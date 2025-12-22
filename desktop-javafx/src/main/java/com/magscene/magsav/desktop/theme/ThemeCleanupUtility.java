@@ -138,7 +138,7 @@ public class ThemeCleanupUtility {
         table.setStyle("");
         
         // Les styles de table sont gérés automatiquement par CSS; // Nettoyer les factory de cellules si elles ont des styles inline
-        for (TableColumn<?, ?> column : table.getColumns()) {
+        for (@SuppressWarnings("unused") TableColumn<?, ?> column : table.getColumns()) {
             // Les cellules sont gérées automatiquement par CSS
         }
     }

@@ -4,6 +4,7 @@ import com.magscene.magsav.desktop.view.base.AbstractManagerView;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.dialog.PersonnelDialog;
+import com.magscene.magsav.desktop.dialog.PersonnelDetailDialog;
 import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -132,7 +133,9 @@ public class StandardPersonnelManagerView extends AbstractManagerView {
     @Override
     protected Region createCenterContent() {
         // DetailPanelContainer avec table + volet de détail intégré
-        return new DetailPanelContainer(personnelTable);
+        DetailPanelContainer container = new DetailPanelContainer(personnelTable);
+        
+        return container;
     }
     
     @Override
@@ -306,11 +309,14 @@ public class StandardPersonnelManagerView extends AbstractManagerView {
         PersonnelItem selected = personnelTable.getSelectionModel().getSelectedItem();
         if (selected != null) {
             Map<String, Object> personnelData = selected.toMap();
-            PersonnelDialog dialog = new PersonnelDialog(personnelData, apiService);
-            dialog.showAndWait().ifPresent(result -> {
-                // TODO: Mettre à jour via API
-                System.out.println("✏️ Modification personnel: " + result);
-                refresh();
+            // Ouvrir le dialogue en mode lecture seule (comme pour les équipements)
+            PersonnelDetailDialog detailDialog = new PersonnelDetailDialog(apiService, personnelData);
+            detailDialog.showAndWait().ifPresent(result -> {
+                // Rafraîchir si modification
+                if (result != null) {
+                    System.out.println("✏️ Personnel modifié: " + result);
+                    refresh();
+                }
             });
         }
     }

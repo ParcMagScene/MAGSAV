@@ -775,8 +775,9 @@ public class ProjectManagerView extends AbstractManagerView implements Selectabl
 
         private void addDetailRow(javafx.scene.layout.GridPane grid, int row, String label, String value) {
             javafx.scene.control.Label labelNode = new javafx.scene.control.Label(label);
-            labelNode.setStyle("-fx-font-weight: bold; -fx-min-width: 120px;");
+            labelNode.setStyle("-fx-font-weight: bold; -fx-min-width: 120px; -fx-text-fill: #34495e;");
             javafx.scene.control.Label valueNode = new javafx.scene.control.Label(value != null ? value : "N/A");
+            valueNode.setStyle("-fx-text-fill: #2c3e50;");
 
             grid.add(labelNode, 0, row);
             grid.add(valueNode, 1, row);

@@ -16,6 +16,7 @@ public enum Route {
     SUPPLIERS("Fournisseurs", "🏪", "suppliers"),
     MATERIAL_REQUESTS("Demandes Matériel", "📝", "material-requests"),
     GROUPED_ORDERS("Commandes Groupées", "📦", "grouped-orders"),
+    MEDIA("Médias", "🖼️", "media"),
     SETTINGS("Paramètres", "⚙", "settings");
     
     private final String displayName;

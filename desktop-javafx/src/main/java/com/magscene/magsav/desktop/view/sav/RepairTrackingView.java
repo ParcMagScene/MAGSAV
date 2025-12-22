@@ -16,7 +16,7 @@ import com.magscene.magsav.desktop.model.ServiceRequest;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 import com.magscene.magsav.desktop.util.AlertUtil;
-import com.magscene.magsav.desktop.util.ViewUtils;
+import com.magscene.magsav.desktop.util.DialogUtils;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -435,8 +435,7 @@ public class RepairTrackingView extends BorderPane {
 
     private void exportToCSV() {
         if (serviceRequests == null || serviceRequests.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Export CSV", "Aucune donnée à exporter",
-                    "La liste des demandes de réparation est vide.");
+            DialogUtils.showWarning("Export CSV", "La liste des demandes de réparation est vide.");
             return;
         }
 
@@ -540,13 +539,13 @@ public class RepairTrackingView extends BorderPane {
                     new Object[] { serviceRequests.size(), file.getAbsolutePath() });
 
             // Confirmation à l'utilisateur
-            showAlert(Alert.AlertType.INFORMATION, "Export CSV", "Export terminé avec succès",
+            DialogUtils.showSuccess("Export CSV",
                     String.format("✅ %d demandes de réparation exportées vers:\n%s", serviceRequests.size(),
                             file.getName()));
 
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Erreur lors de l'export CSV vers " + file.getAbsolutePath(), e);
-            showAlert(Alert.AlertType.ERROR, "Erreur d'Export", "Impossible d'exporter les données",
+            DialogUtils.showError("Erreur d'Export",
                     "Erreur lors de l'écriture du fichier CSV:\n" + e.getMessage());
         }
     }
@@ -597,17 +596,6 @@ public class RepairTrackingView extends BorderPane {
             // Si le parsing échoue, retourner la valeur brute
             return date.toString();
         }
-    }
-
-    /**
-     * Méthode utilitaire pour afficher les alertes
-     */
-    private void showAlert(Alert.AlertType type, String title, String header, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 
     /**

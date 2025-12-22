@@ -45,7 +45,6 @@ public class BrandConfigView extends BorderPane {
     // Contrôles de recherche et filtres
     private TextField searchField;
     private ComboBox<String> statusFilter;
-    private ComboBox<String> countryFilter;
 
     // Contrôles d'édition
     private TextField nameField;

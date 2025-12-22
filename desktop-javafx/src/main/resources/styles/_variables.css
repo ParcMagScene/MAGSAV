@@ -1,0 +1,153 @@
+/* =======================================================================
+   MAGSAV 3.0 - Variables CSS Centralisées
+   Ce fichier définit toutes les couleurs et styles partagés
+   ======================================================================= */
+
+/* ================================
+   THÈME CLAIR - Variables
+   ================================ */
+.theme-light {
+    /* Couleurs principales */
+    -magsav-primary: #6B71F2;
+    -magsav-primary-hover: #7B81FF;
+    -magsav-primary-pressed: #5A61D1;
+    -magsav-secondary: #6B71F2;
+    -magsav-accent: #F26BA6;
+
+    /* Couleurs de fond */
+    -magsav-bg-primary: #FFFFFF;
+    -magsav-bg-secondary: #F8F9FA;
+    -magsav-bg-tertiary: #E9ECEF;
+    -magsav-bg-hover: rgba(248, 249, 250, 0.8);
+
+    /* Couleurs de texte */
+    -magsav-text-primary: #212529;
+    -magsav-text-secondary: #6C757D;
+    -magsav-text-muted: #ADB5BD;
+    -magsav-text-inverse: #FFFFFF;
+
+    /* Couleurs de bordure */
+    -magsav-border-light: #DEE2E6;
+    -magsav-border-medium: #CED4DA;
+    -magsav-border-dark: #ADB5BD;
+
+    /* Couleurs d'état */
+    -magsav-success: #28A745;
+    -magsav-success-bg: rgba(40, 167, 69, 0.1);
+    -magsav-warning: #FFC107;
+    -magsav-warning-bg: rgba(255, 193, 7, 0.1);
+    -magsav-danger: #DC3545;
+    -magsav-danger-bg: rgba(220, 53, 69, 0.1);
+    -magsav-info: #17A2B8;
+    -magsav-info-bg: rgba(23, 162, 184, 0.1);
+
+    /* Ombres */
+    -magsav-shadow-sm: dropshadow(gaussian, rgba(0,0,0,0.15), 4, 0, 0, 2);
+    -magsav-shadow-md: dropshadow(gaussian, rgba(0,0,0,0.2), 8, 0, 0, 4);
+    -magsav-shadow-lg: dropshadow(gaussian, rgba(0,0,0,0.25), 12, 0, 0, 6);
+    -magsav-shadow-primary: dropshadow(gaussian, rgba(107,113,242,0.3), 10, 0, 0, 5);
+
+    /* Rayons de bordure */
+    -magsav-radius-sm: 4px;
+    -magsav-radius-md: 6px;
+    -magsav-radius-lg: 8px;
+    -magsav-radius-xl: 12px;
+    -magsav-radius-round: 50%;
+
+    /* Espacements */
+    -magsav-spacing-xs: 4px;
+    -magsav-spacing-sm: 8px;
+    -magsav-spacing-md: 12px;
+    -magsav-spacing-lg: 16px;
+    -magsav-spacing-xl: 20px;
+    -magsav-spacing-xxl: 24px;
+
+    /* Typographie */
+    -magsav-font-family: "Segoe UI", "System", Arial, sans-serif;
+    -magsav-font-size-xs: 11px;
+    -magsav-font-size-sm: 12px;
+    -magsav-font-size-md: 13px;
+    -magsav-font-size-lg: 14px;
+    -magsav-font-size-xl: 16px;
+    -magsav-font-size-xxl: 20px;
+    -magsav-font-size-title: 24px;
+}
+
+/* ================================
+   THÈME SOMBRE - Variables
+   ================================ */
+.theme-dark {
+    /* Couleurs principales */
+    -magsav-primary: #8B91FF;
+    -magsav-primary-hover: #9BA1FF;
+    -magsav-primary-pressed: #7B81EE;
+    -magsav-secondary: #6B71F2;
+    -magsav-accent: #F26BA6;
+
+    /* Couleurs de fond */
+    -magsav-bg-primary: #1A1A2E;
+    -magsav-bg-secondary: #16213E;
+    -magsav-bg-tertiary: #0F1419;
+    -magsav-bg-hover: rgba(22, 33, 62, 0.8);
+
+    /* Couleurs de texte */
+    -magsav-text-primary: #FFFFFF;
+    -magsav-text-secondary: #B8BCC8;
+    -magsav-text-muted: #6C7293;
+    -magsav-text-inverse: #1A1A2E;
+
+    /* Couleurs de bordure */
+    -magsav-border-light: #2A2D3A;
+    -magsav-border-medium: #3E4265;
+    -magsav-border-dark: #525B7A;
+
+    /* Couleurs d'état */
+    -magsav-success: #00D4AA;
+    -magsav-success-bg: rgba(0, 212, 170, 0.15);
+    -magsav-warning: #FFB800;
+    -magsav-warning-bg: rgba(255, 184, 0, 0.15);
+    -magsav-danger: #FF6B6B;
+    -magsav-danger-bg: rgba(255, 107, 107, 0.15);
+    -magsav-info: #4DABF7;
+    -magsav-info-bg: rgba(77, 171, 247, 0.15);
+
+    /* Ombres */
+    -magsav-shadow-sm: dropshadow(gaussian, rgba(0,0,0,0.3), 4, 0, 0, 2);
+    -magsav-shadow-md: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0, 0, 4);
+    -magsav-shadow-lg: dropshadow(gaussian, rgba(0,0,0,0.5), 12, 0, 0, 6);
+    -magsav-shadow-primary: dropshadow(gaussian, rgba(139,145,255,0.3), 10, 0, 0, 5);
+
+    /* Rayons, espacements, typographie - identiques au thème clair */
+    -magsav-radius-sm: 4px;
+    -magsav-radius-md: 6px;
+    -magsav-radius-lg: 8px;
+    -magsav-radius-xl: 12px;
+    -magsav-radius-round: 50%;
+
+    -magsav-spacing-xs: 4px;
+    -magsav-spacing-sm: 8px;
+    -magsav-spacing-md: 12px;
+    -magsav-spacing-lg: 16px;
+    -magsav-spacing-xl: 20px;
+    -magsav-spacing-xxl: 24px;
+
+    -magsav-font-family: "Segoe UI", "System", Arial, sans-serif;
+    -magsav-font-size-xs: 11px;
+    -magsav-font-size-sm: 12px;
+    -magsav-font-size-md: 13px;
+    -magsav-font-size-lg: 14px;
+    -magsav-font-size-xl: 16px;
+    -magsav-font-size-xxl: 20px;
+    -magsav-font-size-title: 24px;
+}
+
+/* ================================
+   COULEURS PAR TYPE D'ENTITÉ
+   ================================ */
+.entity-equipment { -magsav-entity-color: #1565C0; -magsav-entity-accent: #42A5F5; }
+.entity-vehicle { -magsav-entity-color: #2E7D32; -magsav-entity-accent: #66BB6A; }
+.entity-personnel { -magsav-entity-color: #E65100; -magsav-entity-accent: #FF9800; }
+.entity-client { -magsav-entity-color: #6A1B9A; -magsav-entity-accent: #BA68C8; }
+.entity-contract { -magsav-entity-color: #D32F2F; -magsav-entity-accent: #EF5350; }
+.entity-supplier { -magsav-entity-color: #00695C; -magsav-entity-accent: #26A69A; }
+.entity-sav { -magsav-entity-color: #F57C00; -magsav-entity-accent: #FFB74D; }

@@ -9,17 +9,18 @@ import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.component.DetailPanelContainer;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
 import com.magscene.magsav.desktop.core.navigation.SelectableView;
+import com.magscene.magsav.desktop.dialog.PersonnelDetailDialog;
 import com.magscene.magsav.desktop.dialog.PersonnelDialog;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
+import com.magscene.magsav.desktop.util.DialogUtils;
 import com.magscene.magsav.desktop.util.ViewUtils;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -535,19 +536,37 @@ public class PersonnelManagerView extends BorderPane implements SelectableView {
         PersonnelDialog dialog = new PersonnelDialog(null, apiService);
         Optional<Map<String, Object>> result = dialog.showAndWait();
 
-        result.ifPresent(personnelData -> {
-            // Rechargement des donnees apres creation
-            loadPersonnelData();
+        result.ifPresent(newPersonnelData -> {
+            // Sauvegarder dans le backend puis recharger
+            apiService.createPersonnel(newPersonnelData)
+                .thenRun(() -> Platform.runLater(() -> {
+                    showAlert("Succès", "Personnel créé avec succès.");
+                    loadPersonnelData();
+                }))
+                .exceptionally(throwable -> {
+                    Platform.runLater(() -> showAlert("Erreur", "Erreur lors de la création : " + throwable.getMessage()));
+                    return null;
+                });
         });
     }
 
     private void editPersonnel(PersonnelItem personnel) {
-        PersonnelDialog dialog = new PersonnelDialog(personnel.getOriginalData(), apiService);
+        // Ouvrir le dialogue en mode lecture seule (comme pour les équipements)
+        PersonnelDetailDialog dialog = new PersonnelDetailDialog(apiService, personnel.getOriginalData());
         Optional<Map<String, Object>> result = dialog.showAndWait();
 
-        result.ifPresent(personnelData -> {
-            // Rechargement des donnees apres modification
-            loadPersonnelData();
+        result.ifPresent(updatedData -> {
+            // Sauvegarder dans le backend puis recharger
+            Long personnelId = Long.valueOf(personnel.getId());
+            apiService.updatePersonnel(personnelId, updatedData)
+                .thenRun(() -> Platform.runLater(() -> {
+                    showAlert("Succès", "Personnel mis à jour avec succès.");
+                    loadPersonnelData();
+                }))
+                .exceptionally(throwable -> {
+                    Platform.runLater(() -> showAlert("Erreur", "Erreur lors de la mise à jour : " + throwable.getMessage()));
+                    return null;
+                });
         });
     }
 
@@ -574,10 +593,7 @@ public class PersonnelManagerView extends BorderPane implements SelectableView {
     }
 
     private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
+        DialogUtils.showInfo(title, message);
     }
 
     // Classe interne pour representer un element du personnel dans le tableau

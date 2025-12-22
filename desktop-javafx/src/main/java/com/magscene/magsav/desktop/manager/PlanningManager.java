@@ -8,7 +8,6 @@ import com.magscene.magsav.desktop.model.GoogleAccountItem;
 import com.magscene.magsav.desktop.model.FilterParameters;
 import com.magscene.magsav.desktop.model.ViewParameters;
 import com.magscene.magsav.desktop.model.SyncResultItem;
-import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -32,7 +31,6 @@ public class PlanningManager {
     // Configuration
     private final Preferences prefs;
     private final SpecialtiesConfigManager specialtiesManager;
-    private final ApiService apiService;
     
     // Données planning
     private final ObservableList<EventItem> allEvents;
@@ -58,8 +56,9 @@ public class PlanningManager {
     private static final String PREFS_VISIBLE_CALENDARS = "planning.calendars.visible";
     private static final String PREFS_GOOGLE_SYNC_ENABLED = "planning.google.sync.enabled";
     
+    @SuppressWarnings("unused")
     public PlanningManager(ApiService apiService) {
-        this.apiService = apiService;
+        // apiService parameter kept for future backend integration
         this.prefs = Preferences.userNodeForPackage(PlanningManager.class);
         this.specialtiesManager = SpecialtiesConfigManager.getInstance();
         

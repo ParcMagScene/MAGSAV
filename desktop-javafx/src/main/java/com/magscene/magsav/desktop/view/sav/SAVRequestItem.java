@@ -2,6 +2,7 @@ package com.magscene.magsav.desktop.view.sav;
 
 import java.util.Map;
 
+import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
 
 import javafx.scene.control.Label;
@@ -81,11 +82,11 @@ public class SAVRequestItem implements DetailPanelProvider {
     public VBox getDetailInfoContent() {
         VBox content = new VBox(10);
         content.getChildren().addAll(
-                new Label("Type: " + getType()),
-                new Label("Statut: " + getStatus()),
-                new Label("Priorité: " + getPriority()),
-                new Label("Date création: " + getCreatedAt()),
-                new Label("Technicien: " + getAssignedTechnician()));
+                DetailPanel.createInfoRow("Type", getType()),
+                DetailPanel.createInfoRow("Statut", getStatus()),
+                DetailPanel.createInfoRow("Priorité", getPriority()),
+                DetailPanel.createInfoRow("Date création", getCreatedAt()),
+                DetailPanel.createInfoRow("Technicien", getAssignedTechnician()));
         return content;
     }
 }

@@ -3,6 +3,7 @@ package com.magscene.magsav.desktop.dialog.clients;
 import com.magscene.magsav.desktop.model.Client;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
+import com.magscene.magsav.desktop.util.DialogUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -477,15 +478,11 @@ public class ClientDialog extends Stage {
     }
     
     private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        DialogUtils.showWarning(title, message);
     }
     
     private void showAlert(String message) {
-        showAlert("Attention", message);
+        DialogUtils.showWarning("Attention", message);
     }
     
     /**

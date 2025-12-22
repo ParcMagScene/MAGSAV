@@ -2,6 +2,8 @@ package com.magscene.magsav.desktop.dialog;
 
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.service.MediaService;
+import com.magscene.magsav.desktop.theme.ThemeConstants;
+import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -46,7 +48,7 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
     
     public EquipmentDetailDialog(ApiService apiService, Map<String, Object> equipment) {
         this.apiService = apiService;
-        this.mediaService = new MediaService();
+        this.mediaService = MediaService.getInstance();
         this.equipmentData = new HashMap<>(equipment);
         
         setupDialog();
@@ -57,19 +59,17 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         setTitle("Fiche Équipement");
         setHeaderText(null);
         
-        // Bouton Modifier/Enregistrer en bas du dialog
-        editButtonType = new ButtonType("✏️ Modifier", ButtonBar.ButtonData.LEFT);
-        closeButtonType = new ButtonType("Fermer sans sauvegarder", ButtonBar.ButtonData.CANCEL_CLOSE);
+        // Bouton Modifier/Enregistrer en bas du dialog (sans icône)
+        editButtonType = new ButtonType("Modifier", ButtonBar.ButtonData.LEFT);
+        closeButtonType = new ButtonType("Fermer", ButtonBar.ButtonData.CANCEL_CLOSE);
         getDialogPane().getButtonTypes().addAll(editButtonType, closeButtonType);
         
         getDialogPane().setPrefSize(750, 650);
         getDialogPane().setMinWidth(700);
         getDialogPane().setMinHeight(600);
         
-        getDialogPane().setStyle(
-            "-fx-background-color: #f5f6fa;" +
-            "-fx-font-family: 'Segoe UI', Arial, sans-serif;"
-        );
+        // Appliquer le thème unifié
+        UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
         
         // Styliser et configurer le bouton Modifier
         Platform.runLater(() -> {
@@ -100,13 +100,14 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
     }
     
     private void updateEditButtonStyle(Button editButton) {
-        String baseButtonStyle = "-fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px;";
         String buttonStyle = editMode 
-            ? baseButtonStyle + "-fx-background-color: #27ae60; -fx-text-fill: white;"
-            : baseButtonStyle + "-fx-background-color: #3498db; -fx-text-fill: white;";
+            ? ThemeConstants.DIALOG_SAVE_BUTTON_STYLE
+            : ThemeConstants.DIALOG_EDIT_BUTTON_STYLE;
         
-        editButton.setText(editMode ? "💾 Enregistrer" : "✏️ Modifier");
+        editButton.setText(editMode ? "Enregistrer" : "Modifier");
         editButton.setStyle(buttonStyle);
+        editButton.setMinWidth(120);
+        editButton.setPrefWidth(120);
         
         final String finalButtonStyle = buttonStyle;
         editButton.setOnMouseEntered(e -> editButton.setStyle(
@@ -118,19 +119,20 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
     private void setupCloseButton() {
         Button closeButton = (Button) getDialogPane().lookupButton(closeButtonType);
         if (closeButton != null) {
-            String closeButtonStyle = "-fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px; -fx-background-color: #95a5a6; -fx-text-fill: white;";
-            closeButton.setStyle(closeButtonStyle);
+            closeButton.setStyle(ThemeConstants.DIALOG_CLOSE_BUTTON_STYLE);
+            closeButton.setMinWidth(100);
+            closeButton.setPrefWidth(100);
             
             closeButton.setOnMouseEntered(e -> closeButton.setStyle(
-                closeButtonStyle + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 2);"
+                ThemeConstants.DIALOG_CLOSE_BUTTON_STYLE + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 2);"
             ));
-            closeButton.setOnMouseExited(e -> closeButton.setStyle(closeButtonStyle));
+            closeButton.setOnMouseExited(e -> closeButton.setStyle(ThemeConstants.DIALOG_CLOSE_BUTTON_STYLE));
         }
     }
     
     private void createContent() {
         BorderPane mainLayout = new BorderPane();
-        mainLayout.setStyle("-fx-background-color: #f5f6fa;");
+        mainLayout.setStyle(ThemeConstants.DIALOG_CONTENT_STYLE);
         
         // Header avec photo et logo
         mainLayout.setTop(createHeader());
@@ -144,14 +146,111 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         
         contentBox = new VBox(15);
         contentBox.setPadding(new Insets(20));
-        contentBox.setStyle("-fx-background-color: #f5f6fa;");
+        contentBox.setStyle(ThemeConstants.DIALOG_CONTENT_STYLE);
         
         rebuildContent();
         
         scrollPane.setContent(contentBox);
         mainLayout.setCenter(scrollPane);
         
+        // Barre d'actions en bas de page
+        mainLayout.setBottom(createBottomActionBar());
+        
         getDialogPane().setContent(mainLayout);
+    }
+    
+    /**
+     * Crée la barre d'actions en bas de la fiche
+     */
+    private HBox createBottomActionBar() {
+        HBox actionBar = new HBox(12);
+        actionBar.setPadding(new Insets(15, 20, 15, 20));
+        actionBar.setAlignment(Pos.CENTER_RIGHT);
+        actionBar.setStyle(ThemeConstants.DIALOG_ACTION_BAR_STYLE);
+        
+        // En mode édition, afficher le bouton "Appliquer les modifications"
+        if (editMode) {
+            applyButton = new MenuButton("Appliquer les modifications");
+            applyButton.setStyle(ThemeConstants.DIALOG_SAVE_BUTTON_STYLE);
+            
+            // Effet hover
+            applyButton.setOnMouseEntered(e -> applyButton.setStyle(
+                ThemeConstants.DIALOG_SAVE_BUTTON_STYLE + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 2);"
+            ));
+            applyButton.setOnMouseExited(e -> applyButton.setStyle(ThemeConstants.DIALOG_SAVE_BUTTON_STYLE));
+            
+            MenuItem applyThis = new MenuItem("Cet équipement uniquement");
+            applyThis.setOnAction(e -> applyToThisEquipment());
+            
+            MenuItem applySameName = new MenuItem("Tous les équipements de même description");
+            applySameName.setOnAction(e -> applyToSameName());
+            
+            MenuItem applySameLocmat = new MenuItem("Tous les équipements de même code LocMat");
+            applySameLocmat.setOnAction(e -> applyToSameLocmat());
+            
+            applyButton.getItems().addAll(applyThis, applySameName, applySameLocmat);
+            actionBar.getChildren().add(applyButton);
+        }
+        
+        // Boutons d'action toujours visibles
+        Button printButton = new Button("Imprimer");
+        printButton.setStyle(ThemeConstants.DIALOG_PRINT_BUTTON_STYLE);
+        printButton.setOnMouseEntered(e -> printButton.setStyle(ThemeConstants.DIALOG_PRINT_BUTTON_HOVER_STYLE));
+        printButton.setOnMouseExited(e -> printButton.setStyle(ThemeConstants.DIALOG_PRINT_BUTTON_STYLE));
+        printButton.setOnAction(e -> handlePrint());
+        
+        Button qrButton = new Button("QR Code");
+        qrButton.setStyle(ThemeConstants.DIALOG_QR_BUTTON_STYLE);
+        qrButton.setOnMouseEntered(e -> qrButton.setStyle(ThemeConstants.DIALOG_QR_BUTTON_HOVER_STYLE));
+        qrButton.setOnMouseExited(e -> qrButton.setStyle(ThemeConstants.DIALOG_QR_BUTTON_STYLE));
+        qrButton.setOnAction(e -> handleShowQRCode());
+        
+        Button historyButton = new Button("Historique");
+        historyButton.setStyle(ThemeConstants.DIALOG_HISTORY_BUTTON_STYLE);
+        historyButton.setOnMouseEntered(e -> historyButton.setStyle(ThemeConstants.DIALOG_HISTORY_BUTTON_HOVER_STYLE));
+        historyButton.setOnMouseExited(e -> historyButton.setStyle(ThemeConstants.DIALOG_HISTORY_BUTTON_STYLE));
+        historyButton.setOnAction(e -> handleShowHistory());
+        
+        // Espaceur pour pousser les boutons à droite
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        
+        actionBar.getChildren().addAll(spacer, printButton, qrButton, historyButton);
+        
+        return actionBar;
+    }
+    
+    private void handlePrint() {
+        Alert info = new Alert(Alert.AlertType.INFORMATION);
+        info.setTitle("Impression");
+        info.setHeaderText(null);
+        info.setContentText("Fonctionnalité d'impression à venir...");
+        info.showAndWait();
+    }
+    
+    private void handleShowQRCode() {
+        String qrCode = getStringValue("qrCode");
+        if (qrCode != null && !qrCode.isEmpty()) {
+            Alert info = new Alert(Alert.AlertType.INFORMATION);
+            info.setTitle("QR Code");
+            info.setHeaderText("Code QR de l'équipement");
+            info.setContentText("UID: " + qrCode);
+            info.showAndWait();
+        } else {
+            Alert warning = new Alert(Alert.AlertType.WARNING);
+            warning.setTitle("QR Code");
+            warning.setHeaderText(null);
+            warning.setContentText("Cet équipement n'a pas de QR Code assigné.");
+            warning.showAndWait();
+        }
+    }
+    
+    private void handleShowHistory() {
+        Alert info = new Alert(Alert.AlertType.INFORMATION);
+        info.setTitle("Historique");
+        info.setHeaderText(null);
+        info.setContentText("Fonctionnalité d'historique à venir...");
+        info.showAndWait();
     }
     
     private void rebuildContent() {
@@ -167,7 +266,7 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         HBox header = new HBox(15);
         header.setPadding(new Insets(15, 20, 15, 20));
         header.setAlignment(Pos.CENTER_LEFT);
-        header.setStyle("-fx-background-color: linear-gradient(to right, #2c3e50, #3498db);");
+        header.setStyle(ThemeConstants.DIALOG_HEADER_EQUIPMENT_STYLE);
         
         // Photo de l'équipement (à gauche)
         ImageView photoView = new ImageView();
@@ -206,7 +305,7 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         if (editMode) {
             Label editIndicator = new Label("✏️");
             editIndicator.setFont(Font.font(14));
-            editIndicator.setStyle("-fx-background-color: #3498db; -fx-background-radius: 10; -fx-padding: 2 5;");
+            editIndicator.setStyle(ThemeConstants.EDIT_INDICATOR_STYLE);
             StackPane.setAlignment(editIndicator, Pos.BOTTOM_RIGHT);
             photoContainer.getChildren().add(editIndicator);
             
@@ -260,37 +359,6 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
                 logoView.setPreserveRatio(true);
                 rightBox.getChildren().add(logoView);
             }
-        }
-        
-        // Bouton Appliquer avec options (visible uniquement en mode édition)
-        if (editMode) {
-            HBox buttonBar = new HBox(8);
-            buttonBar.setAlignment(Pos.CENTER_RIGHT);
-            
-            String baseButtonStyle = "-fx-font-weight: bold; -fx-padding: 8 16; -fx-background-radius: 6; -fx-cursor: hand; -fx-font-size: 12px;";
-            String primaryButtonStyle = baseButtonStyle + "-fx-background-color: #3498db; -fx-text-fill: white;";
-            
-            applyButton = new MenuButton("📥 Appliquer les modifications");
-            applyButton.setStyle(primaryButtonStyle);
-            
-            // Effet hover pour le MenuButton
-            applyButton.setOnMouseEntered(e -> applyButton.setStyle(
-                primaryButtonStyle + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 6, 0, 0, 2);"
-            ));
-            applyButton.setOnMouseExited(e -> applyButton.setStyle(primaryButtonStyle));
-            
-            MenuItem applyThis = new MenuItem("📌 Cet équipement uniquement");
-            applyThis.setOnAction(e -> applyToThisEquipment());
-            
-            MenuItem applySameName = new MenuItem("📋 Tous les équipements de même description");
-            applySameName.setOnAction(e -> applyToSameName());
-            
-            MenuItem applySameLocmat = new MenuItem("🏷️ Tous les équipements de même code LocMat");
-            applySameLocmat.setOnAction(e -> applyToSameLocmat());
-            
-            applyButton.getItems().addAll(applyThis, applySameName, applySameLocmat);
-            buttonBar.getChildren().add(applyButton);
-            rightBox.getChildren().add(buttonBar);
         }
         
         header.getChildren().addAll(photoContainer, infoBox, rightBox);
@@ -443,6 +511,7 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         confirmation.setHeaderText("Appliquer ces modifications à " + sameNameEquipments.size() + " équipement(s) ?");
         confirmation.setContentText(
             "Les modifications seront appliquées à tous les équipements portant le nom \"" + name + "\".\n\n" +
+            "Note: Le propriétaire, numéro de série et QR code de chaque équipement seront conservés.\n\n" +
             "Cette action est irréversible."
         );
         
@@ -452,12 +521,15 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         
         confirmation.showAndWait().ifPresent(response -> {
             if (response == yesButton) {
+                // Créer une copie des données SANS les champs spécifiques à chaque équipement
+                Map<String, Object> sharedData = createSharedDataForBulkUpdate();
+                
                 int updated = 0;
                 for (Map<String, Object> equipment : sameNameEquipments) {
                     try {
                         Object id = equipment.get("id");
                         if (id != null) {
-                            apiService.updateEquipment(Long.parseLong(id.toString()), equipmentData);
+                            apiService.updateEquipment(Long.parseLong(id.toString()), sharedData);
                             updated++;
                         }
                     } catch (Exception e) {
@@ -465,10 +537,20 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
                     }
                 }
                 
+                // Invalider le cache des photos si une photo a été modifiée
+                String photoPath = getStringValue("photoPath");
+                if (photoPath != null && !photoPath.isEmpty()) {
+                    MediaService.getInstance().invalidatePhotoCache(photoPath);
+                    System.out.println("📷 Cache invalidé pour la photo: " + photoPath);
+                }
+                
+                // Signaler que des modifications ont été faites pour déclencher le rechargement
+                editMode = true;
+                
                 Alert info = new Alert(Alert.AlertType.INFORMATION);
                 info.setTitle("Modifications appliquées");
                 info.setHeaderText(null);
-                info.setContentText("Modifications appliquées à " + updated + " équipement(s).");
+                info.setContentText("Modifications appliquées à " + updated + " équipement(s).\n\nLa liste sera rafraîchie automatiquement.");
                 info.showAndWait();
             }
         });
@@ -508,6 +590,7 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         confirmation.setHeaderText("Appliquer ces modifications à " + sameLocmatEquipments.size() + " équipement(s) ?");
         confirmation.setContentText(
             "Les modifications seront appliquées à tous les équipements avec le code LocMat \"" + locmatCode + "\".\n\n" +
+            "Note: Le propriétaire, numéro de série et QR code de chaque équipement seront conservés.\n\n" +
             "Cette action est irréversible."
         );
         
@@ -518,12 +601,15 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         final String finalLocmatCode = locmatCode;
         confirmation.showAndWait().ifPresent(response -> {
             if (response == yesButton) {
+                // Créer une copie des données SANS les champs spécifiques à chaque équipement
+                Map<String, Object> sharedData = createSharedDataForBulkUpdate();
+                
                 int updated = 0;
                 for (Map<String, Object> equipment : sameLocmatEquipments) {
                     try {
                         Object id = equipment.get("id");
                         if (id != null) {
-                            apiService.updateEquipment(Long.parseLong(id.toString()), equipmentData);
+                            apiService.updateEquipment(Long.parseLong(id.toString()), sharedData);
                             updated++;
                         }
                     } catch (Exception e) {
@@ -531,13 +617,46 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
                     }
                 }
                 
+                // Invalider le cache des photos si une photo a été modifiée
+                String photoPath = getStringValue("photoPath");
+                if (photoPath != null && !photoPath.isEmpty()) {
+                    MediaService.getInstance().invalidatePhotoCache(photoPath);
+                    System.out.println("📷 Cache invalidé pour la photo: " + photoPath);
+                }
+                
+                // Signaler que des modifications ont été faites pour déclencher le rechargement
+                editMode = true;
+                
                 Alert info = new Alert(Alert.AlertType.INFORMATION);
                 info.setTitle("Modifications appliquées");
                 info.setHeaderText(null);
-                info.setContentText("Modifications appliquées à " + updated + " équipement(s) avec le code LocMat \"" + finalLocmatCode + "\".");
+                info.setContentText("Modifications appliquées à " + updated + " équipement(s) avec le code LocMat \"" + finalLocmatCode + "\".\n\nLa liste sera rafraîchie automatiquement.");
                 info.showAndWait();
             }
         });
+    }
+    
+    /**
+     * Crée une copie des données d'équipement pour une mise à jour en masse.
+     * Exclut les champs spécifiques à chaque équipement (id, owner, serialNumber, qrCode).
+     * Ces champs doivent rester propres à chaque équipement individuel.
+     */
+    private Map<String, Object> createSharedDataForBulkUpdate() {
+        Map<String, Object> sharedData = new java.util.HashMap<>(equipmentData);
+        
+        // Retirer les champs spécifiques à chaque équipement
+        sharedData.remove("id");           // ID unique de l'équipement
+        sharedData.remove("owner");        // Propriétaire (peut varier entre équipements du même modèle)
+        sharedData.remove("serialNumber"); // Numéro de série unique
+        sharedData.remove("qrCode");       // QR code unique
+        sharedData.remove("createdAt");    // Date de création
+        sharedData.remove("updatedAt");    // Date de modification
+        
+        // Debug: afficher le photoPath qui sera envoyé
+        System.out.println("📷 DEBUG createSharedDataForBulkUpdate:");
+        System.out.println("   - photoPath dans sharedData: " + sharedData.get("photoPath"));
+        
+        return sharedData;
     }
     
     /**
@@ -706,10 +825,7 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         notesArea.setWrapText(true);
         notesArea.setPrefRowCount(3);
         notesArea.setEditable(editMode);
-        notesArea.setStyle(editMode ? 
-            "-fx-background-color: white; -fx-border-color: #3498db; -fx-border-width: 2;" :
-            "-fx-background-color: #f8f9fa; -fx-border-color: #ddd;"
-        );
+        notesArea.setStyle(editMode ? ThemeConstants.FIELD_EDITABLE_STYLE : ThemeConstants.FIELD_READONLY_STYLE);
         grid.add(notesArea, 1, row);
         GridPane.setColumnSpan(notesArea, 2);
         
@@ -719,10 +835,7 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
     private TextField createTextField(String key) {
         TextField field = new TextField();
         field.setEditable(editMode);
-        field.setStyle(editMode ? 
-            "-fx-background-color: white; -fx-border-color: #3498db; -fx-border-width: 2; -fx-border-radius: 4;" :
-            "-fx-background-color: transparent; -fx-border-color: transparent;"
-        );
+        field.setStyle(editMode ? ThemeConstants.COMBO_EDITABLE_STYLE : "-fx-background-color: transparent; -fx-border-color: transparent;");
         return field;
     }
     

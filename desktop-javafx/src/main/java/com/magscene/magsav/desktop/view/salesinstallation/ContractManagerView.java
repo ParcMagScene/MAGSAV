@@ -120,7 +120,7 @@ public class ContractManagerView extends BaseManagerView<Object> {
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
         statusCol.setPrefWidth(100);
 
-        contractTable.getColumns().addAll(refCol, clientCol, typeCol, startCol, endCol, amountCol, statusCol);
+        contractTable.getColumns().addAll(java.util.Arrays.asList(refCol, clientCol, typeCol, startCol, endCol, amountCol, statusCol));
 
         // Style de sélection uniforme et double-clic
         contractTable.setRowFactory(tv -> {

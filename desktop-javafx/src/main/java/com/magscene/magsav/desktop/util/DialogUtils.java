@@ -20,12 +20,6 @@ import java.util.Optional;
  */
 public final class DialogUtils {
     
-    // Couleurs et styles constants
-    private static final String SUCCESS_COLOR = "#28A745";
-    private static final String WARNING_COLOR = "#FFC107";
-    private static final String ERROR_COLOR = "#DC3545";
-    private static final String INFO_COLOR = "#17A2B8";
-    
     private DialogUtils() {
         // Classe utilitaire - pas d'instanciation
     }

@@ -352,9 +352,9 @@ public class PersonnelManagerView extends BorderPane implements SelectableView {
         specialtiesCol.setCellValueFactory(new PropertyValueFactory<>("specialties"));
         specialtiesCol.setPrefWidth(150);
 
-        personnelTable.getColumns().addAll(
+        personnelTable.getColumns().addAll(java.util.Arrays.asList(
                 idCol, nameCol, emailCol, phoneCol,
-                typeCol, statusCol, jobCol, deptCol, hireDateCol, specialtiesCol);
+                typeCol, statusCol, jobCol, deptCol, hireDateCol, specialtiesCol));
     }
 
     // Méthode createFooter() supprimée - Les boutons sont maintenant; // intégrés

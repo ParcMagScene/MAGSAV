@@ -26,6 +26,7 @@ public class SAVDetailDialog extends Dialog<Map<String, Object>> {
     private final Map<String, Object> savData;
     
     private boolean editMode = false;
+    @SuppressWarnings("unused")
     private Button editSaveButton;
     private VBox contentBox;
     

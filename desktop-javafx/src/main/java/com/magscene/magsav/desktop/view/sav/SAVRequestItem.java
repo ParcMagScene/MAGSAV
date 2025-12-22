@@ -5,7 +5,6 @@ import java.util.Map;
 import com.magscene.magsav.desktop.component.DetailPanel;
 import com.magscene.magsav.desktop.component.DetailPanelProvider;
 
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 

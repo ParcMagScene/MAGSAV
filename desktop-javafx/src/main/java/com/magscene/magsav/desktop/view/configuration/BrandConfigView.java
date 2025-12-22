@@ -222,7 +222,7 @@ public class BrandConfigView extends BorderPane {
         countryCol.setCellValueFactory(data -> data.getValue().countryProperty());
         countryCol.setPrefWidth(100);
 
-        table.getColumns().addAll(activeCol, nameCol, descriptionCol, countryCol);
+        table.getColumns().addAll(java.util.Arrays.asList(activeCol, nameCol, descriptionCol, countryCol));
         table.setEditable(true);
 
         return table;

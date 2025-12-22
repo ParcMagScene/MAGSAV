@@ -372,6 +372,7 @@ public class VehicleListView extends BorderPane {
     /**
      * Ouvre la fiche détaillée d'un véhicule en mode lecture seule
      */
+    @SuppressWarnings("unused")  // Conservée pour usage futur
     private void openVehicleDetails(VehicleItem item) {
         if (item == null) {
             return;

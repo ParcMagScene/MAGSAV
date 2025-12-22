@@ -11,7 +11,6 @@ import com.magscene.magsav.desktop.view.base.BaseManagerView;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -163,7 +162,7 @@ public class SupplierManagerViewSimple extends BaseManagerView<Object> implement
         statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
         statusCol.setPrefWidth(80);
 
-        supplierTable.getColumns().addAll(nameCol, contactCol, emailCol, servicesCol, statusCol);
+        supplierTable.getColumns().addAll(java.util.Arrays.asList(nameCol, contactCol, emailCol, servicesCol, statusCol));
     }
 
     private void loadSuppliersFromBackend() {

@@ -30,6 +30,7 @@ public class ClientDetailDialog extends Dialog<Map<String, Object>> {
     private final Map<String, Object> clientData;
     
     private boolean editMode = false;
+    @SuppressWarnings("unused")
     private Button editSaveButton;
     private VBox contentBox;
     

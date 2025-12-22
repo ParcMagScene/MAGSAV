@@ -635,6 +635,8 @@ public class MediaService {
                     javafx.scene.SnapshotParameters params = new javafx.scene.SnapshotParameters();
                     params.setFill(javafx.scene.paint.Color.TRANSPARENT);
                     
+                    // Scene nécessaire pour le rendu mais pas référencée directement
+                    @SuppressWarnings("unused")
                     javafx.scene.Scene scene = new javafx.scene.Scene(pane, 128, 128);
                     javafx.scene.image.WritableImage writableImage = pane.snapshot(params, null);
                     

@@ -38,6 +38,7 @@ public class LocmatImportService {
                 updateProgress(0, 100);
                 
                 // Configuration avec timeout étendu pour l'import Excel
+                @SuppressWarnings("deprecation")  // setConnectTimeout(Timeout) déprécié mais fonctionnel
                 RequestConfig requestConfig = RequestConfig.custom()
                         .setConnectTimeout(Timeout.ofSeconds(10))
                         .setResponseTimeout(Timeout.ofMinutes(5)) // 5 minutes pour l'import Excel

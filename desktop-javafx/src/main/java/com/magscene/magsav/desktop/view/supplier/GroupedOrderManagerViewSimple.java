@@ -195,8 +195,8 @@ public class GroupedOrderManagerViewSimple extends BaseManagerView<Object> {
         savingsCol.setCellValueFactory(new PropertyValueFactory<>("savings"));
         savingsCol.setPrefWidth(80);
 
-        orderTable.getColumns().addAll(refCol, supplierCol, amountCol, thresholdCol,
-                statusCol, dateCol, savingsCol);
+        orderTable.getColumns().addAll(java.util.Arrays.asList(refCol, supplierCol, amountCol, thresholdCol,
+                statusCol, dateCol, savingsCol));
     }
 
     private void loadOrdersFromBackend() {

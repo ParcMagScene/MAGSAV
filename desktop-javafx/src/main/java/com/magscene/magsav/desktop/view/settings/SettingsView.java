@@ -633,7 +633,7 @@ public class SettingsView extends VBox {
             }
         });
 
-        categoryTable.getColumns().addAll(nameCol, descCol, colorCol, systemCol);
+        categoryTable.getColumns().addAll(java.util.Arrays.asList(nameCol, descCol, colorCol, systemCol));
 
         // Initialiser avec les catégories d'équipements
         categoryTable.setItems(categoryManager.getEquipmentCategories());

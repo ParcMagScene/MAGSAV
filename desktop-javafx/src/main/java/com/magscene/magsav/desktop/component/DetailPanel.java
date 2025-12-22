@@ -473,6 +473,7 @@ public class DetailPanel extends VBox {
     /**
      * Crée une image par défaut si aucune image n'est fournie
      */
+    @SuppressWarnings("unused")  // Conservée pour usage futur
     private Image createDefaultImage() {
         // Pour l'instant, retourne null - à remplacer par une vraie image par défaut
         return null;

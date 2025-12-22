@@ -32,6 +32,7 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
     private final Map<String, Object> equipmentData;
     
     private boolean editMode = false;
+    @SuppressWarnings("unused")
     private Button editSaveButton;
     private MenuButton applyButton;
     private VBox contentBox;
@@ -942,6 +943,7 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         };
     }
     
+    @SuppressWarnings("unused")  // Conservée pour usage futur
     private String mapStatusToDisplay(String status) {
         if (status == null) return "—";
         return switch (status) {

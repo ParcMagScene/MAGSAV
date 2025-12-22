@@ -4,10 +4,7 @@ import com.magscene.magsav.desktop.component.AvatarView;
 import com.magscene.magsav.desktop.component.CustomTabPane;
 import com.magscene.magsav.desktop.service.ApiService;
 import com.magscene.magsav.desktop.service.MediaService;
-import com.magscene.magsav.desktop.util.ViewUtils;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -38,7 +35,8 @@ import javax.imageio.ImageIO;
 public class MediaManagerView extends BorderPane {
     
     private final MediaService mediaService;
-    private final ApiService apiService;
+    @SuppressWarnings("unused")
+    private final ApiService apiService;  // Conservé pour utilisation future
     
     // Composants pour les onglets
     private FlowPane photosGrid;

@@ -38,6 +38,7 @@ public class ApplicationConfig {
     /**
      * Vérifie si l'application est en mode debug
      */
+    @SuppressWarnings("unused")  // Le check system property peut être utile même si DEBUG_MODE est true
     public static boolean isDebugMode() {
         return DEBUG_MODE || Boolean.getBoolean("magsav.debug");
     }

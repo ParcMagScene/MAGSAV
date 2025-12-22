@@ -2,7 +2,6 @@ package com.magscene.magsav.desktop.view;
 
 import com.magscene.magsav.desktop.service.DashboardService;
 import com.magscene.magsav.desktop.service.DashboardService.CategoryData;
-import com.magscene.magsav.desktop.service.DashboardService.DashboardStats;
 import com.magscene.magsav.desktop.service.DashboardService.MonthlyData;
 import com.magscene.magsav.desktop.theme.ThemeConstants;
 
@@ -302,7 +301,6 @@ public class DashboardView extends BorderPane {
         }
         
         // Appliquer les couleurs après mise à jour
-        String[] barColors = { "#6B71F2", "#F26BA6", "#A6F26B", "#6BF2A6", "#8A7DD3" };
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(100));
         pause.setOnFinished(e -> {
             savBarChart.lookupAll(".chart-bar").forEach(node -> {

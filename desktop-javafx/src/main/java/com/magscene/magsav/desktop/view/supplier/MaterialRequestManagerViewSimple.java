@@ -208,7 +208,7 @@ public class MaterialRequestManagerViewSimple extends BaseManagerView<Object> {
         dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
         dateCol.setPrefWidth(120);
 
-        requestTable.getColumns().addAll(refCol, descCol, requesterCol, priorityCol, statusCol, dateCol);
+        requestTable.getColumns().addAll(java.util.Arrays.asList(refCol, descCol, requesterCol, priorityCol, statusCol, dateCol));
     }
 
     private void createTestData() {

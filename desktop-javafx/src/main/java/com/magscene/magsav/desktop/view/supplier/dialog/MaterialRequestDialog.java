@@ -235,7 +235,7 @@ public class MaterialRequestDialog extends Dialog<MaterialRequestDialog.RequestR
         supplierCol.setCellFactory(TextFieldTableCell.forTableColumn());
         supplierCol.setPrefWidth(150);
 
-        itemsTable.getColumns().addAll(nameCol, descCol, qtyCol, unitCol, supplierCol);
+        itemsTable.getColumns().addAll(java.util.Arrays.asList(nameCol, descCol, qtyCol, unitCol, supplierCol));
 
         // Ajouter un item par défaut
         addNewItem();

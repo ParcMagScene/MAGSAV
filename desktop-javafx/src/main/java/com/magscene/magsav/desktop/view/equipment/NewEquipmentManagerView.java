@@ -21,7 +21,6 @@ import com.magscene.magsav.desktop.util.ViewUtils;
 import com.magscene.magsav.desktop.view.base.BaseManagerView;
 
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -325,7 +324,7 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> impl
         serialCol.setPrefWidth(120);
         locationCol.setPrefWidth(90);
 
-        table.getColumns().addAll(qrCol, locmatCol, nameCol, brandCol, parentCategoryCol, categoryCol, quantityCol, statusCol, serialCol, locationCol);
+        table.getColumns().addAll(java.util.Arrays.asList(qrCol, locmatCol, nameCol, brandCol, parentCategoryCol, categoryCol, quantityCol, statusCol, serialCol, locationCol));
 
         // Style de sélection uniforme et double-clic pour édition
         table.setRowFactory(tv -> {

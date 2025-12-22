@@ -1228,6 +1228,7 @@ public class ApiService {
                 if (v instanceof Map) {
                     Object vehicleId = ((Map<?, ?>) v).get("id");
                     if (vehicleId != null && vehicleId.toString().equals(id.toString())) {
+                        @SuppressWarnings("unchecked")
                         Map<String, Object> updated = new HashMap<>((Map<String, Object>) v);
                         updated.putAll(data);
                         persistentVehicles.set(i, updated);

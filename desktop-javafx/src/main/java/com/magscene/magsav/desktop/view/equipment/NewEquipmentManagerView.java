@@ -154,9 +154,9 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> impl
         statusCombo = statCombo;
 
         // 🏢 Filtre propriétaire avec ViewUtils
-        // Par défaut MAG SCENE, sauf si préférence "Tous propriétaires" activée
+        // Par défaut "Tous propriétaires" pour afficher tous les équipements
         EquipmentPreferencesManager prefManager = EquipmentPreferencesManager.getInstance();
-        String defaultOwner = prefManager.isShowAllOwners() ? "Tous propriétaires" : "MAG SCENE";
+        String defaultOwner = "Tous propriétaires"; // Toujours afficher tous par défaut
         VBox ownerBox = ViewUtils.createFilterBox("🏢 Propriétaire",
                 new String[] { "Tous propriétaires", "MAG SCENE", "RENTAL", "NICLEN", "AED RENT" },
                 defaultOwner, value -> applyFilters());
@@ -170,8 +170,6 @@ public class NewEquipmentManagerView extends BaseManagerView<EquipmentItem> impl
         // Enregistrer le callback pour rafraîchir quand les préférences changent
         prefManager.setOnPreferencesChanged(() -> {
             if (ownerCombo != null) {
-                String newDefault = prefManager.isShowAllOwners() ? "Tous propriétaires" : "MAG SCENE";
-                ownerCombo.setValue(newDefault);
                 applyFilters();
             }
         });

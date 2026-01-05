@@ -65,6 +65,10 @@ public class MagsavDesktopApplication extends Application {
             instance = this;
             this.primaryStage = primaryStage;
 
+            // Forcer l'utilisateur courant à être administrateur pour le développement
+            com.magscene.magsav.desktop.service.CurrentUser.set("dev-admin", "ADMIN");
+            System.out.println("[DEV] Utilisateur courant forcé : dev-admin (ADMIN)");
+
             System.out.println("Application MAGSAV 3.0 - Démarrage avec architecture refactorisée");
 
             // Initialisation de l'architecture
@@ -327,22 +331,22 @@ public class MagsavDesktopApplication extends Application {
         primaryStage.setMinWidth(1200);
         primaryStage.setMinHeight(800);
 
-        // Service de mémorisation des préférences de fenêtre
-        WindowPreferencesService prefsService = WindowPreferencesService.getInstance();
-
-        // Restaurer la position et taille sauvegardées, ou utiliser les valeurs par
-        // défaut
+        // Forcer la fenêtre à s'afficher sur l'écran principal, centrée et visible
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
-        prefsService.restoreWindowBounds(
-                primaryStage,
-                "main-window",
-                screenBounds.getWidth(),
-                screenBounds.getHeight());
+        double width = Math.max(1280, Math.min(screenBounds.getWidth(), 1600));
+        double height = Math.max(800, Math.min(screenBounds.getHeight(), 1000));
+        primaryStage.setWidth(width);
+        primaryStage.setHeight(height);
+        primaryStage.setX(screenBounds.getMinX() + (screenBounds.getWidth() - width) / 2);
+        primaryStage.setY(screenBounds.getMinY() + (screenBounds.getHeight() - height) / 2);
 
-        // Activer la sauvegarde automatique lors des changements
-        prefsService.setupAutoSave(primaryStage, "main-window");
+        // Désactiver la restauration auto si la fenêtre est hors écran
+        // (optionnel : commenter les lignes suivantes si tu veux garder la mémorisation)
+        // WindowPreferencesService prefsService = WindowPreferencesService.getInstance();
+        // prefsService.restoreWindowBounds(primaryStage, "main-window", screenBounds.getWidth(), screenBounds.getHeight());
+        // prefsService.setupAutoSave(primaryStage, "main-window");
 
-        System.out.println("💾 Mémorisation fenêtre activée");
+        System.out.println("💾 Position/Dimension fenêtre forcées sur l'écran principal");
     }
 
     /**

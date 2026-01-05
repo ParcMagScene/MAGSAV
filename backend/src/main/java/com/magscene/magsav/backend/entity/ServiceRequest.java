@@ -30,12 +30,17 @@ public class ServiceRequest {
     }
     
     public enum ServiceRequestStatus {
+        // Statuts pour les demandes
         OPEN("Ouverte"),
+        VALIDATED("Validée"),
+
+        // Statuts pour les interventions
         IN_PROGRESS("En cours"),
         WAITING_PARTS("Attente pièces"),
         RESOLVED("Résolue"),
-        CLOSED("Fermée"),
-        CANCELLED("Annulée");
+        CANCELLED("Annulée"),
+        EXTERNAL("Externe"),
+        CLOSED("Fermée");
         
         private final String displayName;
         
@@ -81,14 +86,14 @@ public class ServiceRequest {
     private Priority priority = Priority.MEDIUM;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "status", columnDefinition = "VARCHAR(50)")
     private ServiceRequestStatus status = ServiceRequestStatus.OPEN;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     private ServiceRequestType type;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "equipment_id")
     private Equipment equipment;
     

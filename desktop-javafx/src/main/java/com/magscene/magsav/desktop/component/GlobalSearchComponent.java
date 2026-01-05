@@ -264,31 +264,33 @@ public class GlobalSearchComponent extends HBox {
      * Priorise l'affichage des correspondances LOCMAT
      */
     private VBox createModuleSectionFromService(String typeName, List<GlobalSearchService.SearchResult> results) {
-        VBox section = new VBox(5);
+        VBox section = new VBox(8);
         section.setStyle(
-            "-fx-background-color: #f8f9fa; " +
-            "-fx-background-radius: 6; " +
-            "-fx-padding: 8; " +
-            "-fx-border-color: #dee2e6; " +
-            "-fx-border-radius: 6; " +
-            "-fx-border-width: 1;"
+            "-fx-background-color: #ffffff; " +
+            "-fx-background-radius: 8; " +
+            "-fx-padding: 12; " +
+            "-fx-border-color: #e0e0e0; " +
+            "-fx-border-radius: 8; " +
+            "-fx-border-width: 1;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 4, 0, 0, 2);"
         );
         
         // En-tête du type avec icône et compteur
         String icon = getModuleIcon(typeName);
-        HBox header = new HBox(8);
+        HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
+        header.setStyle("-fx-padding: 0 0 8 0;");
         
         Label moduleLabel = new Label(icon + " " + typeName);
-        moduleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #2c3e50;");
+        moduleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px; -fx-text-fill: #1a1a2e;");
         
-        Label countLabel = new Label("(" + results.size() + ")");
+        Label countLabel = new Label(String.valueOf(results.size()));
         countLabel.setStyle(
-            "-fx-background-color: #3498db; " +
+            "-fx-background-color: #667eea; " +
             "-fx-text-fill: white; " +
             "-fx-padding: 2 8; " +
             "-fx-background-radius: 10; " +
-            "-fx-font-size: 11px;"
+            "-fx-font-size: 10px;"
         );
         
         header.getChildren().addAll(moduleLabel, countLabel);
@@ -297,8 +299,8 @@ public class GlobalSearchComponent extends HBox {
         // Liste des résultats (max 5 affichés initialement)
         String searchTerm = searchField.getText().trim().toLowerCase();
         if (results != null && !results.isEmpty()) {
-            VBox resultsList = new VBox(3);
-            resultsList.setPadding(new Insets(5, 0, 0, 15));
+            VBox resultsList = new VBox(6);
+            resultsList.setPadding(new Insets(8, 0, 0, 0));
             
             int displayCount = Math.min(results.size(), 5);
             for (int i = 0; i < displayCount; i++) {
@@ -308,95 +310,95 @@ public class GlobalSearchComponent extends HBox {
                 boolean isLocmatMatch = result.getLocmatCode() != null && 
                     result.getLocmatCode().toLowerCase().contains(searchTerm);
                 
-                // Créer le label avec mise en évidence du code LOCMAT si correspondance
-                String displayText = "• ";
-                if (isLocmatMatch && result.getLocmatCode() != null && !result.getLocmatCode().isEmpty()) {
-                    displayText += "🏷️ [" + result.getLocmatCode() + "] " + result.getName();
-                } else {
-                    displayText += result.getName();
+                // Conteneur pour chaque résultat
+                HBox resultCard = new HBox(8);
+                resultCard.setAlignment(Pos.CENTER_LEFT);
+                resultCard.setStyle(
+                    "-fx-background-color: transparent; " +
+                    "-fx-padding: 6 8; " +
+                    "-fx-cursor: hand;"
+                );
+                
+                // Code LOCMAT en gris si disponible
+                if (result.getLocmatCode() != null && !result.getLocmatCode().isEmpty()) {
+                    Label codeLabel = new Label(result.getLocmatCode());
+                    codeLabel.setStyle(
+                        isLocmatMatch 
+                            ? "-fx-text-fill: #d35400; -fx-font-size: 11px; -fx-font-weight: bold;"
+                            : "-fx-text-fill: #888; -fx-font-size: 11px;"
+                    );
+                    codeLabel.setMinWidth(80);
+                    resultCard.getChildren().add(codeLabel);
                 }
                 
-                Label resultLabel = new Label(displayText);
+                // Nom de l'élément
+                Label nameLabel = new Label(result.getName());
+                nameLabel.setStyle("-fx-text-fill: #2c3e50; -fx-font-size: 12px;");
+                nameLabel.setWrapText(false);
+                resultCard.getChildren().add(nameLabel);
                 
-                // Style différent pour les correspondances LOCMAT
-                if (isLocmatMatch) {
-                    resultLabel.setStyle("-fx-text-fill: #e67e22; -fx-cursor: hand; -fx-font-weight: bold;");
-                } else {
-                    resultLabel.setStyle("-fx-text-fill: #34495e; -fx-cursor: hand;");
-                }
-                resultLabel.setWrapText(true);
-                
-                // Ajouter la description si disponible (sans répéter le LOCMAT)
+                // Description courte (marque/catégorie) en gris
                 if (result.getDescription() != null && !result.getDescription().isEmpty()) {
-                    String desc = result.getDescription();
-                    // Supprimer le LOCMAT de la description si déjà affiché
-                    if (isLocmatMatch && result.getLocmatCode() != null) {
-                        desc = desc.replace(" [LOCMAT: " + result.getLocmatCode() + "]", "");
-                    }
-                    if (!desc.isEmpty()) {
-                        resultLabel.setText(displayText + " — " + desc);
-                    }
+                    Label descLabel = new Label("— " + result.getDescription());
+                    descLabel.setStyle("-fx-text-fill: #999; -fx-font-size: 11px;");
+                    resultCard.getChildren().add(descLabel);
                 }
                 
-                // Effet hover - conserver le style LOCMAT si c'est une correspondance
-                final boolean finalIsLocmatMatch = isLocmatMatch;
-                final String normalStyle = finalIsLocmatMatch 
-                    ? "-fx-text-fill: #e67e22; -fx-cursor: hand; -fx-font-weight: bold;"
-                    : "-fx-text-fill: #34495e; -fx-cursor: hand;";
-                final String hoverStyle = finalIsLocmatMatch
-                    ? "-fx-text-fill: #d35400; -fx-cursor: hand; -fx-font-weight: bold; -fx-underline: true;"
-                    : "-fx-text-fill: #3498db; -fx-cursor: hand; -fx-underline: true;";
+                // Effet hover
+                final String normalStyle = "-fx-background-color: transparent; -fx-padding: 6 8; -fx-cursor: hand;";
+                final String hoverStyle = "-fx-background-color: #f0f0f0; -fx-padding: 6 8; -fx-cursor: hand;";
                 
-                resultLabel.setOnMouseEntered(e -> resultLabel.setStyle(hoverStyle));
-                resultLabel.setOnMouseExited(e -> resultLabel.setStyle(normalStyle));
+                resultCard.setOnMouseEntered(e -> resultCard.setStyle(hoverStyle));
+                resultCard.setOnMouseExited(e -> resultCard.setStyle(normalStyle));
                 
                 // Clic sur un résultat
                 final GlobalSearchService.SearchResult finalResult = result;
-                resultLabel.setOnMouseClicked(e -> {
+                resultCard.setOnMouseClicked(e -> {
                     onServiceResultSelected(typeName, finalResult);
                     hideResultsPopup();
                 });
                 
-                resultsList.getChildren().add(resultLabel);
+                resultsList.getChildren().add(resultCard);
             }
             
-            // Si plus de 5 résultats, afficher un bouton "Afficher plus" bien visible
+            // Si plus de 5 résultats, afficher un lien discret "Voir plus"
             if (results.size() > 5) {
                 int remaining = results.size() - 5;
-                Button moreButton = new Button("➕ Afficher " + remaining + " résultat(s) de plus...");
+                
+                HBox moreContainer = new HBox();
+                moreContainer.setAlignment(Pos.CENTER);
+                moreContainer.setPadding(new Insets(4, 0, 0, 0));
+                
+                Label moreButton = new Label("▼ Voir " + remaining + " résultat(s) de plus");
                 moreButton.setStyle(
-                    "-fx-background-color: #3498db; " +
-                    "-fx-text-fill: white; " +
+                    "-fx-text-fill: #667eea; " +
                     "-fx-font-size: 11px; " +
                     "-fx-cursor: hand; " +
-                    "-fx-padding: 6 12; " +
-                    "-fx-background-radius: 4;"
+                    "-fx-padding: 4 8;"
                 );
                 moreButton.setOnMouseEntered(e -> moreButton.setStyle(
-                    "-fx-background-color: #2980b9; " +
-                    "-fx-text-fill: white; " +
+                    "-fx-text-fill: #5a67d8; " +
                     "-fx-font-size: 11px; " +
                     "-fx-cursor: hand; " +
-                    "-fx-padding: 6 12; " +
-                    "-fx-background-radius: 4;"
+                    "-fx-padding: 4 8; " +
+                    "-fx-underline: true;"
                 ));
                 moreButton.setOnMouseExited(e -> moreButton.setStyle(
-                    "-fx-background-color: #3498db; " +
-                    "-fx-text-fill: white; " +
+                    "-fx-text-fill: #667eea; " +
                     "-fx-font-size: 11px; " +
                     "-fx-cursor: hand; " +
-                    "-fx-padding: 6 12; " +
-                    "-fx-background-radius: 4;"
+                    "-fx-padding: 4 8;"
                 ));
                 
-                // Clic sur "Afficher plus" - afficher tous les résultats
+                // Clic sur "Voir plus" - afficher tous les résultats
                 final String finalTypeName = typeName;
                 final List<GlobalSearchService.SearchResult> allResults = results;
-                moreButton.setOnAction(e -> {
+                moreButton.setOnMouseClicked(e -> {
                     showAllServiceResultsForType(finalTypeName, allResults);
                 });
                 
-                resultsList.getChildren().add(moreButton);
+                moreContainer.getChildren().add(moreButton);
+                resultsList.getChildren().add(moreContainer);
             }
             
             section.getChildren().add(resultsList);
@@ -499,54 +501,35 @@ public class GlobalSearchComponent extends HBox {
             
             HBox resultRow = new HBox(8);
             resultRow.setAlignment(Pos.CENTER_LEFT);
+            resultRow.setStyle("-fx-background-color: transparent; -fx-padding: 6 8; -fx-cursor: hand;");
             
-            // Style différent pour les correspondances LOCMAT
-            String normalBgStyle = isLocmatMatch 
-                ? "-fx-background-color: #fff3cd; -fx-padding: 6 8; -fx-cursor: hand; -fx-background-radius: 4;"
-                : "-fx-background-color: transparent; -fx-padding: 6 8; -fx-cursor: hand;";
-            resultRow.setStyle(normalBgStyle);
-            
-            // Créer le label avec mise en évidence du code LOCMAT si correspondance
-            String displayText = "• ";
-            if (isLocmatMatch && result.getLocmatCode() != null && !result.getLocmatCode().isEmpty()) {
-                displayText += "🏷️ [" + result.getLocmatCode() + "] " + result.getName();
-            } else {
-                displayText += result.getName();
+            // Code LOCMAT en gris si disponible
+            if (result.getLocmatCode() != null && !result.getLocmatCode().isEmpty()) {
+                Label codeLabel = new Label(result.getLocmatCode());
+                codeLabel.setStyle(
+                    isLocmatMatch 
+                        ? "-fx-text-fill: #d35400; -fx-font-size: 11px; -fx-font-weight: bold;"
+                        : "-fx-text-fill: #888; -fx-font-size: 11px;"
+                );
+                codeLabel.setMinWidth(80);
+                resultRow.getChildren().add(codeLabel);
             }
             
-            Label resultLabel = new Label(displayText);
-            if (isLocmatMatch) {
-                resultLabel.setStyle("-fx-text-fill: #e67e22; -fx-font-weight: bold;");
-            } else {
-                resultLabel.setStyle("-fx-text-fill: #34495e;");
-            }
-            resultLabel.setWrapText(true);
+            // Nom de l'élément
+            Label nameLabel = new Label(result.getName());
+            nameLabel.setStyle("-fx-text-fill: #2c3e50; -fx-font-size: 12px;");
+            resultRow.getChildren().add(nameLabel);
             
+            // Description courte en gris
             if (result.getDescription() != null && !result.getDescription().isEmpty()) {
-                String desc = result.getDescription();
-                // Supprimer le LOCMAT de la description si déjà affiché
-                if (isLocmatMatch && result.getLocmatCode() != null) {
-                    desc = desc.replace(" [LOCMAT: " + result.getLocmatCode() + "]", "");
-                }
-                if (!desc.isEmpty()) {
-                    Label subtitleLabel = new Label(" — " + desc);
-                    subtitleLabel.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 11px;");
-                    resultRow.getChildren().addAll(resultLabel, subtitleLabel);
-                } else {
-                    resultRow.getChildren().add(resultLabel);
-                }
-            } else {
-                resultRow.getChildren().add(resultLabel);
+                Label descLabel = new Label("— " + result.getDescription());
+                descLabel.setStyle("-fx-text-fill: #999; -fx-font-size: 11px;");
+                resultRow.getChildren().add(descLabel);
             }
             
-            // Effets hover - conserver la mise en évidence LOCMAT
-            final boolean finalIsLocmatMatch = isLocmatMatch;
-            final String hoverStyle = finalIsLocmatMatch 
-                ? "-fx-background-color: #ffeeba; -fx-padding: 6 8; -fx-cursor: hand; -fx-background-radius: 4;"
-                : "-fx-background-color: #e8f4fc; -fx-padding: 6 8; -fx-cursor: hand; -fx-background-radius: 4;";
-            final String normalStyle = finalIsLocmatMatch 
-                ? "-fx-background-color: #fff3cd; -fx-padding: 6 8; -fx-cursor: hand; -fx-background-radius: 4;"
-                : "-fx-background-color: transparent; -fx-padding: 6 8; -fx-cursor: hand;";
+            // Effet hover simple
+            final String normalStyle = "-fx-background-color: transparent; -fx-padding: 6 8; -fx-cursor: hand;";
+            final String hoverStyle = "-fx-background-color: #f0f0f0; -fx-padding: 6 8; -fx-cursor: hand;";
             
             resultRow.setOnMouseEntered(e -> resultRow.setStyle(hoverStyle));
             resultRow.setOnMouseExited(e -> resultRow.setStyle(normalStyle));

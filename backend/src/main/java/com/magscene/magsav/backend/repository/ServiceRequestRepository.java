@@ -16,6 +16,12 @@ import java.util.List;
  */
 @Repository
 public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, Long> {
+
+        /**
+         * Récupère toutes les demandes avec l'équipement chargé (join fetch)
+         */
+        @Query("SELECT sr FROM ServiceRequest sr LEFT JOIN FETCH sr.equipment")
+        List<ServiceRequest> findAllWithEquipment();
     
     /**
      * Recherche par statut

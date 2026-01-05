@@ -7,6 +7,10 @@ import com.magscene.magsav.desktop.theme.ThemeConstants;
 import com.magscene.magsav.desktop.theme.UnifiedThemeManager;
 
 import javafx.application.Platform;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import com.magscene.magsav.desktop.service.MediaService;
+import com.magscene.magsav.desktop.service.CurrentUser;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -33,6 +37,7 @@ public class SAVDetailDialog extends Dialog<Map<String, Object>> {
     // Boutons
     private ButtonType editButtonType;
     private ButtonType closeButtonType;
+    private ButtonType validateButtonType;
     
     // Champs éditables
     private TextField titleField, equipmentField, clientField, technicianField;
@@ -50,23 +55,78 @@ public class SAVDetailDialog extends Dialog<Map<String, Object>> {
     private void setupDialog() {
         setTitle("Fiche Demande SAV");
         setHeaderText(null);
-        
+
         editButtonType = new ButtonType("Modifier", ButtonBar.ButtonData.LEFT);
         closeButtonType = new ButtonType("Fermer", ButtonBar.ButtonData.CANCEL_CLOSE);
+        validateButtonType = new ButtonType("Valider", ButtonBar.ButtonData.APPLY);
+
         getDialogPane().getButtonTypes().addAll(editButtonType, closeButtonType);
         
+        // Le bouton Valider n'est visible que pour les admins ET si le statut est OPEN
+        String currentStatus = (String) savData.get("status");
+        boolean canValidate = CurrentUser.isAdmin() && 
+                              currentStatus != null && 
+                              currentStatus.equalsIgnoreCase("OPEN");
+        if (canValidate) {
+            getDialogPane().getButtonTypes().add(0, validateButtonType);
+        }
+
         getDialogPane().setPrefSize(700, 650);
         getDialogPane().setMinWidth(650);
         getDialogPane().setMinHeight(600);
-        
+
         UnifiedThemeManager.getInstance().applyThemeToDialog(getDialogPane());
-        
+
         Platform.runLater(() -> {
             setupEditButton();
             setupCloseButton();
+            setupValidateButton();
         });
-        
-        setResultConverter(buttonType -> editMode ? savData : null);
+
+        setResultConverter(buttonType -> {
+            if (buttonType == validateButtonType) {
+                handleValidate();
+                return null;
+            }
+            return editMode ? savData : null;
+        });
+    }
+
+    private void setupValidateButton() {
+        if (!CurrentUser.isAdmin()) return;
+        Button validateButton = (Button) getDialogPane().lookupButton(validateButtonType);
+        if (validateButton != null) {
+            validateButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;");
+            validateButton.setMinWidth(120);
+            validateButton.setPrefWidth(120);
+            validateButton.setOnMouseEntered(e -> validateButton.setStyle("-fx-background-color: #219150; -fx-text-fill: white; -fx-font-weight: bold;"));
+            validateButton.setOnMouseExited(e -> validateButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold;"));
+        }
+    }
+
+    private void handleValidate() {
+        // Appelle l'API de validation qui crée l'intervention
+        Object id = savData.get("id");
+        if (id != null && apiService != null) {
+            apiService.validateSAVRequest(((Number) id).longValue())
+                .thenAccept(result -> Platform.runLater(() -> {
+                    if (result.containsKey("error")) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Erreur");
+                        alert.setHeaderText("Erreur lors de la validation");
+                        alert.setContentText(result.get("error").toString());
+                        alert.showAndWait();
+                    } else {
+                        savData.put("status", "VALIDATED");
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Validation");
+                        alert.setHeaderText(null);
+                        alert.setContentText("La demande a été validée et une intervention créée (ID: " + result.get("interventionId") + ").");
+                        alert.showAndWait();
+                        // Optionnel : rafraîchir la vue/liste principale
+                    }
+                }));
+        }
     }
     
     private boolean editButtonInitialized = false;
@@ -146,7 +206,7 @@ public class SAVDetailDialog extends Dialog<Map<String, Object>> {
         contentBox.getChildren().clear();
         contentBox.getChildren().addAll(
             createSection("📋 Informations générales", createGeneralSection()),
-            createSection("👤 Assignation", createAssignmentSection()),
+            createSection("💻 Équipement concerné", createAssignmentSection()),
             createSection("📝 Description et diagnostic", createDescriptionSection()),
             createSection("✅ Résolution", createResolutionSection())
         );
@@ -306,21 +366,87 @@ public class SAVDetailDialog extends Dialog<Map<String, Object>> {
         GridPane grid = new GridPane();
         grid.setHgap(15);
         grid.setVgap(10);
-        
+
         int row = 0;
-        
-        equipmentField = createTextField("equipmentName");
-        row = addField(grid, row, "Équipement", equipmentField, getStringValue("equipmentName"));
-        
+
+        // --- Section Équipement complet ---
+        Map<String, Object> equipment = null;
+        if (savData.get("equipment") instanceof Map) {
+            equipment = (Map<String, Object>) savData.get("equipment");
+        }
+        String equipName = equipment != null ? (String) equipment.getOrDefault("name", "") : getStringValue("equipmentName");
+        String locmat = equipment != null ? (String) equipment.getOrDefault("locmatCode", "") : getStringValue("locmatCode");
+        String brand = equipment != null ? (String) equipment.getOrDefault("brand", "") : getStringValue("brand");
+        String category = equipment != null ? (String) equipment.getOrDefault("category", "") : getStringValue("category");
+        String serial = equipment != null ? (String) equipment.getOrDefault("serialNumber", "") : getStringValue("serialNumber");
+        String model = equipment != null ? (String) equipment.getOrDefault("model", "") : getStringValue("model");
+
+        // Photo équipement - Priorité: LOCMAT > modèle > nom
+        String photoKey = null;
+        if (locmat != null && !locmat.isEmpty()) {
+            photoKey = locmat;
+        } else if (model != null && !model.isEmpty()) {
+            photoKey = model;
+        } else {
+            photoKey = equipName;
+        }
+        Image equipPhoto = null;
+        if (photoKey != null && !photoKey.isEmpty()) {
+            // Essayer avec extension .jpg puis sans extension
+            equipPhoto = MediaService.getInstance().loadEquipmentPhoto(photoKey + ".jpg", 120, 120);
+            if (equipPhoto == null) {
+                equipPhoto = MediaService.getInstance().loadEquipmentPhoto(photoKey + ".png", 120, 120);
+            }
+            if (equipPhoto == null) {
+                equipPhoto = MediaService.getInstance().loadEquipmentPhoto(photoKey, 120, 120);
+            }
+        }
+        if (equipName != null && !equipName.isEmpty()) {
+            // Affichage photo + infos
+            ImageView photoView = new ImageView();
+            photoView.setFitWidth(120);
+            photoView.setFitHeight(120);
+            photoView.setPreserveRatio(true);
+            if (equipPhoto != null) {
+                photoView.setImage(equipPhoto);
+                photoView.setStyle("-fx-background-color: #f0f0f0; -fx-border-color: #ccc; -fx-border-radius: 8; -fx-background-radius: 8;");
+            } else {
+                try {
+                    photoView.setImage(new Image(getClass().getResourceAsStream("/images/no-photo.png")));
+                } catch (Exception e) {
+                    // fallback : rien
+                }
+                photoView.setStyle("-fx-background-color: #f8f8f8; -fx-border-color: #eee; -fx-border-radius: 8; -fx-background-radius: 8; opacity:0.6;");
+            }
+
+            VBox equipInfo = new VBox(6);
+            equipInfo.getChildren().addAll(
+                new Label("Nom : " + (equipName.isEmpty() ? "—" : equipName)),
+                new Label("Code LOCMAT : " + (locmat == null || locmat.isEmpty() ? "—" : locmat)),
+                new Label("Marque : " + (brand == null || brand.isEmpty() ? "—" : brand)),
+                new Label("Catégorie : " + (category == null || category.isEmpty() ? "—" : category)),
+                new Label("N° série : " + (serial == null || serial.isEmpty() ? "—" : serial))
+            );
+            equipInfo.setStyle("-fx-font-size: 12px; -fx-text-fill: #2c3e50;");
+
+            HBox equipBox = new HBox(18, photoView, equipInfo);
+            equipBox.setAlignment(Pos.CENTER_LEFT);
+            equipBox.setPadding(new Insets(0, 0, 10, 0));
+            grid.add(new Label("Équipement concerné :"), 0, row);
+            grid.add(equipBox, 1, row++);
+        }
+
+        // --- Fin section équipement ---
+
         clientField = createTextField("clientName");
         row = addField(grid, row, "Client", clientField, getStringValue("clientName"));
-        
+
         technicianField = createTextField("assignedTechnician");
         row = addField(grid, row, "Technicien", technicianField, getStringValue("assignedTechnician"));
-        
+
         row = addReadOnlyField(grid, row, "Date création", formatDate(getStringValue("createdAt")));
         addReadOnlyField(grid, row, "Dernière MAJ", formatDate(getStringValue("updatedAt")));
-        
+
         return grid;
     }
     

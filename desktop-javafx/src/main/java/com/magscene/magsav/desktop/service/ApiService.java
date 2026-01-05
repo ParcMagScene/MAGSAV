@@ -186,7 +186,44 @@ public class ApiService {
 
     // Methodes pour les equipements
     public CompletableFuture<List<Object>> getEquipments() {
-        return CompletableFuture.completedFuture(getSimulatedEquipmentData());
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                System.out.println("🔄 Chargement équipements depuis backend: /api/equipment");
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/equipment"))
+                        .timeout(Duration.ofSeconds(30))
+                        .GET()
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+                if (response.statusCode() == 200) {
+                    String body = response.body().trim();
+                    List<Object> result = new ArrayList<>();
+                    
+                    // Déterminer le type de réponse (liste ou objet paginé)
+                    if (body.startsWith("[")) {
+                        result = objectMapper.readValue(body, new TypeReference<List<Object>>() {});
+                    } else if (body.startsWith("{")) {
+                        Map<String, Object> pageResult = objectMapper.readValue(body, new TypeReference<Map<String, Object>>() {});
+                        if (pageResult.containsKey("content")) {
+                            @SuppressWarnings("unchecked")
+                            List<Object> content = (List<Object>) pageResult.get("content");
+                            result = content;
+                        }
+                    }
+                    System.out.println("✅ " + result.size() + " équipements chargés depuis backend");
+                    return result;
+                } else {
+                    System.err.println("❌ Erreur HTTP " + response.statusCode() + " pour équipements");
+                }
+            } catch (Exception e) {
+                System.err.println("❌ Erreur chargement équipements: " + e.getMessage());
+            }
+            // Fallback sur données simulées
+            System.out.println("⚠️ Fallback sur données équipements simulées");
+            return getSimulatedEquipmentData();
+        });
     }
 
     /**
@@ -574,23 +611,131 @@ public class ApiService {
     }
 
     public CompletableFuture<Object> createServiceRequest(Map<String, Object> data) {
-        return CompletableFuture.completedFuture(data);
-    }
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // Transformer equipmentId en objet equipment.id pour le backend
+                Map<String, Object> requestData = new java.util.HashMap<>(data);
+                Object equipmentId = requestData.remove("equipmentId");
+                if (equipmentId != null) {
+                    Map<String, Object> equipment = new java.util.HashMap<>();
+                    equipment.put("id", equipmentId);
+                    requestData.put("equipment", equipment);
+                    System.out.println("📦 Équipement lié: id=" + equipmentId);
+                }
+                
+                String json = objectMapper.writeValueAsString(requestData);
+                System.out.println("📤 JSON envoyé: " + json);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/service-requests"))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .build();
 
-    public CompletableFuture<Object> createServiceRequest(Object request) {
-        return CompletableFuture.completedFuture(request);
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200 || response.statusCode() == 201) {
+                    System.out.println("✅ Demande SAV créée avec succès via backend");
+                    return objectMapper.readValue(response.body(), Map.class);
+                } else {
+                    System.err.println("❌ Erreur création demande SAV: HTTP " + response.statusCode());
+                    System.err.println("❌ Body: " + response.body());
+                    throw new RuntimeException("Erreur HTTP " + response.statusCode());
+                }
+            } catch (Exception e) {
+                System.err.println("❌ Erreur création demande SAV: " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public CompletableFuture<Object> updateServiceRequest(Long id, Map<String, Object> data) {
-        return CompletableFuture.completedFuture(data);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // Transformer equipmentId en objet equipment.id pour le backend
+                Map<String, Object> requestData = new java.util.HashMap<>(data);
+                Object equipmentId = requestData.remove("equipmentId");
+                if (equipmentId != null) {
+                    Map<String, Object> equipment = new java.util.HashMap<>();
+                    equipment.put("id", equipmentId);
+                    requestData.put("equipment", equipment);
+                    System.out.println("📦 Équipement lié pour mise à jour: id=" + equipmentId);
+                }
+                
+                String json = objectMapper.writeValueAsString(requestData);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/service-requests/" + id))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .PUT(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200) {
+                    System.out.println("✅ Demande SAV mise à jour avec succès");
+                    return objectMapper.readValue(response.body(), Map.class);
+                } else {
+                    System.err.println("❌ Erreur mise à jour demande SAV: HTTP " + response.statusCode());
+                    throw new RuntimeException("Erreur HTTP " + response.statusCode());
+                }
+            } catch (Exception e) {
+                System.err.println("❌ Erreur mise à jour demande SAV: " + e.getMessage());
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public CompletableFuture<Object> updateServiceRequest(Long id, Object request) {
-        return CompletableFuture.completedFuture(request);
+        if (request instanceof Map) {
+            if (request instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> safeMap = (Map<String, Object>) request;
+                return updateServiceRequest(id, safeMap);
+            } else {
+                throw new IllegalArgumentException("Request n'est pas un Map<String, Object>");
+            }
+        }
+        // Si c'est un ServiceRequest, le convertir en Map
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = objectMapper.convertValue(request, Map.class);
+            return updateServiceRequest(id, data);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Type non supporté: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Surcharge pour accepter un objet ServiceRequest directement
+     */
+    public CompletableFuture<Object> createServiceRequest(Object requestObj) {
+        if (requestObj instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = (Map<String, Object>) requestObj;
+            return createServiceRequest(data);
+        }
+        // Si c'est un ServiceRequest, le convertir en Map
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = objectMapper.convertValue(requestObj, Map.class);
+            return createServiceRequest(data);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(new IllegalArgumentException("Type non supporté: " + e.getMessage()));
+        }
     }
 
     public CompletableFuture<Boolean> deleteServiceRequest(Long id) {
-        return CompletableFuture.completedFuture(true);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/service-requests/" + id))
+                        .DELETE()
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                return response.statusCode() == 200 || response.statusCode() == 204;
+            } catch (Exception e) {
+                System.err.println("❌ Erreur suppression demande SAV: " + e.getMessage());
+                return false;
+            }
+        });
     }
 
     // === GESTION DES ÉVÉNEMENTS DE PLANNING ===
@@ -2139,5 +2284,37 @@ public class ApiService {
         orders.add(order3);
 
         return orders;
+    }
+
+    /**
+     * Valide une demande SAV et crée une intervention (statut IN_PROGRESS)
+     */
+    public CompletableFuture<Map<String, Object>> validateSAVRequest(Long id) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(BASE_URL + "/service-requests/" + id + "/validate"))
+                        .header("Content-Type", "application/json; charset=UTF-8")
+                        .POST(HttpRequest.BodyPublishers.noBody())
+                        .timeout(Duration.ofSeconds(10))
+                        .build();
+
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (response.statusCode() == 200) {
+                    System.out.println("✅ Demande SAV ID " + id + " validée et intervention créée");
+                    return objectMapper.readValue(response.body(), new TypeReference<Map<String, Object>>() {});
+                } else if (response.statusCode() == 409) {
+                    // Conflit: demande déjà validée
+                    System.err.println("⚠️ Demande SAV " + id + " déjà validée (HTTP 409)");
+                    return Map.of("error", "Cette demande a déjà été validée", "code", 409);
+                } else {
+                    System.err.println("❌ Erreur validation SAV " + id + ": HTTP " + response.statusCode());
+                    return Map.of("error", "Erreur HTTP " + response.statusCode(), "code", response.statusCode());
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Backend indisponible pour validation SAV: " + e.getMessage());
+                return Map.of("error", e.getMessage());
+            }
+        });
     }
 }

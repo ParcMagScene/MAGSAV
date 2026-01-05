@@ -44,11 +44,35 @@ public class EquipmentItem implements DetailPanelProvider {
         return (String) data.get("category");
     }
     
+    public String getModel() {
+        return (String) data.get("model");
+    }
+    
     /**
      * Récupère le chemin de la photo de l'équipement
+     * Utilise photoPath, ou à défaut le code LOCMAT, le modèle, ou le nom
      */
     public String getPhotoPath() {
-        return (String) data.get("photoPath");
+        // Priorité 1: photoPath explicite
+        String photoPath = (String) data.get("photoPath");
+        if (photoPath != null && !photoPath.isEmpty()) {
+            return photoPath;
+        }
+        
+        // Priorité 2: Code LOCMAT (internalReference)
+        String locmat = getLocmatCode();
+        if (locmat != null && !locmat.isEmpty()) {
+            return locmat;
+        }
+        
+        // Priorité 3: Modèle de l'équipement
+        String model = (String) data.get("model");
+        if (model != null && !model.isEmpty()) {
+            return model;
+        }
+        
+        // Priorité 4: Nom de l'équipement
+        return getName();
     }
     
     /**
@@ -58,7 +82,17 @@ public class EquipmentItem implements DetailPanelProvider {
         if (!imageLoaded) {
             String photoPath = getPhotoPath();
             if (photoPath != null && !photoPath.isEmpty()) {
-                cachedImage = MediaService.getInstance().loadEquipmentPhoto(photoPath, 180, 180);
+                // Essayer plusieurs extensions
+                cachedImage = MediaService.getInstance().loadEquipmentPhoto(photoPath + ".jpg", 180, 180);
+                if (cachedImage == null) {
+                    cachedImage = MediaService.getInstance().loadEquipmentPhoto(photoPath + ".png", 180, 180);
+                }
+                if (cachedImage == null) {
+                    cachedImage = MediaService.getInstance().loadEquipmentPhoto(photoPath + ".jpeg", 180, 180);
+                }
+                if (cachedImage == null) {
+                    cachedImage = MediaService.getInstance().loadEquipmentPhoto(photoPath, 180, 180);
+                }
             }
             imageLoaded = true;
         }

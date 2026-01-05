@@ -282,8 +282,10 @@ public class DetailPanel extends VBox {
         imageSection.setManaged(false);
         
         // Logo de la marque (dans le header à droite)
+        System.out.println("🏷️ DetailPanel.updateContent - brandName reçu: '" + brandName + "'");
         if (brandName != null && !brandName.isEmpty()) {
             Image brandLogo = mediaService.getBrandLogo(brandName, 60, 40);
+            System.out.println("🏷️ DetailPanel.updateContent - Logo trouvé: " + (brandLogo != null));
             if (brandLogo != null) {
                 headerLogoView.setImage(brandLogo);
             } else {
@@ -484,6 +486,17 @@ public class DetailPanel extends VBox {
      */
     private Image generateDefaultQRCode(String data) {
         return QRCodeGenerator.generateQRCode(data != null ? data : "Default QR");
+    }
+
+    /**
+     * Crée un titre de section pour organiser les informations
+     */
+    public static Label createSectionTitle(String title) {
+        Label titleLabel = new Label(title);
+        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 13));
+        titleLabel.setTextFill(Color.web("#2c3e50"));
+        titleLabel.setStyle("-fx-padding: 8 0 4 0; -fx-border-color: transparent transparent #e0e0e0 transparent; -fx-border-width: 0 0 1 0;");
+        return titleLabel;
     }
 
     /**

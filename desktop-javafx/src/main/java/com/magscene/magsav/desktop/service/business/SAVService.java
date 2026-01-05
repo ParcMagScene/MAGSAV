@@ -114,4 +114,11 @@ public class SAVService {
                 return result;
             });
     }
+    
+    /**
+     * Supprime une demande SAV par son ID
+     */
+    public java.util.concurrent.CompletableFuture<String> deleteSAVRequest(Long id) {
+        return apiClient.deleteSAVRequest(id);
+    }
 }

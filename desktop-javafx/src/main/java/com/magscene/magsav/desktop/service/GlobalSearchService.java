@@ -104,7 +104,6 @@ public class GlobalSearchService {
                 String name = getStringValue(item, "name", "designation", "nom");
                 String brand = getStringValue(item, "brand", "marque");
                 String category = getStringValue(item, "category", "categorie");
-                String qrCode = getStringValue(item, "qrCode", "qr_code");
                 String locmatCode = getStringValue(item, "internalReference", "locmatCode", "locmat_code");
                 String id = getStringValue(item, "id");
                 
@@ -117,15 +116,10 @@ public class GlobalSearchService {
                 }
                 
                 if (!name.isEmpty()) {
+                    // Description simple : marque - catégorie (sans LOCMAT ni QR en texte)
                     String description = brand;
                     if (!category.isEmpty()) {
-                        description += (description.isEmpty() ? "" : " - ") + category;
-                    }
-                    if (!locmatCode.isEmpty()) {
-                        description += " [LOCMAT: " + locmatCode + "]";
-                    }
-                    if (!qrCode.isEmpty()) {
-                        description += " [QR: " + qrCode + "]";
+                        description += (description.isEmpty() ? "" : " • ") + category;
                     }
                     results.add(new SearchResult("Équipement", name, description, "📦", id, locmatCode));
                 }

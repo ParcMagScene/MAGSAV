@@ -1,12 +1,17 @@
 package com.magscene.magsav.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+
 @Entity
 @Table(name = "equipment")
+@JsonInclude(Include.NON_NULL)
 public class Equipment {
     
     @Id
@@ -250,6 +255,7 @@ public class Equipment {
         this.updatedAt = updatedAt;
     }
     
+    @JsonIgnore
     public Category getCategoryEntity() {
         return categoryEntity;
     }
@@ -258,6 +264,7 @@ public class Equipment {
         this.categoryEntity = categoryEntity;
     }
     
+    @JsonIgnore
     public List<EquipmentPhoto> getPhotos() {
         return photos;
     }

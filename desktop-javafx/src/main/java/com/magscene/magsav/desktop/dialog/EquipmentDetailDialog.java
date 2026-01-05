@@ -276,10 +276,32 @@ public class EquipmentDetailDialog extends Dialog<Map<String, Object>> {
         photoView.setPreserveRatio(true);
         photoView.setStyle("-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 2);");
         
+        // Déterminer le chemin de la photo: photoPath > internalReference (LOCMAT) > model > name
         String photoPath = getStringValue("photoPath");
-        System.out.println("📷 createHeader - photoPath: " + photoPath);
+        if (photoPath == null || photoPath.isEmpty()) {
+            photoPath = getStringValue("internalReference"); // Code LOCMAT
+        }
+        if (photoPath == null || photoPath.isEmpty()) {
+            photoPath = getStringValue("model");
+        }
+        if (photoPath == null || photoPath.isEmpty()) {
+            photoPath = getStringValue("name");
+        }
+        
+        System.out.println("📷 createHeader - photoPath résolu: " + photoPath);
+        Image photo = null;
         if (photoPath != null && !photoPath.isEmpty()) {
-            Image photo = mediaService.loadEquipmentPhoto(photoPath, 80, 80);
+            // Essayer plusieurs extensions
+            photo = mediaService.loadEquipmentPhoto(photoPath + ".jpg", 80, 80);
+            if (photo == null) {
+                photo = mediaService.loadEquipmentPhoto(photoPath + ".png", 80, 80);
+            }
+            if (photo == null) {
+                photo = mediaService.loadEquipmentPhoto(photoPath + ".jpeg", 80, 80);
+            }
+            if (photo == null) {
+                photo = mediaService.loadEquipmentPhoto(photoPath, 80, 80);
+            }
             System.out.println("📷 createHeader - Image chargée: " + (photo != null));
             if (photo != null) {
                 photoView.setImage(photo);

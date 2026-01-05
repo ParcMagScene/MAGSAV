@@ -422,7 +422,19 @@ public class ServiceRequestDialog {
         // Recuperation de l'equipement selectionne
         if (equipmentCombo.getValue() != null) {
             Map<String, Object> selectedEquipment = equipmentCombo.getValue();
-            // Adapter selon l'API ServiceRequest backend
+            // Récupérer l'ID et le nom de l'équipement
+            Object idObj = selectedEquipment.get("id");
+            if (idObj != null) {
+                if (idObj instanceof Number) {
+                    request.setEquipmentId(((Number) idObj).longValue());
+                } else {
+                    try {
+                        request.setEquipmentId(Long.parseLong(idObj.toString()));
+                    } catch (NumberFormatException e) {
+                        // ID invalide, on l'ignore
+                    }
+                }
+            }
             request.setEquipmentName(getEquipmentName(selectedEquipment));
         }
 
@@ -478,11 +490,13 @@ public class ServiceRequestDialog {
         if (status == null) return null;
         return switch (status) {
             case OPEN -> "Ouverte";
+            case VALIDATED -> "Validée";
             case IN_PROGRESS -> "En cours";
             case WAITING_PARTS -> "En attente de pieces";
             case RESOLVED -> "Resolue";
             case CLOSED -> "Fermee";
             case CANCELLED -> "Annulee";
+            case EXTERNAL -> "Externe";
         };
     }
     
@@ -490,11 +504,13 @@ public class ServiceRequestDialog {
         if (display == null) return null;
         return switch (display) {
             case "Ouverte" -> ServiceRequestStatus.OPEN;
+            case "Validée" -> ServiceRequestStatus.VALIDATED;
             case "En cours" -> ServiceRequestStatus.IN_PROGRESS;
             case "En attente de pieces" -> ServiceRequestStatus.WAITING_PARTS;
             case "Resolue" -> ServiceRequestStatus.RESOLVED;
             case "Fermee" -> ServiceRequestStatus.CLOSED;
             case "Annulee" -> ServiceRequestStatus.CANCELLED;
+            case "Externe" -> ServiceRequestStatus.EXTERNAL;
             default -> null;
         };
     }
@@ -616,8 +632,10 @@ public class ServiceRequestDialog {
     }
     
     private void loadEquipmentData() {
+        System.out.println("🔧 loadEquipmentData() appelé");
         CompletableFuture<List<Object>> future = apiService.getEquipments();
         future.thenAccept(equipment -> {
+            System.out.println("🔧 Équipements reçus: " + (equipment != null ? equipment.size() : "null"));
             Platform.runLater(() -> {
                 ObservableList<Map<String, Object>> equipmentList = FXCollections.observableArrayList();
                 for (Object item : equipment) {
@@ -627,6 +645,7 @@ public class ServiceRequestDialog {
                         equipmentList.add(equipmentMap);
                     }
                 }
+                System.out.println("🔧 Équipements ajoutés au ComboBox: " + equipmentList.size());
                 equipmentCombo.setItems(equipmentList);
             });
         }).exceptionally(throwable -> {

@@ -105,20 +105,21 @@ public class MediaService {
      * Initialise le mapping entre noms de marques et fichiers logos
      */
     private void initializeBrandLogoMapping() {
-        // Mapping manuel des noms de marques vers leurs logos
-        brandLogoMapping.put("L-ACOUSTICS", "L-Acoustics_Square_Logo.svg.png");
-        brandLogoMapping.put("L ACOUSTICS", "L-Acoustics_Square_Logo.svg.png");
+        // Mapping manuel des noms de marques vers leurs logos (noms de fichiers réels)
+        brandLogoMapping.put("L-ACOUSTICS", "L-Acoustics.png");
+        brandLogoMapping.put("L ACOUSTICS", "L-Acoustics.png");
+        brandLogoMapping.put("L'ACOUSTICS", "L-Acoustics.png");
         brandLogoMapping.put("YAMAHA", "Yamaha.jpeg");
-        brandLogoMapping.put("SHURE", "shure-logo-png_seeklogo-476684.png");
+        brandLogoMapping.put("SHURE", "SHURE.png");
         brandLogoMapping.put("SENNHEISER", "Sennheiser.png");
         brandLogoMapping.put("CHAUVET", "Chauvet.png");
-        brandLogoMapping.put("ROBE", "Robe_Lighting_logo.svg.png");
+        brandLogoMapping.put("ROBE", "ROBE.png");
         brandLogoMapping.put("CLAY PAKY", "ClayPaky.jpg");
         brandLogoMapping.put("CLAYPAKY", "ClayPaky.jpg");
         brandLogoMapping.put("MARTIN", "Martin.svg");
         brandLogoMapping.put("ETC", "ETC_4c.jpg");
         brandLogoMapping.put("ADB", "ADB.jpeg");
-        brandLogoMapping.put("STARWAY", "Starway-logo-carre-or-fond-bleu.jpg");
+        brandLogoMapping.put("STARWAY", "STARWAY.jpg");
         brandLogoMapping.put("DIMATEC", "DIMATEC-LOGO-250px-GIF-1.gif");
         brandLogoMapping.put("ALGAM", "Algam.jpg");
         brandLogoMapping.put("AXENTE", "Axente.png");
@@ -127,9 +128,16 @@ public class MediaService {
         brandLogoMapping.put("DV2", "DV2.jpeg");
         brandLogoMapping.put("LAGOONA", "Lagoona.jpeg");
         brandLogoMapping.put("RJ", "RJ.png");
-        brandLogoMapping.put("MAG SCENE", "LogoMagSceneBLACK.gif");
-        brandLogoMapping.put("MAGSCENE", "LogoMagSceneBLACK.gif");
-        brandLogoMapping.put("MAG SCÈNE", "LogoMagSceneBLACK.gif");
+        brandLogoMapping.put("ROBERT JULIAT", "ROBERT JULIAT.png");
+        brandLogoMapping.put("MAG SCENE", "MagSceneBLACK.gif");
+        brandLogoMapping.put("MAGSCENE", "MagSceneBLACK.gif");
+        brandLogoMapping.put("MAG SCÈNE", "MagSceneBLACK.gif");
+        brandLogoMapping.put("MERCEDES", "MERCEDES.jpg");
+        brandLogoMapping.put("MERCEDES-BENZ", "MERCEDES.jpg");
+        brandLogoMapping.put("PEUGEOT", "Peugeot_2021_Logo.svg.png");
+        brandLogoMapping.put("VOLVO", "VOLVO.jpg");
+        brandLogoMapping.put("SCHMITZ", "SCHMITZ.png");
+        brandLogoMapping.put("MOVING STAGE", "MOVING STAGE.jpg");
     }
     
     /**
@@ -207,6 +215,7 @@ public class MediaService {
     
     /**
      * Charge une photo d'équipement
+     * Cherche d'abord avec le nom exact, puis avec une recherche par préfixe
      */
     public Image loadEquipmentPhoto(String photoPath, double width, double height) {
         System.out.println("📷 loadEquipmentPhoto appelé avec: " + photoPath);
@@ -232,6 +241,38 @@ public class MediaService {
             });
         } else {
             System.out.println("📷 Fichier N'EXISTE PAS: " + file.getAbsolutePath());
+            
+            // Recherche alternative: chercher un fichier commençant par le nom (sans extension)
+            String baseName = photoPath;
+            // Retirer l'extension si présente
+            int dotIndex = baseName.lastIndexOf('.');
+            if (dotIndex > 0) {
+                baseName = baseName.substring(0, dotIndex);
+            }
+            final String searchPattern = baseName.toUpperCase();
+            System.out.println("📷 Recherche alternative avec pattern: " + searchPattern);
+            
+            File photosDir = photosPath.toFile();
+            if (photosDir.exists() && photosDir.isDirectory()) {
+                File[] matches = photosDir.listFiles((dir, name) -> {
+                    String upperName = name.toUpperCase();
+                    // Ignorer les fichiers MacOS metadata
+                    if (name.startsWith("._")) return false;
+                    // Chercher les fichiers commençant par le pattern ou contenant le pattern
+                    return upperName.startsWith(searchPattern) || 
+                           (searchPattern.length() > 2 && upperName.contains(searchPattern));
+                });
+                
+                if (matches != null && matches.length > 0) {
+                    File foundFile = matches[0]; // Prendre le premier match
+                    System.out.println("📷 Fichier trouvé par recherche: " + foundFile.getName());
+                    String cacheKey = "photo_" + foundFile.getAbsolutePath() + "_" + (int)width + "x" + (int)height;
+                    return imageCache.computeIfAbsent(cacheKey, k -> {
+                        System.out.println("📷 Chargement image trouvée: " + foundFile.toURI().toString());
+                        return new Image(foundFile.toURI().toString(), width, height, true, true, true);
+                    });
+                }
+            }
         }
         
         return null;

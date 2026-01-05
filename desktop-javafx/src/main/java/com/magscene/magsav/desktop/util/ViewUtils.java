@@ -1,3 +1,4 @@
+
 package com.magscene.magsav.desktop.util;
 
 import java.util.function.Consumer;
@@ -28,12 +29,6 @@ import javafx.scene.text.Font;
  */
 public class ViewUtils {
 
-    private static final Logger logger = Logger.getLogger(ViewUtils.class.getName());
-
-    // ========================================
-    // 🔍 CRÉATION DE COMPOSANTS DE RECHERCHE; //
-    // ========================================
-
     /**
      * Crée un label de recherche standardisé avec icône
      * 
@@ -52,6 +47,33 @@ public class ViewUtils {
 
         logger.fine("🔍 Label de recherche créé : " + text);
         return label;
+    }
+
+    private static final Logger logger = Logger.getLogger(ViewUtils.class.getName());
+
+    // ... (autres méthodes utilitaires déjà présentes) ...
+
+    /**
+     * Types de statut pour le styling des labels
+     */
+    public enum StatusType {
+        SUCCESS, WARNING, ERROR, INFO, PENDING
+    }
+
+    /**
+     * Affiche une boîte de dialogue de confirmation et retourne vrai si l'utilisateur confirme.
+     * @param title Titre de la boîte
+     * @param message Message à afficher
+     * @return true si confirmé, false sinon
+     */
+    public static boolean showConfirmationDialog(String title, String message) {
+
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title != null ? title : "Confirmation");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        java.util.Optional<javafx.scene.control.ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == javafx.scene.control.ButtonType.OK;
     }
 
     /**
@@ -585,10 +607,4 @@ public class ViewUtils {
         return label;
     }
 
-    /**
-     * Types de statut pour le styling des labels
-     */
-    public enum StatusType {
-        SUCCESS, WARNING, ERROR, INFO, PENDING
-    }
 }

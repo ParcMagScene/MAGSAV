@@ -39,4 +39,18 @@ public interface DetailPanelProvider {
      * @return L'identifiant unique de l'item
      */
     String getDetailId();
+    
+    /**
+     * @return Le nom de la marque pour charger le logo (null si pas de logo)
+     */
+    default String getBrandName() {
+        return null;
+    }
+    
+    /**
+     * @return Le chemin/identifiant de la photo (LOCMAT ou nom) pour MediaService
+     */
+    default String getPhotoPath() {
+        return null;
+    }
 }

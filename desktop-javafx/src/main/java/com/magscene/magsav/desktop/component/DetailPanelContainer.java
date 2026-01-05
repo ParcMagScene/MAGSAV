@@ -83,7 +83,31 @@ public class DetailPanelContainer extends StackPane {
 
     private void showDetailPanel(DetailPanelProvider provider) {
         // Si c'est un EquipmentItem, utiliser les informations de photo et logo
-        if (provider instanceof EquipmentItem) {
+        if (provider instanceof com.magscene.magsav.desktop.view.sav.SAVRequestItem) {
+            com.magscene.magsav.desktop.view.sav.SAVRequestItem savItem = (com.magscene.magsav.desktop.view.sav.SAVRequestItem) provider;
+            detailPanel.updateContentWithAnimation(
+                    provider.getDetailTitle(),
+                    provider.getDetailSubtitle(),
+                    provider.getDetailImage(),
+                    provider.getQRCodeData(),
+                    provider.getDetailInfoContent(),
+                    provider.getPhotoPath(),
+                    provider.getBrandName(),
+                    null);
+
+            // Ajout du bouton Valider si admin et demande à valider (statut OPEN)
+            if (com.magscene.magsav.desktop.service.CurrentUser.isAdmin() && savItem.canBeValidated()) {
+                javafx.scene.control.Button validateBtn = new javafx.scene.control.Button("Valider");
+                validateBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 6 18; -fx-background-radius: 6;");
+                validateBtn.setOnAction(e -> {
+                    // TODO: Appeler la méthode de validation (à implémenter selon votre logique)
+                    System.out.println("[ADMIN] Validation de la demande SAV " + savItem.getId());
+                    // Exemple : savService.validateSAVRequest(savItem.getId());
+                });
+                // Ajout du bouton en bas du panneau de détail
+                detailPanel.getChildren().add(validateBtn);
+            }
+        } else if (provider instanceof EquipmentItem) {
             EquipmentItem item = (EquipmentItem) provider;
             // Utiliser l'animation bidirectionnelle pour un effet de transition fluide
             detailPanel.updateContentWithAnimation(
@@ -108,13 +132,31 @@ public class DetailPanelContainer extends StackPane {
                     vehicle.getBrand(),
                     vehicle.getVehicleImage(180, 140));  // Taille plus grande pour le volet
         } else {
-            // Utiliser l'animation bidirectionnelle pour un effet de transition fluide
-            detailPanel.updateContentWithAnimation(
-                    provider.getDetailTitle(),
-                    provider.getDetailSubtitle(),
-                    provider.getDetailImage(),
-                    provider.getQRCodeData(),
-                    provider.getDetailInfoContent());
+            // Pour les autres types (SAV, etc.), utiliser les méthodes de l'interface
+            // qui peuvent retourner null par défaut ou être surchargées
+            String brandName = provider.getBrandName();
+            String photoPath = provider.getPhotoPath();
+            
+            if (brandName != null || photoPath != null) {
+                // Provider avec marque/photo (SAVRequestItem par exemple)
+                detailPanel.updateContentWithAnimation(
+                        provider.getDetailTitle(),
+                        provider.getDetailSubtitle(),
+                        provider.getDetailImage(),
+                        provider.getQRCodeData(),
+                        provider.getDetailInfoContent(),
+                        photoPath,
+                        brandName,
+                        null);  // Pas d'image pré-chargée
+            } else {
+                // Utiliser l'animation bidirectionnelle pour un effet de transition fluide
+                detailPanel.updateContentWithAnimation(
+                        provider.getDetailTitle(),
+                        provider.getDetailSubtitle(),
+                        provider.getDetailImage(),
+                        provider.getQRCodeData(),
+                        provider.getDetailInfoContent());
+            }
         }
     }
 

@@ -19,7 +19,17 @@ public class ServiceRequest implements DetailPanelProvider {
     }
     
     public enum ServiceRequestStatus {
-        OPEN, IN_PROGRESS, WAITING_PARTS, RESOLVED, CLOSED, CANCELLED
+        // Statuts pour les demandes
+        OPEN,           // Ouverte
+        VALIDATED,      // Validée (demande approuvée, intervention créée)
+        
+        // Statuts pour les interventions
+        IN_PROGRESS,    // En cours
+        WAITING_PARTS,  // Attente pièces
+        RESOLVED,       // Résolue
+        CANCELLED,      // Annulée
+        EXTERNAL,       // Externe
+        CLOSED          // Fermée
     }
     
     public enum Priority {
@@ -42,6 +52,7 @@ public class ServiceRequest implements DetailPanelProvider {
     private LocalDateTime resolvedAt;
     private LocalDateTime updatedAt;
     private String equipmentName;
+    private Long equipmentId;  // ID de l'équipement lié pour la relation avec le backend
 
     // Constructeurs
     public ServiceRequest() {}
@@ -107,6 +118,9 @@ public class ServiceRequest implements DetailPanelProvider {
 
     public String getEquipmentName() { return equipmentName; }
     public void setEquipmentName(String equipmentName) { this.equipmentName = equipmentName; }
+
+    public Long getEquipmentId() { return equipmentId; }
+    public void setEquipmentId(Long equipmentId) { this.equipmentId = equipmentId; }
 
     @Override
     public String toString() {
@@ -277,11 +291,13 @@ public class ServiceRequest implements DetailPanelProvider {
         if (status == null) return "❓";
         switch (status) {
             case OPEN: return "📋";
+            case VALIDATED: return "✓";
             case IN_PROGRESS: return "⚙️";
             case WAITING_PARTS: return "⏳";
             case RESOLVED: return "✅";
             case CLOSED: return "🔒";
             case CANCELLED: return "❌";
+            case EXTERNAL: return "🔗";
             default: return "❓";
         }
     }

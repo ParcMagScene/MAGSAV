@@ -44,22 +44,22 @@ UPDATE equipment SET category_id = 1 WHERE category_id IS NULL AND (category LIK
 UPDATE equipment SET category_id = 2 WHERE category_id IS NULL AND category LIKE '%son%';
 
 -- Ajout d'équipements de test avec les nouvelles fonctionnalités
-INSERT INTO equipment (name, description, category, status, qr_code, brand, model, serial_number, purchase_price, purchase_date, created_at, updated_at, category_id, location, notes, internal_reference, weight, dimensions, warranty_expiration, supplier, insurance_value) VALUES
+INSERT INTO equipment (name, description, category, status, qr_code, brand, model, serial_number, purchase_price, purchase_date, created_at, updated_at, category_id, location, notes, internal_reference, weight, dimensions, warranty_expiration, supplier, insurance_value, sub_category, specific_category, quantity_in_stock) VALUES
 
 -- Éclairage LED
-('Projecteur LED RGBW 200W', 'Projecteur LED haute puissance avec contrôle RGBW', 'Projecteur LED', 'AVAILABLE', 'MAG-LED-001', 'Chauvet', 'COLORado 2-Quad Zoom', 'CZ2023001', 1250.00, '2024-01-15 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 'Hangar A - Rack 3', 'Excellent état, révision 2024', 'LED-001', 8.5, '25 x 25 x 35 cm', '2027-01-15 00:00:00', 'Algam Entreprises', 1500.00),
+('Projecteur LED RGBW 200W', 'Projecteur LED haute puissance avec contrôle RGBW', 'Projecteur LED', 'AVAILABLE', 'MAG-LED-001', 'Chauvet', 'COLORado 2-Quad Zoom', 'CZ2023001', 1250.00, '2024-01-15 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 'Hangar A - Rack 3', 'Excellent état, révision 2024', 'LED-001', 8.5, '25 x 25 x 35 cm', '2027-01-15 00:00:00', 'Algam Entreprises', 1500.00, 'Éclairage', 'Projecteur LED', 2),
 
-('Barre LED 12x12W', 'Barre de projecteurs LED avec contrôle pixel', 'Projecteur LED', 'AVAILABLE', 'MAG-LED-002', 'ADJ', 'Ultra Bar 12', 'UB240002', 890.00, '2024-02-20 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 'Hangar A - Rack 3', 'Neuf, jamais utilisé', 'LED-002', 4.2, '100 x 8 x 12 cm', '2027-02-20 00:00:00', 'Algam Entreprises', 1000.00),
+('Barre LED 12x12W', 'Barre de projecteurs LED avec contrôle pixel', 'Projecteur LED', 'AVAILABLE', 'MAG-LED-002', 'ADJ', 'Ultra Bar 12', 'UB240002', 890.00, '2024-02-20 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 14, 'Hangar A - Rack 3', 'Neuf, jamais utilisé', 'LED-002', 4.2, '100 x 8 x 12 cm', '2027-02-20 00:00:00', 'Algam Entreprises', 1000.00, 'Éclairage', 'Barre LED', 4),
 
 -- Lyres motorisées  
-('Lyre LED Beam 230W', 'Lyre à faisceau LED haute puissance', 'Projecteur motorisé', 'AVAILABLE', 'MAG-LYR-001', 'Martin', 'MAC Viper AirFX', 'MV2024001', 4500.00, '2024-03-10 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 16, 'Hangar B - Zone lyres', 'Révision complète effectuée', 'LYR-001', 28.0, '42 x 52 x 75 cm', '2027-03-10 00:00:00', 'Martin Professional', 5500.00),
+('Lyre LED Beam 230W', 'Lyre à faisceau LED haute puissance', 'Projecteur motorisé', 'AVAILABLE', 'MAG-LYR-001', 'Martin', 'MAC Viper AirFX', 'MV2024001', 4500.00, '2024-03-10 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 16, 'Hangar B - Zone lyres', 'Révision complète effectuée', 'LYR-001', 28.0, '42 x 52 x 75 cm', '2027-03-10 00:00:00', 'Martin Professional', 5500.00, 'Éclairage', 'Lyre Beam', 1),
 
-('Lyre Wash LED 19x40W', 'Lyre wash LED zoom avec contrôle individuel', 'Projecteur motorisé', 'MAINTENANCE', 'MAG-LYR-002', 'Clay Paky', 'Mythos2', 'CP2024005', 3200.00, '2024-01-25 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 16, 'Atelier réparation', 'Moteur PAN en révision', 'LYR-002', 22.5, '40 x 48 x 70 cm', '2027-01-25 00:00:00', 'DTS Lighting', 4000.00),
+('Lyre Wash LED 19x40W', 'Lyre wash LED zoom avec contrôle individuel', 'Projecteur motorisé', 'MAINTENANCE', 'MAG-LYR-002', 'Clay Paky', 'Mythos2', 'CP2024005', 3200.00, '2024-01-25 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 16, 'Atelier réparation', 'Moteur PAN en révision', 'LYR-002', 22.5, '40 x 48 x 70 cm', '2027-01-25 00:00:00', 'DTS Lighting', 4000.00, 'Éclairage', 'Lyre Wash', 3),
 
 -- Micros et son
-('Micro-cravate sans fil', 'Système HF cravate numérique', 'Microphone', 'AVAILABLE', 'MAG-MIC-001', 'Shure', 'GLXD14/85', 'SH2024010', 480.00, '2024-04-05 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9, 'Régie son - Tiroir 2', 'Fréquence : 2.4GHz, portée 30m', 'MIC-001', 0.8, '15 x 8 x 3 cm', '2026-04-05 00:00:00', 'Sonovente', 600.00),
+('Micro-cravate sans fil', 'Système HF cravate numérique', 'Microphone', 'AVAILABLE', 'MAG-MIC-001', 'Shure', 'GLXD14/85', 'SH2024010', 480.00, '2024-04-05 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 9, 'Régie son - Tiroir 2', 'Fréquence : 2.4GHz, portée 30m', 'MIC-001', 0.8, '15 x 8 x 3 cm', '2026-04-05 00:00:00', 'Sonovente', 600.00, 'Audio', 'Microphone HF', 6),
 
-('Enceinte line array', 'Module line array 3 voies amplifiée', 'Enceinte', 'AVAILABLE', 'MAG-SPK-001', 'L-Acoustics', 'A15 Focus', 'LA2024008', 8900.00, '2024-02-12 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 'Hangar C - Fly case', 'Configuration cluster disponible', 'SPK-001', 45.0, '65 x 43 x 39 cm', '2029-02-12 00:00:00', 'L-Acoustics', 12000.00);
+('Enceinte line array', 'Module line array 3 voies amplifiée', 'Enceinte', 'AVAILABLE', 'MAG-SPK-001', 'L-Acoustics', 'A15 Focus', 'LA2024008', 8900.00, '2024-02-12 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 10, 'Hangar C - Fly case', 'Configuration cluster disponible', 'SPK-001', 45.0, '65 x 43 x 39 cm', '2029-02-12 00:00:00', 'L-Acoustics', 12000.00, 'Audio', 'Enceinte Line Array', 8);
 
 -- Insertion de quelques photos de test (sans fichiers physiques pour le moment)
 INSERT INTO equipment_photos (equipment_id, file_name, file_path, file_size, mime_type, description, is_primary, created_at, updated_at) VALUES

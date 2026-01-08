@@ -10,8 +10,7 @@ Application multi-plateforme de gestion pour Mag Scène :
 
 ##  Architecture Technique
 - **Backend** : Spring Boot 3.1 + H2 Database + JWT Security
-- **Desktop** : JavaFX 21 (interface principale)  
-- **Web** : React 18 TypeScript (même interface que desktop)
+- **Web** : React 18 TypeScript (interface moderne)
 - **Build** : Gradle multi-module monorepo
 - **Base** : Java 17+, Node.js 18+
 
@@ -19,7 +18,6 @@ Application multi-plateforme de gestion pour Mag Scène :
 ```
 MAGSAV-3.0/
  backend/          # Spring Boot REST API + H2
- desktop-javafx/   # Application JavaFX desktop  
  web-frontend/     # Interface React TypeScript
  common-models/    # Entités JPA partagées
  integration-tests/ # Tests E2E
@@ -29,5 +27,5 @@ MAGSAV-3.0/
 - **Prérequis** : Java 17+, Node.js 18+, VS Code
 - **Build** : `./gradlew build`
 - **Backend** : `./gradlew :backend:bootRun` (port 8080)
-- **Desktop** : `./gradlew :desktop-javafx:run`
 - **Web Dev** : `cd web-frontend && npm start` (port 3000)
+- **Script rapide** : `./scripts/start-web.ps1`

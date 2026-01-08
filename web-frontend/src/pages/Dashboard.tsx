@@ -1,33 +1,162 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import apiService from '../services/api.service';
+import StatCard from '../components/StatCard';
+import LoadingState from '../components/LoadingState';
+import { useApiData } from '../hooks/useApiData';
+import { usePageContext } from '../contexts/PageContext';
+import { DashboardStats } from '../types/entities';
+import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
-  return (
-    <div className="page-container">
-      <h1 className="page-title">
-        🏠 Dashboard
-      </h1>
-      
-      <div className="welcome-message">
-        <h2>Bienvenue dans MAGSAV-3.0</h2>
-        <p>Système de Gestion SAV et Parc Matériel - Interface Web</p>
+  console.log('🏠 [DASHBOARD] Composant monté');
+  const { setPageTitle } = usePageContext();
+
+  // ✨ Refactorisation : utilisation du hook useApiData
+  const { data: stats, loading, error, reload } = useApiData<DashboardStats>(
+    () => apiService.getDashboardStats()
+  );
+
+  useEffect(() => {
+    setPageTitle('🏠 Dashboard');
+  }, [setPageTitle]);
+
+  console.log('🏠 [DASHBOARD] État actuel:', { stats, loading, error });
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <LoadingState message="Chargement du dashboard..." />
       </div>
-      
-      <div className="stats-grid">
-        <div className="stat-card">
-          <h3>📦</h3>
-          <p>Parc Matériel</p>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-container">
+        <div className="error-container">
+          <h2>❌ Erreur</h2>
+          <p>{error.message}</p>
+          <button onClick={reload} className="btn-retry">
+            Réessayer
+          </button>
         </div>
-        <div className="stat-card">
-          <h3>🔧</h3>
-          <p>SAV & Interventions</p>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    console.warn('⚠️ [DASHBOARD] Aucune donnée stats disponible');
+    return null;
+  }
+
+  console.log('🎨 [DASHBOARD] Rendu avec stats:', stats);
+  return (
+    <div className="dashboard-page">
+      <div className="page-content">
+        {/* Section Parc Matériel */}
+        <div className="dashboard-section">
+          <h3 className="section-title">📦 Parc Matériel</h3>
+          <div className="stats-grid">
+            <StatCard
+              icon="📦"
+              title="Total Équipements"
+              value={stats?.totalEquipment || 0}
+              color="primary"
+            />
+            <StatCard
+              icon="✅"
+              title="Disponibles"
+              value={stats?.availableEquipment || 0}
+              color="success"
+            />
+            <StatCard
+              icon="🔨"
+              title="En Utilisation"
+              value={stats?.inUseEquipment || 0}
+              color="info"
+            />
+            <StatCard
+              icon="🔧"
+              title="En Maintenance"
+              value={stats?.maintenanceEquipment || 0}
+              color="warning"
+            />
+          </div>
         </div>
-        <div className="stat-card">
-          <h3>👥</h3>
-          <p>Clients</p>
+
+        {/* Section SAV */}
+        <div className="dashboard-section">
+          <h3 className="section-title">🔧 SAV & Interventions</h3>
+          <div className="stats-grid">
+            <StatCard
+              icon="📋"
+              title="Demandes Ouvertes"
+              value={stats?.openServiceRequests || 0}
+              subtitle="Demandes d'intervention"
+              color="primary"
+            />
+            <StatCard
+              icon="🔧"
+              title="Réparations En Cours"
+              value={stats?.pendingRepairs || 0}
+              subtitle="À traiter"
+              color="warning"
+            />
+            <StatCard
+              icon="↩️"
+              title="RMA Actifs"
+              value={stats?.activeRMAs || 0}
+              subtitle="Retours fournisseurs"
+              color="info"
+            />
+          </div>
         </div>
-        <div className="stat-card">
-          <h3>🚐</h3>
-          <p>Véhicules</p>
+
+        {/* Section Projets & Contrats */}
+        <div className="dashboard-section">
+          <h3 className="section-title">💼 Projets & Contrats</h3>
+          <div className="stats-grid">
+            <StatCard
+              icon="🎯"
+              title="Projets Actifs"
+              value={stats?.activeProjects || 0}
+              color="primary"
+            />
+            <StatCard
+              icon="📄"
+              title="Contrats Actifs"
+              value={stats?.activeContracts || 0}
+              color="success"
+            />
+            <StatCard
+              icon="📝"
+              title="Demandes Matériel"
+              value={stats?.pendingMaterialRequests || 0}
+              subtitle="En attente"
+              color="warning"
+            />
+          </div>
+        </div>
+
+        {/* Section Ressources */}
+        <div className="dashboard-section">
+          <h3 className="section-title">🚀 Ressources</h3>
+          <div className="stats-grid">
+            <StatCard
+              icon="🚐"
+              title="Total Véhicules"
+              value={stats?.totalVehicles || 0}
+              subtitle={`${stats?.availableVehicles || 0} disponibles`}
+              color="primary"
+            />
+            <StatCard
+              icon="👥"
+              title="Total Personnel"
+              value={stats?.totalPersonnel || 0}
+              subtitle={`${stats?.activePersonnel || 0} actifs`}
+              color="success"
+            />
+          </div>
         </div>
       </div>
     </div>

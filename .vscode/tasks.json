@@ -6,20 +6,94 @@
             "type": "shell",
             "command": "./gradlew.bat :backend:bootRun --console=plain",
             "isBackground": true,
-            "problemMatcher": []
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^$",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*Starting.*",
+                    "endsPattern": "^.*Started MagsavApplication.*"
+                }
+            }
         },
         {
-            "label": "Desktop Run",
-            "type": "shell", 
+            "label": "Frontend Start",
+            "type": "shell",
+            "command": "npm start",
+            "options": {
+                "cwd": "${workspaceFolder}/web-frontend"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^$",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*Starting.*",
+                    "endsPattern": "^.*webpack compiled.*|^.*Compiled successfully.*"
+                }
+            }
+        },
+        {
+            "label": "Start Full Application",
+            "dependsOn": [
+                "Backend Start",
+                "Frontend Start"
+            ],
+            "dependsOrder": "parallel",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "group": "MAGSAV"
+            }
+        },
+        {
+            "label": "Desktop Start",
+            "type": "shell",
             "command": "./gradlew.bat :desktop-javafx:run --console=plain",
-            "problemMatcher": []
+            "isBackground": false,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "group": "MAGSAV-Desktop"
+            }
+        },
+        {
+            "label": "Start Full Stack (Backend + Frontend + Desktop)",
+            "dependsOn": [
+                "Backend Start",
+                "Frontend Start",
+                "Desktop Start"
+            ],
+            "dependsOrder": "parallel",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "group": "MAGSAV"
+            }
         },
         {
             "label": "Build All",
             "type": "shell",
             "command": "./gradlew.bat build -x test --console=plain",
-            "group": {"kind": "build", "isDefault": true},
-            "problemMatcher": ["$gradle"]
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gradle"
+            ]
         }
     ]
 }

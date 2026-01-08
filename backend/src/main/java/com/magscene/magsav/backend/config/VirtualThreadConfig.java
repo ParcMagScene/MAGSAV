@@ -16,35 +16,24 @@ import java.util.concurrent.ThreadFactory;
 @Configuration
 @EnableAsync
 public class VirtualThreadConfig {
-    
+
     /**
-     * Crée un ThreadFactory pour Virtual Threads avec réflection
-     * Compatible avec Java 21 au runtime
+     * Crée un ThreadFactory pour Virtual Threads
+     * Utilise directement l'API Java 21 sans réflection
      */
     private ThreadFactory createVirtualThreadFactory(String prefix) {
         try {
-            // Utilise la réflection pour accéder à Thread.ofVirtual() 
-            var threadClass = Thread.class;
-            var ofVirtualMethod = threadClass.getMethod("ofVirtual");
-            var builderObject = ofVirtualMethod.invoke(null);
-            
-            // Appeler name() sur le builder si préfixe fourni
-            if (prefix != null && !prefix.isEmpty()) {
-                var nameMethod = builderObject.getClass().getMethod("name", String.class, long.class);
-                builderObject = nameMethod.invoke(builderObject, prefix, 0L);
-            }
-            
-            // Appeler factory() pour obtenir le ThreadFactory
-            var factoryMethod = builderObject.getClass().getMethod("factory");
-            return (ThreadFactory) factoryMethod.invoke(builderObject);
-            
+            // Java 21+: Utilisation directe de l'API Virtual Threads
+            return Thread.ofVirtual()
+                    .name(prefix, 0L)
+                    .factory();
         } catch (Exception e) {
-            System.out.println("⚠️ Virtual Threads non disponibles, utilisation threads classiques: " + e.getMessage());
+            System.out.println("⚠️ Virtual Threads non disponibles, utilisation threads classiques");
             // Fallback vers threads classiques
             return Executors.defaultThreadFactory();
         }
     }
-    
+
     /**
      * Vérifie si les Virtual Threads sont disponibles
      */
@@ -56,7 +45,7 @@ public class VirtualThreadConfig {
             return false;
         }
     }
-    
+
     /**
      * Configurateur principal pour Virtual Threads
      */
@@ -70,7 +59,7 @@ public class VirtualThreadConfig {
             return createFallbackExecutor("magsav-classic-");
         }
     }
-    
+
     /**
      * Executor pour les tâches asynchrones Spring
      */
@@ -86,7 +75,7 @@ public class VirtualThreadConfig {
         executor.initialize();
         return executor;
     }
-    
+
     /**
      * Executor spécialisé pour les opérations SAV
      */
@@ -98,11 +87,11 @@ public class VirtualThreadConfig {
             return createFallbackExecutor("sav-");
         }
     }
-    
+
     /**
      * Executor pour le traitement des QR codes
      */
-    @Bean(name = "qrScanExecutor") 
+    @Bean(name = "qrScanExecutor")
     public Executor qrScanExecutor() {
         if (isVirtualThreadsAvailable()) {
             return Executors.newCachedThreadPool(createVirtualThreadFactory("qr-vt-"));
@@ -110,7 +99,7 @@ public class VirtualThreadConfig {
             return createFallbackExecutor("qr-");
         }
     }
-    
+
     /**
      * Executor pour la synchronisation des véhicules
      */
@@ -122,7 +111,7 @@ public class VirtualThreadConfig {
             return createFallbackExecutor("vehicle-");
         }
     }
-    
+
     /**
      * Crée un executor classique en fallback
      */

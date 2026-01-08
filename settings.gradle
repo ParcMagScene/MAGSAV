@@ -1,7 +1,7 @@
 rootProject.name = 'MAGSAV-3.0'
 
+// Architecture simplifiée : Web + API uniquement
 include 'backend'
-include 'desktop-javafx'
 include 'web-frontend'
 include 'common-models'
 include 'integration-tests'

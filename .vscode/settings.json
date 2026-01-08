@@ -2,22 +2,52 @@
     // Java - désactiver les warnings null analysis trop verbeux
     "java.compile.nullAnalysis.mode": "disabled",
     "java.configuration.updateBuildConfiguration": "automatic",
-    
     // Encodage UTF-8
     "files.encoding": "utf8",
-    
-    // Exclure web-frontend des analyses (module désactivé)
+    // Exclure certains dossiers de la recherche
     "files.exclude": {
         "**/web-frontend/node_modules": true,
         "**/web-frontend/build": true,
-        "**/web-frontend/coverage": true
+        "**/web-frontend/coverage": true,
+        "**/backend/build": false,
+        "**/desktop-javafx/build": false
     },
-    
-    // TypeScript - exclure web-frontend
-    "typescript.tsdk": null,
-    "typescript.disableAutomaticTypeAcquisition": true,
-    
-    // Gradle - forcer le rechargement
+    // TypeScript - configuration pour web-frontend
+    "typescript.tsdk": "web-frontend/node_modules/typescript/lib",
+    "typescript.disableAutomaticTypeAcquisition": false,
+    // Gradle - configuration optimale
     "java.import.gradle.enabled": true,
-    "java.import.gradle.wrapper.enabled": true
+    "java.import.gradle.wrapper.enabled": true,
+    "java.import.gradle.java.home": null,
+    "java.import.gradle.arguments": "--no-daemon",
+    // Terminal - PowerShell par défaut
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    // Recommendations
+    "files.associations": {
+        "*.gradle": "groovy",
+        "*.ps1": "powershell"
+    },
+    // Auto-save
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    // Format on save
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": false,
+    // Java formatting
+    "[java]": {
+        "editor.defaultFormatter": "redhat.java",
+        "editor.tabSize": 4
+    },
+    // TypeScript/JavaScript formatting
+    "[typescript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features",
+        "editor.tabSize": 2
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features",
+        "editor.tabSize": 2
+    },
+    "[json]": {
+        "editor.tabSize": 2
+    }
 }

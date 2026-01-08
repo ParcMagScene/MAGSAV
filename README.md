@@ -1,6 +1,15 @@
-# 🎯 MAGSAV 3.0 - Documentation Complète
+# 🎯 MAGSAV 3.0 - Système de Gestion SAV et Parc Matériel
 
-**Système de Gestion SAV et Parc Matériel pour Mag Scène**
+**Application multi-plateforme pour Mag Scène**
+
+![Statut](https://img.shields.io/badge/Statut-STABLE-green)
+![Backend](https://img.shields.io/badge/Backend-OPÉRATIONNEL-green)
+![Frontend](https://img.shields.io/badge/Frontend-OPÉRATIONNEL-green)
+![Java](https://img.shields.io/badge/Java-21.0.8-blue)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.13-brightgreen)
+![React](https://img.shields.io/badge/React-18.2.0-blue)
+
+**Dernière validation:** 6 janvier 2026
 
 ---
 
@@ -8,12 +17,14 @@
 
 1. [Vue d'ensemble](#-vue-densemble)
 2. [Architecture](#-architecture)
-3. [Installation & Démarrage](#-installation--démarrage)
-4. [Développement](#-développement)
-5. [Fonctionnalités](#-fonctionnalités)
-6. [Configuration](#-configuration)
-7. [Scripts Utiles](#-scripts-utiles)
-8. [Centralisation CSS](#-centralisation-css)
+3. [Démarrage Rapide](#-démarrage-rapide)
+4. [Installation](#-installation)
+5. [Développement](#-développement)
+6. [Fonctionnalités](#-fonctionnalités)
+7. [Configuration](#-configuration)
+8. [Scripts](#-scripts)
+9. [Structure du Projet](#-structure-du-projet)
+10. [Historique du Projet](#-historique-du-projet)
 
 ---
 
@@ -21,164 +32,197 @@
 
 ### Modules Métier
 
-- **SAV** : Gestion des demandes d'intervention, réparations, RMA, historique complet
-- **Parc Matériel** : Inventaire avec QR codes, catégories hiérarchiques, photos
-- **Ventes & Installations** : Import PDF affaires, gestion projets et contrats
-- **Fournisseurs** : Commandes groupées, demandes matériel, seuils automatiques
-- **Véhicules** : Planning disponibilité, maintenance, entretiens, locations
-- **Personnel** : Qualifications, permis, planning, intermittents/freelances
-- **Planning** : Calendrier jour/semaine/mois/année avec optimisation trajets
+- **SAV**: Gestion des demandes d'intervention, réparations, RMA, historique complet
+- **Parc Matériel**: Inventaire avec QR codes, catégories hiérarchiques, photos
+- **Ventes & Installations**: Import PDF affaires, gestion projets et contrats
+- **Fournisseurs**: Commandes groupées, demandes matériel, seuils automatiques
+- **Véhicules**: Planning unifié, réservations, maintenance, entretiens, locations
+- **Personnel**: Qualifications, permis, planning unifié, intermittents/freelances
+- **Planning Global**: Vue unifiée personnel + véhicules, détection de conflits
 
 ### Stack Technique
 
-- **Backend** : Spring Boot 3.3.5 + H2 Database + JWT Security
-- **Desktop** : JavaFX 21 (interface principale)
-- **Web** : React 18 TypeScript (interface responsive)
-- **Build** : Gradle 8.4 multi-module
-- **Prérequis** : Java 17+, Node.js 18+
+- **Backend**: Spring Boot 3.4.13 + H2 Database + JWT Security
+- **Frontend Web**: React 18 TypeScript (interface responsive)
+- **Build**: Gradle 8.4 multi-module monorepo
+- **Base**: Java 21.0.8, Node.js 18+
+
+### Statistiques
+
+- **Controllers**: 24
+- **Endpoints REST**: 215+
+- **Repositories JPA**: 23
+- **Entités**: 23
+- **Pages Frontend**: 11
+- **Composants réutilisables**: 3
 
 ---
 
 ## 🏗️ Architecture
 
-### Structure Monorepo
+### Monorepo Gradle
 
 ```
 MAGSAV-3.0/
 ├── backend/              # Spring Boot REST API + H2
-│   ├── controller/       # Endpoints REST
+│   ├── controller/       # 24 REST Controllers
 │   ├── service/          # Logique métier
-│   ├── repository/       # Accès données JPA
-│   └── dto/              # Data Transfer Objects
-├── desktop-javafx/       # Application JavaFX 21
-│   ├── core/             # Framework (DI, Navigation)
-│   ├── view/             # Vues JavaFX
-│   ├── component/        # Composants réutilisables
-│   ├── service/          # Services frontend
-│   ├── dialog/           # Dialogues modaux
-│   ├── theme/            # Gestion thèmes + CSS
-│   └── util/             # Utilitaires
-├── web-frontend/         # React TypeScript
-├── common-models/        # Entités JPA partagées
+│   ├── repository/       # 23 JPA Repositories
+│   ├── dto/              # Data Transfer Objects
+│   └── entity/           # Entités JPA
+├── web-frontend/         # React 18 TypeScript
+│   ├── pages/            # 11 pages complètes
+│   ├── components/       # Composants réutilisables
+│   ├── services/         # Client API (215 endpoints)
+│   └── types/            # Définitions TypeScript
+├── common-models/        # Entités JPA partagées (23)
 └── integration-tests/    # Tests E2E
 ```
 
-### Architecture v3.0 Refactorisée
+### Frontend Web
 
-#### 🔧 ApplicationContext (Injection de Dépendances)
-**Localisation** : `com.magscene.magsav.desktop.core.di.ApplicationContext`
+**Pages principales**:
+- Dashboard: Vue d'ensemble des indicateurs
+- SAV: Demandes d'intervention, réparations, RMA
+- Parc Matériel: Inventaire avec recherche globale
+- Clients: Base clients (entreprises, associations, particuliers)
+- Contrats: Maintenance, location, prestation, support
+- Ventes & Installations: Projets et contrats
+- Véhicules: Flotte + réservations
+- Personnel: Qualifications, planning
+- Planning Global: Vue unifiée
+- Fournisseurs: Commandes groupées
+- Paramètres: Configuration
 
-- Instance **Singleton** unique
-- Enregistrement automatique des services
-- Injection automatique des dépendances
-- Gestion du cycle de vie
+**Composants réutilisables**:
+- `DataTable`: Tableau avec tri, filtres, pagination
+- `StatCard`: Cartes de statistiques
+- `GlobalSearch`: Recherche globale dans le header (équipements, SAV, clients, véhicules)
 
-**Utilisation** :
-```java
-ApplicationContext ctx = ApplicationContext.getInstance();
-ApiService api = ctx.getService(ApiService.class);
+---
+
+## 🚀 Démarrage Rapide
+
+### Option 1: Script PowerShell (Recommandé) ⭐
+
+```powershell
+.\scripts\start-dev.ps1
+
+# Backend uniquement
+.\scripts\start-dev.ps1 -BackendOnly
+
+# Frontend uniquement
+.\scripts\start-dev.ps1 -FrontendOnly
+
+# Avec nettoyage préalable
+.\scripts\start-dev.ps1 -Clean
 ```
 
-#### 🧭 NavigationManager (Navigation Centralisée)
-**Localisation** : `com.magscene.magsav.desktop.core.navigation.NavigationManager`
+### Option 2: Démarrage en 1 Commande
 
-- Navigation centralisée typée
-- Cache intelligent des vues
-- Système d'événements
-- Gestion de l'historique
-
-**Routes disponibles** :
-```java
-DASHBOARD, SAV, EQUIPMENT, CLIENTS, CONTRACTS, 
-VEHICLES, PERSONNEL, PLANNING, SUPPLIERS, 
-MATERIAL_REQUESTS, GROUPED_ORDERS, SETTINGS
+```powershell
+# Démarre backend + frontend en parallèle
+.\start-dev-full.ps1
 ```
 
-#### 📊 Hiérarchie de Vues
+### URLs d'Accès
 
-**AbstractManagerView** : Classe de base pour toutes les vues avec toolbar standardisée
+| Service | URL | Description |
+|---------|-----|-------------|
+| 🌐 **Frontend** | http://localhost:3000 | Interface React |
+| 🔧 **Backend** | http://localhost:8080 | API REST |
+| 📊 **H2 Console** | http://localhost:8080/h2-console | Base de données |
+| 📖 **Swagger** | http://localhost:8080/swagger-ui.html | Documentation API |
+| ❤️ **Health** | http://localhost:8080/actuator/health | Health check |
+
+### Base de Données H2
+
 ```
-BorderPane
-├── Top: Toolbar standard (filtres + actions)
-└── Center: Contenu (Table + Detail Panel OU Tabs)
+JDBC URL: jdbc:h2:file:./data/magsav
+Username: sa
+Password: (vide)
 ```
 
-**Vues principales** :
-- `SAVManagerView` : Gestion SAV complète
-- `EquipmentManagerView` : Parc matériel
-- `ClientManagerView` : Clients
-- `VehicleManagerView` : Véhicules avec tabs
-- `PersonnelManagerView` : Personnel
-- `SalesInstallationTabsView` : Projets + Contrats
-- `SupplierManagerView` : Fournisseurs avec tabs
+### Arrêt
 
-#### 🎨 Système de Thèmes
-
-**UnifiedThemeManager** : Gestion centralisée des thèmes
-- Thèmes : Light, Dark, Blue, Green, Dark Ultra
-- Persistance des préférences
-- Hot-reload des thèmes
-- Variables CSS dynamiques
-
-**ThemeConstants** : Constantes CSS centralisées
-- Couleurs, espacements, polices
-- Bordures, radius, shadows
-- Styles de boutons, labels, inputs
-
-**StyleFactory** : Factory pour composants pré-stylés
-```java
-Label title = StyleFactory.createSectionTitle("Mon Titre");
-Button btn = StyleFactory.createPrimaryButton("Action");
-VBox container = StyleFactory.createStandardVBox();
+```powershell
+.\scripts\stop-dev.ps1
 ```
 
 ---
 
-## 🚀 Installation & Démarrage
+## 📦 Installation
 
-### Installation
+#### Prérequis
+- Java 21+ (OpenJDK recommandé)
+- Node.js 18+
+- Gradle 8.4 (wrapper inclus)
 
+#### Étapes
+
+**1. Cloner le projet**
 ```bash
-git clone [repository-url]
+git clone https://github.com/ParcMagScene/MAGSAV.git
 cd MAGSAV-3.0
-./gradlew build
 ```
 
-### Démarrage Full Stack
-
-```powershell
-# Démarre backend + desktop (recommandé)
-./start-magsav.ps1
-
-# OU démarre backend + desktop + web
-./start-dev.ps1
-
-# Arrêt propre
-./stop-dev.ps1
-```
-
-### Démarrage Individuel
-
+**2. Build complet**
 ```bash
-# Backend (API REST sur port 8080)
-./gradlew :backend:bootRun
+./gradlew.bat clean build -x test
+```
 
-# Desktop JavaFX
-./gradlew :desktop-javafx:run
+**3. Démarrer le Backend**
+```bash
+./gradlew.bat :backend:bootRun
+```
+Backend disponible sur: http://localhost:8080
 
-# Web React (port 3000)
+**4. Démarrer le Frontend**
+```bash
 cd web-frontend
 npm install
 npm start
 ```
+Frontend disponible sur: http://localhost:3000
 
-### Endpoints Backend
+**5. (Optionnel) Démarrer Desktop JavaFX**
+```bash
+./gradlew.bat :desktop-javafx:run
+```
 
-- **API REST** : http://localhost:8080/api
-- **H2 Console** : http://localhost:8080/h2-console
-  - JDBC URL: `jdbc:h2:mem:magsavdb`
-  - User: `sa`
-  - Password: `password`
+### 🔗 URLs Utiles
+
+- 🌐 **Frontend React:** http://localhost:3000
+- 🔧 **Backend API:** http://localhost:8080
+- 📊 **Console H2:** http://localhost:8080/h2-console
+- 📖 **API Swagger:** http://localhost:8080/swagger-ui.html
+
+### 💾 Base de Données H2
+
+**Paramètres de connexion:**
+- **JDBC URL:** `jdbc:h2:file:~/magsav/data/magsav`
+- **Username:** `sa`
+- **Password:** `password`
+
+### ⚡ Statut du Projet
+
+**Dernière validation:** 6 janvier 2026
+- ✅ Backend: OPÉRATIONNEL (Java 21.0.8)
+- ✅ Frontend: OPÉRATIONNEL (React 18.2.0)
+- ✅ Build: SUCCÈS (27 tâches)
+- ✅ Virtual Threads: ACTIVÉS
+
+📋 **Voir [AUDIT-RAPPORT.md](AUDIT-RAPPORT.md) pour l'audit complet**
+
+### Démarrage Alternatif
+
+```powershell
+# Démarre backend + desktop (ancien script)
+./start-magsav.ps1
+
+# Arrêt propre
+./stop-dev.ps1
+```
 
 ---
 
@@ -432,11 +476,64 @@ VBox box = StyleFactory.createStandardVBox();
 
 ---
 
-## 📚 Documentation Complémentaire
+## 📚 Historique du Projet
 
-- **Centralisation CSS** : `CSS-CENTRALIZATION.md`
-- **Best Practices PowerShell** : `POWERSHELL-BEST-PRACTICES.md`
-- **Copilot Instructions** : `.github/copilot-instructions.md`
+### Phase 1: Nettoyage Initial (6 janvier 2026)
+
+Le projet a subi un nettoyage majeur pour éliminer les fichiers temporaires et optimiser la structure.
+
+**Fichiers supprimés (27 au total)**:
+- 14 fichiers MD temporaires (BILAN-FINAL-API.md, QUICKSTART.md, STRUCTURE.md, NETTOYAGE.md, etc.)
+- 4 fichiers JSON de test (sav-test.json, test-output.json, etc.)
+- 2 logs (backend-error.log, backend-output.log)
+- 3 scripts dupliqués (start-magsav.ps1 variants)
+- 2 documentations frontend redondantes
+- 1 script en doublon (simple-import.ps1)
+- 1 fichier SQL temporaire (update-vehicle-photos.sql)
+
+**Résultat**:
+- Structure propre et documentée
+- Réduction de la duplication
+- Documentation consolidée dans README.md unique
+- Scripts optimisés dans `/scripts/`
+
+### Phase 2: Améliorations Majeures
+
+**Nouvelles fonctionnalités**:
+- ✅ Recherche globale dans le header (équipements, SAV, clients, véhicules)
+- ✅ Import LOCMAT CSV (endpoint API + script PowerShell)
+- ✅ Scripts de démarrage unifiés (start-dev.ps1, health-check.ps1)
+- ✅ 28 tests unitaires backend (100% succès)
+
+**Corrections**:
+- ✅ Alignement noms de champs (backend ↔ frontend)
+- ✅ Correction enum `Equipment.Status.OUT_OF_SERVICE` → `OUT_OF_ORDER`
+- ✅ Nettoyage cache Gradle
+
+### État Actuel (6 janvier 2026)
+
+**Backend**:
+- ✅ Compilé et fonctionnel (Java 21.0.8)
+- ✅ Running sur port 8080
+- ✅ 24 controllers, 215+ endpoints
+- ✅ Base H2 persistante avec 2548 équipements prêts à importer
+
+**Frontend**:
+- ✅ React 18.2.0 + TypeScript
+- ✅ 11 pages complètes
+- ✅ Recherche globale intégrée
+- ✅ Type-check sans erreurs
+
+**Documentation**:
+- ✅ README.md consolidé (toutes les informations essentielles)
+- ✅ 3 fichiers MD au total (README + backend tests + copilot config)
+- ✅ Structure claire et maintenable
+
+**Prochaines étapes**:
+- [ ] Exécuter l'import CSV LOCMAT
+- [ ] Vérifier affichage des 2548 équipements
+- [ ] Génération QR codes
+- [ ] Upload photos
 
 ---
 
@@ -464,9 +561,17 @@ git push origin feature/ma-fonctionnalite
 ## 🆘 Support
 
 1. Consulter cette documentation
-2. Vérifier les logs dans la console
-3. Tester avec `./test-backend-integration.ps1`
-4. Vérifier l'encodage avec `./validate-powershell-encoding.ps1`
+2. Vérifier les logs dans les terminaux backend/frontend
+3. Tester avec `.\scripts\health-check.ps1`
+4. Consulter la documentation spécifique:
+   - Tests: [backend/src/test/README.md](backend/src/test/README.md)
+   - Copilot: [.github/copilot-instructions.md](.github/copilot-instructions.md)
+
+---
+
+**Version**: 3.0.0  
+**Dernière mise à jour**: 6 janvier 2026  
+© 2024-2026 Mag Scène
 
 ---
 

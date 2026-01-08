@@ -55,9 +55,7 @@ configure(project(':backend')) {
     apply plugin: 'io.spring.dependency-management'
 }
 
-configure(project(':desktop-javafx')) {
-    apply plugin: 'org.openjfx.javafxplugin'
-}
+// Module desktop-javafx supprimé (migration vers architecture web pure)
 
 // Wrapper Gradle
 wrapper {

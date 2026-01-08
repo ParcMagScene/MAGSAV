@@ -1,7 +1,5 @@
 package com.magscene.magsav.backend.dto;
 
-import com.magscene.magsav.backend.entity.Equipment;
-import com.magscene.magsav.backend.entity.ServiceRequest;
 import java.time.LocalDateTime;
 
 public class ServiceRequestDTO {
@@ -23,7 +21,8 @@ public class ServiceRequestDTO {
     public EquipmentDTO equipment;
 
     // Constructeur vide pour mapping manuel
-    public ServiceRequestDTO() {}
+    public ServiceRequestDTO() {
+    }
 
     public static class EquipmentDTO {
         public Long id;
@@ -33,6 +32,8 @@ public class ServiceRequestDTO {
         public String serialNumber;
         public String locmatCode;
         public String model;
-        public EquipmentDTO() {}
+
+        public EquipmentDTO() {
+        }
     }
 }

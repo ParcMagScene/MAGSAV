@@ -20,12 +20,12 @@ import java.util.List;
 @RequestMapping("/api/personnel")
 @CrossOrigin(origins = "*")
 public class PersonnelController {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(PersonnelController.class);
-    
+
     @Autowired
     private PersonnelRepository personnelRepository;
-    
+
     /**
      * RÃƒÂ©cupÃƒÂ©rer tout le personnel
      */
@@ -34,7 +34,7 @@ public class PersonnelController {
         logger.info("RÃƒÂ©cupÃƒÂ©ration de tout le personnel");
         return personnelRepository.findAll();
     }
-    
+
     /**
      * RÃƒÂ©cupÃƒÂ©rer le personnel actif uniquement
      */
@@ -43,7 +43,7 @@ public class PersonnelController {
         logger.info("RÃƒÂ©cupÃƒÂ©ration du personnel actif");
         return personnelRepository.findByStatus(Personnel.PersonnelStatus.ACTIVE);
     }
-    
+
     /**
      * RÃƒÂ©cupÃƒÂ©rer un membre du personnel par ID
      */
@@ -51,7 +51,7 @@ public class PersonnelController {
     public ResponseEntity<Personnel> getPersonnelById(@PathVariable Long id) {
         logger.info("RÃƒÂ©cupÃƒÂ©ration du personnel ID: {}", id);
         Optional<Personnel> personnel = personnelRepository.findById(id);
-        
+
         if (personnel.isPresent()) {
             return ResponseEntity.ok(personnel.get());
         } else {
@@ -59,14 +59,14 @@ public class PersonnelController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     /**
      * CrÃƒÂ©er un nouveau membre du personnel
      */
     @PostMapping
     public ResponseEntity<Personnel> createPersonnel(@Valid @RequestBody Personnel personnel) {
         logger.info("CrÃƒÂ©ation d'un nouveau membre du personnel: {}", personnel.getFullName());
-        
+
         try {
             personnel.setCreatedAt(LocalDateTime.now());
             personnel.setUpdatedAt(LocalDateTime.now());
@@ -78,18 +78,19 @@ public class PersonnelController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     /**
      * Mettre ÃƒÂ  jour un membre du personnel
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Personnel> updatePersonnel(@PathVariable Long id, @Valid @RequestBody Personnel personnelDetails) {
+    public ResponseEntity<Personnel> updatePersonnel(@PathVariable Long id,
+            @Valid @RequestBody Personnel personnelDetails) {
         logger.info("Mise ÃƒÂ  jour du personnel ID: {}", id);
-        
+
         Optional<Personnel> personnelOptional = personnelRepository.findById(id);
         if (personnelOptional.isPresent()) {
             Personnel personnel = personnelOptional.get();
-            
+
             // Mise ÃƒÂ  jour des champs
             personnel.setFirstName(personnelDetails.getFirstName());
             personnel.setLastName(personnelDetails.getLastName());
@@ -102,7 +103,7 @@ public class PersonnelController {
             personnel.setHireDate(personnelDetails.getHireDate());
             personnel.setNotes(personnelDetails.getNotes());
             personnel.setUpdatedAt(LocalDateTime.now());
-            
+
             Personnel updatedPersonnel = personnelRepository.save(personnel);
             logger.info("Personnel mis ÃƒÂ  jour avec succÃƒÂ¨s - ID: {}", updatedPersonnel.getId());
             return ResponseEntity.ok(updatedPersonnel);
@@ -111,14 +112,14 @@ public class PersonnelController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     /**
      * Supprimer un membre du personnel
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePersonnel(@PathVariable Long id) {
         logger.info("Suppression du personnel ID: {}", id);
-        
+
         Optional<Personnel> personnelOptional = personnelRepository.findById(id);
         if (personnelOptional.isPresent()) {
             personnelRepository.delete(personnelOptional.get());
@@ -129,7 +130,7 @@ public class PersonnelController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     /**
      * Rechercher le personnel par nom
      */
@@ -138,5 +139,136 @@ public class PersonnelController {
         logger.info("Recherche de personnel avec: {}", query);
         return personnelRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query);
     }
-}
 
+    /**
+     * Obtenir les qualifications d'un membre du personnel
+     */
+    @GetMapping("/{id}/qualifications")
+    public ResponseEntity<List<String>> getPersonnelQualifications(@PathVariable Long id) {
+        logger.info("Récupération des qualifications pour le personnel ID: {}", id);
+
+        Optional<Personnel> personnelOpt = personnelRepository.findById(id);
+        if (personnelOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Personnel personnel = personnelOpt.get();
+        String specialties = personnel.getSpecialties();
+        List<String> qualifications = specialties != null && !specialties.isEmpty()
+                ? List.of(specialties.split(","))
+                : List.of();
+
+        return ResponseEntity.ok(qualifications);
+    }
+
+    /**
+     * Ajouter une qualification à un membre du personnel
+     */
+    @PostMapping("/{id}/qualifications")
+    public ResponseEntity<Personnel> addQualification(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, String> data) {
+        logger.info("Ajout de qualification pour le personnel ID: {}", id);
+
+        Optional<Personnel> personnelOpt = personnelRepository.findById(id);
+        if (personnelOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Personnel personnel = personnelOpt.get();
+        String newQualification = data.get("qualification");
+
+        if (newQualification != null && !newQualification.trim().isEmpty()) {
+            String currentSpecialties = personnel.getSpecialties();
+            String updatedSpecialties = currentSpecialties != null && !currentSpecialties.isEmpty()
+                    ? currentSpecialties + "," + newQualification.trim()
+                    : newQualification.trim();
+
+            personnel.setSpecialties(updatedSpecialties);
+            personnel.setUpdatedAt(LocalDateTime.now());
+            Personnel updated = personnelRepository.save(personnel);
+
+            logger.info("Qualification ajoutée avec succès pour le personnel ID: {}", id);
+            return ResponseEntity.ok(updated);
+        }
+
+        return ResponseEntity.badRequest().build();
+    }
+
+    /**
+     * Obtenir la disponibilité d'un membre du personnel
+     */
+    @GetMapping("/{id}/availability")
+    public ResponseEntity<java.util.Map<String, Object>> getPersonnelAvailability(
+            @PathVariable Long id,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        logger.info("Vérification de la disponibilité pour le personnel ID: {}", id);
+
+        Optional<Personnel> personnelOpt = personnelRepository.findById(id);
+        if (personnelOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Personnel personnel = personnelOpt.get();
+        java.util.Map<String, Object> availability = new java.util.HashMap<>();
+        availability.put("personnelId", id);
+        availability.put("fullName", personnel.getFirstName() + " " + personnel.getLastName());
+        availability.put("status", personnel.getStatus().name());
+        availability.put("available", personnel.getStatus() == Personnel.PersonnelStatus.ACTIVE);
+        availability.put("startDate", startDate);
+        availability.put("endDate", endDate);
+        availability.put("assignments", List.of()); // TODO: implémenter les affectations
+
+        return ResponseEntity.ok(availability);
+    }
+
+    /**
+     * Obtenir le planning d'un membre du personnel
+     */
+    @GetMapping("/{id}/planning")
+    public ResponseEntity<java.util.Map<String, Object>> getPersonnelPlanning(@PathVariable Long id) {
+        logger.info("Récupération du planning pour le personnel ID: {}", id);
+
+        Optional<Personnel> personnelOpt = personnelRepository.findById(id);
+        if (personnelOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Personnel personnel = personnelOpt.get();
+        java.util.Map<String, Object> planning = new java.util.HashMap<>();
+        planning.put("personnelId", id);
+        planning.put("fullName", personnel.getFirstName() + " " + personnel.getLastName());
+        planning.put("department", personnel.getDepartment());
+        planning.put("jobTitle", personnel.getJobTitle());
+        planning.put("assignments", List.of()); // TODO: implémenter les affectations
+        planning.put("availability", List.of()); // TODO: implémenter les disponibilités
+
+        return ResponseEntity.ok(planning);
+    }
+
+    /**
+     * Filtrer le personnel par département
+     */
+    @GetMapping("/department/{department}")
+    public List<Personnel> getPersonnelByDepartment(@PathVariable String department) {
+        logger.info("Récupération du personnel du département: {}", department);
+        return personnelRepository.findByDepartment(department);
+    }
+
+    /**
+     * Obtenir les statistiques du personnel
+     */
+    @GetMapping("/stats")
+    public ResponseEntity<java.util.Map<String, Object>> getPersonnelStats() {
+        logger.info("Calcul des statistiques du personnel");
+
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        stats.put("total", personnelRepository.count());
+        stats.put("active", personnelRepository.countByStatus(Personnel.PersonnelStatus.ACTIVE));
+        stats.put("inactive", personnelRepository.countByStatus(Personnel.PersonnelStatus.INACTIVE));
+        stats.put("onLeave", personnelRepository.countByStatus(Personnel.PersonnelStatus.ON_LEAVE));
+
+        return ResponseEntity.ok(stats);
+    }
+}

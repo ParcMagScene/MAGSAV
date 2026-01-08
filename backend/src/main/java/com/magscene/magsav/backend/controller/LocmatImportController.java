@@ -19,10 +19,10 @@ import java.util.Map;
 @RequestMapping("/api/locmat")
 @CrossOrigin(origins = "*")
 public class LocmatImportController {
-    
+
     @Autowired
     private LocmatImportService locmatImportService;
-    
+
     /**
      * Endpoint de diagnostic pour l'import LOCMAT
      */
@@ -36,16 +36,16 @@ public class LocmatImportController {
         debug.put("availableProcessors", Runtime.getRuntime().availableProcessors());
         return ResponseEntity.ok(debug);
     }
-    
+
     /**
      * Endpoint pour importer le fichier Excel LOCMAT
      */
     @PostMapping("/import")
     public ResponseEntity<Map<String, Object>> importLocmatData(
             @RequestParam("file") MultipartFile file) {
-        
+
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             // Vérifications du fichier
             if (file.isEmpty()) {
@@ -53,52 +53,52 @@ public class LocmatImportController {
                 response.put("message", "Le fichier est vide");
                 return ResponseEntity.badRequest().body(response);
             }
-            
-            if (!isExcelFile(file)) {
+
+            if (!isValidImportFile(file)) {
                 response.put("success", false);
-                response.put("message", "Le fichier doit être au format Excel (.xlsx)");
+                response.put("message", "Le fichier doit être au format Excel (.xlsx) ou CSV (.csv)");
                 return ResponseEntity.badRequest().body(response);
             }
-            
+
             // Traitement de l'import
             LocmatImportService.ImportResult result = locmatImportService.importLocmatData(file);
-            
+
             // Préparer la réponse
             response.put("success", true);
             response.put("message", result.getSummary());
             response.put("equipmentCount", result.getSuccessCount());
             response.put("errorCount", result.getErrors().size());
-            
+
             if (result.hasErrors()) {
                 response.put("errors", result.getErrors());
             }
-            
+
             // Status HTTP selon les résultats
-            HttpStatus status = result.hasErrors() ? 
-                (result.getSuccessCount() > 0 ? HttpStatus.PARTIAL_CONTENT : HttpStatus.BAD_REQUEST) :
-                HttpStatus.OK;
-            
+            HttpStatus status = result.hasErrors()
+                    ? (result.getSuccessCount() > 0 ? HttpStatus.PARTIAL_CONTENT : HttpStatus.BAD_REQUEST)
+                    : HttpStatus.OK;
+
             return ResponseEntity.status(status).body(response);
-            
+
         } catch (IOException e) {
             response.put("success", false);
             response.put("message", "Erreur lors de la lecture du fichier: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-            
+
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Erreur inattendue: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-    
+
     /**
      * Endpoint pour obtenir des statistiques sur les imports LOCMAT
      */
     @GetMapping("/import/stats")
     public ResponseEntity<Map<String, Object>> getImportStats() {
         Map<String, Object> stats = new HashMap<>();
-        
+
         try {
             // Récupération des statistiques réelles
             long totalEquipment = locmatImportService.getTotalEquipmentCount();
@@ -106,15 +106,15 @@ public class LocmatImportController {
             stats.put("lastImportDate", locmatImportService.getLastImportDate());
             stats.put("totalEquipmentImported", totalEquipment);
             stats.put("status", "active");
-            
+
             return ResponseEntity.ok(stats);
-            
+
         } catch (Exception e) {
             stats.put("error", "Erreur lors de la récupération des statistiques: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(stats);
         }
     }
-    
+
     /**
      * Endpoint de test pour vérifier la connectivité
      */
@@ -125,10 +125,10 @@ public class LocmatImportController {
         response.put("message", "Service LOCMAT Import fonctionnel");
         response.put("timestamp", System.currentTimeMillis());
         response.put("version", "1.0");
-        
+
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Endpoint GET pour valider le service de validation
      */
@@ -138,19 +138,19 @@ public class LocmatImportController {
         response.put("status", "ready");
         response.put("message", "Service de validation LOCMAT prêt");
         response.put("supportedFormats", Arrays.asList(".xlsx", ".xls"));
-        
+
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Endpoint pour valider un fichier LOCMAT sans l'importer
      */
     @PostMapping("/import/validate")
     public ResponseEntity<Map<String, Object>> validateLocmatFile(
             @RequestParam("file") MultipartFile file) {
-        
+
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             // Vérifications basiques
             if (file.isEmpty()) {
@@ -158,31 +158,31 @@ public class LocmatImportController {
                 response.put("message", "Fichier vide");
                 return ResponseEntity.badRequest().body(response);
             }
-            
-            if (!isExcelFile(file)) {
+
+            if (!isValidImportFile(file)) {
                 response.put("valid", false);
-                response.put("message", "Format de fichier invalide. Utilisez .xlsx ou .xls");
+                response.put("message", "Format de fichier invalide. Utilisez .xlsx, .xls ou .csv");
                 return ResponseEntity.badRequest().body(response);
             }
-            
+
             // Validation du contenu
             LocmatImportService.ValidationResult validation = locmatImportService.validateFile(file);
-            
+
             response.put("valid", validation.isValid());
             response.put("message", validation.getMessage());
             response.put("rowCount", validation.getRowCount());
             response.put("validRows", validation.getValidRowCount());
             response.put("errors", validation.getErrors());
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
             response.put("valid", false);
             response.put("message", "Erreur lors de la validation: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-    
+
     /**
      * Endpoint GET pour le service de prévisualisation
      */
@@ -192,10 +192,10 @@ public class LocmatImportController {
         response.put("status", "ready");
         response.put("message", "Service de prévisualisation LOCMAT prêt");
         response.put("defaultMaxRows", 10);
-        
+
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Endpoint pour prévisualiser les données sans les importer
      */
@@ -203,40 +203,40 @@ public class LocmatImportController {
     public ResponseEntity<Map<String, Object>> previewLocmatData(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "maxRows", defaultValue = "10") int maxRows) {
-        
+
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             if (file.isEmpty()) {
                 response.put("success", false);
                 response.put("message", "Fichier vide");
                 return ResponseEntity.badRequest().body(response);
             }
-            
-            if (!isExcelFile(file)) {
+
+            if (!isValidImportFile(file)) {
                 response.put("success", false);
-                response.put("message", "Format de fichier invalide");
+                response.put("message", "Format de fichier invalide. Utilisez .xlsx, .xls ou .csv");
                 return ResponseEntity.badRequest().body(response);
             }
-            
+
             // Prévisualisation des données
             LocmatImportService.PreviewResult preview = locmatImportService.previewFile(file, maxRows);
-            
+
             response.put("success", true);
             response.put("preview", preview.getData());
             response.put("totalRows", preview.getTotalRows());
             response.put("previewRows", preview.getPreviewRows());
             response.put("columns", preview.getColumns());
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Erreur lors de la prévisualisation: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-    
+
     /**
      * Endpoint GET pour le service de traitement
      */
@@ -246,10 +246,10 @@ public class LocmatImportController {
         response.put("status", "ready");
         response.put("message", "Service de traitement LOCMAT prêt");
         response.put("acceptedMethods", Arrays.asList("POST"));
-        
+
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Endpoint pour traiter un import (alias pour /import)
      */
@@ -259,18 +259,21 @@ public class LocmatImportController {
         // Déléguer au endpoint principal d'import
         return importLocmatData(file);
     }
-    
+
     /**
      * Vérifier si le fichier est au format Excel
      */
-    private boolean isExcelFile(MultipartFile file) {
+    private boolean isValidImportFile(MultipartFile file) {
         String contentType = file.getContentType();
         String filename = file.getOriginalFilename();
-        
-        return (contentType != null && 
+
+        return (contentType != null &&
                 (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") ||
-                 contentType.equals("application/vnd.ms-excel"))) ||
-               (filename != null && 
-                (filename.endsWith(".xlsx") || filename.endsWith(".xls")));
+                        contentType.equals("application/vnd.ms-excel") ||
+                        contentType.equals("text/csv") ||
+                        contentType.equals("application/csv")))
+                ||
+                (filename != null &&
+                        (filename.endsWith(".xlsx") || filename.endsWith(".xls") || filename.endsWith(".csv")));
     }
 }

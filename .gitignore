@@ -60,6 +60,8 @@ logs/
 *.db
 *.h2.db
 *.trace.db
+*.lock
+data/
 
 # OS specific
 .DS_Store
@@ -70,3 +72,14 @@ Thumbs.db
 
 # JavaFX
 *.fxml~
+
+# Logs et fichiers temporaires
+*.log
+backend-*.log
+*.tmp
+*.temp
+
+# Fichiers de test
+test-*.json
+*-test.json
+sav-test.json

@@ -1,0 +1,107 @@
+.settings-section {
+    background: white;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+.settings-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #18181b;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.setting-item {
+    margin-bottom: 12px;
+}
+
+.setting-item label {
+    display: block;
+    font-weight: 500;
+    color: #52525b;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.setting-item input[type="checkbox"] {
+    margin-right: 8px;
+    accent-color: #5e6ad2;
+}
+
+.settings-select {
+    width: 100%;
+    max-width: 300px;
+    padding: 6px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 13px;
+    background: white;
+    color: #18181b;
+}
+
+.settings-select:focus {
+    outline: none;
+    border-color: #5e6ad2;
+}
+
+.theme-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.theme-btn {
+    padding: 6px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #52525b;
+    transition: all 0.15s;
+}
+
+.theme-btn:hover {
+    border-color: #5e6ad2;
+    color: #18181b;
+}
+
+.theme-btn.active {
+    border-color: #5e6ad2;
+    background: #ede9fe;
+    color: #5e6ad2;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.about-info {
+    color: #666;
+    line-height: 1.6;
+}
+
+.about-info p {
+    margin: 8px 0;
+}
+
+.about-info strong {
+    color: #333;
+    font-size: 18px;
+}

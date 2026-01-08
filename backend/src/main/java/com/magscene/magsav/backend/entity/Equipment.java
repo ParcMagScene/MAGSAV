@@ -13,95 +13,119 @@ import java.util.List;
 @Table(name = "equipment")
 @JsonInclude(Include.NON_NULL)
 public class Equipment {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(nullable = false, length = 200)
     private String name;
-    
+
     @Column(length = 1000)
     private String description;
-    
+
     @Column(length = 100)
     private String category;
-    
+
+    // Sous-catégorie (Sous-famille LOCMAT)
+    @Column(length = 100)
+    private String subCategory;
+
+    // Catégorie spécifique (Catégorie LOCMAT)
+    @Column(length = 100)
+    private String specificCategory;
+
     // Relation avec la nouvelle entitÃƒÂ© Category
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "equipment"})
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "equipment" })
     private Category categoryEntity;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
-    
+
     @Column(unique = true, length = 50)
     private String qrCode;
-    
+
     @Column(length = 100)
     private String brand;
-    
+
     @Column(length = 100)
     private String model;
-    
+
     @Column(unique = true, length = 100)
     private String serialNumber;
-    
+
     private Double purchasePrice;
-    
+
     private LocalDateTime purchaseDate;
-    
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
-    
+
     private LocalDateTime updatedAt;
-    
+
     // Photos de l'ÃƒÂ©quipement
     @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<EquipmentPhoto> photos;
-    
+
     // Localisation de l'ÃƒÂ©quipement
     @Column(length = 200)
     private String location;
-    
+
+    // Zone de stockage secondaire
+    @Column(length = 200)
+    private String zone;
+
+    // Quantités LOCMAT
+    private Integer quantityInStock;
+    private Integer quantityInTransfer;
+    private Integer quantityOut;
+    private Integer quantityInRepair;
+    private Integer quantityMissing;
+    private Integer quantityInScrap;
+
+    // Feuille d'origine LOCMAT
+    @Column(length = 100)
+    private String sourceSheet;
+
     // Notes personnalisÃƒÂ©es
     @Column(length = 2000)
     private String notes;
-    
+
     // RÃƒÂ©fÃƒÂ©rence interne/numÃƒÂ©ro d'inventaire
     @Column(length = 50)
     private String internalReference;
-    
+
     // Poids en kilogrammes
     private Double weight;
-    
+
     // Dimensions (L x l x h en cm)
     @Column(length = 50)
     private String dimensions;
-    
+
     // Garantie (date d'expiration)
     private LocalDateTime warrantyExpiration;
-    
+
     // Fournisseur
     @Column(length = 200)
     private String supplier;
-    
+
     // Valeur d'assurance
     private Double insuranceValue;
-    
+
     // DerniÃƒÂ¨re maintenance
     private LocalDateTime lastMaintenanceDate;
-    
+
     // Prochaine maintenance programmée
     private LocalDateTime nextMaintenanceDate;
-    
+
     // Chemin de la photo principale (relatif au dossier Photos)
     @Column(length = 500)
     private String photoPath;
-    
+
     // Enum pour le statut
     public enum Status {
         AVAILABLE("Disponible"),
@@ -110,30 +134,31 @@ public class Equipment {
         OUT_OF_ORDER("Hors service"),
         IN_SAV("En SAV"),
         RETIRED("Retiré du service");
-        
+
         private final String displayName;
-        
+
         Status(String displayName) {
             this.displayName = displayName;
         }
-        
+
         public String getDisplayName() {
             return displayName;
         }
-        
+
         /**
          * Convertit un displayName ou nom d'enum en Status
          */
         public static Status fromDisplayName(String name) {
-            if (name == null) return null;
-            
+            if (name == null)
+                return null;
+
             // D'abord essayer par displayName
             for (Status s : values()) {
                 if (s.displayName.equalsIgnoreCase(name)) {
                     return s;
                 }
             }
-            
+
             // Ensuite essayer par nom d'enum
             try {
                 return valueOf(name.toUpperCase().replace(" ", "_").replace("'", ""));
@@ -142,119 +167,135 @@ public class Equipment {
             }
         }
     }
-    
+
     // Constructeurs
     public Equipment() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     // Getters et Setters
     public Long getId() {
         return id;
     }
-    
+
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getDescription() {
         return description;
     }
-    
+
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     public String getCategory() {
         return category;
     }
-    
+
     public void setCategory(String category) {
         this.category = category;
     }
-    
+
+    public String getSubCategory() {
+        return subCategory;
+    }
+
+    public void setSubCategory(String subCategory) {
+        this.subCategory = subCategory;
+    }
+
+    public String getSpecificCategory() {
+        return specificCategory;
+    }
+
+    public void setSpecificCategory(String specificCategory) {
+        this.specificCategory = specificCategory;
+    }
+
     public Status getStatus() {
         return status;
     }
-    
+
     public void setStatus(Status status) {
         this.status = status;
         this.updatedAt = LocalDateTime.now();
     }
-    
+
     public String getQrCode() {
         return qrCode;
     }
-    
+
     public void setQrCode(String qrCode) {
         this.qrCode = qrCode;
     }
-    
+
     public String getBrand() {
         return brand;
     }
-    
+
     public void setBrand(String brand) {
         this.brand = brand;
     }
-    
+
     public String getModel() {
         return model;
     }
-    
+
     public void setModel(String model) {
         this.model = model;
     }
-    
+
     public String getSerialNumber() {
         return serialNumber;
     }
-    
+
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
     }
-    
+
     public Double getPurchasePrice() {
         return purchasePrice;
     }
-    
+
     public void setPurchasePrice(Double purchasePrice) {
         this.purchasePrice = purchasePrice;
     }
-    
+
     public LocalDateTime getPurchaseDate() {
         return purchaseDate;
     }
-    
+
     public void setPurchaseDate(LocalDateTime purchaseDate) {
         this.purchaseDate = purchaseDate;
     }
-    
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-    
+
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-    
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
-    
+
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
+
     @JsonIgnore
     public Category getCategoryEntity() {
         return categoryEntity;
@@ -263,7 +304,7 @@ public class Equipment {
     public void setCategoryEntity(Category categoryEntity) {
         this.categoryEntity = categoryEntity;
     }
-    
+
     @JsonIgnore
     public List<EquipmentPhoto> getPhotos() {
         return photos;
@@ -272,13 +313,77 @@ public class Equipment {
     public void setPhotos(List<EquipmentPhoto> photos) {
         this.photos = photos;
     }
-    
+
     public String getLocation() {
         return location;
     }
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public String getZone() {
+        return zone;
+    }
+
+    public void setZone(String zone) {
+        this.zone = zone;
+    }
+
+    public Integer getQuantityInStock() {
+        return quantityInStock;
+    }
+
+    public void setQuantityInStock(Integer quantityInStock) {
+        this.quantityInStock = quantityInStock;
+    }
+
+    public Integer getQuantityInTransfer() {
+        return quantityInTransfer;
+    }
+
+    public void setQuantityInTransfer(Integer quantityInTransfer) {
+        this.quantityInTransfer = quantityInTransfer;
+    }
+
+    public Integer getQuantityOut() {
+        return quantityOut;
+    }
+
+    public void setQuantityOut(Integer quantityOut) {
+        this.quantityOut = quantityOut;
+    }
+
+    public Integer getQuantityInRepair() {
+        return quantityInRepair;
+    }
+
+    public void setQuantityInRepair(Integer quantityInRepair) {
+        this.quantityInRepair = quantityInRepair;
+    }
+
+    public Integer getQuantityMissing() {
+        return quantityMissing;
+    }
+
+    public void setQuantityMissing(Integer quantityMissing) {
+        this.quantityMissing = quantityMissing;
+    }
+
+    public Integer getQuantityInScrap() {
+        return quantityInScrap;
+    }
+
+    public void setQuantityInScrap(Integer quantityInScrap) {
+        this.quantityInScrap = quantityInScrap;
+    }
+
+    public String getSourceSheet() {
+        return sourceSheet;
+    }
+
+    public void setSourceSheet(String sourceSheet) {
+        this.sourceSheet = sourceSheet;
     }
 
     public String getNotes() {
@@ -352,7 +457,7 @@ public class Equipment {
     public void setNextMaintenanceDate(LocalDateTime nextMaintenanceDate) {
         this.nextMaintenanceDate = nextMaintenanceDate;
     }
-    
+
     public String getPhotoPath() {
         return photoPath;
     }
@@ -360,7 +465,7 @@ public class Equipment {
     public void setPhotoPath(String photoPath) {
         this.photoPath = photoPath;
     }
-    
+
     @Override
     public String toString() {
         return "Equipment{" +
@@ -374,4 +479,3 @@ public class Equipment {
                 '}';
     }
 }
-

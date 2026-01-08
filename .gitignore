@@ -83,3 +83,10 @@ backend-*.log
 test-*.json
 *-test.json
 sav-test.json
+
+# Scripts PowerShell temporaires
+cleanup.ps1
+
+# Fichiers de build/output
+*.class.gz
+*.js.map

@@ -68,10 +68,13 @@ public class LocmatImportService {
 
         try (InputStream inputStream = file.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
-                        .withFirstRecordAsHeader()
-                        .withIgnoreHeaderCase()
-                        .withTrim())) {
+                CSVParser csvParser = CSVFormat.DEFAULT.builder()
+                        .setHeader()
+                        .setSkipHeaderRecord(true)
+                        .setIgnoreHeaderCase(true)
+                        .setTrim(true)
+                        .build()
+                        .parse(reader)) {
 
             // Caches pour optimiser les recherches
             Map<String, Category> categoryCache = new HashMap<>();

@@ -40,13 +40,12 @@ class LocmatImportIntegrationTest {
                 10002;CONSOLE LUMIERE;SN002;REGIE;MA LIGHTING;GrandMA3;8000.00;7500.00;15/06/2021
                 10003;CAMERA 4K;SN003;VIDEO;SONY;FX6;9000.00;8500.00;20/03/2022
                 """;
-        
+
         MockMultipartFile csvFile = new MockMultipartFile(
-            "file",
-            "test-equipment.csv",
-            "text/csv",
-            csvContent.getBytes()
-        );
+                "file",
+                "test-equipment.csv",
+                "text/csv",
+                csvContent.getBytes());
 
         // WHEN: Import du fichier
         LocmatImportService.ImportResult result = locmatImportService.importLocmatData(csvFile);
@@ -69,13 +68,12 @@ class LocmatImportIntegrationTest {
                 20002;PROJECTEUR B;DUPLICATE123;ECLAIRAGE;BRAND;MODEL-B;600.00;500.00;01/01/2020
                 20003;PROJECTEUR C;UNIQUE001;ECLAIRAGE;BRAND;MODEL-C;700.00;600.00;01/01/2020
                 """;
-        
+
         MockMultipartFile csvFile = new MockMultipartFile(
-            "file",
-            "test-duplicates.csv",
-            "text/csv",
-            csvContent.getBytes()
-        );
+                "file",
+                "test-duplicates.csv",
+                "text/csv",
+                csvContent.getBytes());
 
         // WHEN: Import du fichier
         LocmatImportService.ImportResult result = locmatImportService.importLocmatData(csvFile);
@@ -100,13 +98,12 @@ class LocmatImportIntegrationTest {
                 30003;SANS_SN;;CATEGORY;BRAND;MODEL;1000.00;800.00;01/01/2020
                 VALID;EQUIPMENT VALID;VALID_SN;CATEGORY;BRAND;MODEL;1000.00;800.00;01/01/2020
                 """;
-        
+
         MockMultipartFile csvFile = new MockMultipartFile(
-            "file",
-            "test-invalid.csv",
-            "text/csv",
-            csvContent.getBytes()
-        );
+                "file",
+                "test-invalid.csv",
+                "text/csv",
+                csvContent.getBytes());
 
         // WHEN: Import du fichier
         LocmatImportService.ImportResult result = locmatImportService.importLocmatData(csvFile);
@@ -114,7 +111,7 @@ class LocmatImportIntegrationTest {
         // THEN: Seul l'équipement valide est importé
         assertNotNull(result);
         assertTrue(result.getSuccessCount() >= 1, "Au moins un équipement valide doit être importé");
-        
+
         // Les équipements invalides peuvent générer des erreurs
         // Note: Le comportement exact dépend de la validation
     }
@@ -128,13 +125,12 @@ class LocmatImportIntegrationTest {
         String csvContent = """
                 Code LOCMAT;Désignation;N° de série;Sous famille LM;Marque;Modèle;Prix unitaire HT;Valeur nette comptable;Date d'achat
                 """;
-        
+
         MockMultipartFile csvFile = new MockMultipartFile(
-            "file",
-            "test-empty.csv",
-            "text/csv",
-            csvContent.getBytes()
-        );
+                "file",
+                "test-empty.csv",
+                "text/csv",
+                csvContent.getBytes());
 
         // WHEN: Import du fichier
         LocmatImportService.ImportResult result = locmatImportService.importLocmatData(csvFile);
@@ -151,13 +147,12 @@ class LocmatImportIntegrationTest {
     void testImportMalformedFile() {
         // GIVEN: Un fichier avec des données corrompues
         String invalidContent = "This is not a valid CSV file!!!";
-        
+
         MockMultipartFile csvFile = new MockMultipartFile(
-            "file",
-            "test-malformed.csv",
-            "text/csv",
-            invalidContent.getBytes()
-        );
+                "file",
+                "test-malformed.csv",
+                "text/csv",
+                invalidContent.getBytes());
 
         // WHEN/THEN: Une exception doit être levée ou un résultat d'erreur retourné
         assertDoesNotThrow(() -> {
@@ -165,7 +160,7 @@ class LocmatImportIntegrationTest {
             assertNotNull(result);
             // Le fichier malformé devrait avoir des erreurs ou 0 succès
             assertTrue(!result.getErrors().isEmpty() || result.getSuccessCount() == 0,
-                      "Le fichier malformé doit générer des erreurs ou ne rien importer");
+                    "Le fichier malformé doit générer des erreurs ou ne rien importer");
         }, "L'import ne doit pas crasher même avec des données invalides");
     }
 
@@ -180,13 +175,12 @@ class LocmatImportIntegrationTest {
                 UTF8-001;ÉCLAIRAGE LED Ñ;SN-FRANÇAIS-001;CATÉGORIE SPÉCIALE;MARQUE™;MODÈLE®;1234.56;987.65;01/01/2023
                 UTF8-002;Test €uro & Symböls;SN-UTF8-002;ÉQUİPÊMËNT;Brand™;Modél©;2000.00;1800.00;15/06/2023
                 """;
-        
+
         MockMultipartFile csvFile = new MockMultipartFile(
-            "file",
-            "test-utf8.csv",
-            "text/csv",
-            csvContent.getBytes("UTF-8")
-        );
+                "file",
+                "test-utf8.csv",
+                "text/csv",
+                csvContent.getBytes("UTF-8"));
 
         // WHEN: Import du fichier
         LocmatImportService.ImportResult result = locmatImportService.importLocmatData(csvFile);

@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -40,22 +39,22 @@ public class SecurityConfig {
         if ("production".equals(activeProfile)) {
             // Configuration sécurisée pour production
             http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/api/auth/**")).permitAll()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/health")).permitAll()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/swagger-ui/**")).permitAll()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/v3/api-docs/**")).permitAll()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/api/**")).authenticated()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/health").permitAll()
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/**").authenticated()
                 .anyRequest().denyAll()
             );
         } else {
             // Configuration permissive pour développement
             http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/api/**")).permitAll()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/health")).permitAll()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/")).permitAll()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/swagger-ui/**")).permitAll()
-                .requestMatchers(AntPathRequestMatcher.antMatcher("/v3/api-docs/**")).permitAll()
+                .requestMatchers("/api/**").permitAll()
+                .requestMatchers("/health").permitAll()
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
                 .anyRequest().permitAll()
             )
             .headers(headers -> headers

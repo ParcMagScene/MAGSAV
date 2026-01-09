@@ -6,9 +6,10 @@ interface PersonnelDetailProps {
   personnel: Personnel | null;
   isOpen: boolean;
   onClose: () => void;
+  onEdit?: () => void;
 }
 
-const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnel, isOpen, onClose }) => {
+const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnel, isOpen, onClose, onEdit }) => {
   return (
     <DetailDrawer
       isOpen={isOpen}
@@ -16,6 +17,7 @@ const PersonnelDetail: React.FC<PersonnelDetailProps> = ({ personnel, isOpen, on
       title={personnel ? `${personnel.firstName || ''} ${personnel.lastName || ''}`.trim() || 'Personnel' : 'Personnel'}
       width="700px"
       itemId={personnel?.id}
+      onEdit={onEdit}
     >
       {!personnel ? null : (
         <>

@@ -6,9 +6,10 @@ interface ContractDetailProps {
   contract: Contract | null;
   isOpen: boolean;
   onClose: () => void;
+  onEdit?: () => void;
 }
 
-const ContractDetail: React.FC<ContractDetailProps> = ({ contract, isOpen, onClose }) => {
+const ContractDetail: React.FC<ContractDetailProps> = ({ contract, isOpen, onClose, onEdit }) => {
   const getStatusBadgeClass = (status: string) => {
     const statusMap: { [key: string]: string } = {
       'ACTIVE': 'detail-badge detail-badge-success',
@@ -36,6 +37,7 @@ const ContractDetail: React.FC<ContractDetailProps> = ({ contract, isOpen, onClo
       title={contract?.contractNumber || 'Contrat'}
       width="700px"
       itemId={contract?.id}
+      onEdit={onEdit}
     >
       {!contract ? null : (
         <>

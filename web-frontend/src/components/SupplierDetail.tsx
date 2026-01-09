@@ -21,9 +21,10 @@ interface SupplierDetailProps {
     supplier: Supplier | null;
     isOpen: boolean;
     onClose: () => void;
+    onEdit?: () => void;
 }
 
-const SupplierDetail: React.FC<SupplierDetailProps> = ({ supplier, isOpen, onClose }) => {
+const SupplierDetail: React.FC<SupplierDetailProps> = ({ supplier, isOpen, onClose, onEdit }) => {
     return (
         <DetailDrawer
             isOpen={isOpen}
@@ -31,6 +32,7 @@ const SupplierDetail: React.FC<SupplierDetailProps> = ({ supplier, isOpen, onClo
             title={supplier?.name || 'Fournisseur'}
             width="700px"
             itemId={supplier?.id}
+            onEdit={onEdit}
         >
             {!supplier ? null : (
                 <>

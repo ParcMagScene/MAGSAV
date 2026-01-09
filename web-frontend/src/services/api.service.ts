@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import logger from './logger.service';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
@@ -18,11 +19,7 @@ class ApiService {
     this.client.interceptors.request.use(
       (config) => {
         // 🔍 LOG: Tracer toutes les requêtes API
-        console.log('🌐 [API REQUEST]', {
-          method: config.method?.toUpperCase(),
-          url: config.url,
-          baseURL: config.baseURL,
-          fullURL: `${config.baseURL}${config.url}`,
+        logger.apiRequest(config.method?.toUpperCase() || 'GET', `${config.baseURL}${config.url}`, {
           headers: config.headers,
           params: config.params,
           data: config.data
@@ -32,14 +29,14 @@ class ApiService {
         const token = localStorage.getItem('authToken');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
-          console.log('🔐 [AUTH] Token ajouté à la requête');
+          logger.debug('Token ajouté à la requête');
         } else {
-          console.warn('⚠️ [AUTH] Aucun token trouvé dans localStorage');
+          logger.warn('Aucun token trouvé dans localStorage');
         }
         return config;
       },
       (error) => {
-        console.error('❌ [API REQUEST ERROR]', error);
+        logger.apiError('REQUEST', error);
         return Promise.reject(error);
       }
     );
@@ -48,29 +45,24 @@ class ApiService {
     this.client.interceptors.response.use(
       (response) => {
         // 🔍 LOG: Tracer toutes les réponses API réussies
-        console.log('✅ [API RESPONSE]', {
-          status: response.status,
-          url: response.config.url,
-          dataType: Array.isArray(response.data) ? 'Array' : typeof response.data,
-          dataLength: Array.isArray(response.data) ? response.data.length : 'N/A',
-          data: response.data
-        });
+        logger.apiResponse(
+          response.status,
+          response.config.url || '',
+          response.data,
+          Array.isArray(response.data) ? response.data.length : undefined
+        );
         return response;
       },
       (error) => {
         // 🔍 LOG: Tracer toutes les erreurs API
-        console.error('❌ [API ERROR]', {
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          url: error.config?.url,
-          method: error.config?.method,
-          message: error.message,
-          responseData: error.response?.data,
-          fullError: error
-        });
+        logger.apiError(
+          error.config?.url || 'unknown',
+          error,
+          error.response?.status
+        );
 
         if (error.response?.status === 401) {
-          console.warn('🔒 [AUTH] Non authentifié - Redirection vers login');
+          logger.warn('Non authentifié - Redirection vers login');
           // Rediriger vers la page de login si non authentifié
           localStorage.removeItem('authToken');
           window.location.href = '/login';
@@ -82,23 +74,23 @@ class ApiService {
 
   // Méthodes génériques
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    console.log(`📥 [API.GET] Appel: ${url}`);
+    logger.debug(`GET: ${url}`);
     const response = await this.client.get<T>(url, config);
-    console.log(`📦 [API.GET] Réponse reçue:`, response.data);
+    logger.debug(`GET response received:`, response.data);
     return response.data;
   }
 
   async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    console.log(`📤 [API.POST] Appel: ${url}`, { data });
+    logger.debug(`POST: ${url}`, { data });
     const response = await this.client.post<T>(url, data, config);
-    console.log(`📦 [API.POST] Réponse reçue:`, response.data);
+    logger.debug(`POST response received:`, response.data);
     return response.data;
   }
 
   async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    console.log(`🔄 [API.PUT] Appel: ${url}`, { data });
+    logger.debug(`PUT: ${url}`, { data });
     const response = await this.client.put<T>(url, data, config);
-    console.log(`📦 [API.PUT] Réponse reçue:`, response.data);
+    logger.debug(`PUT response received:`, response.data);
     return response.data;
   }
 
@@ -177,35 +169,35 @@ class ApiService {
 
   // RMA
   getRMAs() {
-    return this.get<any[]>('/rma');
+    return this.get<any[]>('/rmas');
   }
 
   getRMAById(id: number) {
-    return this.get<any>(`/rma/${id}`);
+    return this.get<any>(`/rmas/${id}`);
   }
 
   createRMA(data: any) {
-    return this.post<any>('/rma', data);
+    return this.post<any>('/rmas', data);
   }
 
   updateRMA(id: number, data: any) {
-    return this.put<any>(`/rma/${id}`, data);
+    return this.put<any>(`/rmas/${id}`, data);
   }
 
   deleteRMA(id: number) {
-    return this.delete<void>(`/rma/${id}`);
+    return this.delete<void>(`/rmas/${id}`);
   }
 
   authorizeRMA(id: number) {
-    return this.post<any>(`/rma/${id}/authorize`);
+    return this.post<any>(`/rmas/${id}/authorize`);
   }
 
   getRMAsByStatus(status: string) {
-    return this.get<any[]>(`/rma/status/${status}`);
+    return this.get<any[]>(`/rmas/status/${status}`);
   }
 
   getRMAStats() {
-    return this.get<any>('/rma/stats');
+    return this.get<any>('/rmas/stats');
   }
 
   // ==================== EQUIPMENT ====================

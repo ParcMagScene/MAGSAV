@@ -12,6 +12,8 @@ export interface ServiceRequest {
   resolvedDate?: string;
   clientId?: number;
   equipmentId?: number;
+  equipmentQrCode?: string;
+  equipmentInternalReference?: string;
   assignedToId?: number;
   estimatedCost?: number;
   actualCost?: number;
@@ -38,6 +40,8 @@ export interface Repair {
   id: number;
   repairNumber: string;
   equipmentId?: number;
+  equipmentQrCode?: string;
+  equipmentInternalReference?: string;
   serviceRequestId?: number;
   description: string;
   diagnosis?: string;
@@ -54,6 +58,7 @@ export interface Repair {
 }
 
 export enum RepairStatus {
+  DIAGNOSTIC = 'DIAGNOSTIC',
   PENDING = 'PENDING',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
@@ -72,6 +77,8 @@ export interface RMA {
   id: number;
   rmaNumber: string;
   equipmentId?: number;
+  equipmentQrCode?: string;
+  equipmentInternalReference?: string;
   supplierId?: number;
   reason: RMAReasonType;
   description: string;

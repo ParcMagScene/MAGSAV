@@ -79,13 +79,13 @@ public class DashboardController {
             // Statistiques SAV
             Map<String, Object> savStats = new HashMap<>();
             savStats.put("total", serviceRequestRepository.count());
-            long openSav = safeCountSav(ServiceRequestStatus.OPEN);
-            long inProgressSav = safeCountSav(ServiceRequestStatus.IN_PROGRESS);
+            long openSav = safeCountSav(ServiceRequestStatus.PENDING);
+            long inProgressSav = safeCountSav(ServiceRequestStatus.VALIDATED);
             savStats.put("active", openSav + inProgressSav);
             savStats.put("open", openSav);
             savStats.put("inProgress", inProgressSav);
-            savStats.put("resolved", safeCountSav(ServiceRequestStatus.RESOLVED));
-            savStats.put("closed", safeCountSav(ServiceRequestStatus.CLOSED));
+            savStats.put("resolved", safeCountSav(ServiceRequestStatus.VALIDATED));
+            savStats.put("closed", safeCountSav(ServiceRequestStatus.VALIDATED));
             stats.put("sav", savStats);
 
             // Statistiques Clients
@@ -223,3 +223,4 @@ public class DashboardController {
         return month > 0 && month < months.length ? months[month] : "";
     }
 }
+

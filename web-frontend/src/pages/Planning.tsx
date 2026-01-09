@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DataTable from '../components/DataTable';
 import LoadingState from '../components/LoadingState';
 import PlanningEventDetail from '../components/PlanningEventDetail';
+import PlanningEventModal from '../components/PlanningEventModal';
 import { useApiData } from '../hooks/useApiData';
 import { usePageContext } from '../contexts/PageContext';
 import apiService from '../services/api.service';
@@ -24,6 +25,7 @@ const Planning: React.FC = () => {
     const { setPageTitle } = usePageContext();
     const [selectedEvent, setSelectedEvent] = useState<PlanningEvent | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         setPageTitle('📅 Planning');
@@ -122,10 +124,15 @@ const Planning: React.FC = () => {
                     onRowClick={(event) => {
                         if (selectedEvent?.id === event.id) {
                             setSelectedEvent(null);
+                            setIsDetailOpen(false);
                         } else {
                             setSelectedEvent(event);
                             setIsDetailOpen(true);
                         }
+                    }}
+                    onEdit={(event) => {
+                        setSelectedEvent(event);
+                        setIsModalOpen(true);
                     }}
                 />
             </div>
@@ -137,7 +144,35 @@ const Planning: React.FC = () => {
                     setIsDetailOpen(false);
                     setSelectedEvent(null);
                 }}
+                onEdit={() => {
+                    setIsDetailOpen(false);
+                    setIsModalOpen(true);
+                }}
             />
+
+            {isModalOpen && (
+                <PlanningEventModal
+                    event={selectedEvent!}
+                    isOpen={true}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setSelectedEvent(null);
+                    }}
+                    onSave={async (updatedEvent) => {
+                        try {
+                            if (selectedEvent?.id) {
+                                await apiService.put(`/api/schedule/${selectedEvent.id}`, updatedEvent);
+                                reloadEvents();
+                            }
+                            setIsModalOpen(false);
+                            setSelectedEvent(null);
+                        } catch (error) {
+                            console.error('Erreur lors de la mise à jour de l\'événement:', error);
+                            alert('Erreur lors de la mise à jour');
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 };

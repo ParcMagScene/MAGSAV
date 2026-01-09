@@ -1,7 +1,7 @@
 .drawer-overlay {
   position: fixed;
-  top: 76px;
-  /* TopBar (40px) + FilterBar (36px) */
+  top: 40px;
+  /* TopBar (40px) - FilterBar est maintenant sticky */
   left: 0;
   right: 0;
   bottom: 0;
@@ -18,8 +18,8 @@
 
 .drawer-container {
   position: fixed;
-  top: 76px;
-  /* TopBar (40px) + FilterBar (36px) */
+  top: 40px;
+  /* TopBar (40px) - FilterBar est maintenant sticky */
   right: 0;
   bottom: 0;
   background: white;
@@ -48,6 +48,13 @@
   font-size: 14px;
   font-weight: 600;
   color: #18181b;
+  flex: 1;
+}
+
+.drawer-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .drawer-close {
@@ -81,6 +88,14 @@
 }
 
 .drawer-content::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
   to {
     opacity: 1;
   }

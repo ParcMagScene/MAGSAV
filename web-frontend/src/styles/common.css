@@ -84,6 +84,9 @@
     overflow-y: visible;
     box-sizing: border-box !important;
     line-height: 1 !important;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .filter-group {
@@ -144,10 +147,13 @@
 .tabs-header-only {
     display: flex;
     gap: 0;
-    padding: 0 var(--spacing-lg);
+    padding: 0;
     background: white;
     border-bottom: 1px solid var(--color-border);
     margin: 0;
+    position: sticky;
+    top: 36px;
+    z-index: 9;
 }
 
 .tab,
@@ -181,6 +187,8 @@
 .tabs-content {
     margin: 0 !important;
     padding: 0 !important;
+    overflow-y: auto;
+    flex: 1;
 }
 
 /* === BADGES === */
@@ -212,6 +220,11 @@
 .status-pending {
     background: #fef3c7;
     color: #92400e;
+}
+
+.status-validated {
+    background: #d1fae5;
+    color: #065f46;
 }
 
 .status-in-progress,
@@ -287,6 +300,9 @@
     background: white;
     margin: 0 !important;
     padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .dashboard-page>*:first-child,

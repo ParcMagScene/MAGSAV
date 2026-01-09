@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
       <div className="page-content">
         {/* Section Parc Matériel */}
         <div className="dashboard-section">
-          <h3 className="section-title">📦 Parc Matériel</h3>
+          <h3 className="section-title">📦 Equipements</h3>
           <div className="stats-grid">
             <StatCard
               icon="📦"
@@ -86,7 +86,7 @@ const Dashboard: React.FC = () => {
 
         {/* Section SAV */}
         <div className="dashboard-section">
-          <h3 className="section-title">🔧 SAV & Interventions</h3>
+          <h3 className="section-title">🔧 SAV</h3>
           <div className="stats-grid">
             <StatCard
               icon="📋"

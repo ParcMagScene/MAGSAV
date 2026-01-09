@@ -59,8 +59,7 @@ const RepairDetail: React.FC<RepairDetailProps> = ({
             onClose={onClose}
             title={repair?.repairNumber || 'Réparation'}
             width="700px"
-            itemId={repair?.id}
-        >
+            itemId={repair?.id}        >
             {!repair ? null : (
                 <>
                     <div className="detail-section">
@@ -68,6 +67,14 @@ const RepairDetail: React.FC<RepairDetailProps> = ({
                         <div className="detail-row">
                             <span className="detail-label">N° Réparation</span>
                             <span className="detail-value">{repair.repairNumber || '-'}</span>
+                        </div>
+                        <div className="detail-row">
+                            <span className="detail-label">Code LOCMAT</span>
+                            <span className="detail-value">{repair.equipmentInternalReference || '-'}</span>
+                        </div>
+                        <div className="detail-row">
+                            <span className="detail-label">UID</span>
+                            <span className="detail-value">{repair.equipmentQrCode || '-'}</span>
                         </div>
                         <div className="detail-row">
                             <span className="detail-label">Statut</span>

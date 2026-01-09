@@ -64,6 +64,14 @@ const ServiceRequestDetail: React.FC<ServiceRequestDetailProps> = ({
               <span className="detail-value">{serviceRequest.title || '-'}</span>
             </div>
             <div className="detail-row">
+              <span className="detail-label">Code LOCMAT</span>
+              <span className="detail-value">{serviceRequest.equipmentInternalReference || '-'}</span>
+            </div>
+            <div className="detail-row">
+              <span className="detail-label">UID</span>
+              <span className="detail-value">{serviceRequest.equipmentQrCode || '-'}</span>
+            </div>
+            <div className="detail-row">
               <span className="detail-label">Statut</span>
               <span className="detail-value">
                 <span className={getStatusBadgeClass(serviceRequest.status || '')}>

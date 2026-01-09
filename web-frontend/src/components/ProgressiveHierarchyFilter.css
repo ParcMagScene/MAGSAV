@@ -1,0 +1,54 @@
+.progressive-hierarchy-filter {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-step {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+  min-width: 180px;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  white-space: nowrap;
+  margin: 0;
+  min-width: 80px;
+}
+
+.filter-step .filter-select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  background: white;
+  color: var(--color-text);
+  height: 28px;
+  box-sizing: border-box;
+  margin: 0;
+  line-height: 1;
+  vertical-align: middle;
+  display: inline-block;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-step .filter-select:hover {
+  border-color: var(--color-primary);
+}
+
+.filter-step .filter-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}

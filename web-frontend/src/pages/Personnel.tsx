@@ -4,6 +4,7 @@ import { Personnel as PersonnelType } from '../types/entities';
 import DataTable from '../components/DataTable';
 import LoadingState from '../components/LoadingState';
 import PersonnelDetail from '../components/PersonnelDetail';
+import PersonnelModal from '../components/PersonnelModal';
 import { useApiData } from '../hooks/useApiData';
 import { usePageContext } from '../contexts/PageContext';
 import './Personnel.css';
@@ -21,6 +22,7 @@ const Personnel: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('Tous');
   const [selectedPersonnel, setSelectedPersonnel] = useState<PersonnelType | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     setPageTitle('👥 Personnel');
@@ -178,11 +180,15 @@ const Personnel: React.FC = () => {
           onRowClick={(personnel) => {
             if (selectedPersonnel?.id === personnel.id) {
               setSelectedPersonnel(null);
-
+              setIsDetailOpen(false);
             } else {
               setSelectedPersonnel(personnel);
               setIsDetailOpen(true);
             }
+          }}
+          onEdit={(personnel) => {
+            setSelectedPersonnel(personnel);
+            setIsModalOpen(true);
           }}
         />
       </div>
@@ -194,7 +200,30 @@ const Personnel: React.FC = () => {
           setIsDetailOpen(false);
           setSelectedPersonnel(null);
         }}
+        onEdit={() => {
+          setIsModalOpen(true);
+        }}
       />
+
+      {selectedPersonnel && isModalOpen && (
+        <PersonnelModal
+          personnel={selectedPersonnel}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+          }}
+          onSave={async (updatedPersonnel) => {
+            try {
+              await apiService.put(`/api/personnel/${updatedPersonnel.id}`, updatedPersonnel);
+              setIsModalOpen(false);
+              reload();
+            } catch (error) {
+              console.error('Erreur lors de la mise à jour:', error);
+              alert('Erreur lors de la mise à jour du personnel');
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -54,6 +54,14 @@ const RMADetail: React.FC<RMADetailProps> = ({
                             <span className="detail-value">{rma.rmaNumber || '-'}</span>
                         </div>
                         <div className="detail-row">
+                            <span className="detail-label">Code LOCMAT</span>
+                            <span className="detail-value">{rma.equipmentInternalReference || '-'}</span>
+                        </div>
+                        <div className="detail-row">
+                            <span className="detail-label">UID</span>
+                            <span className="detail-value">{rma.equipmentQrCode || '-'}</span>
+                        </div>
+                        <div className="detail-row">
                             <span className="detail-label">Statut</span>
                             <span className="detail-value">
                                 <span className={getStatusBadgeClass(rma.status || '')}>

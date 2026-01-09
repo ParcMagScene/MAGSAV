@@ -28,47 +28,45 @@ public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:8080}")
     private String allowedOrigins;
-    
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         if ("production".equals(activeProfile)) {
             // Configuration sécurisée pour production
             http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/health").permitAll()
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .requestMatchers("/api/**").authenticated()
-                .anyRequest().denyAll()
-            );
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/health").permitAll()
+                    .requestMatchers("/swagger-ui/**").permitAll()
+                    .requestMatchers("/v3/api-docs/**").permitAll()
+                    .requestMatchers("/api/**").authenticated()
+                    .anyRequest().denyAll());
         } else {
             // Configuration permissive pour développement
             http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/**").permitAll()
-                .requestMatchers("/health").permitAll()
-                .requestMatchers("/").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .anyRequest().permitAll()
-            )
-            .headers(headers -> headers
-                .frameOptions(frameOptions -> frameOptions.sameOrigin()) // Pour H2 Console
-            );
+                    .requestMatchers("/api/**").permitAll()
+                    .requestMatchers("/health").permitAll()
+                    .requestMatchers("/").permitAll()
+                    .requestMatchers("/h2-console/**").permitAll()
+                    .requestMatchers("/swagger-ui/**").permitAll()
+                    .requestMatchers("/v3/api-docs/**").permitAll()
+                    .anyRequest().permitAll())
+                    .headers(headers -> headers
+                            .frameOptions(frameOptions -> frameOptions.sameOrigin()) // Pour H2 Console
+                    );
         }
-        
+
         return http.build();
     }
-    
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
+
         if ("production".equals(activeProfile)) {
             // CORS strict en production
             configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
@@ -78,12 +76,13 @@ public class SecurityConfig {
             configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*", "*"));
             configuration.setAllowCredentials(false);
         }
-        
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
-        configuration.setExposedHeaders(Arrays.asList("Content-Length", "X-Requested-With", "Location", "Authorization"));
+        configuration
+                .setExposedHeaders(Arrays.asList("Content-Length", "X-Requested-With", "Location", "Authorization"));
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

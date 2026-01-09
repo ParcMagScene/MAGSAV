@@ -37,7 +37,7 @@ public class RMA {
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Le statut est obligatoire")
     @Column(name = "status", nullable = false)
-    private RMAStatus status = RMAStatus.INITIATED;
+    private RMAStatus status = RMAStatus.REQUEST_PENDING;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "priority")
@@ -107,17 +107,23 @@ public class RMA {
     private LocalDateTime updatedAt;
 
     public enum RMAStatus {
-        INITIATED("Initié"),
-        AUTHORIZED("Autorisé"),
-        IN_TRANSIT_RETURN("En transit retour"),
-        RECEIVED("Reçu"),
-        UNDER_ANALYSIS("En cours d'analyse"),
-        REPAIRED("Réparé"),
-        REPLACED("Remplacé"),
-        REFUNDED("Remboursé"),
-        REJECTED("Refusé"),
-        CANCELLED("Annulé"),
-        COMPLETED("Terminé");
+        REQUEST_PENDING("Demande en cours"),
+        REQUEST_VALIDATED("Demande validée"),
+        SHIPPED("Expédiée"),
+        RETURNED("Retournée"),
+        REJECTED("Refusée"),
+
+        // ANCIENS STATUTS - À SUPPRIMER APRÈS MIGRATION COMPLÈTE
+        INITIATED("Demande en cours"), // Alias vers REQUEST_PENDING
+        AUTHORIZED("Demande validée"), // Alias vers REQUEST_VALIDATED
+        IN_TRANSIT_RETURN("Expédiée"), // Alias vers SHIPPED
+        RECEIVED("Retournée"), // Alias vers RETURNED
+        UNDER_ANALYSIS("Demande en cours"), // Alias vers REQUEST_PENDING
+        REPAIRED("Demande validée"), // Alias temporaire
+        REPLACED("Demande validée"), // Alias temporaire
+        REFUNDED("Demande validée"), // Alias temporaire
+        CANCELLED("Refusée"), // Alias vers REJECTED
+        COMPLETED("Retournée"); // Alias vers RETURNED
 
         private final String displayName;
 

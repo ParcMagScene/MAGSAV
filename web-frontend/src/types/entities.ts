@@ -76,7 +76,7 @@ export interface Equipment {
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
   photoPath?: string;
-  
+
   // Aliases pour compatibilité
   internalCode?: string;  // alias de internalReference
   designation?: string;  // alias de name
@@ -87,16 +87,22 @@ export interface Equipment {
 // ==================== VÉHICULES ====================
 export interface Vehicle {
   id: number;
+  name: string;
   licensePlate: string;
   brand: string;
   model: string;
-  type: 'VAN' | 'TRUCK' | 'CAR' | 'UTILITY';
+  color?: string;
+  owner?: string;
+  type: 'VAN' | 'VL' | 'VL_17M3' | 'VL_20M3' | 'TRUCK' | 'PORTEUR' | 'TRACTEUR' | 'SEMI_REMORQUE' | 'SCENE_MOBILE' | 'TRAILER' | 'CAR' | 'MOTORCYCLE' | 'OTHER';
   year?: number;
-  status: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_SERVICE';
+  status: 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'OUT_OF_ORDER' | 'RENTED_OUT' | 'RESERVED';
+  fuelType?: 'GASOLINE' | 'DIESEL' | 'ELECTRIC' | 'HYBRID' | 'GPL' | 'OTHER';
   mileage?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
+  notes?: string;
   photo?: string;
+  photoPath?: string;
 }
 
 export interface VehicleReservation {
@@ -115,35 +121,53 @@ export interface ServiceRequest {
   requestNumber: string;
   title: string;
   description?: string;
-  status: 'OPEN' | 'IN_PROGRESS' | 'WAITING' | 'RESOLVED' | 'CLOSED' | 'CANCELLED';
+  status: 'PENDING' | 'VALIDATED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
   requestDate: string;
   clientId?: number;
   equipmentId?: number;
   assignedTo?: number;
+  equipmentQrCode?: string;
+  equipmentInternalReference?: string;
+  validationAction?: 'DIAGNOSTIC' | 'INTERNAL_REPAIR' | 'RMA' | 'SCRAP';
+  relatedRepairId?: number;
+  relatedRmaId?: number;
 }
 
 export interface Repair {
   id: number;
   repairNumber: string;
   description: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+  status: 'IN_PROGRESS' | 'WAITING_PARTS' | 'COMPLETED' | 'CANCELLED' | 'DIAGNOSTIC' | 'PENDING';
+  priority: 'LOW' | 'MEDIUM' | 'NORMAL' | 'HIGH' | 'URGENT';
   startDate?: string;
   endDate?: string;
   cost?: number;
   technicianId?: number;
+  equipmentQrCode?: string;
+  equipmentInternalReference?: string;
+  equipmentName?: string;
+  equipmentSerialNumber?: string;
+  problemDescription?: string;
+  serviceRequestId?: number;
 }
 
 export interface RMA {
   id: number;
   rmaNumber: string;
   reason: string;
-  status: 'REQUESTED' | 'APPROVED' | 'SHIPPED' | 'RECEIVED' | 'REFUNDED' | 'REJECTED';
+  status: 'REQUEST_PENDING' | 'REQUEST_VALIDATED' | 'SHIPPED' | 'RETURNED' | 'REJECTED' | 'REQUESTED' | 'APPROVED' | 'RECEIVED' | 'REFUNDED';
   requestDate: string;
   equipmentId?: number;
+  equipmentQrCode?: string;
+  equipmentInternalReference?: string;
   clientId?: number;
   notes?: string;
+  description?: string;
+  equipmentName?: string;
+  equipmentSerialNumber?: string;
+  priority?: 'LOW' | 'MEDIUM' | 'NORMAL' | 'HIGH' | 'URGENT';
+  serviceRequestId?: number;
 }
 
 // ==================== VENTES & INSTALLATIONS ====================

@@ -31,7 +31,7 @@ public class Repair {
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Le statut est obligatoire")
     @Column(name = "status", nullable = false)
-    private RepairStatus status = RepairStatus.INITIATED;
+    private RepairStatus status = RepairStatus.IN_PROGRESS;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "priority")
@@ -92,13 +92,16 @@ public class Repair {
     private LocalDateTime updatedAt;
 
     public enum RepairStatus {
-        INITIATED("Initié"),
-        DIAGNOSED("Diagnostiqué"),
         IN_PROGRESS("En cours"),
-        WAITING_PARTS("En attente pièces"),
-        COMPLETED("Terminé"),
-        CANCELLED("Annulé"),
-        ON_HOLD("En attente");
+        WAITING_PARTS("En attente de pièces"),
+        COMPLETED("Effectuée"),
+        CANCELLED("Annulée"),
+
+        // ANCIENS STATUTS - À SUPPRIMER APRÈS MIGRATION COMPLÈTE
+        DIAGNOSTIC("En cours"), // Alias vers IN_PROGRESS
+        INITIATED("En cours"), // Alias vers IN_PROGRESS
+        DIAGNOSED("En cours"), // Alias vers IN_PROGRESS
+        ON_HOLD("En attente de pièces"); // Alias vers WAITING_PARTS
 
         private final String displayName;
 

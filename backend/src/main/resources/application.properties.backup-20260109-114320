@@ -1,0 +1,64 @@
+# Configuration Spring Boot pour Java 21
+spring.application.name=MAGSAV-3.0
+spring.profiles.active=development
+
+# === VIRTUAL THREADS CONFIGURATION ===
+# Activer les Virtual Threads avec Java 21
+spring.threads.virtual.enabled=true
+
+# Configuration Tomcat standard
+server.port=8080
+server.tomcat.threads.max=200
+server.tomcat.accept-count=100
+server.tomcat.uri-encoding=UTF-8
+
+# === DATABASE CONFIGURATION ===
+# Base de données H2 persistante sur fichier
+spring.datasource.url=jdbc:h2:file:${user.home}/magsav/data/magsav;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE;MODE=MySQL
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=password
+
+# Console H2 pour debug
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+# Configuration upload de fichiers
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=50MB
+
+# === JPA/HIBERNATE CONFIGURATION ===
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=create
+spring.jpa.defer-datasource-initialization=true
+# IMPORTANT: Mode 'embedded' ne s'execute que si la base est vide
+# Pour base persistante H2, utiliser 'never' ou 'embedded'
+spring.sql.init.mode=always
+spring.sql.init.continue-on-error=true
+spring.sql.init.data-locations=classpath:data.sql,classpath:data-clients-contracts.sql,classpath:data-sales-installations.sql,classpath:data-parc-materiel.sql,classpath:data-sav.sql,classpath:data-suppliers.sql,classpath:data-material-requests.sql,classpath:data-grouped-orders.sql,classpath:data-cleanup.sql
+spring.sql.init.encoding=UTF-8
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.open-in-view=false
+
+# === ENCODING CONFIGURATION ===
+server.servlet.encoding.charset=UTF-8
+server.servlet.encoding.enabled=true
+server.servlet.encoding.force=true
+
+# === LOGGING CONFIGURATION ===
+logging.level.com.magscene.magsav=INFO
+logging.level.org.springframework.security=WARN
+logging.level.org.springframework.jdbc.datasource.init=DEBUG
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+logging.level.org.springframework.web=WARN
+logging.charset.console=UTF-8
+logging.charset.file=UTF-8
+
+# === VIRTUAL THREADS SPECIFIC ===
+# Configuration des pools d'exécution
+spring.task.execution.pool.core-size=10
+spring.task.execution.pool.max-size=1000
+spring.task.execution.pool.queue-capacity=10000
+spring.task.execution.thread-name-prefix=magsav-vt-

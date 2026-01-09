@@ -6,9 +6,10 @@ interface VehicleDetailProps {
   vehicle: Vehicle | null;
   isOpen: boolean;
   onClose: () => void;
+  onEdit?: () => void;
 }
 
-const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, isOpen, onClose }) => {
+const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, isOpen, onClose, onEdit }) => {
   const getStatusBadgeClass = (status: string) => {
     const statusMap: { [key: string]: string } = {
       'AVAILABLE': 'detail-badge detail-badge-success',
@@ -36,6 +37,7 @@ const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, isOpen, onClose 
       title={vehicle?.licensePlate || `${vehicle?.brand || ''} ${vehicle?.model || ''}`.trim() || 'Véhicule'}
       width="700px"
       itemId={vehicle?.id}
+      onEdit={onEdit}
     >
       {!vehicle ? null : (
         <>

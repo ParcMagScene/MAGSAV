@@ -18,9 +18,10 @@ interface PlanningEventDetailProps {
     event: PlanningEvent | null;
     isOpen: boolean;
     onClose: () => void;
+    onEdit?: () => void;
 }
 
-const PlanningEventDetail: React.FC<PlanningEventDetailProps> = ({ event, isOpen, onClose }) => {
+const PlanningEventDetail: React.FC<PlanningEventDetailProps> = ({ event, isOpen, onClose, onEdit }) => {
     return (
         <DetailDrawer
             isOpen={isOpen}
@@ -28,6 +29,7 @@ const PlanningEventDetail: React.FC<PlanningEventDetailProps> = ({ event, isOpen
             title={event?.projectName || event?.resourceName || 'Événement'}
             width="700px"
             itemId={event?.id}
+            onEdit={onEdit}
         >
             {!event ? null : (
                 <>

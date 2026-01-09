@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../services/api.service';
+import { useEquipment } from '../contexts/EquipmentContext';
 import './GlobalSearch.css';
 
 interface SearchResult {
@@ -19,6 +20,7 @@ const GlobalSearch: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
+  const { equipment: cachedEquipment } = useEquipment();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,9 +51,8 @@ const GlobalSearch: React.FC = () => {
     const searchResults: SearchResult[] = [];
 
     try {
-      // Recherche dans les équipements
-      const equipments = await apiService.getEquipment();
-      const matchingEquipments = equipments.filter(eq =>
+      // Recherche dans les équipements (utilise le cache)
+      const matchingEquipments = cachedEquipment.filter(eq =>
         eq.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         eq.internalReference?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         eq.serialNumber?.toLowerCase().includes(searchQuery.toLowerCase())

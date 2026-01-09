@@ -98,6 +98,14 @@ const EquipmentDetail: React.FC<EquipmentDetailProps> = ({ equipment, isOpen, on
               </span>
             </div>
             <div className="detail-row">
+              <span className="detail-label">Valeur d'assurance</span>
+              <span className="detail-value">
+                {equipment.insuranceValue
+                  ? `${equipment.insuranceValue.toLocaleString('fr-FR')} €`
+                  : '-'}
+              </span>
+            </div>
+            <div className="detail-row">
               <span className="detail-label">Fournisseur</span>
               <span className="detail-value">{equipment.supplier || '-'}</span>
             </div>

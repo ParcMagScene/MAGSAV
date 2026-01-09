@@ -4,7 +4,7 @@
 # =============================================================
 
 param(
-    [string]$CsvFile = "..\Exports LOCMAT\Inventaire_Complet_Avec_NS.csv",
+    [string]$CsvFile = "..\Exports LOCMAT\IMPORT_MAGSAV.csv",
     [string]$BackendUrl = "http://localhost:8080"
 )
 

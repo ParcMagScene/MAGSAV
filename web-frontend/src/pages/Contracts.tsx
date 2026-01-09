@@ -4,6 +4,7 @@ import { Contract } from '../types/entities';
 import DataTable from '../components/DataTable';
 import LoadingState from '../components/LoadingState';
 import ContractDetail from '../components/ContractDetail';
+import ContractModal from '../components/ContractModal';
 import { useApiData } from '../hooks/useApiData';
 import { usePageContext } from '../contexts/PageContext';
 import './Contracts.css';
@@ -21,6 +22,7 @@ const Contracts: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('Tous');
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     setPageTitle('📜 Contrats');
@@ -175,10 +177,15 @@ const Contracts: React.FC = () => {
           onRowClick={(contract) => {
             if (selectedContract?.id === contract.id) {
               setSelectedContract(null);
+              setIsDetailOpen(false);
             } else {
               setSelectedContract(contract);
               setIsDetailOpen(true);
             }
+          }}
+          onEdit={(contract) => {
+            setSelectedContract(contract);
+            setIsModalOpen(true);
           }}
         />
       </div>
@@ -190,7 +197,35 @@ const Contracts: React.FC = () => {
           setIsDetailOpen(false);
           setSelectedContract(null);
         }}
+        onEdit={() => {
+          setIsDetailOpen(false);
+          setIsModalOpen(true);
+        }}
       />
+
+      {isModalOpen && (
+        <ContractModal
+          contract={selectedContract!}
+          isOpen={true}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedContract(null);
+          }}
+          onSave={async (updatedContract) => {
+            try {
+              if (selectedContract?.id) {
+                await apiService.put(`/api/contracts/${selectedContract.id}`, updatedContract);
+                reload();
+              }
+              setIsModalOpen(false);
+              setSelectedContract(null);
+            } catch (error) {
+              console.error('Erreur lors de la mise à jour du contrat:', error);
+              alert('Erreur lors de la mise à jour');
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

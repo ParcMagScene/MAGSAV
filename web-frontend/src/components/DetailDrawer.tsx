@@ -1,5 +1,4 @@
 import React, { ReactNode, useEffect, useLayoutEffect } from 'react';
-import { flushSync } from 'react-dom';
 import './DetailDrawer.css';
 
 interface DetailDrawerProps {
@@ -9,6 +8,7 @@ interface DetailDrawerProps {
   children: ReactNode;
   width?: string;
   itemId?: string | number | null;
+  onEdit?: () => void;
 }
 
 const DetailDrawer: React.FC<DetailDrawerProps> = ({
@@ -17,69 +17,44 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
   title,
   children,
   width = '600px',
-  itemId
+  itemId,
+  onEdit
 }) => {
   const [isClosing, setIsClosing] = React.useState(false);
-  const [lastItemId, setLastItemId] = React.useState<string | number | null>(null);
-  const [displayedChildren, setDisplayedChildren] = React.useState<ReactNode>(children);
-  const [wasOpen, setWasOpen] = React.useState(false);
-  const [isAnimating, setIsAnimating] = React.useState(false);
+  const [shouldRender, setShouldRender] = React.useState(false);
+  const [frozenTitle, setFrozenTitle] = React.useState(title);
+  const [frozenChildren, setFrozenChildren] = React.useState(children);
+  const wasOpen = React.useRef(false);
 
-  useLayoutEffect(() => {
-    if (isOpen && itemId !== lastItemId) {
-      if (itemId === null || itemId === undefined) {
-        // Item désélectionné : fermer avec animation
-        if (lastItemId !== null && lastItemId !== undefined) {
-          setIsAnimating(true);
-          // Forcer un rendu synchrone avec isClosing=true
-          flushSync(() => {
-            setIsClosing(true);
-          });
-          // Maintenant l'animation peut commencer
-          setTimeout(() => {
-            setIsClosing(false);
-            setLastItemId(null);
-            onClose();
-            setTimeout(() => setIsAnimating(false), 10);
-          }, 200);
-        }
-      } else if (lastItemId !== null && lastItemId !== undefined) {
-        // Changement d'élément : fermer puis rouvrir
-        setIsClosing(true);
-        setTimeout(() => {
-          setDisplayedChildren(children);
-          setLastItemId(itemId ?? null);
-          setIsClosing(false);
-        }, 200);
-      } else {
-        // Première ouverture
-        setDisplayedChildren(children);
-        setLastItemId(itemId ?? null);
-      }
-    } else if (isOpen) {
-      // Mise à jour du contenu si même item
-      setDisplayedChildren(children);
-    } else if (!isOpen && wasOpen && !isAnimating) {
-      // Fermeture depuis l'extérieur : déclencher l'animation seulement si pas déjà en animation
+  // Détecter les changements d'état isOpen
+  useEffect(() => {
+    if (isOpen && !wasOpen.current) {
+      // Ouverture
+      setShouldRender(true);
+      setIsClosing(false);
+      setFrozenTitle(title);
+      setFrozenChildren(children);
+      wasOpen.current = true;
+    } else if (!isOpen && wasOpen.current) {
+      // Fermeture demandée - garder le contenu figé
       setIsClosing(true);
       setTimeout(() => {
         setIsClosing(false);
-        setLastItemId(null);
+        setShouldRender(false);
+        wasOpen.current = false;
       }, 200);
+    } else if (isOpen) {
+      // Mise à jour du contenu si ouvert
+      setFrozenTitle(title);
+      setFrozenChildren(children);
     }
-    setWasOpen(isOpen);
-  }, [isOpen, itemId, lastItemId, children, wasOpen, isAnimating, onClose]);
+  }, [isOpen, title, children]);
 
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsClosing(false);
-      setLastItemId(null);
-      onClose();
-    }, 200);
+    onClose();
   };
 
-  if (!isOpen && !isClosing) return null;
+  if (!shouldRender) return null;
 
   return (
     <>
@@ -92,13 +67,20 @@ const DetailDrawer: React.FC<DetailDrawerProps> = ({
         style={{ width }}
       >
         <div className="drawer-header">
-          <h2 className="drawer-title">{title}</h2>
-          <button className="drawer-close" onClick={handleClose} aria-label="Fermer">
-            ✕
-          </button>
+          <h2 className="drawer-title">{frozenTitle}</h2>
+          <div className="drawer-header-actions">
+            {onEdit && (
+              <button className="btn btn-secondary" onClick={onEdit}>
+                ✏️ Modifier
+              </button>
+            )}
+            <button className="drawer-close" onClick={handleClose} aria-label="Fermer">
+              ✕
+            </button>
+          </div>
         </div>
         <div className="drawer-content">
-          {displayedChildren}
+          {frozenChildren}
         </div>
       </div>
     </>

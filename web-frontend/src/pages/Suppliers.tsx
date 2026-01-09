@@ -3,6 +3,7 @@ import apiService from '../services/api.service';
 import DataTable from '../components/DataTable';
 import LoadingState from '../components/LoadingState';
 import SupplierDetail from '../components/SupplierDetail';
+import SupplierModal from '../components/SupplierModal';
 import { useApiData } from '../hooks/useApiData';
 import { usePageContext } from '../contexts/PageContext';
 import './Suppliers.css';
@@ -25,6 +26,7 @@ const Suppliers: React.FC = () => {
     const [filterActive, setFilterActive] = useState<boolean | null>(null);
     const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const { data: suppliers, loading, error, reload } = useApiData<Supplier[]>(
         () => filterActive === true
@@ -118,10 +120,15 @@ const Suppliers: React.FC = () => {
                     onRowClick={(supplier) => {
                         if (selectedSupplier?.id === supplier.id) {
                             setSelectedSupplier(null);
+                            setIsDetailOpen(false);
                         } else {
                             setSelectedSupplier(supplier);
                             setIsDetailOpen(true);
                         }
+                    }}
+                    onEdit={(supplier) => {
+                        setSelectedSupplier(supplier);
+                        setIsModalOpen(true);
                     }}
                 />
             </div>
@@ -133,7 +140,35 @@ const Suppliers: React.FC = () => {
                     setIsDetailOpen(false);
                     setSelectedSupplier(null);
                 }}
+                onEdit={() => {
+                    setIsDetailOpen(false);
+                    setIsModalOpen(true);
+                }}
             />
+
+            {isModalOpen && (
+                <SupplierModal
+                    supplier={selectedSupplier!}
+                    isOpen={true}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setSelectedSupplier(null);
+                    }}
+                    onSave={async (updatedSupplier) => {
+                        try {
+                            if (selectedSupplier?.id) {
+                                await apiService.put(`/api/suppliers/${selectedSupplier.id}`, updatedSupplier);
+                                reload();
+                            }
+                            setIsModalOpen(false);
+                            setSelectedSupplier(null);
+                        } catch (error) {
+                            console.error('Erreur lors de la mise à jour du fournisseur:', error);
+                            alert('Erreur lors de la mise à jour');
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 };

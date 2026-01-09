@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { usePageContext } from '../contexts/PageContext';
 import './Settings.css';
 
-type TabType = 'appearance' | 'language' | 'display' | 'security' | 'about';
+type TabType = 'appearance' | 'language' | 'display' | 'referentials' | 'security' | 'about';
 
 const Settings: React.FC = () => {
     const { setPageTitle } = usePageContext();
@@ -40,6 +40,12 @@ const Settings: React.FC = () => {
                     onClick={() => setActiveTab('display')}
                 >
                     📊 Affichage
+                </button>
+                <button
+                    className={`tab-button ${activeTab === 'referentials' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('referentials')}
+                >
+                    📋 Référentiels
                 </button>
                 <button
                     className={`tab-button ${activeTab === 'security' ? 'active' : ''}`}
@@ -126,6 +132,40 @@ const Settings: React.FC = () => {
                                 <input type="checkbox" />
                                 Mode compact pour les tables
                             </label>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'referentials' && (
+                    <div className="settings-section">
+                        <h3>📦 Équipements - Hiérarchie Famille / Catégorie / Type</h3>
+                        <p className="section-description">
+                            Gérez la classification hiérarchique de votre parc matériel.
+                        </p>
+                        <div className="referentials-equipment">
+                            <button className="btn btn-primary">
+                                ➕ Ajouter une Famille
+                            </button>
+                            <div className="hierarchy-list">
+                                <p className="placeholder-text">
+                                    Interface de gestion des hiérarchies (à venir)
+                                </p>
+                            </div>
+                        </div>
+
+                        <h3 style={{marginTop: '32px'}}>🏷️ Équipements - Statuts</h3>
+                        <p className="section-description">
+                            Définissez les statuts disponibles pour les équipements.
+                        </p>
+                        <div className="referentials-statuses">
+                            <button className="btn btn-primary">
+                                ➕ Ajouter un Statut
+                            </button>
+                            <div className="status-list">
+                                <p className="placeholder-text">
+                                    Interface de gestion des statuts (à venir)
+                                </p>
+                            </div>
                         </div>
                     </div>
                 )}

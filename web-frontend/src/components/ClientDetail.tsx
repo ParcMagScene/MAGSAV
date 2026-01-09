@@ -6,9 +6,10 @@ interface ClientDetailProps {
   client: Client | null;
   isOpen: boolean;
   onClose: () => void;
+  onEdit?: () => void;
 }
 
-const ClientDetail: React.FC<ClientDetailProps> = ({ client, isOpen, onClose }) => {
+const ClientDetail: React.FC<ClientDetailProps> = ({ client, isOpen, onClose, onEdit }) => {
   return (
     <DetailDrawer
       isOpen={isOpen}
@@ -16,6 +17,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({ client, isOpen, onClose }) 
       title={client?.name || 'Client'}
       width="700px"
       itemId={client?.id}
+      onEdit={onEdit}
     >
       {!client ? null : (
         <>

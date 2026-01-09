@@ -4,6 +4,7 @@ import { Client } from '../types/entities';
 import DataTable from '../components/DataTable';
 import LoadingState from '../components/LoadingState';
 import ClientDetail from '../components/ClientDetail';
+import ClientModal from '../components/ClientModal';
 import { useApiData } from '../hooks/useApiData';
 import { usePageContext } from '../contexts/PageContext';
 import './Clients.css';
@@ -21,6 +22,7 @@ const Clients: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('Tous');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     setPageTitle('👥 Clients');
@@ -150,10 +152,15 @@ const Clients: React.FC = () => {
           onRowClick={(client) => {
             if (selectedClient?.id === client.id) {
               setSelectedClient(null);
+              setIsDetailOpen(false);
             } else {
               setSelectedClient(client);
               setIsDetailOpen(true);
             }
+          }}
+          onEdit={(client) => {
+            setSelectedClient(client);
+            setIsModalOpen(true);
           }}
         />
       </div>
@@ -165,7 +172,30 @@ const Clients: React.FC = () => {
           setIsDetailOpen(false);
           setSelectedClient(null);
         }}
+        onEdit={() => {
+          setIsModalOpen(true);
+        }}
       />
+
+      {selectedClient && isModalOpen && (
+        <ClientModal
+          client={selectedClient}
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+          }}
+          onSave={async (updatedClient) => {
+            try {
+              await apiService.put(`/api/clients/${updatedClient.id}`, updatedClient);
+              setIsModalOpen(false);
+              reload();
+            } catch (error) {
+              console.error('Erreur lors de la mise à jour:', error);
+              alert('Erreur lors de la mise à jour du client');
+            }
+          }}
+        />
+      )}
     </div>
   );
 };

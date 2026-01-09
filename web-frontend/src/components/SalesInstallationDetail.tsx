@@ -18,9 +18,10 @@ interface SalesInstallationDetailProps {
     project: Project | null;
     isOpen: boolean;
     onClose: () => void;
+    onEdit?: () => void;
 }
 
-const SalesInstallationDetail: React.FC<SalesInstallationDetailProps> = ({ project, isOpen, onClose }) => {
+const SalesInstallationDetail: React.FC<SalesInstallationDetailProps> = ({ project, isOpen, onClose, onEdit }) => {
     return (
         <DetailDrawer
             isOpen={isOpen}
@@ -28,6 +29,7 @@ const SalesInstallationDetail: React.FC<SalesInstallationDetailProps> = ({ proje
             title={project?.name || project?.code || 'Projet'}
             width="700px"
             itemId={project?.id}
+            onEdit={onEdit}
         >
             {!project ? null : (
                 <>

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import apiService from '../services/api.service';
+import logger from '../services/logger.service';
 import StatCard from '../components/StatCard';
 import LoadingState from '../components/LoadingState';
 import { useApiData } from '../hooks/useApiData';
@@ -8,19 +9,19 @@ import { DashboardStats } from '../types/entities';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
-  console.log('🏠 [DASHBOARD] Composant monté');
+  logger.debug('DASHBOARD - Composant montÃ©');
   const { setPageTitle } = usePageContext();
 
-  // ✨ Refactorisation : utilisation du hook useApiData
+  // âœ¨ Refactorisation : utilisation du hook useApiData
   const { data: stats, loading, error, reload } = useApiData<DashboardStats>(
     () => apiService.getDashboardStats()
   );
 
   useEffect(() => {
-    setPageTitle('🏠 Dashboard');
+    setPageTitle('ðŸ  Dashboard');
   }, [setPageTitle]);
 
-  console.log('🏠 [DASHBOARD] État actuel:', { stats, loading, error });
+  logger.debug('DASHBOARD - Ã‰tat actuel:', { stats, loading, error });
 
   if (loading) {
     return (
@@ -34,10 +35,10 @@ const Dashboard: React.FC = () => {
     return (
       <div className="page-container">
         <div className="error-container">
-          <h2>❌ Erreur</h2>
+          <h2>âŒ Erreur</h2>
           <p>{error.message}</p>
           <button onClick={reload} className="btn-retry">
-            Réessayer
+            RÃ©essayer
           </button>
         </div>
       </div>
@@ -45,38 +46,38 @@ const Dashboard: React.FC = () => {
   }
 
   if (!stats) {
-    console.warn('⚠️ [DASHBOARD] Aucune donnée stats disponible');
+    logger.warn('âš ï¸ [DASHBOARD] Aucune donnÃ©e stats disponible');
     return null;
   }
 
-  console.log('🎨 [DASHBOARD] Rendu avec stats:', stats);
+  logger.debug('ðŸŽ¨ [DASHBOARD] Rendu avec stats:', stats);
   return (
     <div className="dashboard-page">
       <div className="page-content">
-        {/* Section Parc Matériel */}
+        {/* Section Parc MatÃ©riel */}
         <div className="dashboard-section">
-          <h3 className="section-title">📦 Equipements</h3>
+          <h3 className="section-title">ðŸ“¦ Equipements</h3>
           <div className="stats-grid">
             <StatCard
-              icon="📦"
-              title="Total Équipements"
+              icon="ðŸ“¦"
+              title="Total Ã‰quipements"
               value={stats?.totalEquipment || 0}
               color="primary"
             />
             <StatCard
-              icon="✅"
+              icon="âœ…"
               title="Disponibles"
               value={stats?.availableEquipment || 0}
               color="success"
             />
             <StatCard
-              icon="🔨"
+              icon="ðŸ”¨"
               title="En Utilisation"
               value={stats?.inUseEquipment || 0}
               color="info"
             />
             <StatCard
-              icon="🔧"
+              icon="ðŸ”§"
               title="En Maintenance"
               value={stats?.maintenanceEquipment || 0}
               color="warning"
@@ -86,24 +87,24 @@ const Dashboard: React.FC = () => {
 
         {/* Section SAV */}
         <div className="dashboard-section">
-          <h3 className="section-title">🔧 SAV</h3>
+          <h3 className="section-title">ðŸ”§ SAV</h3>
           <div className="stats-grid">
             <StatCard
-              icon="📋"
+              icon="ðŸ“‹"
               title="Demandes Ouvertes"
               value={stats?.openServiceRequests || 0}
               subtitle="Demandes d'intervention"
               color="primary"
             />
             <StatCard
-              icon="🔧"
-              title="Réparations En Cours"
+              icon="ðŸ”§"
+              title="RÃ©parations En Cours"
               value={stats?.pendingRepairs || 0}
-              subtitle="À traiter"
+              subtitle="Ã€ traiter"
               color="warning"
             />
             <StatCard
-              icon="↩️"
+              icon="â†©ï¸"
               title="RMA Actifs"
               value={stats?.activeRMAs || 0}
               subtitle="Retours fournisseurs"
@@ -114,23 +115,23 @@ const Dashboard: React.FC = () => {
 
         {/* Section Projets & Contrats */}
         <div className="dashboard-section">
-          <h3 className="section-title">💼 Projets & Contrats</h3>
+          <h3 className="section-title">ðŸ’¼ Projets & Contrats</h3>
           <div className="stats-grid">
             <StatCard
-              icon="🎯"
+              icon="ðŸŽ¯"
               title="Projets Actifs"
               value={stats?.activeProjects || 0}
               color="primary"
             />
             <StatCard
-              icon="📄"
+              icon="ðŸ“„"
               title="Contrats Actifs"
               value={stats?.activeContracts || 0}
               color="success"
             />
             <StatCard
-              icon="📝"
-              title="Demandes Matériel"
+              icon="ðŸ“"
+              title="Demandes MatÃ©riel"
               value={stats?.pendingMaterialRequests || 0}
               subtitle="En attente"
               color="warning"
@@ -140,17 +141,17 @@ const Dashboard: React.FC = () => {
 
         {/* Section Ressources */}
         <div className="dashboard-section">
-          <h3 className="section-title">🚀 Ressources</h3>
+          <h3 className="section-title">ðŸš€ Ressources</h3>
           <div className="stats-grid">
             <StatCard
-              icon="🚐"
-              title="Total Véhicules"
+              icon="ðŸš"
+              title="Total VÃ©hicules"
               value={stats?.totalVehicles || 0}
               subtitle={`${stats?.availableVehicles || 0} disponibles`}
               color="primary"
             />
             <StatCard
-              icon="👥"
+              icon="ðŸ‘¥"
               title="Total Personnel"
               value={stats?.totalPersonnel || 0}
               subtitle={`${stats?.activePersonnel || 0} actifs`}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import logger from '../services/logger.service';
 import DataTable from '../components/DataTable';
 import LoadingState from '../components/LoadingState';
 import PlanningEventDetail from '../components/PlanningEventDetail';
@@ -28,10 +29,10 @@ const Planning: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        setPageTitle('📅 Planning');
+        setPageTitle('ðŸ“… Planning');
     }, [setPageTitle]);
 
-    // ✨ Refactorisation : utilisation du hook useApiData
+    // âœ¨ Refactorisation : utilisation du hook useApiData
     const { data: events, loading, error, reload: reloadEvents } =
         useApiData<PlanningEvent[]>(() => apiService.getCompleteSchedule());
 
@@ -47,10 +48,10 @@ const Planning: React.FC = () => {
         return (
             <div className="page-container">
                 <div className="error-container">
-                    <h2>❌ Erreur</h2>
+                    <h2>âŒ Erreur</h2>
                     <p>{error.message}</p>
                     <button onClick={reloadEvents} className="btn-retry">
-                        Réessayer
+                        RÃ©essayer
                     </button>
                 </div>
             </div>
@@ -61,14 +62,14 @@ const Planning: React.FC = () => {
         {
             key: 'type',
             label: 'Type',
-            render: (value: string) => (value === 'PERSONNEL' ? '👤' : '🚐'),
+            render: (value: string) => (value === 'PERSONNEL' ? 'ðŸ‘¤' : 'ðŸš'),
             width: '60px',
         },
         { key: 'resourceName', label: 'Ressource' },
         { key: 'projectName', label: 'Projet' },
         {
             key: 'startDate',
-            label: 'Début',
+            label: 'DÃ©but',
             render: (value: string) => new Date(value).toLocaleDateString('fr-FR'),
         },
         {
@@ -94,7 +95,7 @@ const Planning: React.FC = () => {
                     <select className="filter-select">
                         <option value="">Tous</option>
                         <option value="PERSONNEL">Personnel</option>
-                        <option value="VEHICLE">Véhicules</option>
+                        <option value="VEHICLE">VÃ©hicules</option>
                     </select>
                 </div>
                 <div className="filter-group">
@@ -102,17 +103,17 @@ const Planning: React.FC = () => {
                     <select className="filter-select">
                         <option value="">Tous</option>
                         <option value="pending">En attente</option>
-                        <option value="confirmed">Confirmé</option>
+                        <option value="confirmed">ConfirmÃ©</option>
                         <option value="in_progress">En cours</option>
                     </select>
                 </div>
                 <div className="filter-group">
-                    <label>Période</label>
+                    <label>PÃ©riode</label>
                     <input type="date" className="filter-input" />
                 </div>
                 <div className="header-actions">
-                    <button className="btn btn-secondary">📄 Exporter</button>
-                    <button className="btn btn-primary">➕ Nouvel Événement</button>
+                    <button className="btn btn-secondary">ðŸ“„ Exporter</button>
+                    <button className="btn btn-primary">âž• Nouvel Ã‰vÃ©nement</button>
                 </div>
             </div>
 
@@ -167,8 +168,8 @@ const Planning: React.FC = () => {
                             setIsModalOpen(false);
                             setSelectedEvent(null);
                         } catch (error) {
-                            console.error('Erreur lors de la mise à jour de l\'événement:', error);
-                            alert('Erreur lors de la mise à jour');
+                            logger.error('Erreur lors de la mise Ã  jour de l\'Ã©vÃ©nement:', error);
+                            alert('Erreur lors de la mise Ã  jour');
                         }
                     }}
                 />

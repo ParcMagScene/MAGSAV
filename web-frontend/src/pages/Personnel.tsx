@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '../services/logger.service';
 import apiService from '../services/api.service';
 import { Personnel as PersonnelType } from '../types/entities';
 import DataTable from '../components/DataTable';
@@ -12,7 +13,7 @@ import './Personnel.css';
 const Personnel: React.FC = () => {
   const { setPageTitle } = usePageContext();
 
-  // ✨ Refactorisation : utilisation du hook useApiData
+  // âœ¨ Refactorisation : utilisation du hook useApiData
   const { data: personnel, loading, error, reload } = useApiData<PersonnelType[]>(
     () => apiService.getPersonnel()
   );
@@ -25,7 +26,7 @@ const Personnel: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    setPageTitle('👥 Personnel');
+    setPageTitle('ðŸ‘¥ Personnel');
     return () => {
       setPageTitle('');
     };
@@ -43,10 +44,10 @@ const Personnel: React.FC = () => {
     return (
       <div className="page-container">
         <div className="error-container">
-          <h2>❌ Erreur</h2>
+          <h2>âŒ Erreur</h2>
           <p>{error.message}</p>
           <button onClick={reload} className="btn-retry">
-            Réessayer
+            RÃ©essayer
           </button>
         </div>
       </div>
@@ -82,17 +83,17 @@ const Personnel: React.FC = () => {
       render: (_value: any, person: PersonnelType) => {
         if (!person || !person.type) return '-';
         const typeMap: { [key: string]: string } = {
-          'EMPLOYEE': '👥 Employé',
-          'FREELANCE': '💼 Freelance',
-          'INTERN': '🎓 Stagiaire',
-          'TEMP': '⏱️ Intérimaire',
-          'INTERMITTENT': '🎭 Intermittent'
+          'EMPLOYEE': 'ðŸ‘¥ EmployÃ©',
+          'FREELANCE': 'ðŸ’¼ Freelance',
+          'INTERN': 'ðŸŽ“ Stagiaire',
+          'TEMP': 'â±ï¸ IntÃ©rimaire',
+          'INTERMITTENT': 'ðŸŽ­ Intermittent'
         };
         return typeMap[person.type] || person.type;
       }
     },
     { key: 'email', label: 'Email' },
-    { key: 'phone', label: 'Téléphone' },
+    { key: 'phone', label: 'TÃ©lÃ©phone' },
     {
       key: 'qualifications',
       label: 'Qualifications',
@@ -130,10 +131,10 @@ const Personnel: React.FC = () => {
     <div className="personnel-page">
       <div className="filters-bar">
         <div className="filter-group">
-          <label>🔍</label>
+          <label>ðŸ”</label>
           <input
             type="text"
-            placeholder="Nom, prénom, email..."
+            placeholder="Nom, prÃ©nom, email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -141,19 +142,19 @@ const Personnel: React.FC = () => {
         </div>
 
         <div className="filter-group">
-          <label>👤 Type</label>
+          <label>ðŸ‘¤ Type</label>
           <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="filter-select">
             <option value="Tous">Tous</option>
-            <option value="EMPLOYEE">Employé</option>
+            <option value="EMPLOYEE">EmployÃ©</option>
             <option value="FREELANCE">Freelance</option>
             <option value="INTERN">Stagiaire</option>
-            <option value="TEMP">Intérimaire</option>
+            <option value="TEMP">IntÃ©rimaire</option>
             <option value="INTERMITTENT">Intermittent</option>
           </select>
         </div>
 
         <div className="filter-group">
-          <label>📊 Statut</label>
+          <label>ðŸ“Š Statut</label>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
             <option value="Tous">Tous</option>
             <option value="Actifs">Actifs</option>
@@ -162,20 +163,20 @@ const Personnel: React.FC = () => {
         </div>
 
         <div className="header-actions">
-          <button className="btn btn-primary" onClick={() => console.log('New employee')}>
-            ➕ Nouvel Employé
+          <button className="btn btn-primary" onClick={() => logger.debug('New employee')}>
+            âž• Nouvel EmployÃ©
           </button>
         </div>
       </div>
 
       <div className="page-content">
-        {error && <div className="error-message">❌ {error}</div>}
+        {error && <div className="error-message">âŒ {error}</div>}
 
         <DataTable
           columns={columns}
           data={filteredPersonnel}
           loading={loading}
-          emptyMessage="Aucun personnel trouvé"
+          emptyMessage="Aucun personnel trouvÃ©"
           selectedItem={selectedPersonnel}
           onRowClick={(personnel) => {
             if (selectedPersonnel?.id === personnel.id) {
@@ -218,8 +219,8 @@ const Personnel: React.FC = () => {
               setIsModalOpen(false);
               reload();
             } catch (error) {
-              console.error('Erreur lors de la mise à jour:', error);
-              alert('Erreur lors de la mise à jour du personnel');
+              logger.error('Erreur lors de la mise Ã  jour:', error);
+              alert('Erreur lors de la mise Ã  jour du personnel');
             }
           }}
         />

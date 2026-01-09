@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '../services/logger.service';
 import apiService from '../services/api.service';
 import { Project } from '../types';
 import DataTable from '../components/DataTable';
@@ -12,7 +13,7 @@ import './SalesInstallations.css';
 const SalesInstallations: React.FC = () => {
   const { setPageTitle } = usePageContext();
 
-  // ✨ Refactorisation : utilisation du hook useApiData
+  // âœ¨ Refactorisation : utilisation du hook useApiData
   const { data: projects, loading: loadingProj, error: errorProj, reload: reloadProj } =
     useApiData<Project[]>(() => apiService.getProjects());
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -20,7 +21,7 @@ const SalesInstallations: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    setPageTitle('📦 Ventes & Installations');
+    setPageTitle('ðŸ“¦ Ventes & Installations');
   }, [setPageTitle]);
 
   const loading = loadingProj;
@@ -38,10 +39,10 @@ const SalesInstallations: React.FC = () => {
     return (
       <div className="page-container">
         <div className="error-container">
-          <h2>❌ Erreur</h2>
+          <h2>âŒ Erreur</h2>
           <p>{error.message}</p>
           <button onClick={reloadProj} className="btn-retry">
-            Réessayer
+            RÃ©essayer
           </button>
         </div>
       </div>
@@ -53,8 +54,8 @@ const SalesInstallations: React.FC = () => {
       'DRAFT': { label: 'Brouillon', className: 'status-badge status-draft' },
       'ACTIVE': { label: 'Actif', className: 'status-badge status-active' },
       'IN_PROGRESS': { label: 'En cours', className: 'status-badge status-in-progress' },
-      'COMPLETED': { label: 'Terminé', className: 'status-badge status-completed' },
-      'CANCELLED': { label: 'Annulé', className: 'status-badge status-cancelled' }
+      'COMPLETED': { label: 'TerminÃ©', className: 'status-badge status-completed' },
+      'CANCELLED': { label: 'AnnulÃ©', className: 'status-badge status-cancelled' }
     };
     return statusMap[status] || { label: status, className: 'status-badge' };
   };
@@ -65,7 +66,7 @@ const SalesInstallations: React.FC = () => {
   };
 
   const projectColumns = [
-    { key: 'projectNumber', label: 'N° Projet' },
+    { key: 'projectNumber', label: 'NÂ° Projet' },
     {
       key: 'name',
       label: 'Titre',
@@ -77,7 +78,7 @@ const SalesInstallations: React.FC = () => {
     { key: 'clientName', label: 'Client' },
     {
       key: 'startDate',
-      label: 'Début',
+      label: 'DÃ©but',
       render: (project: Project) => {
         if (!project) return '-';
         return formatDate(project.startDate);
@@ -96,7 +97,7 @@ const SalesInstallations: React.FC = () => {
       label: 'Budget',
       render: (project: Project) => {
         if (!project) return '-';
-        return project.budget ? `${project.budget.toLocaleString()} €` : '-';
+        return project.budget ? `${project.budget.toLocaleString()} â‚¬` : '-';
       }
     },
     {
@@ -114,11 +115,11 @@ const SalesInstallations: React.FC = () => {
     <div className="sales-installations-page">
       <div className="filters-bar">
         <div className="filter-group">
-          <label>🔍</label>
+          <label>ðŸ”</label>
           <input
             type="text"
             className="filter-input"
-            placeholder="N° projet, client..."
+            placeholder="NÂ° projet, client..."
           />
         </div>
         <div className="filter-group">
@@ -127,12 +128,12 @@ const SalesInstallations: React.FC = () => {
             <option value="">Tous</option>
             <option value="draft">Brouillon</option>
             <option value="active">Actif</option>
-            <option value="completed">Terminé</option>
+            <option value="completed">TerminÃ©</option>
           </select>
         </div>
         <div className="header-actions">
-          <button className="btn btn-secondary">📄 Importer PDF</button>
-          <button className="btn btn-primary">➕ Nouvelle Affaire</button>
+          <button className="btn btn-secondary">ðŸ“„ Importer PDF</button>
+          <button className="btn btn-primary">âž• Nouvelle Affaire</button>
         </div>
       </div>
 
@@ -141,7 +142,7 @@ const SalesInstallations: React.FC = () => {
           columns={projectColumns}
           data={projects || []}
           loading={loading}
-          emptyMessage="Aucun projet trouvé"
+          emptyMessage="Aucun projet trouvÃ©"
           selectedItem={selectedProject}
           onRowClick={(project) => {
             if (selectedProject?.id === project.id) {
@@ -189,8 +190,8 @@ const SalesInstallations: React.FC = () => {
               setIsModalOpen(false);
               setSelectedProject(null);
             } catch (error) {
-              console.error('Erreur lors de la mise à jour du projet:', error);
-              alert('Erreur lors de la mise à jour');
+              logger.error('Erreur lors de la mise Ã  jour du projet:', error);
+              alert('Erreur lors de la mise Ã  jour');
             }
           }}
         />

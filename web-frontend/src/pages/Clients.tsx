@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '../services/logger.service';
 import apiService from '../services/api.service';
 import { Client } from '../types/entities';
 import DataTable from '../components/DataTable';
@@ -12,7 +13,7 @@ import './Clients.css';
 const Clients: React.FC = () => {
   const { setPageTitle } = usePageContext();
 
-  // ✨ Refactorisation : utilisation du hook useApiData
+  // âœ¨ Refactorisation : utilisation du hook useApiData
   const { data: clients, loading, error, reload } = useApiData<Client[]>(
     () => apiService.getClients()
   );
@@ -25,7 +26,7 @@ const Clients: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    setPageTitle('👥 Clients');
+    setPageTitle('ðŸ‘¥ Clients');
     return () => {
       setPageTitle('');
     };
@@ -43,10 +44,10 @@ const Clients: React.FC = () => {
     return (
       <div className="page-container">
         <div className="error-container">
-          <h2>❌ Erreur</h2>
+          <h2>âŒ Erreur</h2>
           <p>{error.message}</p>
           <button onClick={reload} className="btn-retry">
-            Réessayer
+            RÃ©essayer
           </button>
         </div>
       </div>
@@ -71,16 +72,16 @@ const Clients: React.FC = () => {
       label: 'Type',
       render: (client: Client) => {
         if (!client || !client.type) return '-'; const typeMap: { [key: string]: string } = {
-          'COMPANY': '🏢 Entreprise',
-          'ADMINISTRATION': '🏛️ Administration',
-          'ASSOCIATION': '🤝 Association',
-          'INDIVIDUAL': '👤 Particulier'
+          'COMPANY': 'ðŸ¢ Entreprise',
+          'ADMINISTRATION': 'ðŸ›ï¸ Administration',
+          'ASSOCIATION': 'ðŸ¤ Association',
+          'INDIVIDUAL': 'ðŸ‘¤ Particulier'
         };
         return typeMap[client.type] || client.type;
       }
     },
     { key: 'email', label: 'Email' },
-    { key: 'phone', label: 'Téléphone' },
+    { key: 'phone', label: 'TÃ©lÃ©phone' },
     { key: 'city', label: 'Ville' },
     {
       key: 'active',
@@ -100,10 +101,10 @@ const Clients: React.FC = () => {
     <div className="clients-page">
       <div className="filters-bar">
         <div className="filter-group">
-          <label>🔍</label>
+          <label>ðŸ”</label>
           <input
             type="text"
-            placeholder="Nom, email, N° TVA..."
+            placeholder="Nom, email, NÂ° TVA..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -111,7 +112,7 @@ const Clients: React.FC = () => {
         </div>
 
         <div className="filter-group">
-          <label>🏢 Type</label>
+          <label>ðŸ¢ Type</label>
           <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="filter-select">
             <option value="Tous">Tous</option>
             <option value="COMPANY">Entreprise</option>
@@ -122,7 +123,7 @@ const Clients: React.FC = () => {
         </div>
 
         <div className="filter-group">
-          <label>📊 Statut</label>
+          <label>ðŸ“Š Statut</label>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
             <option value="Tous">Tous</option>
             <option value="Actifs">Actifs</option>
@@ -131,23 +132,23 @@ const Clients: React.FC = () => {
         </div>
 
         <div className="header-actions">
-          <button className="btn btn-secondary" onClick={() => console.log('Export')}>
-            📄 Exporter
+          <button className="btn btn-secondary" onClick={() => logger.debug('Export')}>
+            ðŸ“„ Exporter
           </button>
-          <button className="btn btn-primary" onClick={() => console.log('New client')}>
-            ➕ Nouveau Client
+          <button className="btn btn-primary" onClick={() => logger.debug('New client')}>
+            âž• Nouveau Client
           </button>
         </div>
       </div>
 
       <div className="page-content">
-        {error && <div className="error-message">❌ {error}</div>}
+        {error && <div className="error-message">âŒ {error}</div>}
 
         <DataTable
           columns={columns}
           data={filteredClients}
           loading={loading}
-          emptyMessage="Aucun client trouvé"
+          emptyMessage="Aucun client trouvÃ©"
           selectedItem={selectedClient}
           onRowClick={(client) => {
             if (selectedClient?.id === client.id) {
@@ -190,8 +191,8 @@ const Clients: React.FC = () => {
               setIsModalOpen(false);
               reload();
             } catch (error) {
-              console.error('Erreur lors de la mise à jour:', error);
-              alert('Erreur lors de la mise à jour du client');
+              logger.error('Erreur lors de la mise Ã  jour:', error);
+              alert('Erreur lors de la mise Ã  jour du client');
             }
           }}
         />

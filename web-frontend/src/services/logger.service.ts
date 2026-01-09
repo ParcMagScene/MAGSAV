@@ -111,17 +111,17 @@ class LoggerService {
   }
 
   /**
-   * Log de rÃ©ponse API
+   * Log de réponse API
    */
   apiResponse(status: number, url: string, data?: any, dataLength?: number): void {
-    this.debug('âœ… API RESPONSE', { method, url, status, data });
+    this.debug('✅ API RESPONSE', { url, status, data });
   }
 
   /**
    * Log d'erreur API
    */
   apiError(url: string, error: any, status?: number): void {
-    this.error('âŒ API ERROR', { method, url, error: error.message || error });
+    this.error('❌ API ERROR', { url, error: error.message || error, status });
   }
 
   /**

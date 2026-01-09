@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import logger from '../services/logger.service';
 import apiService from '../services/api.service';
 import configService from '../services/config.service';
 import { Equipment as EquipmentType } from '../types';
@@ -30,7 +31,7 @@ const Equipment: React.FC = () => {
 
   // Configuration du header dynamique
   useEffect(() => {
-    setPageTitle('📦 Equipements');
+    setPageTitle('ðŸ“¦ Equipements');
     return () => {
       setPageTitle('');
     };
@@ -44,9 +45,9 @@ const Equipment: React.FC = () => {
       item.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.model?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Filtre hiérarchique progressif
+    // Filtre hiÃ©rarchique progressif
     // category = Famille (CSV col 0)
-    // subCategory = Catégorie (CSV col 1)
+    // subCategory = CatÃ©gorie (CSV col 1)
     // specificCategory = Type (CSV col 2)
     const matchesFamille = familleFilter === 'Tous' || item.category === familleFilter;
     const matchesCategorie = categorieFilter === 'Tous' || item.subCategory === categorieFilter;
@@ -64,10 +65,10 @@ const Equipment: React.FC = () => {
   };
 
   const generateUID = (item: EquipmentType): string => {
-    // Extraire 3 lettres de la catégorie ou utiliser EQP par défaut
+    // Extraire 3 lettres de la catÃ©gorie ou utiliser EQP par dÃ©faut
     let prefix = 'EQP';
     if (item.category) {
-      // Prendre les 3 premières lettres de la catégorie en majuscules
+      // Prendre les 3 premiÃ¨res lettres de la catÃ©gorie en majuscules
       prefix = item.category.substring(0, 3).toUpperCase().padEnd(3, 'X');
     }
 
@@ -116,7 +117,7 @@ const Equipment: React.FC = () => {
     },
     {
       key: 'subCategory',
-      label: 'Catégorie',
+      label: 'CatÃ©gorie',
       render: (value: any, item: EquipmentType) => {
         if (!item) return '-';
         return <span className="subcategory-badge">{item.subCategory || '-'}</span>;
@@ -140,7 +141,7 @@ const Equipment: React.FC = () => {
     },
     {
       key: 'model',
-      label: 'Modèle',
+      label: 'ModÃ¨le',
       render: (value: any, item: EquipmentType) => {
         if (!item) return '-';
         return item.model || '-';
@@ -148,7 +149,7 @@ const Equipment: React.FC = () => {
     },
     {
       key: 'serialNumber',
-      label: 'N° Série',
+      label: 'NÂ° SÃ©rie',
       render: (value: any, item: EquipmentType) => {
         if (!item) return '-';
         return item.serialNumber || '-';
@@ -156,7 +157,7 @@ const Equipment: React.FC = () => {
     },
     {
       key: 'quantityInStock',
-      label: 'Qté',
+      label: 'QtÃ©',
       render: (value: any, item: EquipmentType) => {
         if (!item) return '-';
         return item.quantityInStock !== undefined ? item.quantityInStock : '-';
@@ -186,10 +187,10 @@ const Equipment: React.FC = () => {
     <div className="equipment-page">
       <div className="filters-bar">
         <div className="filter-group">
-          <label>🔍</label>
+          <label>ðŸ”</label>
           <input
             type="text"
-            placeholder="Code Locmat, nom, marque, modèle, N° série..."
+            placeholder="Code Locmat, nom, marque, modÃ¨le, NÂ° sÃ©rie..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -206,7 +207,7 @@ const Equipment: React.FC = () => {
         />
 
         <div className="filter-group">
-          <label>📊 Statut</label>
+          <label>ðŸ“Š Statut</label>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
             <option value="Tous">Tous</option>
             {statuses.map(status => (
@@ -218,23 +219,23 @@ const Equipment: React.FC = () => {
         </div>
 
         <div className="header-actions">
-          <button className="btn btn-secondary" onClick={() => console.log('Export CSV')}>
-            📄 Exporter CSV
+          <button className="btn btn-secondary" onClick={() => logger.debug('Export CSV')}>
+            ðŸ“„ Exporter CSV
           </button>
-          <button className="btn btn-primary" onClick={() => console.log('New equipment')}>
-            ➕ Nouvel Équipement
+          <button className="btn btn-primary" onClick={() => logger.debug('New equipment')}>
+            âž• Nouvel Ã‰quipement
           </button>
         </div>
       </div>
 
       <div className="page-content">
-        {error && <div className="error-message">❌ {error}</div>}
+        {error && <div className="error-message">âŒ {error}</div>}
 
         <DataTable
           columns={columns}
           data={filteredEquipment}
           loading={loading}
-          emptyMessage="Aucun équipement trouvé"
+          emptyMessage="Aucun Ã©quipement trouvÃ©"
           selectedItem={selectedEquipment}
           onRowClick={(equipment) => {
             if (selectedEquipment?.id === equipment.id) {
@@ -273,10 +274,10 @@ const Equipment: React.FC = () => {
             try {
               await apiService.put(`/api/equipment/${updatedEquipment.id}`, updatedEquipment);
               setIsModalOpen(false);
-              window.location.reload(); // Recharger pour mettre à jour les données
+              window.location.reload(); // Recharger pour mettre Ã  jour les donnÃ©es
             } catch (error) {
-              console.error('Erreur lors de la mise à jour:', error);
-              alert('Erreur lors de la mise à jour de l\'équipement');
+              logger.error('Erreur lors de la mise Ã  jour:', error);
+              alert('Erreur lors de la mise Ã  jour de l\'Ã©quipement');
             }
           }}
         />

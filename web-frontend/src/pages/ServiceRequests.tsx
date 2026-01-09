@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import apiService from '../services/api.service';
+import logger from '../services/logger.service';
 import DataTable from '../components/DataTable';
 import StatCard from '../components/StatCard';
 import LoadingState from '../components/LoadingState';
@@ -30,7 +31,7 @@ const ServiceRequests: React.FC = () => {
   const [highlightedRowId, setHighlightedRowId] = useState<number | null>(null);
 
   useEffect(() => {
-    setPageTitle('🔧 SAV');
+    setPageTitle('Ã°Å¸â€Â§ SAV');
   }, [setPageTitle]);
 
   const { data: serviceRequests, loading: loadingRequests, reload: reloadRequests } = useApiData<ServiceRequest[]>(
@@ -52,13 +53,13 @@ const ServiceRequests: React.FC = () => {
   const loading = loadingRequests || loadingRepairs || loadingRMAs || loadingStats || loadingScrap;
 
   const handleDeleteRequest = async (request: ServiceRequest) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer la demande ${request.requestNumber} ?`)) {
+    if (window.confirm(`ÃƒÅ tes-vous sÃƒÂ»r de vouloir supprimer la demande ${request.requestNumber} ?`)) {
       try {
         await apiService.deleteServiceRequest(request.id);
         reloadRequests();
         setContextMenu(null);
       } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
+        logger.error('Erreur lors de la suppression:', error);
         alert('Erreur lors de la suppression de la demande');
       }
     }
@@ -68,7 +69,7 @@ const ServiceRequests: React.FC = () => {
     if (!requestToValidate) return;
 
     try {
-      console.log('🔄 Validation en cours:', actionType, requestToValidate);
+      logger.debug('Ã°Å¸â€â€ž Validation en cours:', actionType, requestToValidate);
 
       let relatedRepairId: number | undefined;
       let relatedRmaId: number | undefined;
@@ -78,7 +79,7 @@ const ServiceRequests: React.FC = () => {
         const repairNumber = 'REP-' + Math.random().toString(36).substring(2, 10).toUpperCase();
         const repairData: any = {
           repairNumber,
-          equipmentName: requestToValidate.equipmentInternalReference || requestToValidate.equipmentQrCode || 'Matériel non identifié',
+          equipmentName: requestToValidate.equipmentInternalReference || requestToValidate.equipmentQrCode || 'MatÃƒÂ©riel non identifiÃƒÂ©',
           problemDescription: requestToValidate.description || requestToValidate.title,
           status: 'IN_PROGRESS',
           priority: priorityMap[requestToValidate.priority] || 'NORMAL',
@@ -87,17 +88,17 @@ const ServiceRequests: React.FC = () => {
         if (requestToValidate.equipmentQrCode) {
           repairData.equipmentSerialNumber = requestToValidate.equipmentQrCode;
         }
-        console.log('🔧 Création réparation:', repairData);
+        logger.debug('Ã°Å¸â€Â§ CrÃƒÂ©ation rÃƒÂ©paration:', repairData);
         const createdRepair = await apiService.createRepair(repairData);
         relatedRepairId = createdRepair.id;
-        console.log('✅ Réparation créée avec ID:', relatedRepairId);
+        logger.debug('Ã¢Å“â€¦ RÃƒÂ©paration crÃƒÂ©ÃƒÂ©e avec ID:', relatedRepairId);
         reloadRepairs();
       } else if (actionType === 'RMA') {
         const priorityMap: { [key: string]: string } = { 'LOW': 'LOW', 'MEDIUM': 'NORMAL', 'HIGH': 'HIGH', 'URGENT': 'URGENT' };
         const rmaNumber = 'RMA-' + Math.random().toString(36).substring(2, 10).toUpperCase();
         const rmaData: any = {
           rmaNumber,
-          equipmentName: requestToValidate.equipmentInternalReference || requestToValidate.equipmentQrCode || 'Matériel non identifié',
+          equipmentName: requestToValidate.equipmentInternalReference || requestToValidate.equipmentQrCode || 'MatÃƒÂ©riel non identifiÃƒÂ©',
           description: requestToValidate.description || requestToValidate.title,
           status: 'REQUEST_PENDING',
           reason: 'MANUFACTURING_DEFECT',
@@ -107,18 +108,18 @@ const ServiceRequests: React.FC = () => {
         if (requestToValidate.equipmentQrCode) {
           rmaData.equipmentSerialNumber = requestToValidate.equipmentQrCode;
         }
-        console.log('📦 Création RMA:', rmaData);
+        logger.debug('Ã°Å¸â€œÂ¦ CrÃƒÂ©ation RMA:', rmaData);
         const createdRMA = await apiService.createRMA(rmaData);
         relatedRmaId = createdRMA.id;
-        console.log('✅ RMA créé avec ID:', relatedRmaId);
+        logger.debug('Ã¢Å“â€¦ RMA crÃƒÂ©ÃƒÂ© avec ID:', relatedRmaId);
         reloadRMAs();
       } else if (actionType === 'SCRAP') {
         if (requestToValidate.equipmentId) {
-          console.log('🗑️ Mise au rebut équipement:', requestToValidate.equipmentId);
+          logger.debug('🔸 Mise au rebut équipement:', requestToValidate.equipmentId);
           await apiService.updateEquipment(requestToValidate.equipmentId, {
             status: 'OUT_OF_ORDER'
           });
-          console.log('✅ Équipement mis au rebut');
+          logger.debug('✅ Équipement mis au rebut');
           reloadScrap();
         }
       }
@@ -134,15 +135,15 @@ const ServiceRequests: React.FC = () => {
       if (relatedRmaId) updateData.relatedRmaId = relatedRmaId;
 
       await apiService.updateServiceRequest(requestToValidate.id, updateData);
-      console.log('✅ Demande passée en "Validée"');
+      logger.debug('✅ Demande passée en "Validée"');
 
       reloadRequests();
       setIsValidationModalOpen(false);
       setRequestToValidate(null);
       setActiveTab(actionType === 'DIAGNOSTIC' || actionType === 'INTERNAL_REPAIR' ? 'repairs' : actionType === 'RMA' ? 'rma' : actionType === 'SCRAP' ? 'scrap' : 'requests');
-      console.log('✅ Validation terminée avec succès');
+      logger.debug('✅ Validation terminée avec succès');
     } catch (error: any) {
-      console.error('❌ Erreur lors de la validation:', error);
+      logger.error('Ã¢ÂÅ’ Erreur lors de la validation:', error);
       alert(`Erreur lors de la validation:\n${error.response?.data?.message || error.message}`);
     }
   };
@@ -172,11 +173,11 @@ const ServiceRequests: React.FC = () => {
 
   const getActionLabel = (action?: string) => {
     switch (action) {
-      case 'DIAGNOSTIC': return '🔍 Diagnostique Interne';
-      case 'INTERNAL_REPAIR': return '🔧 Réparation Interne';
-      case 'RMA': return '↩️ Retour Fournisseur (RMA)';
-      case 'SCRAP': return '🗑️ Mis au Rebut';
-      default: return '❓ Action inconnue';
+      case 'DIAGNOSTIC': return 'Ã°Å¸â€Â Diagnostique Interne';
+      case 'INTERNAL_REPAIR': return 'Ã°Å¸â€Â§ RÃƒÂ©paration Interne';
+      case 'RMA': return 'Ã¢â€ Â©Ã¯Â¸Â Retour Fournisseur (RMA)';
+      case 'SCRAP': return 'Ã°Å¸â€”â€˜Ã¯Â¸Â Mis au Rebut';
+      default: return 'Ã¢Ââ€œ Action inconnue';
     }
   };
 
@@ -192,13 +193,13 @@ const ServiceRequests: React.FC = () => {
   if (loading) {
     return (
       <div className="page-container">
-        <LoadingState message="Chargement des données SAV..." />
+        <LoadingState message="Chargement des donnÃƒÂ©es SAV..." />
       </div>
     );
   }
 
   const requestColumns = [
-    { key: 'requestNumber', label: 'N° Demande', width: '120px' },
+    { key: 'requestNumber', label: 'NÃ‚Â° Demande', width: '120px' },
     { key: 'title', label: 'Titre' },
     { key: 'equipmentInternalReference', label: 'Code LOCMAT', width: '120px' },
     { key: 'equipmentQrCode', label: 'UID', width: '100px' },
@@ -212,7 +213,7 @@ const ServiceRequests: React.FC = () => {
     },
     {
       key: 'priority',
-      label: 'Priorité',
+      label: 'PrioritÃƒÂ©',
       render: (value: string) => {
         const label = translatePriority(value);
         return <span className={`priority-badge priority-${value.toLowerCase()}`}>{label}</span>;
@@ -226,10 +227,10 @@ const ServiceRequests: React.FC = () => {
   ];
 
   const repairColumns = [
-    { key: 'repairNumber', label: 'N° Réparation', width: '120px' },
-    { key: 'equipmentName', label: 'Matériel' },
+    { key: 'repairNumber', label: 'NÃ‚Â° RÃƒÂ©paration', width: '120px' },
+    { key: 'equipmentName', label: 'MatÃƒÂ©riel' },
     { key: 'problemDescription', label: 'Description' },
-    { key: 'equipmentSerialNumber', label: 'Série', width: '120px' },
+    { key: 'equipmentSerialNumber', label: 'SÃƒÂ©rie', width: '120px' },
     {
       key: 'status',
       label: 'Statut',
@@ -240,7 +241,7 @@ const ServiceRequests: React.FC = () => {
     },
     {
       key: 'priority',
-      label: 'Priorité',
+      label: 'PrioritÃƒÂ©',
       render: (value: string) => {
         const label = translatePriority(value);
         return <span className={`priority-badge priority-${value.toLowerCase()}`}>{label}</span>;
@@ -248,16 +249,16 @@ const ServiceRequests: React.FC = () => {
     },
     {
       key: 'startDate',
-      label: 'Début',
+      label: 'DÃƒÂ©but',
       render: (value: string) => formatFrenchDate(value),
     },
   ];
 
   const rmaColumns = [
-    { key: 'rmaNumber', label: 'N° RMA', width: '120px' },
-    { key: 'equipmentName', label: 'Matériel' },
+    { key: 'rmaNumber', label: 'NÃ‚Â° RMA', width: '120px' },
+    { key: 'equipmentName', label: 'MatÃƒÂ©riel' },
     { key: 'description', label: 'Description' },
-    { key: 'equipmentSerialNumber', label: 'Série', width: '120px' },
+    { key: 'equipmentSerialNumber', label: 'SÃƒÂ©rie', width: '120px' },
     {
       key: 'status',
       label: 'Statut',
@@ -277,9 +278,9 @@ const ServiceRequests: React.FC = () => {
     { key: 'qrCode', label: 'UID', width: '120px' },
     { key: 'name', label: 'Nom' },
     { key: 'internalReference', label: 'Code LOCMAT', width: '120px' },
-    { key: 'category', label: 'Catégorie' },
+    { key: 'category', label: 'CatÃƒÂ©gorie' },
     { key: 'brand', label: 'Marque' },
-    { key: 'model', label: 'Modèle' },
+    { key: 'model', label: 'ModÃƒÂ¨le' },
     {
       key: 'updatedAt',
       label: 'Date Mise au Rebut',
@@ -287,19 +288,19 @@ const ServiceRequests: React.FC = () => {
     },
   ];
 
-  // Génération des items du menu contextuel
+  // GÃƒÂ©nÃƒÂ©ration des items du menu contextuel
   const getContextMenuItems = (request: ServiceRequest) => {
     const items = [];
 
     if (request.status === 'VALIDATED' && request.validationAction) {
       items.push({
         label: `Voir ${getActionLabel(request.validationAction)}`,
-        icon: '👁️',
+        icon: 'Ã°Å¸â€˜ÂÃ¯Â¸Â',
         onClick: () => navigateToRelated(request)
       });
       items.push({
-        label: 'Modifier la démarche',
-        icon: '✏️',
+        label: 'Modifier la dÃƒÂ©marche',
+        icon: 'Ã¢Å“ÂÃ¯Â¸Â',
         onClick: () => {
           setRequestToValidate(request);
           setIsValidationModalOpen(true);
@@ -309,7 +310,7 @@ const ServiceRequests: React.FC = () => {
     } else {
       items.push({
         label: 'Valider',
-        icon: '✅',
+        icon: 'Ã¢Å“â€¦',
         onClick: () => {
           setRequestToValidate(request);
           setIsValidationModalOpen(true);
@@ -320,7 +321,7 @@ const ServiceRequests: React.FC = () => {
 
     items.push({
       label: 'Supprimer',
-      icon: '🗑️',
+      icon: 'Ã°Å¸â€”â€˜Ã¯Â¸Â',
       onClick: () => handleDeleteRequest(request)
     });
 
@@ -331,19 +332,19 @@ const ServiceRequests: React.FC = () => {
     <div className="service-requests-page">
       <div className="filters-bar">
         <div className="filter-group">
-          <label>🔍</label>
-          <input type="text" className="filter-input" placeholder="N° demande, titre..." />
+          <label>Ã°Å¸â€Â</label>
+          <input type="text" className="filter-input" placeholder="NÃ‚Â° demande, titre..." />
         </div>
         <div className="filter-group">
           <label>Statut</label>
           <select className="filter-select">
             <option value="">Tous</option>
             <option value="PENDING">En attente</option>
-            <option value="VALIDATED">Validée</option>
+            <option value="VALIDATED">ValidÃƒÂ©e</option>
           </select>
         </div>
         <div className="filter-group">
-          <label>Priorité</label>
+          <label>PrioritÃƒÂ©</label>
           <select className="filter-select">
             <option value="">Toutes</option>
             <option value="LOW">Basse</option>
@@ -353,8 +354,8 @@ const ServiceRequests: React.FC = () => {
           </select>
         </div>
         <div className="header-actions">
-          <button className="btn btn-secondary">📄 Exporter</button>
-          <button className="btn btn-primary">➕ Nouvelle Demande</button>
+          <button className="btn btn-secondary">Ã°Å¸â€œâ€ž Exporter</button>
+          <button className="btn btn-primary">Ã¢Å¾â€¢ Nouvelle Demande</button>
         </div>
       </div>
 
@@ -363,25 +364,25 @@ const ServiceRequests: React.FC = () => {
           className={`tab-button ${activeTab === 'requests' ? 'active' : ''}`}
           onClick={() => setActiveTab('requests')}
         >
-          📋 Demandes ({serviceRequests?.length || 0})
+          Ã°Å¸â€œâ€¹ Demandes ({serviceRequests?.length || 0})
         </button>
         <button
           className={`tab-button ${activeTab === 'repairs' ? 'active' : ''}`}
           onClick={() => setActiveTab('repairs')}
         >
-          🔧 Réparations ({repairs?.length || 0})
+          Ã°Å¸â€Â§ RÃƒÂ©parations ({repairs?.length || 0})
         </button>
         <button
           className={`tab-button ${activeTab === 'rma' ? 'active' : ''}`}
           onClick={() => setActiveTab('rma')}
         >
-          ↩️ RMA ({rmas?.length || 0})
+          Ã¢â€ Â©Ã¯Â¸Â RMA ({rmas?.length || 0})
         </button>
         <button
           className={`tab-button ${activeTab === 'scrap' ? 'active' : ''}`}
           onClick={() => setActiveTab('scrap')}
         >
-          🗑️ Rebut ({scrapEquipment?.length || 0})
+          Ã°Å¸â€”â€˜Ã¯Â¸Â Rebut ({scrapEquipment?.length || 0})
         </button>
       </div>
 
@@ -421,7 +422,7 @@ const ServiceRequests: React.FC = () => {
             data={repairs || []}
             columns={repairColumns}
             loading={loading}
-            emptyMessage="Aucune réparation"
+            emptyMessage="Aucune rÃƒÂ©paration"
             selectedItem={selectedRepair}
             highlightedRowId={highlightedRowId}
             onRowClick={(repair: Repair) => {
@@ -459,7 +460,7 @@ const ServiceRequests: React.FC = () => {
             data={scrapEquipment || []}
             columns={scrapColumns}
             loading={loading}
-            emptyMessage="Aucun équipement au rebut"
+            emptyMessage="Aucun ÃƒÂ©quipement au rebut"
             selectedItem={selectedEquipment}
             highlightedRowId={highlightedRowId}
             onRowClick={(equipment: any) => {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '../services/logger.service';
 import apiService from '../services/api.service';
 import { Contract } from '../types/entities';
 import DataTable from '../components/DataTable';
@@ -12,7 +13,7 @@ import './Contracts.css';
 const Contracts: React.FC = () => {
   const { setPageTitle } = usePageContext();
 
-  // ✨ Refactorisation : utilisation du hook useApiData
+  // âœ¨ Refactorisation : utilisation du hook useApiData
   const { data: contracts, loading, error, reload } = useApiData<Contract[]>(
     () => apiService.getContracts()
   );
@@ -25,7 +26,7 @@ const Contracts: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    setPageTitle('📜 Contrats');
+    setPageTitle('ðŸ“œ Contrats');
     return () => {
       setPageTitle('');
     };
@@ -43,10 +44,10 @@ const Contracts: React.FC = () => {
     return (
       <div className="page-container">
         <div className="error-container">
-          <h2>❌ Erreur</h2>
+          <h2>âŒ Erreur</h2>
           <p>{error.message}</p>
           <button onClick={reload} className="btn-retry">
-            Réessayer
+            RÃ©essayer
           </button>
         </div>
       </div>
@@ -67,8 +68,8 @@ const Contracts: React.FC = () => {
       'DRAFT': { label: 'Brouillon', className: 'status-badge status-draft' },
       'ACTIVE': { label: 'Actif', className: 'status-badge status-active' },
       'SUSPENDED': { label: 'Suspendu', className: 'status-badge status-suspended' },
-      'EXPIRED': { label: 'Expiré', className: 'status-badge status-expired' },
-      'TERMINATED': { label: 'Résilié', className: 'status-badge status-terminated' }
+      'EXPIRED': { label: 'ExpirÃ©', className: 'status-badge status-expired' },
+      'TERMINATED': { label: 'RÃ©siliÃ©', className: 'status-badge status-terminated' }
     };
     return statusMap[status] || { label: status, className: 'status-badge' };
   };
@@ -79,7 +80,7 @@ const Contracts: React.FC = () => {
   };
 
   const columns = [
-    { key: 'contractNumber', label: 'N° Contrat' },
+    { key: 'contractNumber', label: 'NÂ° Contrat' },
     { key: 'title', label: 'Titre' },
     { key: 'clientName', label: 'Client' },
     {
@@ -100,7 +101,7 @@ const Contracts: React.FC = () => {
     },
     {
       key: 'startDate',
-      label: 'Début',
+      label: 'DÃ©but',
       render: (contract: Contract) => contract ? formatDate(contract.startDate) : '-'
     },
     {
@@ -123,10 +124,10 @@ const Contracts: React.FC = () => {
     <div className="contracts-page">
       <div className="filters-bar">
         <div className="filter-group">
-          <label>🔍</label>
+          <label>ðŸ”</label>
           <input
             type="text"
-            placeholder="Numéro, titre, client..."
+            placeholder="NumÃ©ro, titre, client..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
@@ -134,7 +135,7 @@ const Contracts: React.FC = () => {
         </div>
 
         <div className="filter-group">
-          <label>📋 Type</label>
+          <label>ðŸ“‹ Type</label>
           <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="filter-select">
             <option value="Tous">Tous</option>
             <option value="MAINTENANCE">Maintenance</option>
@@ -147,32 +148,32 @@ const Contracts: React.FC = () => {
         </div>
 
         <div className="filter-group">
-          <label>📊 Statut</label>
+          <label>ðŸ“Š Statut</label>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
             <option value="Tous">Tous</option>
             <option value="DRAFT">Brouillon</option>
             <option value="ACTIVE">Actif</option>
             <option value="SUSPENDED">Suspendu</option>
-            <option value="EXPIRED">Expiré</option>
-            <option value="TERMINATED">Résilié</option>
+            <option value="EXPIRED">ExpirÃ©</option>
+            <option value="TERMINATED">RÃ©siliÃ©</option>
           </select>
         </div>
 
         <div className="header-actions">
-          <button className="btn btn-primary" onClick={() => console.log('New contract')}>
-            ➕ Nouveau Contrat
+          <button className="btn btn-primary" onClick={() => logger.debug('New contract')}>
+            âž• Nouveau Contrat
           </button>
         </div>
       </div>
 
       <div className="page-content">
-        {error && <div className="error-message">❌ {error}</div>}
+        {error && <div className="error-message">âŒ {error}</div>}
 
         <DataTable
           columns={columns}
           data={filteredContracts}
           loading={loading}
-          emptyMessage="Aucun contrat trouvé"
+          emptyMessage="Aucun contrat trouvÃ©"
           selectedItem={selectedContract}
           onRowClick={(contract) => {
             if (selectedContract?.id === contract.id) {
@@ -220,8 +221,8 @@ const Contracts: React.FC = () => {
               setIsModalOpen(false);
               setSelectedContract(null);
             } catch (error) {
-              console.error('Erreur lors de la mise à jour du contrat:', error);
-              alert('Erreur lors de la mise à jour');
+              logger.error('Erreur lors de la mise Ã  jour du contrat:', error);
+              alert('Erreur lors de la mise Ã  jour');
             }
           }}
         />

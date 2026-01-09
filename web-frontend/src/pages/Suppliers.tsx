@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '../services/logger.service';
 import apiService from '../services/api.service';
 import DataTable from '../components/DataTable';
 import LoadingState from '../components/LoadingState';
@@ -22,7 +23,7 @@ interface Supplier {
 const Suppliers: React.FC = () => {
     const { setPageTitle } = usePageContext();
 
-    // ✨ Refactorisation : utilisation du hook useApiData
+    // âœ¨ Refactorisation : utilisation du hook useApiData
     const [filterActive, setFilterActive] = useState<boolean | null>(null);
     const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -36,7 +37,7 @@ const Suppliers: React.FC = () => {
     );
 
     useEffect(() => {
-        setPageTitle('🏪 Fournisseurs');
+        setPageTitle('ðŸª Fournisseurs');
         return () => {
             setPageTitle('');
         };
@@ -54,10 +55,10 @@ const Suppliers: React.FC = () => {
         return (
             <div className="page-container">
                 <div className="error-container">
-                    <h2>❌ Erreur</h2>
+                    <h2>âŒ Erreur</h2>
                     <p>{error.message}</p>
                     <button onClick={reload} className="btn-retry">
-                        Réessayer
+                        RÃ©essayer
                     </button>
                 </div>
             </div>
@@ -68,7 +69,7 @@ const Suppliers: React.FC = () => {
         { key: 'code', label: 'Code', width: '100px' },
         { key: 'name', label: 'Nom' },
         { key: 'contactPerson', label: 'Contact' },
-        { key: 'phone', label: 'Téléphone' },
+        { key: 'phone', label: 'TÃ©lÃ©phone' },
         { key: 'email', label: 'Email' },
         { key: 'city', label: 'Ville' },
         {
@@ -104,8 +105,8 @@ const Suppliers: React.FC = () => {
                 </div>
 
                 <div className="header-actions">
-                    <button className="btn btn-primary" onClick={() => console.log('New supplier')}>
-                        ➕ Nouveau Fournisseur
+                    <button className="btn btn-primary" onClick={() => logger.debug('New supplier')}>
+                        âž• Nouveau Fournisseur
                     </button>
                 </div>
             </div>
@@ -115,7 +116,7 @@ const Suppliers: React.FC = () => {
                     data={suppliers || []}
                     columns={columns}
                     loading={loading}
-                    emptyMessage="Aucun fournisseur trouvé"
+                    emptyMessage="Aucun fournisseur trouvÃ©"
                     selectedItem={selectedSupplier}
                     onRowClick={(supplier) => {
                         if (selectedSupplier?.id === supplier.id) {
@@ -163,8 +164,8 @@ const Suppliers: React.FC = () => {
                             setIsModalOpen(false);
                             setSelectedSupplier(null);
                         } catch (error) {
-                            console.error('Erreur lors de la mise à jour du fournisseur:', error);
-                            alert('Erreur lors de la mise à jour');
+                            logger.error('Erreur lors de la mise Ã  jour du fournisseur:', error);
+                            alert('Erreur lors de la mise Ã  jour');
                         }
                     }}
                 />

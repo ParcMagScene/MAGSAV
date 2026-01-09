@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import logger from '../services/logger.service';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../services/api.service';
 import { useEquipment } from '../contexts/EquipmentContext';
@@ -51,7 +52,7 @@ const GlobalSearch: React.FC = () => {
     const searchResults: SearchResult[] = [];
 
     try {
-      // Recherche dans les équipements (utilise le cache)
+      // Recherche dans les ÃƒÂ©quipements (utilise le cache)
       const matchingEquipments = cachedEquipment.filter(eq =>
         eq.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         eq.internalReference?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -63,8 +64,8 @@ const GlobalSearch: React.FC = () => {
           type: 'equipment',
           id: eq.id || 0,
           title: eq.name || 'Sans nom',
-          subtitle: `Réf: ${eq.internalReference || 'N/A'} - ${eq.category || 'N/A'}`,
-          icon: '📦',
+          subtitle: `RÃƒÂ©f: ${eq.internalReference || 'N/A'} - ${eq.category || 'N/A'}`,
+          icon: 'Ã°Å¸â€œÂ¦',
           route: '/equipment'
         });
       });
@@ -82,13 +83,13 @@ const GlobalSearch: React.FC = () => {
             type: 'sav',
             id: sav.id || 0,
             title: sav.title || 'Sans titre',
-            subtitle: `Réf: ${sav.reference || 'N/A'} - ${sav.status || 'N/A'}`,
-            icon: '🔧',
+            subtitle: `RÃƒÂ©f: ${sav.reference || 'N/A'} - ${sav.status || 'N/A'}`,
+            icon: 'Ã°Å¸â€Â§',
             route: '/sav'
           });
         });
       } catch (error) {
-        console.error('Erreur recherche SAV:', error);
+        logger.error('Erreur recherche SAV:', error);
       }
 
       // Recherche dans les clients
@@ -105,15 +106,15 @@ const GlobalSearch: React.FC = () => {
             id: client.id || 0,
             title: client.name || 'Sans nom',
             subtitle: client.email || 'Pas d\'email',
-            icon: '👥',
+            icon: 'Ã°Å¸â€˜Â¥',
             route: '/clients'
           });
         });
       } catch (error) {
-        console.error('Erreur recherche clients:', error);
+        logger.error('Erreur recherche clients:', error);
       }
 
-      // Recherche dans les véhicules
+      // Recherche dans les vÃƒÂ©hicules
       try {
         const vehicles = await apiService.getVehicles();
         const matchingVehicles = vehicles.filter(vehicle =>
@@ -127,18 +128,18 @@ const GlobalSearch: React.FC = () => {
             id: vehicle.id || 0,
             title: vehicle.name || 'Sans nom',
             subtitle: `Immat: ${vehicle.registrationNumber || 'N/A'}`,
-            icon: '🚐',
+            icon: 'Ã°Å¸Å¡Â',
             route: '/vehicles'
           });
         });
       } catch (error) {
-        console.error('Erreur recherche véhicules:', error);
+        logger.error('Erreur recherche vÃƒÂ©hicules:', error);
       }
 
       setResults(searchResults);
       setIsOpen(searchResults.length > 0);
     } catch (error) {
-      console.error('Erreur lors de la recherche:', error);
+      logger.error('Erreur lors de la recherche:', error);
     } finally {
       setLoading(false);
     }
@@ -161,17 +162,17 @@ const GlobalSearch: React.FC = () => {
   return (
     <div className="global-search" ref={searchRef}>
       <div className="search-input-wrapper">
-        <span className="search-icon">🔍</span>
+        <span className="search-icon">Ã°Å¸â€Â</span>
         <input
           type="text"
           className="search-input"
-          placeholder="Rechercher équipement, SAV, client, véhicule..."
+          placeholder="Rechercher ÃƒÂ©quipement, SAV, client, vÃƒÂ©hicule..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.trim().length >= 2 && setIsOpen(true)}
           onKeyDown={handleKeyDown}
         />
-        {loading && <span className="search-loading">⏳</span>}
+        {loading && <span className="search-loading">Ã¢ÂÂ³</span>}
         {query && (
           <button
             className="search-clear"
@@ -181,7 +182,7 @@ const GlobalSearch: React.FC = () => {
               setIsOpen(false);
             }}
           >
-            ✕
+            Ã¢Å“â€¢
           </button>
         )}
       </div>
@@ -189,7 +190,7 @@ const GlobalSearch: React.FC = () => {
       {isOpen && results.length > 0 && (
         <div className="search-results">
           <div className="search-results-header">
-            {results.length} résultat{results.length > 1 ? 's' : ''}
+            {results.length} rÃƒÂ©sultat{results.length > 1 ? 's' : ''}
           </div>
           {results.map((result, index) => (
             <div
@@ -211,7 +212,7 @@ const GlobalSearch: React.FC = () => {
       {isOpen && results.length === 0 && !loading && query.trim().length >= 2 && (
         <div className="search-results">
           <div className="search-no-results">
-            Aucun résultat pour "{query}"
+            Aucun rÃƒÂ©sultat pour "{query}"
           </div>
         </div>
       )}

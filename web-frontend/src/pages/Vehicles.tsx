@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import logger from '../services/logger.service';
 import apiService from '../services/api.service';
 import { Vehicle } from '../types/entities';
 import { VehicleReservation } from '../types';
@@ -15,15 +16,15 @@ import './Vehicles.css';
 type TabType = 'vehicles' | 'reservations';
 
 const Vehicles: React.FC = () => {
-  console.log('🚗 [VEHICLES] Composant monté');
+  logger.debug('VEHICLES - Composant monté');
 
   const { setPageTitle } = usePageContext();
 
-  // ✨ Refactorisation : utilisation du hook useApiData (2 appels parallèles)
+  // ÃƒÂ¢Ã…â€œÃ‚Â¨ Refactorisation : utilisation du hook useApiData (2 appels parallÃƒÆ’Ã‚Â¨les)
   const { data: vehicles, loading: loadingVeh, error: errorVeh, reload: reloadVeh } =
     useApiData<Vehicle[]>(() => apiService.getVehicles());
 
-  // TODO: Réservations désactivées - endpoint backend non implémenté
+  // TODO: RÃƒÆ’Ã‚Â©servations dÃƒÆ’Ã‚Â©sactivÃƒÆ’Ã‚Â©es - endpoint backend non implÃƒÆ’Ã‚Â©mentÃƒÆ’Ã‚Â©
   // const { data: reservations, loading: loadingRes, error: errorRes } =
   //   useApiData<VehicleReservation[]>(() => apiService.getVehicleReservations());
   const reservations: VehicleReservation[] = [];
@@ -40,13 +41,13 @@ const Vehicles: React.FC = () => {
 
   // Configuration du header dynamique
   useEffect(() => {
-    setPageTitle('🚐 Véhicules');
+    setPageTitle('ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â VÃƒÆ’Ã‚Â©hicules');
   }, [setPageTitle]);
 
   const loading = loadingVeh || loadingStats;
   const error = errorVeh || errorStats;
 
-  console.log('🚗 [VEHICLES] État actuel:', {
+  logger.debug('ÃƒÂ°Ã…Â¸Ã…Â¡Ã¢â‚¬â€ [VEHICLES] ÃƒÆ’Ã¢â‚¬Â°tat actuel:', {
     vehicles: vehicles?.length || 0,
     reservations: reservations?.length || 0,
     stats,
@@ -57,7 +58,7 @@ const Vehicles: React.FC = () => {
   if (loading) {
     return (
       <div className="page-container">
-        <LoadingState message="Chargement des véhicules..." />
+        <LoadingState message="Chargement des vÃƒÆ’Ã‚Â©hicules..." />
       </div>
     );
   }
@@ -66,10 +67,10 @@ const Vehicles: React.FC = () => {
     return (
       <div className="page-container">
         <div className="error-container">
-          <h2>❌ Erreur</h2>
+          <h2>ÃƒÂ¢Ã‚ÂÃ…â€™ Erreur</h2>
           <p>{error.message}</p>
           <button onClick={reloadVeh} className="btn-retry">
-            Réessayer
+            RÃƒÆ’Ã‚Â©essayer
           </button>
         </div>
       </div>
@@ -101,16 +102,16 @@ const Vehicles: React.FC = () => {
       render: (value: string) => {
         if (!value) return '-';
         const typeMap: { [key: string]: string } = {
-          'VAN': '🚐 Fourgon',
-          'VL': '🚐 VL',
-          'VL_17M3': '🚐 VL 17m³',
-          'VL_20M3': '🚐 VL 20m³',
-          'TRUCK': '🚚 Camion',
-          'PORTEUR': '🚛 Porteur',
-          'TRACTEUR': '🚜 Tracteur',
-          'SEMI_REMORQUE': '🚛 Semi-remorque',
-          'CAR': '🚗 Voiture',
-          'UTILITY': '🚛 Utilitaire'
+          'VAN': 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â Fourgon',
+          'VL': 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â VL',
+          'VL_17M3': 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â VL 17mÃƒâ€šÃ‚Â³',
+          'VL_20M3': 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â VL 20mÃƒâ€šÃ‚Â³',
+          'TRUCK': 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã…Â¡ Camion',
+          'PORTEUR': 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã¢â‚¬Âº Porteur',
+          'TRACTEUR': 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã…â€œ Tracteur',
+          'SEMI_REMORQUE': 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã¢â‚¬Âº Semi-remorque',
+          'CAR': 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã¢â‚¬â€ Voiture',
+          'UTILITY': 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã¢â‚¬Âº Utilitaire'
         };
         return typeMap[value] || value;
       }
@@ -122,7 +123,7 @@ const Vehicles: React.FC = () => {
     },
     {
       key: 'model',
-      label: 'Modèle',
+      label: 'ModÃƒÆ’Ã‚Â¨le',
       render: (value: string) => value || '-'
     },
     {
@@ -132,7 +133,7 @@ const Vehicles: React.FC = () => {
     },
     {
       key: 'owner',
-      label: 'Propriétaire',
+      label: 'PropriÃƒÆ’Ã‚Â©taire',
       render: (value: string) => value || '-'
     },
     {
@@ -146,16 +147,16 @@ const Vehicles: React.FC = () => {
     },
     {
       key: 'lastMaintenanceDate',
-      label: 'Dernière Maintenance',
+      label: 'DerniÃƒÆ’Ã‚Â¨re Maintenance',
       render: (value: string) => formatFrenchDate(value)
     }
   ];
 
   const reservationColumns = [
-    { key: 'vehicleRegistration', label: 'Véhicule' },
+    { key: 'vehicleRegistration', label: 'VÃƒÆ’Ã‚Â©hicule' },
     {
       key: 'startDate',
-      label: 'Début',
+      label: 'DÃƒÆ’Ã‚Â©but',
       render: (value: string) => formatFrenchDate(value)
     },
     {
@@ -181,7 +182,7 @@ const Vehicles: React.FC = () => {
     <div className="vehicles-page">
       <div className="filters-bar">
         <div className="filter-group">
-          <label>🔍</label>
+          <label>ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â</label>
           <input
             type="text"
             className="filter-input"
@@ -192,13 +193,13 @@ const Vehicles: React.FC = () => {
           <label>Type</label>
           <select className="filter-select">
             <option value="">Tous</option>
-            <option value="VL">🚐 VL</option>
-            <option value="VL_17M3">🚐 VL 17m³</option>
-            <option value="VL_20M3">🚐 VL 20m³</option>
-            <option value="PORTEUR">🚛 Porteur</option>
-            <option value="TRACTEUR">🚜 Tracteur</option>
-            <option value="SEMI_REMORQUE">🚛 Semi-remorque</option>
-            <option value="OTHER">📦 Autre</option>
+            <option value="VL">ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â VL</option>
+            <option value="VL_17M3">ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â VL 17mÃƒâ€šÃ‚Â³</option>
+            <option value="VL_20M3">ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â VL 20mÃƒâ€šÃ‚Â³</option>
+            <option value="PORTEUR">ÃƒÂ°Ã…Â¸Ã…Â¡Ã¢â‚¬Âº Porteur</option>
+            <option value="TRACTEUR">ÃƒÂ°Ã…Â¸Ã…Â¡Ã…â€œ Tracteur</option>
+            <option value="SEMI_REMORQUE">ÃƒÂ°Ã…Â¸Ã…Â¡Ã¢â‚¬Âº Semi-remorque</option>
+            <option value="OTHER">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦ Autre</option>
           </select>
         </div>
         <div className="filter-group">
@@ -209,13 +210,13 @@ const Vehicles: React.FC = () => {
             <option value="IN_USE">En utilisation</option>
             <option value="MAINTENANCE">En maintenance</option>
             <option value="OUT_OF_ORDER">Hors service</option>
-            <option value="RENTED_OUT">Loué externe</option>
-            <option value="RESERVED">Réservé</option>
+            <option value="RENTED_OUT">LouÃƒÆ’Ã‚Â© externe</option>
+            <option value="RESERVED">RÃƒÆ’Ã‚Â©servÃƒÆ’Ã‚Â©</option>
           </select>
         </div>
         <div className="header-actions">
-          <button className="btn btn-secondary">🔧 Maintenance</button>
-          <button className="btn btn-primary">➕ Nouveau Véhicule</button>
+          <button className="btn btn-secondary">ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â§ Maintenance</button>
+          <button className="btn btn-primary">ÃƒÂ¢Ã…Â¾Ã¢â‚¬Â¢ Nouveau VÃƒÆ’Ã‚Â©hicule</button>
         </div>
       </div>
 
@@ -224,17 +225,17 @@ const Vehicles: React.FC = () => {
           className={`tab-button ${activeTab === 'vehicles' ? 'active' : ''}`}
           onClick={() => setActiveTab('vehicles')}
         >
-          🚐 Liste des Véhicules ({vehicles?.length || 0})
+          ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â Liste des VÃƒÆ’Ã‚Â©hicules ({vehicles?.length || 0})
         </button>
         <button
           className={`tab-button ${activeTab === 'reservations' ? 'active' : ''}`}
           onClick={() => setActiveTab('reservations')}
         >
-          📅 Réservations ({reservations?.length || 0})
+          ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Â¦ RÃƒÆ’Ã‚Â©servations ({reservations?.length || 0})
         </button>
       </div>
 
-      {error && <div className="error-message">❌ {error}</div>}
+      {error && <div className="error-message">ÃƒÂ¢Ã‚ÂÃ…â€™ {error}</div>}
 
       <div className="tabs-content">
         {activeTab === 'vehicles' && (
@@ -242,7 +243,7 @@ const Vehicles: React.FC = () => {
             columns={vehicleColumns}
             data={vehicles || []}
             loading={loading}
-            emptyMessage="Aucun véhicule trouvé"
+            emptyMessage="Aucun vÃƒÆ’Ã‚Â©hicule trouvÃƒÆ’Ã‚Â©"
             selectedItem={selectedVehicle}
             onRowClick={(vehicle) => {
               if (selectedVehicle?.id === vehicle.id) {
@@ -265,7 +266,7 @@ const Vehicles: React.FC = () => {
             columns={reservationColumns}
             data={reservations || []}
             loading={loading}
-            emptyMessage="Aucune réservation trouvée"
+            emptyMessage="Aucune rÃƒÆ’Ã‚Â©servation trouvÃƒÆ’Ã‚Â©e"
           />
         )}
       </div>
@@ -295,8 +296,8 @@ const Vehicles: React.FC = () => {
               setIsModalOpen(false);
               reloadVeh();
             } catch (error) {
-              console.error('Erreur lors de la mise à jour:', error);
-              alert('Erreur lors de la mise à jour du véhicule');
+              logger.error('Erreur lors de la mise ÃƒÆ’Ã‚Â  jour:', error);
+              alert('Erreur lors de la mise ÃƒÆ’Ã‚Â  jour du vÃƒÆ’Ã‚Â©hicule');
             }
           }}
         />

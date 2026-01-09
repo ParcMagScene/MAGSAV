@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import apiService from '../services/api.service';
+import logger from '../services/logger.service';
 import { Equipment } from '../types';
 
 interface EquipmentStats {
@@ -45,7 +46,7 @@ export const EquipmentProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setStats(statsData);
       setInitialized(true);
     } catch (err) {
-      console.error('Erreur chargement équipements:', err);
+      logger.error('Erreur chargement équipements:', err);
       setError('Impossible de charger les équipements');
     } finally {
       setLoading(false);
